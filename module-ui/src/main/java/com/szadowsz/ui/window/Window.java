@@ -68,7 +68,7 @@ public class Window implements UserInputSubscriber {
         drawPathTooltipOnHighlight(pg);
         drawContent(pg);
         drawBackgroundWithWindowBorder(pg, false);
-        drawTitleBar(pg, isTitleHighlighted);
+        drawTitleBar(pg, folder.shouldDrawTitle(), isTitleHighlighted);
         if (!isRoot()) {
             drawCloseButton(pg);
         }
@@ -162,27 +162,29 @@ public class Window implements UserInputSubscriber {
         drawInlineFolderChildren(pg);
     }
 
-    protected void drawTitleBar(PGraphics pg, boolean highlight) {
-        float availableWidthForText = windowSizeX - FontStore.textMarginX + (isRoot() ? 0 : -LayoutStore.cell);
-        String leftText = FontStore.getSubstringFromStartToFit(pg, folder.name, availableWidthForText);
-        pg.pushMatrix();
-        pg.pushStyle();
-        pg.translate(posX, posY);
-        pg.fill(highlight ? ThemeStore.getColor(FOCUS_BACKGROUND) : ThemeStore.getColor(NORMAL_BACKGROUND));
-        if (!GlobalReferences.app.focused && isRoot()) {
-            pg.fill(ThemeStore.getColor(FOCUS_BACKGROUND));
-            leftText = "not in focus";
-            highlight = true;
+    protected void drawTitleBar(PGraphics pg, boolean shouldDraw, boolean highlight) {
+        if (shouldDraw) {
+            float availableWidthForText = windowSizeX - FontStore.textMarginX + (isRoot() ? 0 : -LayoutStore.cell);
+            String leftText = FontStore.getSubstringFromStartToFit(pg, folder.name, availableWidthForText);
+            pg.pushMatrix();
+            pg.pushStyle();
+            pg.translate(posX, posY);
+            pg.fill(highlight ? ThemeStore.getColor(FOCUS_BACKGROUND) : ThemeStore.getColor(NORMAL_BACKGROUND));
+            if (!GlobalReferences.app.focused && isRoot()) {
+                pg.fill(ThemeStore.getColor(FOCUS_BACKGROUND));
+                leftText = "not in focus";
+                highlight = true;
+            }
+            float titleBarWidth = windowSizeX;
+            pg.strokeWeight(1);
+            pg.stroke(ThemeStore.getColor(WINDOW_BORDER));
+            pg.rect(0, 0, titleBarWidth, LayoutStore.cell);
+            pg.fill(highlight ? ThemeStore.getColor(FOCUS_FOREGROUND) : ThemeStore.getColor(NORMAL_FOREGROUND));
+            pg.textAlign(LEFT, CENTER);
+            pg.text(leftText, FontStore.textMarginX, LayoutStore.cell - FontStore.textMarginY);
+            pg.popStyle();
+            pg.popMatrix();
         }
-        float titleBarWidth = windowSizeX;
-        pg.strokeWeight(1);
-        pg.stroke(ThemeStore.getColor(WINDOW_BORDER));
-        pg.rect(0, 0, titleBarWidth, LayoutStore.cell);
-        pg.fill(highlight ? ThemeStore.getColor(FOCUS_FOREGROUND) : ThemeStore.getColor(NORMAL_FOREGROUND));
-        pg.textAlign(LEFT, CENTER);
-        pg.text(leftText, FontStore.textMarginX, LayoutStore.cell - FontStore.textMarginY);
-        pg.popStyle();
-        pg.popMatrix();
     }
 
     public void drawContextLineFromTitleBarToInlineNode(PGraphics pg, float endRectSize, boolean pickShortestLine) {

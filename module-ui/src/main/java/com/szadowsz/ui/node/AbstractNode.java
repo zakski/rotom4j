@@ -8,9 +8,13 @@ import com.szadowsz.ui.input.mouse.GuiMouseEvent;
 import com.szadowsz.ui.constants.theme.ThemeColorType;
 import com.szadowsz.ui.constants.theme.ThemeStore;
 import com.szadowsz.ui.node.impl.FolderNode;
+import com.szadowsz.ui.store.FontStore;
 import com.szadowsz.ui.store.LayoutStore;
 import processing.core.PGraphics;
 import processing.core.PVector;
+
+import static com.szadowsz.ui.store.LayoutStore.cell;
+import static processing.core.PConstants.*;
 
 /**
  *
@@ -74,6 +78,33 @@ public abstract class AbstractNode implements MouseInteractable {
         String nameWithoutPrefixSlash = NodePaths.getNameWithoutPrefixSlash(split[split.length - 1]);
         return NodePaths.getDisplayStringWithoutEscapes(nameWithoutPrefixSlash);
     }
+    /**
+     * Draw the text to the left
+     *
+     * @param pg graphics reference to use
+     * @param text the text to draw
+     */
+    protected void drawLeftText(PGraphics pg, String text){
+        fillForegroundBasedOnMouseOver(pg);
+        String trimmedText = FontStore.getSubstringFromStartToFit(pg, text, size.x - FontStore.textMarginX);
+        pg.textAlign(LEFT, CENTER);
+        pg.text(trimmedText, FontStore.textMarginX, cell - FontStore.textMarginY);
+    }
+
+    /**
+     * Draw the backdrop to the right
+     *
+     * @param pg graphics reference to use
+     * @param backdropSize size of the background
+     */
+    protected void drawRightBackdrop(PGraphics pg, float backdropSize) {
+        pg.pushStyle();
+        fillBackgroundBasedOnMouseOver(pg);
+        pg.noStroke();
+        pg.rectMode(CORNER);
+        pg.rect(size.x-backdropSize, 0, backdropSize, size.y);
+        pg.popStyle();
+    }
 
     /**
      * Method to draw the background of the node
@@ -90,6 +121,31 @@ public abstract class AbstractNode implements MouseInteractable {
      */
     protected abstract void drawNodeForeground(PGraphics pg, String name);
 
+    /**
+     * Sets the color used to fill the background of the node
+     *
+     * @param pg graphics reference to use
+     */
+    protected void fillBackgroundBasedOnMouseOver(PGraphics pg) {
+        if(isMouseOverNode){
+            pg.fill(ThemeStore.getColor(ThemeColorType.FOCUS_BACKGROUND));
+        } else {
+            pg.fill(ThemeStore.getColor(ThemeColorType.NORMAL_BACKGROUND));
+        }
+    }
+
+    /**
+     * Sets the color used to fill the foreground of the node
+     *
+     * @param pg graphics reference to use
+     */
+    protected void fillForegroundBasedOnMouseOver(PGraphics pg) {
+        if(isMouseOverNode){
+            pg.fill(ThemeStore.getColor(ThemeColorType.FOCUS_FOREGROUND));
+        } else {
+            pg.fill(ThemeStore.getColor(ThemeColorType.NORMAL_FOREGROUND));
+        }
+    }
 
     /**
      * Draw a highlighted background of the node
@@ -103,7 +159,20 @@ public abstract class AbstractNode implements MouseInteractable {
     }
 
     /**
+     * Sets the color used to draw lines and borders around the node
      *
+     * @param pg graphics reference
+     */
+    protected void strokeForegroundBasedOnMouseOver(PGraphics pg) {
+        if (isMouseOverNode) {
+            pg.stroke(ThemeStore.getColor(ThemeColorType.FOCUS_FOREGROUND));
+        } else {
+            pg.stroke(ThemeStore.getColor(ThemeColorType.NORMAL_FOREGROUND));
+        }
+    }
+
+    /**
+     * Handle a pressed key while over the node
      *
      * @param e the pressed key
      * @param x x position

@@ -1,13 +1,14 @@
 package com.szadowsz.ui.node;
 
 import com.szadowsz.ui.node.impl.FolderNode;
+import com.szadowsz.ui.node.impl.ToolbarNode;
 
 import java.util.*;
 
 import static processing.core.PApplet.println;
 
 public class NodeTree {
-    private static final FolderNode root = new FolderNode("", null);
+    private static FolderNode root;
     private static final Map<String, AbstractNode> nodesByPath = new HashMap<>();
     static final ArrayList<String> knownUnexpectedQueries = new ArrayList<>();
 
@@ -15,7 +16,21 @@ public class NodeTree {
 
     }
 
+    public static FolderNode getOrCreateRoot(boolean createToolbar) {
+        if (root == null) {
+            if (createToolbar) {
+                root = new ToolbarNode("", null);
+            } else {
+                root = new FolderNode("", null);
+            }
+        }
+        return root;
+    }
+
     public static FolderNode getRoot() {
+        if (root == null) {
+            root = getOrCreateRoot(false);
+        }
         return root;
     }
 
@@ -84,11 +99,11 @@ public class NodeTree {
         folder.children.add(node);
     }
 
-    public static List<AbstractNode> getAllNodesAsList(){
+    public static List<AbstractNode> getAllNodesAsList() {
         List<AbstractNode> result = new ArrayList<>();
         Queue<AbstractNode> queue = new LinkedList<>();
         queue.offer(root);
-        while(!queue.isEmpty()){
+        while (!queue.isEmpty()) {
             AbstractNode node = queue.poll();
             result.add(node);
             if (node.type == NodeType.FOLDER) {
@@ -101,14 +116,14 @@ public class NodeTree {
         return result;
     }
 
-    public static void setAllNodesMouseOverToFalse(){
+    public static void setAllNodesMouseOverToFalse() {
         setAllOtherNodesMouseOverToFalse(null);
     }
 
-    public static void setAllOtherNodesMouseOverToFalse(AbstractNode nodeToKeep){
+    public static void setAllOtherNodesMouseOverToFalse(AbstractNode nodeToKeep) {
         List<AbstractNode> allNodes = getAllNodesAsList();
-        for(AbstractNode node : allNodes){
-            if(node == nodeToKeep){
+        for (AbstractNode node : allNodes) {
+            if (node == nodeToKeep) {
                 continue;
             }
             node.isMouseOverNode = false;
@@ -116,29 +131,29 @@ public class NodeTree {
     }
 
     public static FolderNode findFirstOpenParentNodeRecursively(FolderNode node) {
-        if(node == getRoot()){
+        if (node == getRoot()) {
             return null;
         }
-        if(node.isParentWindowOpen() && node.isInlineNodeVisible()){
+        if (node.isParentWindowOpen() && node.isInlineNodeVisible()) {
             return node;
         }
         return findFirstOpenParentNodeRecursively(node.parent);
     }
 
-    public static <T extends AbstractNode> boolean isPathTakenByUnexpectedType(String path, Class<T> expectedType){
+    public static <T extends AbstractNode> boolean isPathTakenByUnexpectedType(String path, Class<T> expectedType) {
         AbstractNode foundNode = findNode(path);
-        if(foundNode == null){
+        if (foundNode == null) {
             return false;
         }
         String expectedTypeName = expectedType.getSimpleName();
         String uniquePathAndTypeQuery = path + " - " + expectedTypeName;
-        if(knownUnexpectedQueries.contains(uniquePathAndTypeQuery)){
+        if (knownUnexpectedQueries.contains(uniquePathAndTypeQuery)) {
             // return early when this is a known conflict, don't spam the path conflict error in console
             return true;
         }
-        try{
+        try {
             expectedType.cast(foundNode);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             println("Path conflict warning: You tried to register a new " + expectedTypeName + " at \"" + path + "\"" +
                     " but that path is already in use by a " + foundNode.className + "." +
                     "\n\tThe original " + foundNode.className + " will still work as expected," +
@@ -153,7 +168,7 @@ public class NodeTree {
 
     public static void hideAtFullPath(String path) {
         AbstractNode node = findNode(path);
-        if(node == null || node.equals(NodeTree.getRoot())){
+        if (node == null || node.equals(NodeTree.getRoot())) {
             return;
         }
         node.hideInlineNode();
@@ -161,17 +176,17 @@ public class NodeTree {
 
     public static void showAtFullPath(String path) {
         AbstractNode node = findNode(path);
-        if(node == null || node.equals(NodeTree.getRoot())){
+        if (node == null || node.equals(NodeTree.getRoot())) {
             return;
         }
         node.showInlineNode();
     }
 
     public static boolean areAllParentsInlineVisible(AbstractNode node) {
-        if(!node.isInlineNodeVisible()){
+        if (!node.isInlineNodeVisible()) {
             return false;
         }
-        if(node.equals(getRoot())){
+        if (node.equals(getRoot())) {
             return true;
         }
         return areAllParentsInlineVisible(node.parent);

@@ -46,8 +46,12 @@ public class WindowManager {
     /**
      * Method to add the root window to be managed
      */
-    public static void addRootWindow() {
-        addWindow(new Window(NodeTree.getRoot(), LayoutStore.cell, LayoutStore.cell, LayoutStore.cell * LayoutStore.defaultWindowWidthInCells));
+    public static void addRootWindow(boolean createToolbar) {
+        if (createToolbar){
+            addWindow(new Window(NodeTree.getOrCreateRoot(createToolbar), 0,0, LayoutStore.cell * LayoutStore.defaultWindowWidthInCells));
+        } else {
+            addWindow(new Window(NodeTree.getOrCreateRoot(createToolbar), LayoutStore.cell, LayoutStore.cell, LayoutStore.cell * LayoutStore.defaultWindowWidthInCells));
+        }
     }
 
     /**
