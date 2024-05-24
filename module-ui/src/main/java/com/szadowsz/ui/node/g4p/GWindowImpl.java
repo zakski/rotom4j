@@ -1,4 +1,4 @@
-package com.szadowsz.ui.node.impl;
+package com.szadowsz.ui.node.g4p;
 
 import java.util.Collections;
 import java.util.LinkedList;

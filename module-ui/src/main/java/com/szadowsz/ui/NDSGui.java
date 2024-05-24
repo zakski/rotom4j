@@ -7,6 +7,7 @@ import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeTree;
 import com.szadowsz.ui.node.NodeType;
 import com.szadowsz.ui.node.impl.ButtonNode;
+import com.szadowsz.ui.node.impl.DropdownMenuNode;
 import com.szadowsz.ui.node.impl.FolderNode;
 import com.szadowsz.ui.store.*;
 import com.szadowsz.ui.utils.ContextLines;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.szadowsz.ui.constants.GlobalReferences.app;
+import static processing.core.PApplet.println;
 import static processing.core.PApplet.tan;
 import static processing.core.PConstants.*;
 
@@ -52,6 +54,12 @@ public class NDSGui {
     static final String optionsFolderName = "options";
     //
     static final String savesFolderName = "saves";
+
+    // Folder Stack Constants
+    private static final int stackSizeWarningLevel = 64;
+    private boolean printedPushWarningAlready = false;
+    private boolean printedPopWarningAlready = false;
+
 
     /**
      * Main constructor for the NDSGui object which acts as a central hub for all GUI related methods.
@@ -341,5 +349,94 @@ public class NDSGui {
             NodeTree.insertNodeAtItsPath(node);
         }
         return node;
+    }
+
+    /**
+     * Pushes a folder name to the global path prefix stack.
+     * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
+     * Removes leading and trailing slashes to enforce consistency, but allows slashes to appear either escaped or anywhere else inside the string.
+     * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
+     * This is useful for not repeating the whole path string every time you want to call a control element.
+     *
+     * @param folderName one folder's name to push to the stack
+     * @return
+     * @see NDSGui#getFolder()
+     */
+    public FolderNode pushDropdown(String folderName){
+        if(pathPrefix.size() >= stackSizeWarningLevel && !printedPushWarningAlready){
+            LOGGER.warn("Too many calls to pushFolder() - stack size reached the warning limit of " + stackSizeWarningLevel +
+                    ", possibly due to runaway recursion");
+            printedPushWarningAlready = true;
+        }
+        String slashSafeFolderName = folderName;
+        if(slashSafeFolderName.startsWith("/")){
+            // remove leading slash
+            slashSafeFolderName = slashSafeFolderName.substring(1);
+        }
+        if(slashSafeFolderName.endsWith("/") && !slashSafeFolderName.endsWith("\\/")){
+            // remove trailing slash if un-escaped
+            slashSafeFolderName = slashSafeFolderName.substring(0, slashSafeFolderName.length()-1);
+        }
+        pathPrefix.add(0, slashSafeFolderName);
+        NodeTree.lazyInitDropdownPath(slashSafeFolderName);
+        return (DropdownMenuNode) NodeTree.findNode(slashSafeFolderName);
+    }
+
+    /**
+     * Pushes a folder name to the global path prefix stack.
+     * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
+     * Removes leading and trailing slashes to enforce consistency, but allows slashes to appear either escaped or anywhere else inside the string.
+     * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
+     * This is useful for not repeating the whole path string every time you want to call a control element.
+     *
+     * @param folderName one folder's name to push to the stack
+     * @return
+     * @see NDSGui#getFolder()
+     */
+    public FolderNode pushFolder(String folderName){
+        if(pathPrefix.size() >= stackSizeWarningLevel && !printedPushWarningAlready){
+            LOGGER.warn("Too many calls to pushFolder() - stack size reached the warning limit of " + stackSizeWarningLevel +
+                    ", possibly due to runaway recursion");
+            printedPushWarningAlready = true;
+        }
+        String slashSafeFolderName = folderName;
+        if(slashSafeFolderName.startsWith("/")){
+            // remove leading slash
+            slashSafeFolderName = slashSafeFolderName.substring(1);
+        }
+        if(slashSafeFolderName.endsWith("/") && !slashSafeFolderName.endsWith("\\/")){
+            // remove trailing slash if un-escaped
+            slashSafeFolderName = slashSafeFolderName.substring(0, slashSafeFolderName.length()-1);
+        }
+        pathPrefix.add(0, slashSafeFolderName);
+        return (FolderNode) NodeTree.findNode(slashSafeFolderName);
+    }
+
+    /**
+     * Pops the last pushed folder name from the global path prefix stack.
+     * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
+     * Warns once when the stack is empty and popFolder() is attempted.
+     * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
+     * This is useful for not repeating the whole path string every time you want to call a control element.
+     */
+    public void popFolder(){
+        if(pathPrefix.isEmpty() && printedPopWarningAlready){
+            LOGGER.warn("Too many calls to popFolder() - there is nothing to pop");
+            printedPopWarningAlready = true;
+        }
+        if(!pathPrefix.isEmpty()){
+            pathPrefix.remove(0);
+        }
+    }
+
+    /**
+     * Pops the last pushed folder name from the global path prefix stack.
+     * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
+     * Warns once when the stack is empty and popFolder() is attempted.
+     * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
+     * This is useful for not repeating the whole path string every time you want to call a control element.
+     */
+    public void popDropdown(){
+        popFolder();
     }
 }

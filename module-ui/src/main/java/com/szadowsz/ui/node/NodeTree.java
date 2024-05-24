@@ -1,5 +1,6 @@
 package com.szadowsz.ui.node;
 
+import com.szadowsz.ui.node.impl.DropdownMenuNode;
 import com.szadowsz.ui.node.impl.FolderNode;
 import com.szadowsz.ui.node.impl.ToolbarNode;
 
@@ -75,6 +76,30 @@ public class NodeTree {
                     parentFolder = root;
                 }
                 n = new FolderNode(runningPath, parentFolder);
+                parentFolder.children.add(n);
+                parentFolder = (FolderNode) n;
+            } else if (n.type == NodeType.FOLDER) {
+                parentFolder = (FolderNode) n;
+            } else {
+                println("Expected to find or to be able to create a folder at path \"" + runningPath + "\" but found an existing " + n.className + ". You cannot put any control elements there.");
+            }
+            if (i < split.length - 1) {
+                runningPath += "/" + split[i + 1];
+            }
+        }
+    }
+
+    public static void lazyInitDropdownPath(String path) {
+        String[] split = NodePaths.splitByUnescapedSlashes(path);
+        String runningPath = split[0];
+        FolderNode parentFolder = null;
+        for (int i = 0; i < split.length; i++) {
+            AbstractNode n = findNode(runningPath);
+            if (n == null) {
+                if (parentFolder == null) {
+                    parentFolder = root;
+                }
+                n = new DropdownMenuNode(runningPath, parentFolder);
                 parentFolder.children.add(n);
                 parentFolder = (FolderNode) n;
             } else if (n.type == NodeType.FOLDER) {

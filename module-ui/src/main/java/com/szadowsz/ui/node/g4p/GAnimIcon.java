@@ -21,7 +21,7 @@
   Boston, MA  02111-1307  USA
  */
 
-package com.szadowsz.ui.node.impl;
+package com.szadowsz.ui.node.g4p;
 
 import java.util.HashMap;
 import java.util.Map;

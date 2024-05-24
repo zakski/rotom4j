@@ -20,28 +20,35 @@
   Free Software Foundation, Inc., 59 Temple Place, Suite 330,
   Boston, MA  02111-1307  USA
  */
-package com.szadowsz.ui.node.impl;
+
+package com.szadowsz.ui.node.g4p;
+
+import java.io.File;
+import java.io.FilenameFilter;
 
 import processing.core.PApplet;
-import processing.core.PConstants;
 
-public enum GControlMode implements PConstants{
+class FilenameChooserFilter implements FilenameFilter {
 
-	CORNER 		( "X Y W H coordinates", 		"CORNER",	PApplet.CORNER	),
-	CORNERS 	( "X0 Y0 X1 Y1 coordinates", 	"CORNERS",	PApplet.CORNERS	),
-	CENTER		( "X Y W H coordinates",		"CENTER",	PApplet.CENTER	);
+	private final String[] ftypes;
 
-	public final String description;
-	public final String ps_name;
-	public final int mode;
-	
-	private GControlMode(String desc, String name, int ctrl_mode ){
-		description = desc;
-		ps_name = name;
-		mode = ctrl_mode;
+	public FilenameChooserFilter(String types) {
+		ftypes = PApplet.split(types.toLowerCase(), ',');
+		for (String e : ftypes)
+			e = e.trim();
 	}
-	
-	public String toString(){
-		return description;
+
+	public boolean accept(File dir, String name) {
+		String fext = null;
+		int i = name.lastIndexOf('.');
+		if (i > 0 && i < name.length() - 1)
+			fext = name.substring(i + 1).toLowerCase();
+		if (fext != null) {
+			for (String e : ftypes)
+				if (fext.equals(e))
+					return true;
+		}
+		return false;
 	}
+
 }
