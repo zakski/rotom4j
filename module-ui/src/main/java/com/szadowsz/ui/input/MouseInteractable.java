@@ -1,6 +1,5 @@
-package com.szadowsz.ui.node;
+package com.szadowsz.ui.input;
 
-import com.szadowsz.ui.input.UserInputSubscriber;
 import com.szadowsz.ui.input.mouse.GuiMouseEvent;
 
 public interface MouseInteractable extends UserInputSubscriber {

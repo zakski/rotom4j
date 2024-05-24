@@ -32,9 +32,12 @@ public class InputWatcherBackend implements KeyListener, MouseListener {
 
     private boolean debugKeys = false;
 
+
     private InputWatcherBackend() {
         keys = new Keyboard(5000L,33L);
         mouse = new Mouse(app.mouseX,app.mouseY);
+        registerKeyListener(this);
+        registerMouseListener(this);
 //        InputWatcherBackend.registerKeyChord(new KeyChord(new int[]{java.awt.event.KeyEvent.VK_CONTROL, java.awt.event.KeyEvent.VK_Z}), e -> {
 //            UndoRedoStore.undo();
 //            e.consume();
@@ -57,12 +60,12 @@ public class InputWatcherBackend implements KeyListener, MouseListener {
         getInstance().keys.clearKeys();
     }
 
-    public static void registerKeyListener(KeyListener listener) {
-        getInstance().keys.attachHandler(listener);
+    public void registerKeyListener(KeyListener listener) {
+        keys.attachHandler(listener);
     }
 
-    public static void registerMouseListener(MouseListener listener) {
-        getInstance().mouse.attachHandler(listener);
+    public void registerMouseListener(MouseListener listener) {
+        mouse.attachHandler(listener);
     }
 
     public static void registerKeyChord(KeyChord chord, ChordFunction func){

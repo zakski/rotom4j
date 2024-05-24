@@ -3,17 +3,21 @@ package com.szadowsz.ui.node;
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.Expose;
 import com.szadowsz.ui.constants.GlobalReferences;
+import com.szadowsz.ui.input.MouseInteractable;
 import com.szadowsz.ui.input.keys.GuiKeyEvent;
 import com.szadowsz.ui.input.mouse.GuiMouseEvent;
 import com.szadowsz.ui.constants.theme.ThemeColorType;
 import com.szadowsz.ui.constants.theme.ThemeStore;
 import com.szadowsz.ui.node.impl.FolderNode;
+import com.szadowsz.ui.store.ChangeListener;
 import com.szadowsz.ui.store.FontStore;
 import com.szadowsz.ui.store.LayoutStore;
+import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
+import static processing.core.PApplet.ceil;
 import static processing.core.PConstants.*;
 
 /**
@@ -148,6 +152,18 @@ public abstract class AbstractNode implements MouseInteractable {
     }
 
     /**
+     * Method to calculate the width of the text for the font size
+     *
+     * @param textToMeasure text to calculate the width of
+     * @return width rounded up to whole cells
+     */
+    protected float findTextWidthRoundedUpToWholeCells(String textToMeasure) {
+        PGraphics textWidthProvider = FontStore.getMainFontUtilsProvider();
+        float leftTextWidth = textWidthProvider.textWidth(textToMeasure);
+        return ceil(leftTextWidth / cell) * cell;
+    }
+
+    /**
      * Draw a highlighted background of the node
      *
      * @param pg graphics reference to use
@@ -170,6 +186,8 @@ public abstract class AbstractNode implements MouseInteractable {
             pg.stroke(ThemeStore.getColor(ThemeColorType.NORMAL_FOREGROUND));
         }
     }
+
+    public abstract float getRequiredWidthForHorizontalLayout();
 
     /**
      * Handle a pressed key while over the node
@@ -201,6 +219,13 @@ public abstract class AbstractNode implements MouseInteractable {
         isMouseOverNode = true;
     }
 
+    public void onValueChangingActionEnded() {
+        ChangeListener.onValueChangingActionEnded(path);
+        if(parent != null){
+            // go up the parent chain recursively and keep notifying of a change until the root node is reached
+            parent.onValueChangingActionEnded();
+        }
+    }
 
     /**
      * Used by value nodes to load state from json
@@ -313,4 +338,6 @@ public abstract class AbstractNode implements MouseInteractable {
         }
         return !parent.window.closed;
     }
+
+
 }

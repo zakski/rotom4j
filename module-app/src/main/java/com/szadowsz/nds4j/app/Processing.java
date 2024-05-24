@@ -36,6 +36,9 @@ public class Processing extends PApplet {
         surface.setResizable(true);
         surface.setLocation(100,100);
         gui = new NDSGui(this,settings);
+        gui.button("Test");
+        gui.button("Test 2");
+
 //        bonelist = new GDropList(this, 100, 20, 200, 150, 8, 20);
 //        bonelist.setItems(new String[]{"test 1", "test 2"}, 0);
     }

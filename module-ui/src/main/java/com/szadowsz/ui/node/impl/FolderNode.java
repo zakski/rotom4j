@@ -108,17 +108,7 @@ public class FolderNode extends AbstractNode {
         return null;
     }
 
-    /**
-     * Method to calculate the width of the text for the font size
-     *
-     * @param textToMeasure text to calculate the width of
-     * @return width rounded up to whole cells
-     */
-    private float findTextWidthRoundedUpToWholeCells(String textToMeasure) {
-        PGraphics textWidthProvider = FontStore.getMainFontUtilsProvider();
-        float leftTextWidth = textWidthProvider.textWidth(textToMeasure);
-        return ceil(leftTextWidth / cell) * cell;
-    }
+
 
     /**
      *
@@ -182,19 +172,6 @@ public class FolderNode extends AbstractNode {
         this.isInlineNodeDragged = false;
     }
 
-//
-//    protected AbstractNode findChildByName(String name) {
-//        if(name.startsWith("/")){
-//            name = name.substring(1);
-//        }
-//        for (AbstractNode node : children) {
-//            if (node.name.equals(name)) {
-//                return node;
-//            }
-//        }
-//        return null;
-//    }
-//
 //    @Override
 //    public void keyPressedOverNode(LazyKeyEvent e, float x, float y) {
 //        // copy + paste whole folders of controls
@@ -239,5 +216,14 @@ public class FolderNode extends AbstractNode {
      */
     public boolean shouldDrawTitle() {
         return true;
+    }
+
+    public LayoutType getLayout(){
+        return layout;
+    }
+
+    @Override
+    public float getRequiredWidthForHorizontalLayout() {
+        return autosuggestWindowWidthForContents();
     }
 }

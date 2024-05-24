@@ -6,11 +6,9 @@ import com.szadowsz.ui.input.InputWatcherBackend;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeTree;
 import com.szadowsz.ui.node.NodeType;
+import com.szadowsz.ui.node.impl.ButtonNode;
 import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.store.FontStore;
-import com.szadowsz.ui.store.JsonSaveStore;
-import com.szadowsz.ui.store.LayoutStore;
-import com.szadowsz.ui.store.NormColorStore;
+import com.szadowsz.ui.store.*;
 import com.szadowsz.ui.utils.ContextLines;
 import com.szadowsz.ui.window.SnapToGrid;
 import com.szadowsz.ui.window.Window;
@@ -274,6 +272,7 @@ public class NDSGui {
         targetCanvas.popStyle();
         targetCanvas.hint(ENABLE_DEPTH_TEST);
         JsonSaveStore.updateEndlessLoopDetection();
+        ChangeListener.onFrameFinished();
     }
 
     /**
@@ -321,5 +320,26 @@ public class NDSGui {
             sb.append("/");
         }
         return sb.toString();
+    }
+
+    /**
+     * Gets the value of a button control element and sets it to false.
+     * Lazily initializes the button if needed.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @return button
+     */
+    public ButtonNode button(String path) {
+        String fullPath = getFolder() + path;
+        if(NodeTree.isPathTakenByUnexpectedType(fullPath, ButtonNode.class)){
+            return null;
+        }
+        ButtonNode node = (ButtonNode) NodeTree.findNode(fullPath);
+        if (node == null) {
+            FolderNode folder = NodeTree.findParentFolderLazyInitPath(fullPath);
+            node = new ButtonNode(fullPath, folder);
+            NodeTree.insertNodeAtItsPath(node);
+        }
+        return node;
     }
 }
