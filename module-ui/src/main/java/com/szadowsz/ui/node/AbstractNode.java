@@ -96,6 +96,23 @@ public abstract class AbstractNode implements MouseInteractable {
     }
 
     /**
+     * Draw the text to the right
+     *
+     * @param pg graphics reference to use
+     * @param text the text to draw
+     * @param fillBackground whether to fill the backgrounf
+     */
+    protected void drawRightText(PGraphics pg, String text, boolean fillBackground) {
+        if(fillBackground){
+            float backdropBuffer = cell * 0.5f;
+            float w = pg.textWidth(text) + FontStore.textMarginX + backdropBuffer;
+            drawRightBackdrop(pg, w);
+        }
+        pg.textAlign(RIGHT, CENTER);
+        pg.text(text,size.x - FontStore.textMarginX,size.y - FontStore.textMarginY);
+    }
+
+    /**
      * Draw the backdrop to the right
      *
      * @param pg graphics reference to use
@@ -188,6 +205,10 @@ public abstract class AbstractNode implements MouseInteractable {
     }
 
     public abstract float getRequiredWidthForHorizontalLayout();
+
+    public String getValueAsString(){
+        return "";
+    }
 
     /**
      * Handle a pressed key while over the node

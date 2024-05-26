@@ -111,6 +111,53 @@ public class WindowManager {
     }
 
     /**
+     * Create or make visible a window for the passed in folder
+     *
+     * @param folderNode the corresponding folder node
+     */
+    public static void uncoverOrCreateTempWindow(FolderNode folderNode) {
+        uncoverOrCreateTempWindow(folderNode, true, null, null, null);
+    }
+
+    /**
+     * Create or make visible a window for the passed in folder
+     *
+     * @param folderNode    the corresponding folder node
+     * @param setFocus      true if the window is in focus, false otherwise
+     * @param nullablePosX
+     * @param nullablePosY
+     * @param nullableSizeX
+     */
+    public static void uncoverOrCreateTempWindow(FolderNode folderNode, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
+        PVector pos = new PVector(LayoutStore.cell, LayoutStore.cell);
+        if (folderNode.parent != null) {
+            Window parentWindow = folderNode.parent.window;
+            if (parentWindow != null) {
+                pos = new PVector(parentWindow.posX + parentWindow.windowSizeX + LayoutStore.cell, parentWindow.posY);
+            }
+        }
+        if (nullablePosX != null) {
+            pos.x = nullablePosX;
+        }
+        if (nullablePosY != null) {
+            pos.y = nullablePosY;
+        }
+        boolean windowFound = findWindow(folderNode, setFocus, pos);
+        if (!windowFound) {
+            Window window = new TempWindow(folderNode, pos.x, pos.y, nullableSizeX);
+            windows.add(window);
+            window.open(setFocus);
+        }
+        if (windowFound && folderNode.parent == null) {
+            folderNode.window.posX = pos.x;
+            folderNode.window.posY = pos.y;
+            if (nullableSizeX != null) {
+                folderNode.window.windowSizeX = nullableSizeX;
+            }
+        }
+    }
+
+    /**
      * Update and draw all windows
      *
      * @param pg graphics context

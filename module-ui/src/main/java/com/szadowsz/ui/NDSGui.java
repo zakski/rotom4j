@@ -312,6 +312,16 @@ public class NDSGui {
     }
 
     /**
+     * Utility method for displaying the GUI before draw() ends for the purposes of recording.
+     * Does not update the gui, only returns the previous frame's gui canvas.
+     * Can be confusing when displayed due to seeing duplicated GUI images with slightly different content.
+     * @return previous frame's gui canvas
+     */
+    public PGraphics getGuiCanvas() {
+        return guiCanvas;
+    }
+
+    /**
      * Gets the current path prefix stack, inserting a forward slash after each folder name in the stack.
      * Mostly used internally by LazyGui, but it can also be useful for debugging.
      *
@@ -378,7 +388,13 @@ public class NDSGui {
             slashSafeFolderName = slashSafeFolderName.substring(0, slashSafeFolderName.length()-1);
         }
         pathPrefix.add(0, slashSafeFolderName);
-        NodeTree.lazyInitDropdownPath(slashSafeFolderName);
+        StringBuilder builder = new StringBuilder();
+        for (int i = pathPrefix.size()-1; i >= 0; i--){
+            builder.append(pathPrefix.get(i));
+            if (i > 0)
+                builder.append("/");
+        }
+        NodeTree.lazyInitDropdownPath(builder.toString());
         return (DropdownMenuNode) NodeTree.findNode(slashSafeFolderName);
     }
 

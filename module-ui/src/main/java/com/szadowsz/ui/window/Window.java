@@ -33,7 +33,7 @@ public class Window implements UserInputSubscriber {
     public float windowSizeY; // set every frame automatically based on individual node heights
     public boolean isBeingDraggedAround;
     boolean isBeingResized;
-    private boolean isTitleHighlighted;
+    protected boolean isTitleHighlighted;
     private boolean closeButtonPressInProgress;
 
     protected int startIndex = -1;
@@ -236,7 +236,7 @@ public class Window implements UserInputSubscriber {
         pg.rect(x1, y1, endRectSize, endRectSize);
     }
 
-    private void constrainPosition(PGraphics pg) {
+    protected void constrainPosition(PGraphics pg) {
         if (!LayoutStore.getShouldKeepWindowsInBounds()) {
             return;
         }
@@ -257,11 +257,11 @@ public class Window implements UserInputSubscriber {
         }
     }
 
-    private void constrainWidth(PGraphics pg) {
+    protected void constrainWidth(PGraphics pg) {
         windowSizeY = LayoutStore.cell;
     }
 
-    private void constrainHeight(PGraphics pg) {
+    protected void constrainHeight(PGraphics pg) {
         windowSizeY = LayoutStore.cell + heightSumOfChildNodes();
         if (!LayoutStore.getShouldKeepWindowsInBounds()) {
             return;
@@ -373,6 +373,18 @@ public class Window implements UserInputSubscriber {
         return sum;
     }
 
+    protected AbstractNode tryFindChildNodeAt(float x, float y) {
+        for (AbstractNode node : folder.children) {
+            if (!node.isInlineNodeVisible()) {
+                continue;
+            }
+            if (isPointInRect(x, y, node.pos.x, node.pos.y, node.size.x, node.size.y)) {
+                System.out.println(node.name + " X: " + x + ", Y: " + y + ", nodeX: " + node.pos.x + ", nodeY: " + node.pos.y + ", sizeX: " + node.size.x + ", sizeY: " + node.size.y);
+                return node;
+            }
+        }
+        return null;
+    }
 
     @Override
     public void mouseWheelMoved(GuiMouseEvent e) {
@@ -459,19 +471,6 @@ public class Window implements UserInputSubscriber {
                 nodeUnderMouse.keyPressedOverNode(keyEvent, x, y);
             }
         }
-    }
-
-    private AbstractNode tryFindChildNodeAt(float x, float y) {
-        for (AbstractNode node : folder.children) {
-            if (!node.isInlineNodeVisible()) {
-                continue;
-            }
-            if (isPointInRect(x, y, node.pos.x, node.pos.y, node.size.x, node.size.y)) {
-                System.out.println(node.name + " X: " + x + ", Y: " + y + ", nodeX: " + node.pos.x + ", nodeY: " + node.pos.y + ", sizeX: " + node.size.x + ", sizeY: " + node.size.y);
-                return node;
-            }
-        }
-        return null;
     }
 
 
@@ -595,7 +594,7 @@ public class Window implements UserInputSubscriber {
         posY = snappedPos.y;
     }
 
-    void close() {
+    public void close() {
         closed = true;
         isBeingDraggedAround = false;
     }

@@ -200,7 +200,7 @@ public class FolderNode extends AbstractNode {
             for (AbstractNode child : children) {
                 float nameTextWidth = findTextWidthRoundedUpToWholeCells(child.name);
                 spaceForName = PApplet.max(spaceForName, nameTextWidth);
-                float valueTextWidth = 0;//findTextWidthRoundedUpToWholeCells(child.getValueAsString());
+                float valueTextWidth = findTextWidthRoundedUpToWholeCells(child.getValueAsString());
                 spaceForValue = PApplet.max(spaceForValue, valueTextWidth);
             }
             return PApplet.constrain(spaceForName + spaceForValue, minimumSpaceTotal, maximumSpaceTotal);

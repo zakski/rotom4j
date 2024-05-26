@@ -8,10 +8,13 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 
 import javax.swing.*;
+import java.util.prefs.Preferences;
 
 
 public class Processing extends PApplet {
     protected static final Logger LOGGER = LoggerFactory.getLogger(Processing.class);
+
+    public final static Preferences prefs = Preferences.userNodeForPackage(Processing.class);
 
     protected NDSGui gui;
     protected NDSGuiSettings settings;
@@ -35,9 +38,11 @@ public class Processing extends PApplet {
         surface.setResizable(true);
         surface.setLocation(100,100);
         gui = new NDSGui(this,settings);
+        gui.pushDropdown("File");
         gui.button("Test");
-        gui.pushDropdown("Test Folder");
+        gui.pushDropdown("Test Sub Dropdown");
         gui.button("Test 2");
+        gui.popFolder();
         gui.popFolder();
     }
 

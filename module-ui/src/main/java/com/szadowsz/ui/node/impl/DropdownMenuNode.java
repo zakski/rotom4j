@@ -23,10 +23,14 @@ public class DropdownMenuNode extends FolderNode {
     public void mousePressedEvent(GuiMouseEvent e) {
         isInlineNodeDragged = true;
         isMouseOverNode = true;
-        if (parent != null && parent.getLayout()== LayoutType.HORIZONAL) {
-            WindowManager.uncoverOrCreateWindow(this, true, pos.x, pos.y + cell, null);
+        if (window == null || window.closed) {
+            if (parent != null && parent.getLayout() == LayoutType.HORIZONAL) {
+                WindowManager.uncoverOrCreateTempWindow(this, true, pos.x, pos.y + cell, null);
+            } else {
+                WindowManager.uncoverOrCreateTempWindow(this, true, parent.window.posX + parent.window.windowSizeX, pos.y, null);
+            }
         } else {
-            WindowManager.uncoverOrCreateWindow(this);
+            window.close();
         }
         this.isInlineNodeDragged = false;
     }
