@@ -11,6 +11,8 @@ import com.szadowsz.ui.NDSGui;
 import com.szadowsz.ui.NDSGuiSettings;
 import com.szadowsz.ui.input.ActivateByType;
 import com.szadowsz.ui.node.impl.ButtonNode;
+import com.szadowsz.ui.node.impl.FolderNode;
+import com.szadowsz.ui.window.WindowManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -20,6 +22,8 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.prefs.Preferences;
+
+import static com.szadowsz.ui.store.LayoutStore.cell;
 
 
 public class Processing extends PApplet {
@@ -150,13 +154,29 @@ public class Processing extends PApplet {
         gui.popFolder();
     }
 
+    private void registerOpenFilesView() {
+        // Tier 1bc open
+        FolderNode loaded = gui.pushFolder("Loaded Files");
+        WindowManager.uncoverOrCreateWindow(loaded,false,cell,cell*2,null);
+        // Tier 1c close
+        gui.popFolder();
+    }
+
     private void buildFileDropdown() {
-        // Tier 0 open
+        // Tier 0a open
         gui.pushDropdown("File");
         registerNarcButton();
         register2DFileButtons();
         registerDataButtons();
-        // Tier 0 close
+        // Tier 0a close
+        gui.popFolder();
+    }
+
+    private void buildViewDropdown() {
+        // Tier 0b open
+        gui.pushDropdown("View");
+        registerOpenFilesView();
+        // Tier 0b close
         gui.popFolder();
     }
 
@@ -167,6 +187,7 @@ public class Processing extends PApplet {
         surface.setLocation(100,100);
         gui = new NDSGuiImpl(this,settings);
         buildFileDropdown();
+        buildViewDropdown();
     }
 
     @Override

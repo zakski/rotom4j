@@ -212,6 +212,7 @@ public class NDSGuiImpl extends NDSGui {
 
     public void registerNarcGUI(Narc narc) {
         LOGGER.info("Creating GUI for Narc File: " + narc.getFileName());
+        setFolder("View/Loaded Files");
         pushFolder(narc.getFileName())/*)*/;
 
         List<AbstractNode> applyNodes = registerNarcApplyNodes(narc);
@@ -219,33 +220,42 @@ public class NDSGuiImpl extends NDSGui {
 
         registerActions(narc, applyNodes,extractNodes);
         popFolder();
+        setFolder(null);
         LOGGER.info("Created GUI for Narc File: " + narc.getFileName());
     }
 
     public NSCRFolderNode registerNscrGUI(NSCR nscr) {
         LOGGER.info("Creating GUI for NSCR File: " + nscr.getFileName());
+        setFolder("View/Loaded Files");
         NSCRFolderNode imageFolderNode = scrRes(nscr.getFileName(), nscr);
         LOGGER.info("Created GUI for NSCR File: " + nscr.getFileName());
+        setFolder(null);
         return imageFolderNode;
     }
 
     public NCGRFolderNode registerNcgrGUI(NCGR ncgr) {
         LOGGER.info("Creating GUI for NCGR File: " + ncgr.getFileName());
+        setFolder("View/Loaded Files");
         NCGRFolderNode imageFolderNode = image(ncgr.getFileName(), ncgr);
+        setFolder(null);
         LOGGER.info("Created GUI for NCGR File: " + ncgr.getFileName());
         return imageFolderNode;
     }
 
     public NCLRFolderNode registerNclrGUI(NCLR nclr) {
         LOGGER.info("Creating GUI for NCLR File: " + nclr.getFileName());
+        setFolder("View/Loaded Files");
         NCLRFolderNode paletteFolderNode = palette(nclr);
+        setFolder(null);
         LOGGER.info("Created GUI for NCLR File: " + nclr.getFileName());
         return paletteFolderNode;
     }
 
     public EvoFolderNode registerEvoGUI(EvolutionNFSFile evo) {
         LOGGER.info("Creating GUI for Evolution Bin File: " + evo.getFileName());
+        setFolder("View/Loaded Files");
         EvoFolderNode paletteFolderNode = evolution(evo);
+        setFolder(null);
         LOGGER.info("Created GUI for Evolution Bin File: " + evo.getFileName());
         return paletteFolderNode;
     }

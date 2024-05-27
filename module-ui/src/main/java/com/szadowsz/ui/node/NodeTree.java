@@ -65,7 +65,7 @@ public class NodeTree {
         return null;
     }
 
-    static void lazyInitFolderPath(String path) {
+    public static void lazyInitFolderPath(String path) {
         String[] split = NodePaths.splitByUnescapedSlashes(path);
         String runningPath = split[0];
         FolderNode parentFolder = null;
@@ -99,7 +99,7 @@ public class NodeTree {
                 if (parentFolder == null) {
                     parentFolder = root;
                 }
-                n = new DropdownMenuNode(runningPath, parentFolder);
+                n = new DropdownMenuNode(path, parentFolder);
                 parentFolder.children.add(n);
                 parentFolder = (FolderNode) n;
             } else if (n.type == NodeType.FOLDER) {

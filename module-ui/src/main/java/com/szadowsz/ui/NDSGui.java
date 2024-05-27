@@ -4,6 +4,7 @@ import com.szadowsz.ui.constants.GlobalReferences;
 import com.szadowsz.ui.constants.theme.ThemeStore;
 import com.szadowsz.ui.input.InputWatcherBackend;
 import com.szadowsz.ui.node.AbstractNode;
+import com.szadowsz.ui.node.NodePaths;
 import com.szadowsz.ui.node.NodeTree;
 import com.szadowsz.ui.node.NodeType;
 import com.szadowsz.ui.node.impl.*;
@@ -339,6 +340,16 @@ public class NDSGui {
         return sb.toString();
     }
 
+    public void setFolder(String folder){
+        pathPrefix.clear();
+        if (folder != null && !folder.isEmpty()){
+            String[] split = NodePaths.splitByUnescapedSlashes(folder);
+            for (int i = split.length-1; i >=0;i--){
+                pathPrefix.add(split[i]);
+            }
+        }
+    }
+
     /**
      * Gets the value of a button control element and sets it to false.
      * Lazily initializes the button if needed.
@@ -494,7 +505,7 @@ public class NDSGui {
                 builder.append("/");
         }
         NodeTree.lazyInitDropdownPath(builder.toString());
-        return (DropdownMenuNode) findNode(slashSafeFolderName);
+        return (DropdownMenuNode) findNode(builder.toString());
     }
 
     /**
@@ -524,7 +535,14 @@ public class NDSGui {
             slashSafeFolderName = slashSafeFolderName.substring(0, slashSafeFolderName.length()-1);
         }
         pathPrefix.add(0, slashSafeFolderName);
-        return (FolderNode) findNode(slashSafeFolderName);
+        StringBuilder builder = new StringBuilder();
+        for (int i = pathPrefix.size()-1; i >= 0; i--){
+            builder.append(pathPrefix.get(i));
+            if (i > 0)
+                builder.append("/");
+        }
+        NodeTree.lazyInitFolderPath(builder.toString());
+        return (FolderNode) findNode(builder.toString());
     }
 
     /**

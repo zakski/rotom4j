@@ -8,7 +8,6 @@ import com.szadowsz.ui.input.mouse.GuiMouseEvent;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.LayoutType;
 import com.szadowsz.ui.node.NodeType;
-import com.szadowsz.ui.store.FontStore;
 import com.szadowsz.ui.store.JsonSaveStore;
 import com.szadowsz.ui.store.LayoutStore;
 import com.szadowsz.ui.window.Window;
@@ -19,7 +18,6 @@ import processing.core.PGraphics;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
-import static processing.core.PApplet.ceil;
 import static processing.core.PConstants.CENTER;
 import static processing.core.PConstants.CORNER;
 
@@ -43,11 +41,24 @@ public class FolderNode extends AbstractNode {
 
     public float idealWindowWidthInCells = LayoutStore.defaultWindowWidthInCells;
 
+    /**
+     * Construct a FolderNode with a Vertical Layout
+     *
+     * @param path folder path
+     * @param parent parent folder
+     */
     public FolderNode(String path, FolderNode parent) {
         this(path, parent, LayoutType.VERTICAL);
         JsonSaveStore.overwriteWithLoadedStateIfAny(this);
     }
 
+    /**
+     * Construct a FolderNode with a Specified Layout
+     *
+     * @param path folder path
+     * @param parent parent folder
+     * @param layout the layout to use
+     */
     public FolderNode(String path, FolderNode parent, LayoutType layout) {
         super(NodeType.FOLDER, path, parent);
         this.layout = layout;
