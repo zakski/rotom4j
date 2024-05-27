@@ -28,6 +28,35 @@ public class TempWindow extends Window {
     }
 
     @Override
+    protected void constrainHeight(PGraphics pg) {
+        windowSizeY = heightSumOfChildNodes();
+        if (!LayoutStore.getShouldKeepWindowsInBounds()) {
+            return;
+        }
+        if (posY + windowSizeY > pg.height) {
+            float sum = 0;
+            int index = Math.max(startIndex, 0);
+            while (index < folder.children.size()) {
+                AbstractNode child = folder.children.get(index);
+                if (!child.isInlineNodeVisible()) {
+                    continue;
+                }
+                if (sum + child.masterInlineNodeHeightInCells * LayoutStore.cell > pg.height - posY) {
+                    index -= 1;
+                    break;
+                }
+                sum += child.masterInlineNodeHeightInCells * LayoutStore.cell;
+                index++;
+            }
+            if (startIndex < 0) {
+                startIndex = 0;
+            }
+            windowSizeY = sum;
+            endIndex = index;
+        }
+    }
+
+    @Override
     boolean isPointInsideResizeBorder(float x, float y) {
         return false;
     }
@@ -39,8 +68,8 @@ public class TempWindow extends Window {
     public boolean isInChildWindow(float x, float y){
         return folder.children.stream().filter(n -> n instanceof FolderNode)
                 .map(n -> (FolderNode) n)
-                .anyMatch(n -> n.window.isPointInsideWindow(x,y) ||
-                        ((n.window instanceof TempWindow) && ((TempWindow) n.window).isInChildWindow(x, y)));
+                .anyMatch(n -> n.window != null && (n.window.isPointInsideWindow(x,y) ||
+                        ((n.window instanceof TempWindow) && ((TempWindow) n.window).isInChildWindow(x, y))));
     }
 
     @Override
@@ -60,6 +89,50 @@ public class TempWindow extends Window {
                 close();
             }
         }
+    }
+
+    @Override
+    protected AbstractNode tryFindChildNodeAt(float x, float y) {
+        for (AbstractNode node : folder.children) {
+            if (!node.isInlineNodeVisible()) {
+                continue;
+            }
+            if (isPointInRect(x, y, node.pos.x, node.pos.y, node.size.x, node.size.y)) {
+                System.out.println(node.name + " X: " + x + ", Y: " + y + ", nodeX: " + node.pos.x + ", nodeY: " + node.pos.y + ", sizeX: " + node.size.x + ", sizeY: " + node.size.y);
+                return node;
+            }
+        }
+        return null;
+    }
+
+    protected void drawInlineFolderChildrenVertically(PGraphics pg) {
+        pg.pushMatrix();
+        pg.translate(posX, posY);
+        float y = 0;
+        for (int i = Math.max(startIndex, 0); (endIndex < 0 || i < endIndex) && i < folder.children.size(); i++) {
+            AbstractNode node = folder.children.get(i);
+            if (!node.isInlineNodeVisible()) {
+                continue;
+            }
+            float nodeHeight = LayoutStore.cell * node.masterInlineNodeHeightInCells;
+            node.updateInlineNodeCoordinates(posX, posY + y, windowSizeX, nodeHeight);
+            pg.pushMatrix();
+            pg.pushStyle();
+            node.updateDrawInlineNode(pg);
+            pg.popStyle();
+            pg.popMatrix();
+
+            if (i > 0) {
+                // separator
+                pg.pushStyle();
+                drawHorizontalSeparator(pg);
+                pg.popStyle();
+            }
+
+            y += nodeHeight;
+            pg.translate(0, nodeHeight);
+        }
+        pg.popMatrix();
     }
 
     @Override

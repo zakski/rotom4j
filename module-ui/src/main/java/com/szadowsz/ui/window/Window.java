@@ -289,7 +289,7 @@ public class Window implements UserInputSubscriber {
         }
     }
 
-    private void drawInlineFolderChildrenVertically(PGraphics pg) {
+    protected void drawInlineFolderChildrenVertically(PGraphics pg) {
         pg.pushMatrix();
         pg.translate(posX, posY);
         pg.translate(0, LayoutStore.cell);
@@ -351,7 +351,7 @@ public class Window implements UserInputSubscriber {
         pg.popMatrix();
     }
 
-    private void drawHorizontalSeparator(PGraphics pg) {
+    protected void drawHorizontalSeparator(PGraphics pg) {
         boolean show = LayoutStore.isShowHorizontalSeparators();
         float weight = LayoutStore.getHorizontalSeparatorStrokeWeight();
         if (show) {
@@ -362,7 +362,7 @@ public class Window implements UserInputSubscriber {
         }
     }
 
-    private float heightSumOfChildNodes() {
+    protected float heightSumOfChildNodes() {
         float sum = 0;
         for (AbstractNode child : folder.children) {
             if (!child.isInlineNodeVisible()) {

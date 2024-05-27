@@ -6,9 +6,7 @@ import com.szadowsz.ui.input.InputWatcherBackend;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeTree;
 import com.szadowsz.ui.node.NodeType;
-import com.szadowsz.ui.node.impl.ButtonNode;
-import com.szadowsz.ui.node.impl.DropdownMenuNode;
-import com.szadowsz.ui.node.impl.FolderNode;
+import com.szadowsz.ui.node.impl.*;
 import com.szadowsz.ui.store.*;
 import com.szadowsz.ui.utils.ContextLines;
 import com.szadowsz.ui.window.SnapToGrid;
@@ -25,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.szadowsz.ui.constants.GlobalReferences.app;
+import static com.szadowsz.ui.node.NodeTree.*;
 import static processing.core.PApplet.println;
 import static processing.core.PApplet.tan;
 import static processing.core.PConstants.*;
@@ -349,18 +348,118 @@ public class NDSGui {
      */
     public ButtonNode button(String path) {
         String fullPath = getFolder() + path;
-        if(NodeTree.isPathTakenByUnexpectedType(fullPath, ButtonNode.class)){
+        if(isPathTakenByUnexpectedType(fullPath, ButtonNode.class)){
             return null;
         }
-        ButtonNode node = (ButtonNode) NodeTree.findNode(fullPath);
+        ButtonNode node = (ButtonNode) findNode(fullPath);
         if (node == null) {
             FolderNode folder = NodeTree.findParentFolderLazyInitPath(fullPath);
             node = new ButtonNode(fullPath, folder);
-            NodeTree.insertNodeAtItsPath(node);
+            insertNodeAtItsPath(node);
         }
         return node;
     }
 
+    /**
+     * Gets the currently selected string from a list of options in a gui control element.
+     * Lazily initializes the radio element if needed - any later changes in the options parameter will be ignored.
+     * Sets the default value to the first value in the list.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param options list of options to display
+     * @return currently selected string
+     */
+    public RadioFolderNode radio(String path, List<String> options) {
+        return radio(path, options.toArray(new String[0]), null);
+    }
+
+    /**
+     * Gets the currently selected string from a list of options in a gui control element.
+     * Lazily initializes the radio element if needed - any later changes in the options parameter will be ignored.
+     * Sets the default value to the specified parameter value, which must be contained in the options list, or it will be ignored.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param options list of options to display
+     * @param defaultOption default option to select, which must also be found in the options, or it will be ignored
+     * @return currently selected string
+     */
+    public RadioFolderNode radio(String path, List<String> options, String defaultOption) {
+        return radio(path, options.toArray(new String[0]), defaultOption);
+    }
+
+    /**
+     * Gets the currently selected string from an array of options in a gui control element.
+     * Lazily initializes the radio element if needed - any later changes in the options parameter will be ignored.
+     * Sets the default value to the specified parameter value, which must be contained in the options array, or it will be ignored.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param options list of options to display
+     * @return currently selected string
+     */
+    public RadioFolderNode radio(String path, String[] options) {
+        return radio(path, options, null);
+    }
+
+    /**
+     * Gets the currently selected string from an array of options in a gui control element.
+     * Lazily initializes the radio element if needed - any later changes in the options parameter will be ignored.
+     * Sets the default value to the specified parameter value, which must be contained in the options array, or it will be ignored.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param options list of options to display
+     * @param defaultOption default option to select, must also be found in options, or it is ignored
+     * @return currently selected string
+     */
+    public RadioFolderNode radio(String path, String[] options, String defaultOption) {
+        String fullPath = getFolder() + path;
+        if(isPathTakenByUnexpectedType(fullPath, RadioFolderNode.class)){
+            return null;//defaultOption == null ? options[0] : defaultOption;
+        }
+        RadioFolderNode node = (RadioFolderNode) findNode(fullPath);
+        if (node == null) {
+            FolderNode parentFolder = NodeTree.findParentFolderLazyInitPath(fullPath);
+            node = new RadioFolderNode(fullPath, parentFolder, options, defaultOption);
+            insertNodeAtItsPath(node);
+        }
+        return node;
+    }
+
+    /**
+     * Gets the current value of a text input element.
+     * Lazily initializes the text input element if needed with its content set to an empty string.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @return current value of a string input element
+     */
+    public TextNode text(String path){
+        return text(path, "");
+    }
+
+    /**
+     * Gets the current value of an editable text field element.
+     * Lazily initializes the string input if needed with the specified default.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param content default value for the text content
+     * @return current value of a string input element
+     */
+    public TextNode text(String path, String content){
+        return getTextNodeValue(path, content);
+    }
+
+    private TextNode getTextNodeValue(String path, String content){
+        String fullPath = getFolder() + path;
+        if(isPathTakenByUnexpectedType(fullPath, TextNode.class)){
+            return null;
+        }
+        TextNode node = (TextNode) findNode(fullPath);
+        if (node == null) {
+            FolderNode folder = NodeTree.findParentFolderLazyInitPath(fullPath);
+            node = new TextNode(fullPath, folder, content);
+            insertNodeAtItsPath(node);
+        }
+        return node;
+    }
     /**
      * Pushes a folder name to the global path prefix stack.
      * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
@@ -395,7 +494,7 @@ public class NDSGui {
                 builder.append("/");
         }
         NodeTree.lazyInitDropdownPath(builder.toString());
-        return (DropdownMenuNode) NodeTree.findNode(slashSafeFolderName);
+        return (DropdownMenuNode) findNode(slashSafeFolderName);
     }
 
     /**
@@ -425,7 +524,7 @@ public class NDSGui {
             slashSafeFolderName = slashSafeFolderName.substring(0, slashSafeFolderName.length()-1);
         }
         pathPrefix.add(0, slashSafeFolderName);
-        return (FolderNode) NodeTree.findNode(slashSafeFolderName);
+        return (FolderNode) findNode(slashSafeFolderName);
     }
 
     /**

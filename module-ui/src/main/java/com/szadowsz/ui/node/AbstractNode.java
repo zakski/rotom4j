@@ -112,6 +112,21 @@ public abstract class AbstractNode implements MouseInteractable {
         pg.text(text,size.x - FontStore.textMarginX,size.y - FontStore.textMarginY);
     }
 
+
+
+    protected void drawRightTextToNotOverflowLeftText(PGraphics pg, String rightText, String leftText, boolean fillBackground) {
+        pg.textAlign(RIGHT, CENTER);
+        String trimmedTextLeft = FontStore.getSubstringFromStartToFit(pg, leftText, size.x - FontStore.textMarginX);
+        float leftOffset = pg.textWidth(trimmedTextLeft)+(FontStore.textMarginX*2);
+        String trimmedRightText = FontStore.getSubstringFromStartToFit(pg, rightText, size.x - FontStore.textMarginX -leftOffset);
+        if(fillBackground){
+            float w = pg.textWidth(trimmedRightText) + FontStore.textMarginX * 2;
+            drawRightBackdrop(pg, w);
+        }
+        pg.text(trimmedRightText,size.x - FontStore.textMarginX,size.y - FontStore.textMarginY);
+    }
+
+
     /**
      * Draw the backdrop to the right
      *
