@@ -4,5 +4,6 @@ public enum BinFormat {
 
     UNSPECIFIED,
     PLACEHOLDER,
-    EVOLUTION
+    EVOLUTION,
+    PERSONAL
 }

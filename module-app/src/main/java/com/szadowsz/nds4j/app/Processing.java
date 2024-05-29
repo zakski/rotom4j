@@ -3,6 +3,7 @@ package com.szadowsz.nds4j.app;
 import com.szadowsz.nds4j.app.managers.*;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
+import com.szadowsz.nds4j.file.bin.StatsNFSFile;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
 import com.szadowsz.nds4j.file.nitro.NSCR;
@@ -40,6 +41,7 @@ public class Processing extends PApplet {
     final static String selectNCLRFile = "Open NClR File";
 
     final static String selectEvoFile = "Open Evo File";
+    final static String selectStatsFile = "Open Personal File";
 
     private void setLookAndFeel() {
         try {
@@ -127,6 +129,21 @@ public class Processing extends PApplet {
         }
     }
 
+    private void createStatsUI() {
+        String lastPath = prefs.get("openNarcPath", System.getProperty("user.dir"));
+        String statsPath = FileChooser.selectBinFile(gui.getGuiCanvas().parent, lastPath,selectStatsFile);
+        if (statsPath != null) {
+            prefs.put("openNarcPath", new File(statsPath).getParentFile().getAbsolutePath());
+            try {
+                LOGGER.info("Loading Personal Bin File: " + statsPath);
+                StatsFileManager.getInstance().registerPersonal(gui, StatsNFSFile.fromFile(statsPath));
+                LOGGER.info("Loaded Personal Bin File: " + statsPath);
+            } catch (IOException e) {
+                LOGGER.error("Evolution Bin Load Failed",e);
+            }
+        }
+    }
+
     private void registerNarcButton() {
         ButtonNode selectNarc = gui.button(selectNarcFile);
         selectNarc.registerAction(ActivateByType.RELEASE, this::createNarcUI);
@@ -150,6 +167,8 @@ public class Processing extends PApplet {
         gui.pushDropdown("Open Data File");
         ButtonNode selectEvo = gui.button(selectEvoFile);
         selectEvo.registerAction(ActivateByType.RELEASE, this::createEvoUI);
+        ButtonNode selectStats = gui.button(selectStatsFile);
+        selectStats.registerAction(ActivateByType.RELEASE, this::createStatsUI);
         // Tier 1b close
         gui.popFolder();
     }

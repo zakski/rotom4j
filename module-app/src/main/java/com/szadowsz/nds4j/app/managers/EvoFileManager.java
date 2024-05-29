@@ -3,7 +3,6 @@ package com.szadowsz.nds4j.app.managers;
 
 import com.szadowsz.nds4j.app.NDSGuiImpl;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
-import com.szadowsz.ui.NDSGui;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +28,7 @@ public class EvoFileManager {
 
     public EvolutionNFSFile registerEvo(NDSGuiImpl gui, EvolutionNFSFile evo) {
         if (!evoFileMap.containsKey(evo.getFileName())) {
-            LOGGER.info("Registering GUI for NCGR File: " + evo.getFileName());
+            LOGGER.info("Registering GUI for Evolution File: " + evo.getFileName());
             evoFileMap.put(evo.getFileName(), evo);
             gui.registerEvoGUI(evo);
         }

@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 
-import static com.szadowsz.nds4j.data.evo.EvoMethod.*;
 import static com.szadowsz.ui.store.LayoutStore.cell;
 
 

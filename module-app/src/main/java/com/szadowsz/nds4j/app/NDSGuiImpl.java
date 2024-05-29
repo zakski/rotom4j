@@ -1,11 +1,13 @@
 package com.szadowsz.nds4j.app;
 
 import com.szadowsz.nds4j.app.nodes.bin.evo.EvoFolderNode;
+import com.szadowsz.nds4j.app.nodes.bin.stats.StatsFolderNode;
 import com.szadowsz.nds4j.app.nodes.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nscr.NSCRFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
+import com.szadowsz.nds4j.file.bin.StatsNFSFile;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
 import com.szadowsz.nds4j.file.nitro.NSCR;
@@ -67,6 +69,7 @@ public class NDSGuiImpl extends NDSGui {
         }
         return node;
     }
+
     public NCLRFolderNode palette(NCLR nclr) {
         String fullPath = getFolder() + nclr.getFileName();
         if(isPathTakenByUnexpectedType(fullPath, NCLRFolderNode.class)){
@@ -76,6 +79,20 @@ public class NDSGuiImpl extends NDSGui {
         if (node == null) {
             FolderNode folder = NodeTree.findParentFolderLazyInitPath(fullPath);
             node = new NCLRFolderNode(fullPath, folder, nclr);
+            insertNodeAtItsPath(node);
+        }
+        return node;
+    }
+
+    public StatsFolderNode personal(StatsNFSFile stats) {
+        String fullPath = getFolder() + stats.getFileName();
+        if(isPathTakenByUnexpectedType(fullPath, NCLRFolderNode.class)){
+            return null;
+        }
+        StatsFolderNode node = (StatsFolderNode) findNode(fullPath);
+        if (node == null) {
+            FolderNode folder = NodeTree.findParentFolderLazyInitPath(fullPath);
+            node = new StatsFolderNode(fullPath, folder, stats);
             insertNodeAtItsPath(node);
         }
         return node;
@@ -257,6 +274,15 @@ public class NDSGuiImpl extends NDSGui {
         EvoFolderNode paletteFolderNode = evolution(evo);
         setFolder(null);
         LOGGER.info("Created GUI for Evolution Bin File: " + evo.getFileName());
+        return paletteFolderNode;
+    }
+
+    public StatsFolderNode registerStatsGUI(StatsNFSFile stats) {
+        LOGGER.info("Creating GUI for Personal Bin File: " + stats.getFileName());
+        setFolder("View/Loaded Files");
+        StatsFolderNode paletteFolderNode = personal(stats);
+        setFolder(null);
+        LOGGER.info("Created GUI for Personal Bin File: " + stats.getFileName());
         return paletteFolderNode;
     }
 }
