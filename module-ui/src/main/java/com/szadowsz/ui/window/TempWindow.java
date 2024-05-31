@@ -98,7 +98,6 @@ public class TempWindow extends Window {
                 continue;
             }
             if (isPointInRect(x, y, node.pos.x, node.pos.y, node.size.x, node.size.y)) {
-                System.out.println(node.name + " X: " + x + ", Y: " + y + ", nodeX: " + node.pos.x + ", nodeY: " + node.pos.y + ", sizeX: " + node.size.x + ", sizeY: " + node.size.y);
                 return node;
             }
         }
