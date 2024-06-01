@@ -5,8 +5,6 @@ import com.szadowsz.ui.constants.theme.ThemeColorType;
 import com.szadowsz.ui.constants.theme.ThemeStore;
 import com.szadowsz.ui.input.UserInputSubscriber;
 import com.szadowsz.ui.input.mouse.GuiMouseEvent;
-import com.szadowsz.ui.node.g4p.G4P;
-import com.szadowsz.ui.node.g4p.GEvent;
 import processing.awt.PGraphicsJava2D;
 import processing.core.PApplet;
 import processing.core.PGraphics;
@@ -17,18 +15,16 @@ public class Scrollbar implements UserInputSubscriber {
     private static final float CORNER_RADIUS = 6;
     private static final int TRACK = 5;
 
-    protected float value = 0.2f;
+    protected float value = 0.0f;
     protected float filler = .5f;
 
     /**
      * Whether to show background or not
      */
-    protected boolean opaque = false;
     protected boolean autoHide = true;
 
     /* Is the scrollbar visible or not */
     protected boolean visible = true;
-    protected boolean isMouseOverNode = false;
     protected boolean isValueChanging = false;
     protected boolean dragging = false;
 
@@ -36,6 +32,10 @@ public class Scrollbar implements UserInputSubscriber {
     protected PGraphics buffer = null;
     protected boolean bufferInvalid = true;
     protected int currSpot = -1;
+    private float last_ox;
+    private float last_oy;
+    private float oldFactor;
+    private float height;
 
     /**
      * Create the scroll bar
@@ -107,37 +107,22 @@ public class Scrollbar implements UserInputSubscriber {
         bufferInvalid = true;
     }
 
-    public void setIsMouseOverThisNodeOnly(){
-        isMouseOverNode = true;
-    }
-
-    protected void updateBuffer(float windowSizeY) {
-        if (bufferInvalid) {
-            if (buffer == null) {
-                buffer = (PGraphicsJava2D) GlobalReferences.app.createGraphics((int) cell, (int) windowSizeY, PApplet.JAVA2D);
-                buffer.rectMode(PApplet.CORNER);
-                buffer.beginDraw();
-                buffer.endDraw();
-            }
-
+    protected void updateBuffer(float windowSizeY, float windowHeight, boolean isScrollbarHighlighted) {
+        float factor = windowSizeY / windowHeight;
+        if (oldFactor != factor || bufferInvalid) {
+            buffer = (PGraphicsJava2D) GlobalReferences.app.createGraphics((int) cell, (int) windowSizeY, PApplet.JAVA2D);
+            buffer.rectMode(PApplet.CORNER);
+            buffer.beginDraw();
+            buffer.endDraw();
+            oldFactor = factor;
+            height = windowSizeY;
             bufferInvalid = false;
             buffer.beginDraw();
-            if (opaque) {
-                buffer.background(buffer.color(255, 0));
-                if (isMouseOverNode){
-                    buffer.fill(ThemeStore.getColor(ThemeColorType.FOCUS_BACKGROUND));
-                } else {
-                    buffer.fill(ThemeStore.getColor(ThemeColorType.NORMAL_BACKGROUND));
-                }
-                buffer.noStroke();
-                buffer.rect(8, 0, cell - 16, windowSizeY);
-            } else
-                buffer.background(buffer.color(255, 0));
             // Draw the track
-            if (isMouseOverNode){
-                buffer.fill(ThemeStore.getColor(ThemeColorType.FOCUS_FOREGROUND));
+            if (isScrollbarHighlighted) {
+                buffer.fill(ThemeStore.getColor(ThemeColorType.FOCUS_BACKGROUND));
             } else {
-                buffer.fill(ThemeStore.getColor(ThemeColorType.NORMAL_FOREGROUND));
+                buffer.fill(ThemeStore.getColor(ThemeColorType.NORMAL_BACKGROUND));
             }
             buffer.noStroke();
             buffer.rect(8, 3, cell - 8, windowSizeY - 5);
@@ -146,28 +131,14 @@ public class Scrollbar implements UserInputSubscriber {
             buffer.strokeWeight(1);
             buffer.stroke(3);
 
-            // Draw the low cap
-            if (currSpot == 1)
-                buffer.fill(ThemeStore.getColor(ThemeColorType.FOCUS_FOREGROUND));
-            else
-                buffer.fill(ThemeStore.getColor(ThemeColorType.NORMAL_FOREGROUND));
-            buffer.rect(1, 1, 15, windowSizeY - 2, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS);
-
-            // Draw the high cap
-            if (currSpot == 2)
-                buffer.fill(ThemeStore.getColor(ThemeColorType.FOCUS_FOREGROUND));
-            else
-                buffer.fill(ThemeStore.getColor(ThemeColorType.NORMAL_FOREGROUND));
-            buffer.rect(cell - 15, 1, 14.5f, windowSizeY - 2, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS);
-
             // draw thumb
-            float thumbWidth = (cell - 32) * filler;
-            buffer.translate((cell - 32) * value + 16, 0);
+            float thumbHeight = windowSizeY * oldFactor;
+            buffer.translate(0, windowSizeY * value);
             if (currSpot == 10)
                 buffer.fill(ThemeStore.getColor(ThemeColorType.FOCUS_FOREGROUND));
             else
                 buffer.fill(ThemeStore.getColor(ThemeColorType.NORMAL_FOREGROUND));
-            buffer.rect(1, 1, thumbWidth - 1, windowSizeY - 2, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS);
+            buffer.rect(8, 1, cell - 8, thumbHeight - 2, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS, CORNER_RADIUS);
 
             buffer.endDraw();
         }
@@ -183,11 +154,9 @@ public class Scrollbar implements UserInputSubscriber {
         if (!visible)
             return;
 
-//        if (currSpot >= 0 && z > focusObjectZ()) {
-//            dragging = false;
-//            last_ox = ox;
-//            last_oy = oy;
-//        }
+        dragging = false;
+        last_ox = e.getX();
+        last_oy = e.getY();
     }
 
     @Override
@@ -206,14 +175,14 @@ public class Scrollbar implements UserInputSubscriber {
         if (!visible)
             return;
 //        if (spot == 10) {
-//            float movement = ox - last_ox;
-//            last_ox = ox;
-//            float deltaV = movement / (width - 32);
-//            value += deltaV;
-//            value = PApplet.constrain(value, 0, 1.0f - filler);
-//            isValueChanging = true;
-//            bufferInvalid = true;
-//            dragging = true;
+        float movement = e.getY() - last_oy;
+        last_ox = e.getY();
+        float deltaV = movement / (height - 32);
+        value += deltaV;
+        value = PApplet.constrain(value, 0, 1.0f - filler);
+        isValueChanging = true;
+        bufferInvalid = true;
+        dragging = true;
 //        }
     }
 
@@ -261,13 +230,17 @@ public class Scrollbar implements UserInputSubscriber {
 //        }
     }
 
-    public void draw(PGraphics pg, float posX, float posY, float windowSizeX, float windowSizeY) {
+    public void draw(PGraphics pg, float posX, float posY, float windowSizeX, float windowSizeY, float windowHeight, boolean isScrollbarHighlighted) {
         if (!visible)
             return;
         pg.pushMatrix();
-        updateBuffer(windowSizeY);
+        updateBuffer(windowSizeY, windowHeight, isScrollbarHighlighted);
         pg.translate(posX + windowSizeX, posY);
         pg.image(buffer, 0, 0);
         pg.popMatrix();
+    }
+
+    public void invalidateBuffer() {
+        bufferInvalid=true;
     }
 }

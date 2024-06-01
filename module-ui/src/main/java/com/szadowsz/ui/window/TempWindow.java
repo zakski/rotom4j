@@ -84,9 +84,11 @@ public class TempWindow extends Window {
                 e.setConsumed(true);
             }
         } else {
-            NodeTree.setAllNodesMouseOverToFalse();
-            if (!isInParentWindow(e.getX(),e.getY()) && !isInChildWindow(e.getX(),e.getY())) {
-                close();
+            if (!isPointInRect(e.getX(),e.getY(),posX-5,posY-5,windowSizeX+10,windowSizeY+10)) {
+                NodeTree.setAllNodesMouseOverToFalse();
+                if (!isInParentWindow(e.getX(), e.getY()) && !isInChildWindow(e.getX(), e.getY())) {
+                    close();
+                }
             }
         }
     }
