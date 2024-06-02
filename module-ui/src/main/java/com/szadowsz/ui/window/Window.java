@@ -31,19 +31,22 @@ public class Window implements UserInputSubscriber {
 
     public float posX;
     public float posY;
-    public boolean closed = false;
+
     public float windowSizeX; // can be resized by user
     public float windowSizeXForContents;
     public float windowSizeY; // set every frame automatically based on individual node heights
     public float windowSizeYUnconstrained; // set every frame automatically based on individual node heights
+
+    public boolean closed = false;
+    private boolean closeButtonPressInProgress;
     public boolean isBeingDraggedAround;
     boolean isBeingResized;
     protected boolean isTitleHighlighted;
     protected boolean isScrollbarHighlighted;
-    private boolean closeButtonPressInProgress;
 
     protected int startIndex = -1;
     protected int endIndex = -1;
+    protected PGraphics contentBuffer = null;
 
     public Window(FolderNode folder, float posX, float posY, Float nullableSizeX) {
         this.posX = posX;
@@ -62,7 +65,7 @@ public class Window implements UserInputSubscriber {
         }
         windowSizeXForContents = windowSizeX;
 
-        if (folder.getLayout()== LayoutType.VERTICAL){
+        if (folder.getLayout() == LayoutType.VERTICAL) {
             vsb = new Scrollbar(GlobalReferences.app);
             vsb.setAutoHide(true);
             vsb.setVisible(false);
@@ -86,7 +89,7 @@ public class Window implements UserInputSubscriber {
         drawBackgroundWithWindowBorder(pg, true);
         drawPathTooltipOnHighlight(pg);
         if (vsb != null) {
-            vsb.draw(pg, posX, posY+cell, windowSizeXForContents, windowSizeY-cell,windowSizeYUnconstrained-cell,isScrollbarHighlighted);
+            vsb.draw(pg, posX, posY + cell, windowSizeXForContents, windowSizeY - cell, windowSizeYUnconstrained - cell, isScrollbarHighlighted);
         }
         drawContent(pg);
         drawBackgroundWithWindowBorder(pg, false);
@@ -181,10 +184,12 @@ public class Window implements UserInputSubscriber {
     }
 
     protected void drawContent(PGraphics pg) {
-        if (folder.getLayout() == LayoutType.VERTICAL) {
-            drawInlineFolderChildrenVertically(pg);
-        } else {
-            drawInlineFolderChildrenHorizontally(pg);
+        if (!folder.children.isEmpty()) {
+            if (folder.getLayout() == LayoutType.VERTICAL) {
+                drawInlineFolderChildrenVertically(pg);
+            } else {
+                drawInlineFolderChildrenHorizontally(pg);
+            }
         }
     }
 
@@ -280,11 +285,11 @@ public class Window implements UserInputSubscriber {
 
     protected void constrainHeight(PGraphics pg) {
         windowSizeY = cell + heightSumOfChildNodes();
+        windowSizeYUnconstrained = windowSizeY;
         if (!LayoutStore.getShouldKeepWindowsInBounds()) {
             return;
         }
-        if (posY + windowSizeY > pg.height*0.9) {
-            windowSizeYUnconstrained = windowSizeY;
+        if (posY + windowSizeY > pg.height * 0.9) {
             float sum = cell;
             int index = Math.max(startIndex, 0);
             while (index < folder.children.size()) {
@@ -292,7 +297,7 @@ public class Window implements UserInputSubscriber {
                 if (!child.isInlineNodeVisible()) {
                     continue;
                 }
-                if (posY + sum + child.masterInlineNodeHeightInCells * cell > pg.height*0.9) {
+                if (posY + sum + child.masterInlineNodeHeightInCells * cell > pg.height * 0.9) {
                     index -= 1;
                     break;
                 }
@@ -313,35 +318,76 @@ public class Window implements UserInputSubscriber {
     }
 
     protected void drawInlineFolderChildrenVertically(PGraphics pg) {
-        pg.pushMatrix();
-        pg.translate(posX, posY);
-        pg.translate(0, cell);
+        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained - cell), PApplet.JAVA2D);
         float y = cell;
-        for (int i = Math.max(startIndex, 0); (endIndex < 0 || i < endIndex) && i < folder.children.size(); i++) {
+        contentBuffer.beginDraw();
+        contentBuffer.textFont(FontStore.getMainFont());
+        contentBuffer.textAlign(LEFT, CENTER);
+        for (int i = 0; i < folder.children.size(); i++) {
             AbstractNode node = folder.children.get(i);
             if (!node.isInlineNodeVisible()) {
                 continue;
             }
             float nodeHeight = cell * node.masterInlineNodeHeightInCells;
             node.updateInlineNodeCoordinates(posX, posY + y, windowSizeXForContents, nodeHeight);
-            pg.pushMatrix();
-            pg.pushStyle();
-            node.updateDrawInlineNode(pg);
-            pg.popStyle();
-            pg.popMatrix();
-
+            contentBuffer.pushMatrix();
+            contentBuffer.pushStyle();
+            node.updateDrawInlineNode(contentBuffer);
+            contentBuffer.popStyle();
+            contentBuffer.popMatrix();
             if (i > 0) {
                 // separator
-                pg.pushStyle();
-                drawHorizontalSeparator(pg);
-                pg.popStyle();
+                contentBuffer.pushStyle();
+                drawHorizontalSeparator(contentBuffer);
+                contentBuffer.popStyle();
             }
-
             y += nodeHeight;
-            pg.translate(0, nodeHeight);
+            contentBuffer.translate(0, nodeHeight);
+        }
+        contentBuffer.endDraw();
+
+        pg.pushMatrix();
+        pg.translate(posX, posY);
+        pg.translate(0, cell);
+        if (vsb != null) {
+            float yDiff = windowSizeYUnconstrained - windowSizeY;
+            pg.image(contentBuffer.get(0,round(yDiff*vsb.value), (int) windowSizeXForContents, (int) (windowSizeY-cell)), 0, 0);
+        } else {
+            pg.image(contentBuffer, 0, 0);
         }
         pg.popMatrix();
     }
+
+//    protected void drawInlineFolderChildrenVertically(PGraphics pg) {
+//        pg.pushMatrix();
+//        pg.translate(posX, posY);
+//        pg.translate(0, cell);
+//        float y = cell;
+//        for (int i = Math.max(startIndex, 0); (endIndex < 0 || i < endIndex) && i < folder.children.size(); i++) {
+//            AbstractNode node = folder.children.get(i);
+//            if (!node.isInlineNodeVisible()) {
+//                continue;
+//            }
+//            float nodeHeight = cell * node.masterInlineNodeHeightInCells;
+//            node.updateInlineNodeCoordinates(posX, posY + y, windowSizeXForContents, nodeHeight);
+//            pg.pushMatrix();
+//            pg.pushStyle();
+//            node.updateDrawInlineNode(pg);
+//            pg.popStyle();
+//            pg.popMatrix();
+//
+//            if (i > 0) {
+//                // separator
+//                pg.pushStyle();
+//                drawHorizontalSeparator(pg);
+//                pg.popStyle();
+//            }
+//
+//            y += nodeHeight;
+//            pg.translate(0, nodeHeight);
+//        }
+//        pg.popMatrix();
+//    }
 
     private void drawInlineFolderChildrenHorizontally(PGraphics pg) {
         pg.pushMatrix();
@@ -485,7 +531,7 @@ public class Window implements UserInputSubscriber {
         if (!closed && folder.isInlineNodeVisibleParentAware() && isPointInsideTitleBar(e.getX(), e.getY())) {
             e.setConsumed(true);
             folder.setIsMouseOverThisNodeOnly();
-        } else if (!closed && folder.isInlineNodeVisibleParentAware() && isPointInsideScrollbar(e.getX(),e.getY())) {
+        } else if (!closed && folder.isInlineNodeVisibleParentAware() && isPointInsideScrollbar(e.getX(), e.getY())) {
             e.setConsumed(true);
             folder.setIsMouseOverThisNodeOnly();
         } else if (isPointInsideContent(e.getX(), e.getY()) && !isPointInsideResizeBorder(e.getX(), e.getY())) {
@@ -517,7 +563,8 @@ public class Window implements UserInputSubscriber {
             if (vsb == null) {
                 windowSizeXForContents = windowSizeX;
             } else {
-                windowSizeXForContents = windowSizeX+cell;
+                windowSizeXForContents = windowSizeX;
+                windowSizeX = windowSizeXForContents + cell;
             }
             vsb.invalidateBuffer();
             e.setConsumed(true);
@@ -644,10 +691,10 @@ public class Window implements UserInputSubscriber {
     }
 
     boolean isPointInsideScrollbar(float x, float y) {
-        if (vsb == null || !vsb.visible){
+        if (vsb == null || !vsb.visible) {
             return false;
         }
-        return isPointInRect(x,y,posX+windowSizeXForContents,posY+cell,cell,windowSizeY-cell);
+        return isPointInRect(x, y, posX + windowSizeXForContents, posY + cell, cell, windowSizeY - cell);
     }
 
 

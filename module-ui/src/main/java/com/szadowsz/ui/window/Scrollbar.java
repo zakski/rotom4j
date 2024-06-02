@@ -10,10 +10,10 @@ import processing.core.PApplet;
 import processing.core.PGraphics;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
+import static com.szadowsz.ui.window.Window.isPointInRect;
 
 public class Scrollbar implements UserInputSubscriber {
     private static final float CORNER_RADIUS = 6;
-    private static final int TRACK = 5;
 
     protected float value = 0.0f;
     protected float filler = .5f;
@@ -26,16 +26,23 @@ public class Scrollbar implements UserInputSubscriber {
     /* Is the scrollbar visible or not */
     protected boolean visible = true;
     protected boolean isValueChanging = false;
-    protected boolean dragging = false;
 
     // Scrollbar has an image buffer which is only redrawn if it has been invalidated
     protected PGraphics buffer = null;
     protected boolean bufferInvalid = true;
-    protected int currSpot = -1;
-    private float last_ox;
-    private float last_oy;
-    private float oldFactor;
+
+    private float posX;
+    private float posY;
+    private float thumbHeight;
     private float height;
+    private float factor;
+
+    protected boolean dragging = false;
+    private float lastY;
+
+    protected float minReal;
+    protected float maxReal;
+    private float unit;
 
     /**
      * Create the scroll bar
@@ -107,15 +114,22 @@ public class Scrollbar implements UserInputSubscriber {
         bufferInvalid = true;
     }
 
-    protected void updateBuffer(float windowSizeY, float windowHeight, boolean isScrollbarHighlighted) {
+    protected void updateBuffer(float posX, float posY, float windowSizeY, float windowHeight, boolean isScrollbarHighlighted) {
+        this.posX = posX;
+        this.posY = posY;
         float factor = windowSizeY / windowHeight;
-        if (oldFactor != factor || bufferInvalid) {
+        if (this.factor != factor || bufferInvalid) {
+            this.factor = factor;
+            height = windowSizeY;
+            thumbHeight = windowSizeY * this.factor;
+            minReal = posY;
+            maxReal = minReal + windowSizeY - thumbHeight;
+            unit = 1/ (windowSizeY - thumbHeight );
+
             buffer = (PGraphicsJava2D) GlobalReferences.app.createGraphics((int) cell, (int) windowSizeY, PApplet.JAVA2D);
             buffer.rectMode(PApplet.CORNER);
             buffer.beginDraw();
             buffer.endDraw();
-            oldFactor = factor;
-            height = windowSizeY;
             bufferInvalid = false;
             buffer.beginDraw();
             // Draw the track
@@ -132,9 +146,8 @@ public class Scrollbar implements UserInputSubscriber {
             buffer.stroke(3);
 
             // draw thumb
-            float thumbHeight = windowSizeY * oldFactor;
-            buffer.translate(0, windowSizeY * value);
-            if (currSpot == 10)
+            buffer.translate(0, (maxReal-minReal) * value);
+            if (dragging)
                 buffer.fill(ThemeStore.getColor(ThemeColorType.FOCUS_FOREGROUND));
             else
                 buffer.fill(ThemeStore.getColor(ThemeColorType.NORMAL_FOREGROUND));
@@ -144,6 +157,12 @@ public class Scrollbar implements UserInputSubscriber {
         }
     }
 
+    private void updateThumb(float mouseY) {
+        float deltaY = mouseY - lastY; // positive is down, negative is up;
+        float deltaUnit = deltaY*unit;
+        float clampedDeltaUnit = deltaUnit>0?PApplet.min(deltaUnit,0.1f):PApplet.max(deltaUnit,-0.1f);
+        value = Math.min(Math.max(value + clampedDeltaUnit,0),1);
+    }
 
     /**
      * All GUI components are registered for mouseEvents
@@ -153,10 +172,10 @@ public class Scrollbar implements UserInputSubscriber {
     public void mousePressed(GuiMouseEvent e) {
         if (!visible)
             return;
-
-        dragging = false;
-        last_ox = e.getX();
-        last_oy = e.getY();
+        if (isPointInRect(e.getX(),e.getY(),posX,posY,cell,thumbHeight)){
+            lastY = e.getY();
+            dragging = true;
+       }
     }
 
     @Override
@@ -164,6 +183,7 @@ public class Scrollbar implements UserInputSubscriber {
         if (!visible)
             return;
         if (dragging) {
+            updateThumb(e.getY());
             dragging = false;
             isValueChanging = false;
             bufferInvalid = true;
@@ -174,16 +194,12 @@ public class Scrollbar implements UserInputSubscriber {
     public void mouseDragged(GuiMouseEvent e) {
         if (!visible)
             return;
-//        if (spot == 10) {
-        float movement = e.getY() - last_oy;
-        last_ox = e.getY();
-        float deltaV = movement / (height - 32);
-        value += deltaV;
-        value = PApplet.constrain(value, 0, 1.0f - filler);
-        isValueChanging = true;
-        bufferInvalid = true;
-        dragging = true;
-//        }
+        if (dragging) {
+            updateThumb(e.getY());
+            lastY = e.getY();
+            isValueChanging = true;
+            bufferInvalid = true;
+        }
     }
 
     @Override
@@ -199,48 +215,19 @@ public class Scrollbar implements UserInputSubscriber {
     public void mouseWheelMoved(GuiMouseEvent event) {
         if (!visible)
             return;
-
-//        calcTransformedOrigin(winApp.mouseX, winApp.mouseY);
-
-//        int spot = whichHotSpot(ox, oy);
-
-        // If over the track then see if we are over the thumb
-//        if (spot >= 9 && isOverThumb(ox, oy)) {
-//            spot = 10;
-//        }
-//
-//        if (spot != currSpot) {
-//            currSpot = spot;
-//            bufferInvalid = true;
-//        }
-//
-//        if (currSpot >= 0 || focusIsWith == this)
-//            cursorIsOver = this;
-//        else if (cursorIsOver == this)
-//            cursorIsOver = null;
-//
-//
-//        if (currSpot > -1 && z >= focusObjectZ()) {
-//            float pv = value + event.getCount() * 0.01f * G4P.wheelForScrollbar;
-//            pv = pv < 0 ? 0 : pv > 1 ? 1 : pv;
-//            setValue(pv, filler);
-//            isValueChanging = true;
-//            bufferInvalid = true;
-//            dragging = true;
-//        }
     }
 
     public void draw(PGraphics pg, float posX, float posY, float windowSizeX, float windowSizeY, float windowHeight, boolean isScrollbarHighlighted) {
         if (!visible)
             return;
         pg.pushMatrix();
-        updateBuffer(windowSizeY, windowHeight, isScrollbarHighlighted);
+        updateBuffer(posX+ windowSizeX, posY, windowSizeY, windowHeight, isScrollbarHighlighted);
         pg.translate(posX + windowSizeX, posY);
         pg.image(buffer, 0, 0);
         pg.popMatrix();
     }
 
     public void invalidateBuffer() {
-        bufferInvalid=true;
+        bufferInvalid = true;
     }
 }
