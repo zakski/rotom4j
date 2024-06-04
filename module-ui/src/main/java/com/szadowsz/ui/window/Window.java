@@ -855,7 +855,7 @@ public class Window implements UserInputSubscriber {
             }
             vsb.ifPresent(Scrollbar::invalidateBuffer);
             e.setConsumed(true);
-        } else if (isPointInsideScrollbar(e.getX(), e.getY())) {
+        } else if (vsb.map(s -> s.dragging).orElse(false)) {
             vsb.ifPresent(s -> s.mouseDragged(e));
         }
         for (AbstractNode child : folder.children) {

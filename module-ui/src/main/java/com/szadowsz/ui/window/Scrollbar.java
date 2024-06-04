@@ -38,6 +38,7 @@ public class Scrollbar implements UserInputSubscriber {
     private float factor;           // difference between unconstrained and constrained height
     private float minReal;          // minimum real height
     private float maxReal;          // maximum real height
+    private float maxMaxReal;          // maximum real height
     private float variance;
     int loose;                      // how loose/heavy
 
@@ -46,21 +47,13 @@ public class Scrollbar implements UserInputSubscriber {
     private float lastY;
 
     private float unit;
+    private float spos;
 
     /**
      * Create the scroll bar
      */
     public Scrollbar(float xp, float yp, float sw, float sh, float wh, int l) {
         updateValues(xp, yp, sw, sh, wh, l);
-
-//        int widthtoheight = sw - sh;
-//        ratio = (float) sw / (float) widthtoheight;
-//        xpos = xp;
-//        ypos = yp - sheight / 2;
-//        spos = xpos + swidth / 2 - sheight / 2;
-//        newspos = spos;
-//        sposMin = xpos;
-//        sposMax = xpos + swidth - sheight;
     }
 
     private void updateValues(float xp, float yp, float sw, float sh, float wh, int l) {
@@ -72,9 +65,11 @@ public class Scrollbar implements UserInputSubscriber {
         handleSize = (wh > 0) ? sh * factor : width;
         minReal = posY;
         maxReal = minReal + height - handleSize;
+        maxMaxReal = minReal + height - width;
         variance = maxReal-minReal;
         loose = l;
         unit = 1/ (height - handleSize );
+        spos = posY + width/2;
     }
 
     /**
@@ -120,11 +115,18 @@ public class Scrollbar implements UserInputSubscriber {
         }
     }
 
-    private void updateThumb(float mouseY) {
-        float deltaY = mouseY - lastY; // positive is down, negative is up;
-        float deltaUnit = deltaY * unit;
-        float clampedDeltaUnit = deltaUnit > 0 ? PApplet.min(deltaUnit, 0.1f) : PApplet.max(deltaUnit, -0.1f);
-        value = Math.min(Math.max(value + clampedDeltaUnit, 0), 1);
+    private void updateHandle(float mouseY) {
+        float newY = Math.min(Math.max(mouseY, minReal), maxMaxReal);
+        float midY = minReal + variance*value + handleSize/2;
+        float midYOld = midY;
+        float diffY = newY-midY;
+        if (Math.abs(diffY) > 1) {
+            midY = midY + (diffY)/loose;
+        }
+        diffY = (diffY)/loose;
+        float valueDiff = diffY / Math.max(midYOld,midY);
+        value = Math.min(Math.max(value + valueDiff, 0), 1);
+        System.out.println(value);
     }
 
     /**
@@ -146,7 +148,7 @@ public class Scrollbar implements UserInputSubscriber {
         if (!visible)
             return;
         if (dragging) {
-            updateThumb(e.getY());
+            updateHandle(e.getY());
             over = isPointInRect(e.getX(), e.getY(), posX, posY+variance*value, width, handleSize);
             dragging = false;
             isValueChanging = false;
@@ -160,7 +162,7 @@ public class Scrollbar implements UserInputSubscriber {
             return;
 
         if (dragging) {
-            updateThumb(e.getY());
+            updateHandle(e.getY());
             lastY = e.getY();
             isValueChanging = true;
             bufferInvalid = true;
