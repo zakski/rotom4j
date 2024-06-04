@@ -31,7 +31,7 @@ public class WindowManager {
             if (w.folder.path.equals(folderNode.path)) {
                 w.posX = pos.x;
                 w.posY = pos.y;
-                if (LayoutStore.doesFolderRowClickCloseWindowIfOpen() && !w.closed) {
+                if (LayoutStore.doesFolderRowClickCloseWindowIfOpen() && w.isVisible) {
                     w.close();
                 } else {
                     w.open(setFocus);
@@ -210,7 +210,7 @@ public class WindowManager {
      */
     public static void snapAllStaticWindowsToGrid() {
         for (Window w : windows) {
-            if (w.closed || w.isBeingDraggedAround) {
+            if (!w.isVisible || w.isBeingDragged) {
                 continue;
             }
             PVector newPos = SnapToGrid.trySnapToGrid(w.posX, w.posY);

@@ -212,6 +212,11 @@ public class Processing extends PApplet {
     @Override
     public void draw() {
         background(30,40,189);
+        // Get the position of the img1 scrollbar
+        // and convert to a value to display the img1 image
+//        float img1Pos = hs1.getPos()-width/2;
+//        fill(255);
+//        image(img1, width/2-img1.width/2 + img1Pos*1.5, 0);
     }
 
 

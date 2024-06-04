@@ -12,7 +12,6 @@ import com.szadowsz.ui.node.impl.FolderNode;
 import com.szadowsz.ui.store.ChangeListener;
 import com.szadowsz.ui.store.FontStore;
 import com.szadowsz.ui.store.LayoutStore;
-import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
@@ -360,7 +359,7 @@ public abstract class AbstractNode implements MouseInteractable {
         if(parent == null || parent.window == null){
             return !LayoutStore.isGuiHidden();
         }
-        return !parent.window.closed;
+        return parent.window.isVisible();
     }
 
     /**
@@ -372,7 +371,7 @@ public abstract class AbstractNode implements MouseInteractable {
         if(parent == null || parent.window == null){
             return false;
         }
-        return !parent.window.closed;
+        return parent.window.isVisible();
     }
 
 

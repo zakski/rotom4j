@@ -23,7 +23,7 @@ public class DropdownMenuNode extends FolderNode {
     public void mousePressedEvent(GuiMouseEvent e) {
         isInlineNodeDragged = true;
         isMouseOverNode = true;
-        if (window == null || window.closed) {
+        if (window == null || !window.isVisible()) {
             if (parent != null && parent.getLayout() == LayoutType.HORIZONAL) {
                 WindowManager.uncoverOrCreateTempWindow(this, true, pos.x, pos.y + cell, null);
             } else {

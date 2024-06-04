@@ -142,7 +142,7 @@ public class NDSGui {
         for(AbstractNode node : allNodes){
             if(node.type == NodeType.FOLDER){
                 FolderNode folder = (FolderNode) node;
-                if(folder.window != null && folder.window.isBeingDraggedAround){
+                if(folder.window != null && folder.window.isBeingDragged()){
                     return folder.window;
                 }
             }
