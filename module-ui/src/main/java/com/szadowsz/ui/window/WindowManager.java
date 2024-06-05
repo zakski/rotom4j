@@ -11,36 +11,32 @@ import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- *
+ * Gui Management of Windows
  */
 public class WindowManager {
     private static final CopyOnWriteArrayList<Window> windows = new CopyOnWriteArrayList<>(); // TODO should be set?
     private static final ArrayList<Window> windowsToSetFocusOn = new ArrayList<>();
 
+    private WindowManager(){
+        // NOOP
+    }
+
     /**
-     * Found out if the window
+     * Set the App's focus on a particular window
      *
-     * @param folderNode    the corresponding folder node
-     * @param setFocus      true if the window is in focus, false otherwise
-     * @param pos           expected position
-     * @return true if found, false otherwise
+     * @param window the window to focus on
      */
-    private static boolean findWindow(FolderNode folderNode, boolean setFocus, PVector pos) {
-        boolean windowFound = false;
-        for (Window w : windows) {
-            if (w.folder.path.equals(folderNode.path)) {
-                w.posX = pos.x;
-                w.posY = pos.y;
-                if (LayoutStore.doesFolderRowClickCloseWindowIfOpen() && w.isVisible) {
-                    w.close();
-                } else {
-                    w.open(setFocus);
-                }
-                windowFound = true;
-                break;
-            }
-        }
-        return windowFound;
+    public static void setFocus(Window window) {
+        windowsToSetFocusOn.add(window);
+    }
+
+    /**
+     * Method to add a window to be managed
+     *
+     * @param window the window to add
+     */
+    public static void addWindow(Window window) {
+        windows.add(window);
     }
 
     /**
@@ -55,15 +51,6 @@ public class WindowManager {
     }
 
     /**
-     * Method to add a window to be managed
-     *
-     * @param window the window to add
-     */
-    public static void addWindow(Window window) {
-        windows.add(window);
-    }
-
-    /**
      * Create or make visible a window for the passed in folder
      *
      * @param folderNode the corresponding folder node
@@ -75,11 +62,20 @@ public class WindowManager {
     /**
      * Create or make visible a window for the passed in folder
      *
+     * @param folderNode the corresponding folder node
+     */
+    public static void uncoverOrCreateTempWindow(FolderNode folderNode) {
+        uncoverOrCreateTempWindow(folderNode, true, null, null, null);
+    }
+
+    /**
+     * Create or make visible a window for the passed in folder
+     *
      * @param folderNode    the corresponding folder node
      * @param setFocus      true if the window is in focus, false otherwise
-     * @param nullablePosX
-     * @param nullablePosY
-     * @param nullableSizeX
+     * @param nullablePosX  nullable windows x-coordinate
+     * @param nullablePosY  nullable windows y-coordinate
+     * @param nullableSizeX nullable windows width
      */
     public static void uncoverOrCreateWindow(FolderNode folderNode, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
         PVector pos = new PVector(LayoutStore.cell, LayoutStore.cell);
@@ -111,22 +107,13 @@ public class WindowManager {
     }
 
     /**
-     * Create or make visible a window for the passed in folder
-     *
-     * @param folderNode the corresponding folder node
-     */
-    public static void uncoverOrCreateTempWindow(FolderNode folderNode) {
-        uncoverOrCreateTempWindow(folderNode, true, null, null, null);
-    }
-
-    /**
-     * Create or make visible a window for the passed in folder
+     * Create or make visible a temporary window for the passed in folder
      *
      * @param folderNode    the corresponding folder node
      * @param setFocus      true if the window is in focus, false otherwise
-     * @param nullablePosX
-     * @param nullablePosY
-     * @param nullableSizeX
+     * @param nullablePosX  nullable windows x-coordinate
+     * @param nullablePosY  nullable windows y-coordinate
+     * @param nullableSizeX nullable windows width
      */
     public static void uncoverOrCreateTempWindow(FolderNode folderNode, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
         PVector pos = new PVector(LayoutStore.cell, LayoutStore.cell);
@@ -158,6 +145,42 @@ public class WindowManager {
     }
 
     /**
+     * Check if the window is focused upon
+     *
+     * @param window the window to check
+     * @return true if the window is focused upon, false otherwise
+     */
+    static boolean isFocused(Window window) {
+        return windows.get(windows.size() - 1).equals(window);
+    }
+
+    /**
+     * Found out if the window
+     *
+     * @param folderNode    the corresponding folder node
+     * @param setFocus      true if the window is in focus, false otherwise
+     * @param pos           expected position
+     * @return true if found, false otherwise
+     */
+    private static boolean findWindow(FolderNode folderNode, boolean setFocus, PVector pos) {
+        boolean windowFound = false;
+        for (Window w : windows) {
+            if (w.folder.path.equals(folderNode.path)) {
+                w.posX = pos.x;
+                w.posY = pos.y;
+                if (LayoutStore.doesFolderRowClickCloseWindowIfOpen() && w.isVisible) {
+                    w.close();
+                } else {
+                    w.open(setFocus);
+                }
+                windowFound = true;
+                break;
+            }
+        }
+        return windowFound;
+    }
+
+    /**
      * Update and draw all windows
      *
      * @param pg graphics context
@@ -173,25 +196,6 @@ public class WindowManager {
         for (Window win : windows) {
             win.drawWindow(pg);
         }
-    }
-
-    /**
-     * Check if the window is focused upon
-     *
-     * @param window the window to check
-     * @return true if the window is focused upon, false otherwise
-     */
-    static boolean isFocused(Window window) {
-        return windows.get(windows.size() - 1).equals(window);
-    }
-
-    /**
-     * Set the App's focus on a particular window
-     *
-     * @param window the window to focus on
-     */
-    public static void setFocus(Window window) {
-        windowsToSetFocusOn.add(window);
     }
 
     /**
@@ -219,5 +223,4 @@ public class WindowManager {
             w.windowSizeX = SnapToGrid.trySnapToGrid(w.windowSizeX, 0).x;
         }
     }
-
 }

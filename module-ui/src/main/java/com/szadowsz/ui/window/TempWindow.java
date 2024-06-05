@@ -16,20 +16,13 @@ import static com.szadowsz.ui.utils.Coordinates.isPointInRect;
 import static processing.core.PConstants.CENTER;
 import static processing.core.PConstants.LEFT;
 
+/**
+ * Gui Temporary Window Node Organisation and Drawing
+ */
 public class TempWindow extends Window {
 
     public TempWindow(FolderNode folder, float posX, float posY, Float nullableSizeX) {
         super(folder, posX, posY, nullableSizeX);
-    }
-
-    @Override
-    protected boolean isPointInsideTitleBar(float x, float y) {
-        return false;
-    }
-
-    @Override
-    protected boolean isPointInsideCloseButton(float x, float y) {
-        return false;
     }
 
     @Override
@@ -48,8 +41,7 @@ public class TempWindow extends Window {
                     continue;
                 }
                 if (posY + sum + child.masterInlineNodeHeightInCells * cell > pg.height * 0.9) {
-                    index -= 1;
-                    break;
+                  break;
                 }
                 sum += child.masterInlineNodeHeightInCells * cell;
                 index++;
@@ -59,43 +51,6 @@ public class TempWindow extends Window {
                 windowSizeX = windowSizeX + cell;
             }
             windowSizeY = sum;
-        }
-    }
-
-    @Override
-    protected boolean isPointInsideResizeBorder(float x, float y) {
-        return false;
-    }
-
-    public boolean isInParentWindow(float x, float y){
-        return folder.parent != null && folder.parent.window.isPointInsideWindow(x,y);
-    }
-
-    public boolean isInChildWindow(float x, float y){
-        return folder.children.stream().filter(n -> n instanceof FolderNode)
-                .map(n -> (FolderNode) n)
-                .anyMatch(n -> n.window != null && (n.window.isPointInsideWindow(x,y) ||
-                        ((n.window instanceof TempWindow) && ((TempWindow) n.window).isInChildWindow(x, y))));
-    }
-
-    @Override
-    public void mouseMoved(GuiMouseEvent e) {
-        if (isVisible && folder.isInlineNodeVisibleParentAware() && isPointInsideTitleBar(e.getX(), e.getY())) {
-            e.setConsumed(true);
-            folder.setIsMouseOverThisNodeOnly();
-        } else if (isPointInsideContent(e.getX(), e.getY()) && !isPointInsideResizeBorder(e.getX(), e.getY())) {
-            AbstractNode node = tryFindChildNodeAt(e.getX(), e.getY());
-            if (node != null && node.isParentWindowVisible()) {
-                node.setIsMouseOverThisNodeOnly();
-                e.setConsumed(true);
-            }
-        } else {
-            if (!isPointInRect(e.getX(),e.getY(),posX-5,posY-5,windowSizeX+10,windowSizeY+10)) {
-                NodeTree.setAllNodesMouseOverToFalse();
-                if (!isInParentWindow(e.getX(), e.getY()) && !isInChildWindow(e.getX(), e.getY())) {
-                    close();
-                }
-            }
         }
     }
 
@@ -110,6 +65,47 @@ public class TempWindow extends Window {
             }
         }
         return null;
+    }
+
+    @Override
+    protected boolean isPointInsideTitleBar(float x, float y) {
+        return false;
+    }
+
+    @Override
+    protected boolean isPointInsideCloseButton(float x, float y) {
+        return false;
+    }
+
+
+    @Override
+    protected boolean isPointInsideResizeBorder(float x, float y) {
+        return false;
+    }
+
+    /**
+     * Method to Check if the mouse is inside the parent window
+     *
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @return true if it is inside the parent window, false otherwise
+     */
+    public boolean isInParentWindow(float x, float y){
+        return folder.parent != null && folder.parent.window.isPointInsideWindow(x,y);
+    }
+
+    /**
+     * Method to Check if the mouse is inside a child window
+     *
+     * @param x x-coordinate
+     * @param y y-coordinate
+     * @return true if it is inside a child window, false otherwise
+     */
+    public boolean isInChildWindow(float x, float y){
+        return folder.children.stream().filter(n -> n instanceof FolderNode)
+                .map(n -> (FolderNode) n)
+                .anyMatch(n -> n.window != null && (n.window.isPointInsideWindow(x,y) ||
+                        ((n.window instanceof TempWindow) && ((TempWindow) n.window).isInChildWindow(x, y))));
     }
 
     @Override
@@ -160,5 +156,27 @@ public class TempWindow extends Window {
         drawContent(pg);
         drawBackgroundWithWindowBorder(pg, false);
         pg.popMatrix();
+    }
+
+
+    @Override
+    public void mouseMoved(GuiMouseEvent e) {
+        if (isVisible && folder.isInlineNodeVisibleParentAware() && isPointInsideTitleBar(e.getX(), e.getY())) {
+            e.setConsumed(true);
+            folder.setIsMouseOverThisNodeOnly();
+        } else if (isPointInsideContent(e.getX(), e.getY()) && !isPointInsideResizeBorder(e.getX(), e.getY())) {
+            AbstractNode node = tryFindChildNodeAt(e.getX(), e.getY());
+            if (node != null && node.isParentWindowVisible()) {
+                node.setIsMouseOverThisNodeOnly();
+                e.setConsumed(true);
+            }
+        } else {
+            if (!isPointInRect(e.getX(),e.getY(),posX-5,posY-5,windowSizeX+10,windowSizeY+10)) {
+                NodeTree.setAllNodesMouseOverToFalse();
+                if (!isInParentWindow(e.getX(), e.getY()) && !isInChildWindow(e.getX(), e.getY())) {
+                    close();
+                }
+            }
+        }
     }
 }

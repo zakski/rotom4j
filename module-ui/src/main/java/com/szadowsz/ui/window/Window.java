@@ -870,14 +870,10 @@ public class Window implements UserInputSubscriber {
 
     @Override
     public void mouseWheelMoved(GuiMouseEvent e) {
-        e.setConsumed(true);
-//        if (e.getRotation() < 0) {
-//            startIndex = Math.max(0, startIndex - 1);
-//            constrainHeight(GlobalReferences.app.g);
-//        } else if (endIndex < folder.children.size()) {
-//            startIndex = Math.max(0, startIndex + 1);
-//            constrainHeight(GlobalReferences.app.g);
-//        }
+        if (isPointInsideWindow(e.getX(),e.getY())) {
+            e.setConsumed(true);
+            vsb.stream().forEach(s -> s.mouseWheelMoved(e));
+        }
     }
 
 }

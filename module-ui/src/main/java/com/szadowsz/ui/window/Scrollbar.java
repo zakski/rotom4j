@@ -44,10 +44,6 @@ public class Scrollbar implements UserInputSubscriber {
 
     protected boolean over;           // is the mouse over the scroll handle?
     protected boolean dragging = false;
-    private float lastY;
-
-    private float unit;
-    private float spos;
 
     /**
      * Create the scroll bar
@@ -68,8 +64,6 @@ public class Scrollbar implements UserInputSubscriber {
         maxMaxReal = minReal + height - width;
         variance = maxReal-minReal;
         loose = l;
-        unit = 1/ (height - handleSize );
-        spos = posY + width/2;
     }
 
     /**
@@ -126,7 +120,6 @@ public class Scrollbar implements UserInputSubscriber {
         diffY = (diffY)/loose;
         float valueDiff = diffY / Math.max(midYOld,midY);
         value = Math.min(Math.max(value + valueDiff, 0), 1);
-        System.out.println(value);
     }
 
     /**
@@ -138,7 +131,6 @@ public class Scrollbar implements UserInputSubscriber {
         if (!visible)
             return;
         if (isPointInRect(e.getX(), e.getY(), posX, posY + variance*value, width, handleSize)) {
-            lastY = e.getY();
             dragging = true;
         }
     }
@@ -163,7 +155,6 @@ public class Scrollbar implements UserInputSubscriber {
 
         if (dragging) {
             updateHandle(e.getY());
-            lastY = e.getY();
             isValueChanging = true;
             bufferInvalid = true;
         }
@@ -177,9 +168,11 @@ public class Scrollbar implements UserInputSubscriber {
     }
 
     @Override
-    public void mouseWheelMoved(GuiMouseEvent event) {
+    public void mouseWheelMoved(GuiMouseEvent e) {
         if (!visible)
             return;
+        invalidateBuffer();
+        value = Math.min(Math.max(value + (float) e.getRotation()/(float)loose, 0), 1);
     }
 
     public void draw(PGraphics pg, float posX, float posY, float windowSizeX, float windowSizeY, float windowHeight) {
