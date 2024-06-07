@@ -121,7 +121,7 @@ public class TempWindow extends Window {
                 continue;
             }
             float nodeHeight = cell * node.masterInlineNodeHeightInCells;
-            drawChildNodeVertically(node, y, nodeHeight);
+            drawChildNodeVertically(node, 0,y, windowSizeXForContents,nodeHeight);
             if (i > 0) {
                 // separator
                 contentBuffer.pushStyle();
@@ -146,7 +146,7 @@ public class TempWindow extends Window {
             return;
         }
         constrainPosition(pg);
-        if (folder.getLayout() == LayoutType.VERTICAL) {
+        if (folder.getLayout() == LayoutType.VERTICAL_1_COL) {
             constrainHeight(pg);
         } else if (folder.getLayout() == LayoutType.HORIZONAL) {
             constrainWidth(pg);

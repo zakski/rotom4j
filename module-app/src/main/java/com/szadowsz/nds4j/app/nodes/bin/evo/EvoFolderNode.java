@@ -3,7 +3,7 @@ package com.szadowsz.nds4j.app.nodes.bin.evo;
 import com.google.gson.JsonElement;
 
 import com.szadowsz.nds4j.data.evo.EvoMethod;
-import com.szadowsz.nds4j.data.ref.Items;
+import com.szadowsz.nds4j.data.ref.ItemDex;
 import com.szadowsz.nds4j.data.ref.PokeDex;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
 import com.szadowsz.ui.node.impl.FolderNode;
@@ -68,7 +68,7 @@ public class EvoFolderNode extends FolderNode {
                 return "NONE";
             case EVO_ITEM:
             case EVO_TRADE_ITEM:
-                return Items.getItemNameByNo(getRequirement());
+                return ItemDex.getItemNameByNo(getRequirement());
             default:
                 return getRequirement() + " lvl.";
         }

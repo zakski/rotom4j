@@ -7,8 +7,9 @@ import com.szadowsz.ui.node.impl.TextNode;
 
 public class LearnTextNode extends TextNode {
 
-    public LearnTextNode(String path, FolderNode folder, String content) {
-        super(path, folder, content);
+    public LearnTextNode(String path, FolderNode folder, String content, int col) {
+        super(path, folder, content, col);
+        shouldDisplayHeaderRow = false;
     }
 
     @Override

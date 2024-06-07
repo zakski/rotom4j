@@ -1,15 +1,12 @@
 package com.szadowsz.nds4j.file.bin;
 
 import com.szadowsz.nds4j.data.learnset.LearnsetEntry;
-import com.szadowsz.nds4j.data.ref.Items;
-import com.szadowsz.nds4j.data.ref.PokeDex;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.reader.Buffer;
 import com.szadowsz.nds4j.reader.MemBuf;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
 
 
 /**

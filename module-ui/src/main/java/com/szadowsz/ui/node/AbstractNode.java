@@ -29,17 +29,19 @@ import static processing.core.PConstants.*;
 public abstract class AbstractNode implements MouseInteractable {
     @Expose
     public final String className = this.getClass().getSimpleName();
-    @Expose
+     @Expose
     public
     String path;
     @Expose
     public
     NodeType type;
 
+    protected int col;
+
+    protected final String name;
     public final FolderNode parent;
     public final PVector pos = new PVector();
     public final PVector size = new PVector();
-    public final String name;
 
     public float masterInlineNodeHeightInCells = 1;
     public boolean isInlineNodeDragged = false;
@@ -48,10 +50,6 @@ public abstract class AbstractNode implements MouseInteractable {
 
     private boolean isInlineNodeVisible = true;
 
-    public void setIsMouseOverThisNodeOnly(){
-        isMouseOverNode = true;
-        NodeTree.setAllOtherNodesMouseOverToFalse(this);
-    }
 
     /**
      *
@@ -60,10 +58,21 @@ public abstract class AbstractNode implements MouseInteractable {
      * @param parentFolder
      */
     protected AbstractNode(NodeType type, String path, FolderNode parentFolder) {
+        this(type, path, parentFolder,0);
+    }
+
+    /**
+     *
+     * @param type
+     * @param path
+     * @param parentFolder
+     */
+    protected AbstractNode(NodeType type, String path, FolderNode parentFolder, int col) {
         this.path = path;
         this.name = extractNameFromPath(path);
         this.type = type;
         this.parent = parentFolder;
+        this.col = (parent != null && parent.getLayout() == LayoutType.VERTICAL_X_COL)?Math.max(0,col):0;
     }
 
     private String extractNameFromPath(String path) {
@@ -81,80 +90,6 @@ public abstract class AbstractNode implements MouseInteractable {
         String nameWithoutPrefixSlash = NodePaths.getNameWithoutPrefixSlash(split[split.length - 1]);
         return NodePaths.getDisplayStringWithoutEscapes(nameWithoutPrefixSlash);
     }
-    /**
-     * Draw the text to the left
-     *
-     * @param pg graphics reference to use
-     * @param text the text to draw
-     */
-    protected void drawLeftText(PGraphics pg, String text){
-        fillForegroundBasedOnMouseOver(pg);
-        String trimmedText = FontStore.getSubstringFromStartToFit(pg, text, size.x - FontStore.textMarginX);
-        pg.textAlign(LEFT, CENTER);
-        pg.text(trimmedText, FontStore.textMarginX, cell - FontStore.textMarginY);
-    }
-
-    /**
-     * Draw the text to the right
-     *
-     * @param pg graphics reference to use
-     * @param text the text to draw
-     * @param fillBackground whether to fill the backgrounf
-     */
-    protected void drawRightText(PGraphics pg, String text, boolean fillBackground) {
-        if(fillBackground){
-            float backdropBuffer = cell * 0.5f;
-            float w = pg.textWidth(text) + FontStore.textMarginX + backdropBuffer;
-            drawRightBackdrop(pg, w);
-        }
-        pg.textAlign(RIGHT, CENTER);
-        pg.text(text,size.x - FontStore.textMarginX,size.y - FontStore.textMarginY);
-    }
-
-
-
-    protected void drawRightTextToNotOverflowLeftText(PGraphics pg, String rightText, String leftText, boolean fillBackground) {
-        pg.textAlign(RIGHT, CENTER);
-        String trimmedTextLeft = FontStore.getSubstringFromStartToFit(pg, leftText, size.x - FontStore.textMarginX);
-        float leftOffset = pg.textWidth(trimmedTextLeft)+(FontStore.textMarginX*2);
-        String trimmedRightText = FontStore.getSubstringFromStartToFit(pg, rightText, size.x - FontStore.textMarginX -leftOffset);
-        if(fillBackground){
-            float w = pg.textWidth(trimmedRightText) + FontStore.textMarginX * 2;
-            drawRightBackdrop(pg, w);
-        }
-        pg.text(trimmedRightText,size.x - FontStore.textMarginX,size.y - FontStore.textMarginY);
-    }
-
-
-    /**
-     * Draw the backdrop to the right
-     *
-     * @param pg graphics reference to use
-     * @param backdropSize size of the background
-     */
-    protected void drawRightBackdrop(PGraphics pg, float backdropSize) {
-        pg.pushStyle();
-        fillBackgroundBasedOnMouseOver(pg);
-        pg.noStroke();
-        pg.rectMode(CORNER);
-        pg.rect(size.x-backdropSize, 0, backdropSize, size.y);
-        pg.popStyle();
-    }
-
-    /**
-     * Method to draw the background of the node
-     *
-     * @param pg graphics reference to use
-     */
-    protected abstract void drawNodeBackground(PGraphics pg);
-
-    /**
-     * Method to draw the foreground of the node
-     *
-     * @param pg graphics reference to use
-     * @param name name of the node
-     */
-    protected abstract void drawNodeForeground(PGraphics pg, String name);
 
     /**
      * Sets the color used to fill the background of the node
@@ -195,6 +130,29 @@ public abstract class AbstractNode implements MouseInteractable {
     }
 
     /**
+     * Method to calculate the width of the name text for the font size
+     *
+    * @return width rounded up to whole cells
+     */
+    public float findNameTextWidthRoundedUpToWholeCells() {
+        PGraphics textWidthProvider = FontStore.getMainFontUtilsProvider();
+        float leftTextWidth = textWidthProvider.textWidth(getVisibleName());
+        return ceil(leftTextWidth / cell) * cell;
+    }
+
+    /**
+     * Method to calculate the width of the value text for the font size
+     *
+     * @return width rounded up to whole cells
+     */
+    public float findValueTextWidthRoundedUpToWholeCells() {
+        PGraphics textWidthProvider = FontStore.getMainFontUtilsProvider();
+        float leftTextWidth = textWidthProvider.textWidth(getValueAsString());
+        return ceil(leftTextWidth / cell) * cell;
+    }
+
+
+    /**
      * Draw a highlighted background of the node
      *
      * @param pg graphics reference to use
@@ -218,10 +176,98 @@ public abstract class AbstractNode implements MouseInteractable {
         }
     }
 
-    public abstract float getRequiredWidthForHorizontalLayout();
+    /**
+     * Draw the text to the left
+     *
+     * @param pg graphics reference to use
+     * @param text the text to draw
+     */
+    protected void drawLeftText(PGraphics pg, String text){
+        fillForegroundBasedOnMouseOver(pg);
+        String trimmedText = FontStore.getSubstringFromStartToFit(pg, text, size.x - FontStore.textMarginX);
+        pg.textAlign(LEFT, CENTER);
+        pg.text(trimmedText, FontStore.textMarginX, cell - FontStore.textMarginY);
+    }
 
-    public String getValueAsString(){
-        return "";
+    /**
+     * Draw the text to the right
+     *
+     * @param pg graphics reference to use
+     * @param text the text to draw
+     * @param fillBackground whether to fill the backgrounf
+     */
+    protected void drawRightText(PGraphics pg, String text, boolean fillBackground) {
+        if(fillBackground){
+            float backdropBuffer = cell * 0.5f;
+            float w = pg.textWidth(text) + FontStore.textMarginX + backdropBuffer;
+            drawRightBackdrop(pg, w);
+        }
+        pg.textAlign(RIGHT, CENTER);
+        pg.text(text,size.x - FontStore.textMarginX,size.y - FontStore.textMarginY);
+    }
+
+    protected void drawRightTextToNotOverflowLeftText(PGraphics pg, String rightText, String leftText, boolean fillBackground) {
+        pg.textAlign(RIGHT, CENTER);
+        String trimmedTextLeft = FontStore.getSubstringFromStartToFit(pg, leftText, size.x - FontStore.textMarginX);
+        float leftOffset = pg.textWidth(trimmedTextLeft)+(FontStore.textMarginX*2);
+        String trimmedRightText = FontStore.getSubstringFromStartToFit(pg, rightText, size.x - FontStore.textMarginX -leftOffset);
+        if(fillBackground){
+            float w = pg.textWidth(trimmedRightText) + FontStore.textMarginX * 2;
+            drawRightBackdrop(pg, w);
+        }
+        pg.text(trimmedRightText,size.x - FontStore.textMarginX,size.y - FontStore.textMarginY);
+    }
+
+    /**
+     * Draw the backdrop to the right
+     *
+     * @param pg graphics reference to use
+     * @param backdropSize size of the background
+     */
+    protected void drawRightBackdrop(PGraphics pg, float backdropSize) {
+        pg.pushStyle();
+        fillBackgroundBasedOnMouseOver(pg);
+        pg.noStroke();
+        pg.rectMode(CORNER);
+        pg.rect(size.x-backdropSize, 0, backdropSize, size.y);
+        pg.popStyle();
+    }
+
+    /**
+     * Method to draw the background of the node
+     *
+     * @param pg graphics reference to use
+     */
+    protected abstract void drawNodeBackground(PGraphics pg);
+
+    /**
+     * Method to draw the foreground of the node
+     *
+     * @param pg graphics reference to use
+     * @param name name of the node
+     */
+    protected abstract void drawNodeForeground(PGraphics pg, String name);
+
+    /**
+     * Main update function, only called when the parent window containing this node is open.
+     * @see AbstractNode#drawNodeBackground(PGraphics)
+     * @param pg main PGraphics of the gui of the same size as the main PApplet canvas to draw on
+     */
+    public final void updateDrawInlineNode(PGraphics pg) {
+        // the node knows its absolute position but here the current matrix is already translated to it
+        if(isMouseOverNode){
+            highlightNodeBackground(pg);
+        }
+        pg.pushMatrix();
+        pg.pushStyle();
+        drawNodeBackground(pg);
+        pg.popMatrix();
+        pg.popStyle();
+        pg.pushMatrix();
+        pg.pushStyle();
+        drawNodeForeground(pg, name);
+        pg.popMatrix();
+        pg.popStyle();
     }
 
     /**
@@ -272,28 +318,6 @@ public abstract class AbstractNode implements MouseInteractable {
     }
 
     /**
-     * Main update function, only called when the parent window containing this node is open.
-     * @see AbstractNode#drawNodeBackground(PGraphics)
-     * @param pg main PGraphics of the gui of the same size as the main PApplet canvas to draw on
-     */
-    public final void updateDrawInlineNode(PGraphics pg) {
-        // the node knows its absolute position but here the current matrix is already translated to it
-        if(isMouseOverNode){
-            highlightNodeBackground(pg);
-        }
-        pg.pushMatrix();
-        pg.pushStyle();
-        drawNodeBackground(pg);
-        pg.popMatrix();
-        pg.popStyle();
-        pg.pushMatrix();
-        pg.pushStyle();
-        drawNodeForeground(pg, name);
-        pg.popMatrix();
-        pg.popStyle();
-    }
-
-    /**
      * The node must know its absolute position and size, so it can respond to user input events
      *
      * @param x absolute screen x
@@ -330,6 +354,24 @@ public abstract class AbstractNode implements MouseInteractable {
       */
     public void showInlineNode() {
         isInlineNodeVisible = true;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public String getVisibleName(){
+        return name;
+    }
+
+    public int getColumn(){
+        return col;
+    }
+
+    public abstract float getRequiredWidthForHorizontalLayout();
+
+    public String getValueAsString(){
+        return "";
     }
 
     /**
@@ -374,5 +416,12 @@ public abstract class AbstractNode implements MouseInteractable {
         return parent.window.isVisible();
     }
 
+    public void setColumn(int col){
+        this.col = (parent != null && parent.getLayout() == LayoutType.VERTICAL_X_COL)?Math.max(0,col):0;
+    }
 
+    public void setIsMouseOverThisNodeOnly(){
+        isMouseOverNode = true;
+        NodeTree.setAllOtherNodesMouseOverToFalse(this);
+    }
 }
