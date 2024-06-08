@@ -223,12 +223,12 @@ public class Window implements UserInputSubscriber {
      * @return total height of Child Nodes
      */
     protected float heightOfColumns() {
-        Map<Integer,Float> columnHeights = new HashMap<>();
+        Map<Integer, Float> columnHeights = new HashMap<>();
         for (AbstractNode child : folder.children) {
             if (!child.isInlineNodeVisible()) {
                 continue;
             }
-            float height = columnHeights.getOrDefault(child.getColumn(),0.0f);
+            float height = columnHeights.getOrDefault(child.getColumn(), 0.0f);
             columnHeights.put(child.getColumn(), height + child.masterInlineNodeHeightInCells * cell);
         }
         return columnHeights.values().stream().max(Float::compareTo).orElse(0.0f);
@@ -608,12 +608,12 @@ public class Window implements UserInputSubscriber {
     protected void drawVerticalSeparator(PGraphics pg) {
         //boolean show = LayoutStore.isShowHorizontalSeparators();
         float weight = LayoutStore.getHorizontalSeparatorStrokeWeight();
-       // if (show) {
-            pg.strokeCap(SQUARE);
-            pg.strokeWeight(weight);
-            pg.stroke(ThemeStore.getColor(WINDOW_BORDER));
-            pg.line(0, 0, 0, windowSizeY);
-       // }
+        // if (show) {
+        pg.strokeCap(SQUARE);
+        pg.strokeWeight(weight);
+        pg.stroke(ThemeStore.getColor(WINDOW_BORDER));
+        pg.line(0, 0, 0, windowSizeY);
+        // }
     }
 
     /**
@@ -769,8 +769,8 @@ public class Window implements UserInputSubscriber {
             return;
         }
         constrainPosition(pg);
-        switch (folder.getLayout()){
-            case HORIZONAL ->  constrainWidth(pg);
+        switch (folder.getLayout()) {
+            case HORIZONAL -> constrainWidth(pg);
             case VERTICAL_X_COL -> constrainColumnedHeight(pg);
             default -> constrainHeight(pg);
         }
@@ -972,9 +972,10 @@ public class Window implements UserInputSubscriber {
         } else if (isBeingResized) {
             float minimumWindowSizeInCells = 4;
             float maximumWindowSize = GlobalReferences.app.width;
+            float oldWindowSizeX = windowSizeX;
             windowSizeX += e.getX() - e.getPrevX();
             windowSizeX = constrain(windowSizeX, minimumWindowSizeInCells * cell, maximumWindowSize);
-            if (vsb == null) {
+            if (vsb.map(sb -> !sb.visible).orElse(true)) {
                 windowSizeXForContents = windowSizeX;
             } else {
                 windowSizeXForContents = windowSizeX;
@@ -982,6 +983,8 @@ public class Window implements UserInputSubscriber {
             }
             vsb.ifPresent(Scrollbar::invalidateBuffer);
             e.setConsumed(true);
+            System.out.println("oldX: " + e.getPrevX() + ", new:X " + e.getX());
+            System.out.println("old: " + oldWindowSizeX + ", new: " + windowSizeX);
         } else if (vsb.map(s -> s.dragging).orElse(false)) {
             vsb.ifPresent(s -> s.mouseDragged(e));
         }
