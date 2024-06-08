@@ -1,12 +1,14 @@
 package com.szadowsz.nds4j.app;
 
 import com.szadowsz.nds4j.app.nodes.bin.evo.EvoFolderNode;
+import com.szadowsz.nds4j.app.nodes.bin.learn.LearnFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.stats.StatsFolderNode;
 import com.szadowsz.nds4j.app.nodes.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nscr.NSCRFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
+import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
 import com.szadowsz.nds4j.file.bin.StatsNFSFile;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
@@ -107,6 +109,20 @@ public class NDSGuiImpl extends NDSGui {
         if (node == null) {
             FolderNode folder = NodeTree.findParentFolderLazyInitPath(fullPath);
             node = new EvoFolderNode(fullPath, folder, evo);
+            insertNodeAtItsPath(node);
+        }
+        return node;
+    }
+
+    public LearnFolderNode learnset(LearnsetNFSFile learn) {
+        String fullPath = getFolder() + learn.getFileName();
+        if(isPathTakenByUnexpectedType(fullPath, EvoFolderNode.class)){
+            return null;
+        }
+        LearnFolderNode node = (LearnFolderNode) findNode(fullPath);
+        if (node == null) {
+            FolderNode folder = NodeTree.findParentFolderLazyInitPath(fullPath);
+            node = new LearnFolderNode(fullPath, folder, learn);
             insertNodeAtItsPath(node);
         }
         return node;
@@ -283,6 +299,15 @@ public class NDSGuiImpl extends NDSGui {
         StatsFolderNode paletteFolderNode = personal(stats);
         setFolder(null);
         LOGGER.info("Created GUI for Personal Bin File: " + stats.getFileName());
+        return paletteFolderNode;
+    }
+
+    public LearnFolderNode registerLearnGUI(LearnsetNFSFile learn) {
+        LOGGER.info("Creating GUI for Learnset Bin File: " + learn.getFileName());
+        setFolder("View/Loaded Files");
+        LearnFolderNode paletteFolderNode = learnset(learn);
+        setFolder(null);
+        LOGGER.info("Created GUI for Learnset Bin File: " + learn.getFileName());
         return paletteFolderNode;
     }
 }

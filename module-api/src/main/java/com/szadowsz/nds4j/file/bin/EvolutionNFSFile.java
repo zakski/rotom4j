@@ -1,6 +1,6 @@
 package com.szadowsz.nds4j.file.bin;
 
-import com.szadowsz.nds4j.data.ref.Items;
+import com.szadowsz.nds4j.data.ref.ItemDex;
 import com.szadowsz.nds4j.data.ref.PokeDex;
 import com.szadowsz.nds4j.reader.Buffer;
 import com.szadowsz.nds4j.reader.MemBuf;
@@ -82,7 +82,7 @@ public class EvolutionNFSFile extends BinNFSFile {
     public String getRequirementString(int index) {
         return switch (getMethod(index)) {
             case EVO_NONE -> "NONE";
-            case EVO_ITEM, EVO_TRADE_ITEM -> Items.getItemNameByNo(index);
+            case EVO_ITEM, EVO_TRADE_ITEM -> ItemDex.getItemNameByNo(index);
             default -> getRequirement(index) + " lvl.";
         };
     }

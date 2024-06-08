@@ -3,6 +3,7 @@ package com.szadowsz.nds4j.app;
 import com.szadowsz.nds4j.app.managers.*;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
+import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
 import com.szadowsz.nds4j.file.bin.StatsNFSFile;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
@@ -41,6 +42,7 @@ public class Processing extends PApplet {
 
     final static String selectEvoFile = "Open Evo File";
     final static String selectStatsFile = "Open Personal File";
+    final static String selectLearnFile = "Open Learnset File";
 
     private void setLookAndFeel() {
         try {
@@ -143,6 +145,21 @@ public class Processing extends PApplet {
         }
     }
 
+    private void createLearnUI() {
+        String lastPath = prefs.get("openNarcPath", System.getProperty("user.dir"));
+        String evoPath = FileChooser.selectBinFile(gui.getGuiCanvas().parent, lastPath,selectEvoFile);
+        if (evoPath != null) {
+            prefs.put("openNarcPath", new File(evoPath).getParentFile().getAbsolutePath());
+            try {
+                LOGGER.info("Loading Learnset Bin File: " + evoPath);
+                LearnFileManager.getInstance().registerLearnset(gui, LearnsetNFSFile.fromFile(evoPath));
+                LOGGER.info("Loaded Learnset Bin File: " + evoPath);
+            } catch (IOException e) {
+                LOGGER.error("Learnset Bin Load Failed",e);
+            }
+        }
+    }
+
     private void registerNarcButton() {
         ButtonNode selectNarc = gui.button(selectNarcFile);
         selectNarc.registerAction(ActivateByType.RELEASE, this::createNarcUI);
@@ -168,6 +185,8 @@ public class Processing extends PApplet {
         selectEvo.registerAction(ActivateByType.RELEASE, this::createEvoUI);
         ButtonNode selectStats = gui.button(selectStatsFile);
         selectStats.registerAction(ActivateByType.RELEASE, this::createStatsUI);
+        ButtonNode selectLearn = gui.button(selectLearnFile);
+        selectLearn.registerAction(ActivateByType.RELEASE, this::createLearnUI);
         // Tier 1b close
         gui.popFolder();
     }

@@ -15,6 +15,9 @@ import com.szadowsz.ui.window.WindowManager;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
@@ -44,18 +47,18 @@ public class FolderNode extends AbstractNode {
     /**
      * Construct a FolderNode with a Vertical Layout
      *
-     * @param path folder path
+     * @param path   folder path
      * @param parent parent folder
      */
     public FolderNode(String path, FolderNode parent) {
-        this(path, parent, LayoutType.VERTICAL);
+        this(path, parent, LayoutType.VERTICAL_1_COL);
         JsonSaveStore.overwriteWithLoadedStateIfAny(this);
     }
 
     /**
      * Construct a FolderNode with a Specified Layout
      *
-     * @param path folder path
+     * @param path   folder path
      * @param parent parent folder
      * @param layout the layout to use
      */
@@ -64,7 +67,6 @@ public class FolderNode extends AbstractNode {
         this.layout = layout;
         JsonSaveStore.overwriteWithLoadedStateIfAny(this);
     }
-
 
 
     private String getInlineDisplayNameOverridableByContents(String name) {
@@ -90,11 +92,11 @@ public class FolderNode extends AbstractNode {
      * @return the node, if found
      */
     protected AbstractNode findChildByName(String name) {
-        if(name.startsWith("/")){
+        if (name.startsWith("/")) {
             name = name.substring(1);
         }
         for (AbstractNode node : children) {
-            if (node.name.equals(name)) {
+            if (node.getName().equals(name)) {
                 return node;
             }
         }
@@ -108,11 +110,11 @@ public class FolderNode extends AbstractNode {
      * @return the node, if found
      */
     private AbstractNode findChildByNameStartsWith(String nameStartsWith) {
-        if(name.startsWith("/")){
+        if (name.startsWith("/")) {
             nameStartsWith = name.substring(1);
         }
         for (AbstractNode node : children) {
-            if (node.name.startsWith(nameStartsWith)) {
+            if (node.getName().startsWith(nameStartsWith)) {
                 return node;
             }
         }
@@ -120,12 +122,10 @@ public class FolderNode extends AbstractNode {
     }
 
 
-
     /**
-     *
      * @return
      */
-    private boolean isFolderActiveJudgingByContents(){
+    private boolean isFolderActiveJudgingByContents() {
 //        String desiredClassName = ToggleNode.class.getSimpleName();
 //        AbstractNode enabledNode = findChildByName("");
 //        if(enabledNode == null || !enabledNode.className.contains(desiredClassName)){
@@ -154,7 +154,7 @@ public class FolderNode extends AbstractNode {
         pg.rectMode(CORNER);
         pg.translate(-previewRectSize * 0.5f, -previewRectSize * 0.5f);
         pg.pushStyle();
-        if(isFolderActiveJudgingByContents()){
+        if (isFolderActiveJudgingByContents()) {
             pg.fill(ThemeStore.getColor(ThemeColorType.FOCUS_FOREGROUND));
         }
         pg.rect(0, 0, previewRectSize, miniCell); // handle
@@ -183,7 +183,7 @@ public class FolderNode extends AbstractNode {
         this.isInlineNodeDragged = false;
     }
 
-//    @Override
+    //    @Override
 //    public void keyPressedOverNode(LazyKeyEvent e, float x, float y) {
 //        // copy + paste whole folders of controls
 //        if ((e.isControlDown() && e.getKeyCode() == KeyCodes.C)) {
@@ -197,28 +197,69 @@ public class FolderNode extends AbstractNode {
 //        }
 //    }
 //
-    public float autosuggestWindowWidthForContents() {
-        if (layout == LayoutType.VERTICAL) {
-            float maximumSpaceTotal = cell * LayoutStore.defaultWindowWidthInCells;
-            if (!LayoutStore.getAutosuggestWindowWidth()) {
-                return maximumSpaceTotal;
-            }
-            float spaceForName = cell * 2;
-            float spaceForValue = cell * 2;
-            float minimumSpaceTotal = spaceForName + spaceForValue;
-            float titleTextWidth = findTextWidthRoundedUpToWholeCells(name);
-            spaceForName = PApplet.max(spaceForName, titleTextWidth);
-            for (AbstractNode child : children) {
-                float nameTextWidth = findTextWidthRoundedUpToWholeCells(child.name);
-                spaceForName = PApplet.max(spaceForName, nameTextWidth);
-                float valueTextWidth = findTextWidthRoundedUpToWholeCells(child.getValueAsString());
-                spaceForValue = PApplet.max(spaceForValue, valueTextWidth);
-            }
-            return PApplet.constrain(spaceForName + spaceForValue, minimumSpaceTotal, maximumSpaceTotal);
-        } else {
-            return GlobalReferences.app.width;
+    private float autosuggestWindowWidthFor1Col() {
+        float maximumSpaceTotal = cell * LayoutStore.defaultWindowWidthInCells;
+        if (!LayoutStore.getAutosuggestWindowWidth()) {
+            return maximumSpaceTotal;
         }
+        float spaceForName = cell * 2;
+        float spaceForValue = cell * 2;
+        float minimumSpaceTotal = spaceForName + spaceForValue;
+        float titleTextWidth = findTextWidthRoundedUpToWholeCells(name);
+        spaceForName = PApplet.max(spaceForName, titleTextWidth);
+        for (AbstractNode child : children) {
+            float nameTextWidth = child.findNameTextWidthRoundedUpToWholeCells();
+            spaceForName = PApplet.max(spaceForName, nameTextWidth);
+            float valueTextWidth = child.findValueTextWidthRoundedUpToWholeCells();
+            spaceForValue = PApplet.max(spaceForValue, valueTextWidth);
+        }
+        return PApplet.constrain(spaceForName + spaceForValue, minimumSpaceTotal, maximumSpaceTotal);
     }
+
+    private float autosuggestWindowWidthForXCol() {
+        float maximumSpaceTotal = cell * LayoutStore.defaultWindowWidthInCells;
+        if (!LayoutStore.getAutosuggestWindowWidth()) {
+            return maximumSpaceTotal;
+        }
+
+        float spaceForName = cell * 2;
+        float spaceForValue = cell * 2;
+        float minimumSpaceTotal = spaceForName + spaceForValue;
+        float titleTextWidth = findTextWidthRoundedUpToWholeCells(name);
+        spaceForName = PApplet.max(spaceForName, titleTextWidth);
+
+        Map<Integer,Float> columnNameWidth = new HashMap<>();
+        Map<Integer,Float> columnValueWidth = new HashMap<>();
+        int maxColumn = 0;
+
+        for (AbstractNode child : children) {
+            maxColumn = Math.max(child.getColumn(),maxColumn);
+            float nameWidth = columnNameWidth.getOrDefault(child.getColumn(),0.0f);
+            float valueWidth = columnValueWidth.getOrDefault(child.getColumn(),0.0f);
+
+            float nameTextWidth = child.findNameTextWidthRoundedUpToWholeCells();;
+            float valueTextWidth = child.findValueTextWidthRoundedUpToWholeCells();
+
+            columnNameWidth.put(child.getColumn(),Math.max(nameWidth, nameTextWidth));
+            columnValueWidth.put(child.getColumn(),Math.max(valueWidth, valueTextWidth));
+        }
+        float width = 0.0f;
+        for (int c = 0; c <= maxColumn; c++){
+            width = width + columnNameWidth.get(c) + columnValueWidth.get(c);
+        }
+        width = Math.max(spaceForName + spaceForValue,width);
+
+        return PApplet.constrain(width, minimumSpaceTotal, maximumSpaceTotal);
+    }
+
+    public float autosuggestWindowWidthForContents() {
+        return switch (layout) {
+            case VERTICAL_X_COL -> autosuggestWindowWidthForXCol();
+            case HORIZONAL -> GlobalReferences.app.width;
+            default -> autosuggestWindowWidthFor1Col();
+        };
+    }
+
 
     /**
      * Method to tell the window whether to draw the title
@@ -229,12 +270,35 @@ public class FolderNode extends AbstractNode {
         return true;
     }
 
-    public LayoutType getLayout(){
+    public LayoutType getLayout() {
         return layout;
     }
 
     @Override
     public float getRequiredWidthForHorizontalLayout() {
         return autosuggestWindowWidthForContents();
+    }
+
+    public List<AbstractNode> getColChildren(int col){
+        return children.stream().filter(c -> c.getColumn()== col).toList();
+    }
+
+    public float getColWidth(int col){
+        float spaceForName = 0;
+        float spaceForValue = 0;
+
+
+        for (AbstractNode child : children) {
+            if (col != child.getColumn())
+                continue;
+
+            float nameTextWidth = child.findNameTextWidthRoundedUpToWholeCells();
+            float valueTextWidth = child.findValueTextWidthRoundedUpToWholeCells();
+
+            spaceForName = Math.max(spaceForName, nameTextWidth);
+            spaceForValue = Math.max(spaceForValue, valueTextWidth);
+        }
+
+        return  spaceForName + spaceForValue;
     }
 }

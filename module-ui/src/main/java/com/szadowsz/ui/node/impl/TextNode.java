@@ -17,6 +17,7 @@ import processing.core.PConstants;
 import processing.core.PGraphics;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
+import static processing.core.PApplet.ceil;
 import static processing.core.PConstants.*;
 
 public class TextNode extends AbstractNode {
@@ -29,16 +30,20 @@ public class TextNode extends AbstractNode {
     private int millisInputStarted;
 
     private final String regexLookBehindForNewLine = "(?<=\\n)";
-    private final boolean shouldDisplayHeaderRow;
+    protected boolean shouldDisplayHeaderRow;
 
-    public TextNode(String path, FolderNode folder, String content) {
-        super(NodeType.VALUE, path, folder);
+    public TextNode(String path, FolderNode folder, String content, int col) {
+        super(NodeType.VALUE, path, folder, col);
         this.stringValue = content;
         this.buffer = content;
         shouldDisplayHeaderRow = !name.trim().isEmpty();
         millisInputDelay = DelayStore.getKeyboardBufferDelayMillis();
         millisInputStarted = -millisInputDelay * 2;
         JsonSaveStore.overwriteWithLoadedStateIfAny(this);
+    }
+
+    public TextNode(String path, FolderNode folder, String content) {
+        this(path, folder, content,0);
     }
 
     @Override
@@ -173,10 +178,26 @@ public class TextNode extends AbstractNode {
         }
     }
 
+    /**
+     * Method to calculate the width of the value text for the font size
+     *
+     * @return width rounded up to whole cells
+     */
+    public float findValueTextWidthRoundedUpToWholeCells() {
+        float valueTextWidth = super.findValueTextWidthRoundedUpToWholeCells();
+        valueTextWidth += 0.3f * LayoutStore.cell + LayoutStore.cell;
+        return ceil(valueTextWidth / cell) * cell;
+    }
+
     @Override
     public float getRequiredWidthForHorizontalLayout() {
         return findTextWidthRoundedUpToWholeCells(name) +
                 Math.max(cell * 2,findTextWidthRoundedUpToWholeCells(getValueAsString()));
+    }
+
+    @Override
+    public String getVisibleName(){
+        return shouldDisplayHeaderRow?name:"";
     }
 
     @Override

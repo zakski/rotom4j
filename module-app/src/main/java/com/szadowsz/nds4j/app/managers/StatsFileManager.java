@@ -2,7 +2,6 @@ package com.szadowsz.nds4j.app.managers;
 
 
 import com.szadowsz.nds4j.app.NDSGuiImpl;
-import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
 import com.szadowsz.nds4j.file.bin.StatsNFSFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
