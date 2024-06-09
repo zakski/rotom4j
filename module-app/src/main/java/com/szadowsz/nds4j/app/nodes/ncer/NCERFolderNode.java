@@ -1,8 +1,9 @@
-package com.szadowsz.nds4j.app.nodes.nscr;
+package com.szadowsz.nds4j.app.nodes.ncer;
 
 import com.szadowsz.nds4j.app.Processing;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.exception.NitroException;
+import com.szadowsz.nds4j.file.nitro.NCER;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
 import com.szadowsz.nds4j.file.nitro.NSCR;
@@ -21,25 +22,25 @@ import java.io.IOException;
 import static com.szadowsz.ui.store.LayoutStore.cell;
 
 
-public class NSCRFolderNode extends FolderNode {
-    protected static final Logger LOGGER = LoggerFactory.getLogger(NSCRFolderNode.class);
+public class NCERFolderNode extends FolderNode {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(NCERFolderNode.class);
 
-    private final NSCR nscr;
+    private final NCER ncer;
 
     private final String ZOOM_NODE = "Zoom";
     private final String SELECT_NCGR_FILE = "Select NCGR";
     private final String SELECT_NCLR_FILE = "Select NClR";
 
-    public NSCRFolderNode(String path, FolderNode parent, NSCR nscr) {
+    public NCERFolderNode(String path, FolderNode parent, NCER ncer) {
         super(path, parent);
-        this.nscr = nscr;
+        this.ncer = ncer;
         children.clear();
-        children.add(new NSCRPreviewNode(path + "/" + nscr.getFileName(), this,nscr));
+        children.add(new NCERPreviewNode(path + "/" + ncer.getFileName(), this,ncer));
         children.add(new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, true){
             @Override
             protected void onValueFloatChanged() {
                 super.onValueFloatChanged();
-                nscr.setZoom(valueFloat);
+                ncer.setZoom(valueFloat);
                 try {
                     recolorImage();
                 } catch (NitroException e) {
@@ -63,7 +64,7 @@ public class NSCRFolderNode extends FolderNode {
             Processing.prefs.put("openNarcPath", new File(ncgrPath).getParentFile().getAbsolutePath());
            try {
                 LOGGER.info("Loading NCGR File: " + ncgrPath);
-                nscr.setNCGR(NCGR.fromFile(ncgrPath));
+                ncer.setNCGR(NCGR.fromFile(ncgrPath));
                 recolorImage();
                 LOGGER.info("Loaded NCGR File: " + ncgrPath);
             } catch (IOException e) {
@@ -77,15 +78,15 @@ public class NSCRFolderNode extends FolderNode {
         String nclrPath = FileChooser.selectNclrFile(GlobalReferences.gui.getGuiCanvas().parent, lastPath,SELECT_NCLR_FILE);
         if (nclrPath != null) {
             Processing.prefs.put("openNarcPath", new File(nclrPath).getParentFile().getAbsolutePath());
-            NCLR original = nscr.getNCGR().getNCLR();
+            NCLR original = ncer.getNCLR();
             try {
                 LOGGER.info("Loading NCLR File: " + nclrPath);
-                nscr.setNCLR(NCLR.fromFile(nclrPath));
+                ncer.setNCLR(NCLR.fromFile(nclrPath));
                 recolorImage();
                 LOGGER.info("Loaded NCLR File: " + nclrPath);
             } catch (IOException e) {
                 LOGGER.error("NCLR Load Failed",e);
-                nscr.setNCLR(original);
+                ncer.setNCLR(original);
                 try {
                     recolorImage();
                 } catch (Throwable t){
@@ -96,17 +97,17 @@ public class NSCRFolderNode extends FolderNode {
     }
 
     public void recolorImage() throws NitroException {
-        nscr.recolorImage();
-        ((NSCRPreviewNode) findChildByName(nscr.getFileName())).loadImage(nscr.getImage());
+        ncer.recolorImage();
+        ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getImage());
         this.window.windowSizeX = autosuggestWindowWidthForContents();
     }
 
     @Override
     public float autosuggestWindowWidthForContents() {
-        if (nscr.getNCGR() != null) {
-            return ((NSCRPreviewNode) children.get(0)).image.width;
+        if (ncer.getNCGR() != null) {
+            return ((NCERPreviewNode) children.get(0)).image.width;
         } else {
-            return nscr.getWidth();
+            return ncer.getWidth();
         }
     }
 

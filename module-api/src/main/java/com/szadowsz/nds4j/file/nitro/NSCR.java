@@ -4,6 +4,7 @@ import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
 import com.szadowsz.nds4j.data.NFSFormat;
 import com.szadowsz.nds4j.data.nfs.ColorFormat;
+import com.szadowsz.nds4j.data.nfs.NTFS;
 import com.szadowsz.nds4j.exception.InvalidFileException;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.reader.MemBuf;
@@ -97,7 +98,7 @@ public class NSCR extends GenericNFSFile {
         return height;
     }
 
-    public NCGR getNSGR() {
+    public NCGR getNCGR() {
         return this.ncgr;
     }
 
@@ -200,10 +201,10 @@ public class NSCR extends GenericNFSFile {
             return 1;
         }
 
-        int tileData = data[y * nWidthTiles + x];
-        int tileNumber = tileData & 0x3FF;
-        int transform = (tileData >> 10) & 0x3;
-        int paletteNumber = (tileData >> 12) & 0xF;
+        NTFS tileData = mapData[y * nWidthTiles + x];
+        int tileNumber = tileData.nTile;
+        int transform = tileData.transform;
+        int paletteNumber = tileData.nPalette;
         if (tileNo != null) {
             tileNo[0] = tileNumber;
         }
@@ -343,26 +344,6 @@ public class NSCR extends GenericNFSFile {
         }
         if (this.ncgr != null) {
             createImage();
-        }
-    }
-
-    class NTFS implements Cloneable {             // Nintedo Tile Format Screen
-        public int nTile; //        0-9     (0-1023)    (a bit less in 256 color mode, because there'd be otherwise no room for the bg map)
-         public int transform;
-        public byte xFlip;  //      10    Horizontal Flip (0=Normal, 1=Mirrored)
-        public byte yFlip;  //      11    Vertical Flip   (0=Normal, 1=Mirrored)
-
-        public int nPalette; //    12-15    (0-15)      (Not used in 256 color/1 palette mode)
-
-        public NTFS() {
-        }
-
-        public NTFS(NTFS original) {
-            nPalette = original.nPalette;
-            transform = original.transform;
-            xFlip = original.xFlip;
-            yFlip = original.yFlip;
-            nTile = original.nTile;
         }
     }
 

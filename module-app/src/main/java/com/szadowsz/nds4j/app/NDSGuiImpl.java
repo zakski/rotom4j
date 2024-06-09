@@ -4,6 +4,7 @@ import com.szadowsz.nds4j.app.nodes.bin.evo.EvoFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.grow.GrowthFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.learn.LearnFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.stats.StatsFolderNode;
+import com.szadowsz.nds4j.app.nodes.ncer.NCERFolderNode;
 import com.szadowsz.nds4j.app.nodes.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nscr.NSCRFolderNode;
@@ -12,10 +13,7 @@ import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
 import com.szadowsz.nds4j.file.bin.GrowNFSFile;
 import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
 import com.szadowsz.nds4j.file.bin.StatsNFSFile;
-import com.szadowsz.nds4j.file.nitro.NCGR;
-import com.szadowsz.nds4j.file.nitro.NCLR;
-import com.szadowsz.nds4j.file.nitro.NSCR;
-import com.szadowsz.nds4j.file.nitro.Narc;
+import com.szadowsz.nds4j.file.nitro.*;
 import com.szadowsz.ui.NDSGui;
 import com.szadowsz.ui.NDSGuiSettings;
 import com.szadowsz.ui.input.ActivateByType;
@@ -44,6 +42,20 @@ public class NDSGuiImpl extends NDSGui {
 
     public NDSGuiImpl(PApplet sketch, NDSGuiSettings settings) {
         super(sketch, settings);
+    }
+
+    public NCERFolderNode cellBank(String path, NCER ncer) {
+        String fullPath = getFolder() + path;
+        if(isPathTakenByUnexpectedType(fullPath, NCGRFolderNode.class)){
+            return null;//defaultOption == null ? options[0] : defaultOption;
+        }
+        NCERFolderNode node = (NCERFolderNode) findNode(fullPath);
+        if (node == null) {
+            FolderNode parentFolder = NodeTree.findParentFolderLazyInitPath(fullPath);
+            node = new NCERFolderNode(fullPath, parentFolder, ncer);
+            insertNodeAtItsPath(node);
+        }
+        return node;
     }
 
     public NSCRFolderNode scrRes(String path, NSCR nscr) {
@@ -271,6 +283,14 @@ public class NDSGuiImpl extends NDSGui {
         popFolder();
         setFolder(null);
         LOGGER.info("Created GUI for Narc File: " + narc.getFileName());
+    }
+    public NCERFolderNode registerNcerGUI(NCER ncer) {
+        LOGGER.info("Creating GUI for NCER File: " + ncer.getFileName());
+        setFolder("View/Loaded Files");
+        NCERFolderNode cellBankFolderNode = cellBank(ncer.getFileName(), ncer);
+        LOGGER.info("Created GUI for NCER File: " + ncer.getFileName());
+        setFolder(null);
+        return cellBankFolderNode;
     }
 
     public NSCRFolderNode registerNscrGUI(NSCR nscr) {
