@@ -3,6 +3,7 @@ package com.szadowsz.nds4j.app;
 import com.szadowsz.nds4j.app.managers.*;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
+import com.szadowsz.nds4j.file.bin.GrowNFSFile;
 import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
 import com.szadowsz.nds4j.file.bin.StatsNFSFile;
 import com.szadowsz.nds4j.file.nitro.NCGR;
@@ -43,6 +44,7 @@ public class Processing extends PApplet {
     final static String selectEvoFile = "Open Evo File";
     final static String selectStatsFile = "Open Personal File";
     final static String selectLearnFile = "Open Learnset File";
+    final static String selectGrowthFile = "Open Growth File";
 
     private void setLookAndFeel() {
         try {
@@ -160,6 +162,21 @@ public class Processing extends PApplet {
         }
     }
 
+    private void createGrowthUI() {
+        String lastPath = prefs.get("openNarcPath", System.getProperty("user.dir"));
+        String growthPath = FileChooser.selectBinFile(gui.getGuiCanvas().parent, lastPath,selectGrowthFile);
+        if (growthPath != null) {
+            prefs.put("openNarcPath", new File(growthPath).getParentFile().getAbsolutePath());
+            try {
+                LOGGER.info("Loading Growth Bin File: " + growthPath);
+                GrowFileManager.getInstance().registerGrowth(gui, GrowNFSFile.fromFile(growthPath));
+                LOGGER.info("Loaded Growth Bin File: " + growthPath);
+            } catch (IOException e) {
+                LOGGER.error("Growth Bin Load Failed",e);
+            }
+        }
+    }
+
     private void registerNarcButton() {
         ButtonNode selectNarc = gui.button(selectNarcFile);
         selectNarc.registerAction(ActivateByType.RELEASE, this::createNarcUI);
@@ -187,6 +204,8 @@ public class Processing extends PApplet {
         selectStats.registerAction(ActivateByType.RELEASE, this::createStatsUI);
         ButtonNode selectLearn = gui.button(selectLearnFile);
         selectLearn.registerAction(ActivateByType.RELEASE, this::createLearnUI);
+        ButtonNode selectGrow = gui.button(selectGrowthFile);
+        selectGrow.registerAction(ActivateByType.RELEASE, this::createGrowthUI);
         // Tier 1b close
         gui.popFolder();
     }

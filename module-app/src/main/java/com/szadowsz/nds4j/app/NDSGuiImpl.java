@@ -1,6 +1,7 @@
 package com.szadowsz.nds4j.app;
 
 import com.szadowsz.nds4j.app.nodes.bin.evo.EvoFolderNode;
+import com.szadowsz.nds4j.app.nodes.bin.grow.GrowthFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.learn.LearnFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.stats.StatsFolderNode;
 import com.szadowsz.nds4j.app.nodes.ncgr.NCGRFolderNode;
@@ -8,6 +9,7 @@ import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nscr.NSCRFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
+import com.szadowsz.nds4j.file.bin.GrowNFSFile;
 import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
 import com.szadowsz.nds4j.file.bin.StatsNFSFile;
 import com.szadowsz.nds4j.file.nitro.NCGR;
@@ -123,6 +125,20 @@ public class NDSGuiImpl extends NDSGui {
         if (node == null) {
             FolderNode folder = NodeTree.findParentFolderLazyInitPath(fullPath);
             node = new LearnFolderNode(fullPath, folder, learn);
+            insertNodeAtItsPath(node);
+        }
+        return node;
+    }
+
+    public GrowthFolderNode growth(GrowNFSFile grow) {
+        String fullPath = getFolder() + grow.getFileName();
+        if(isPathTakenByUnexpectedType(fullPath, GrowthFolderNode.class)){
+            return null;
+        }
+        GrowthFolderNode node = (GrowthFolderNode) findNode(fullPath);
+        if (node == null) {
+            FolderNode folder = NodeTree.findParentFolderLazyInitPath(fullPath);
+            node = new GrowthFolderNode(fullPath, folder, grow);
             insertNodeAtItsPath(node);
         }
         return node;
@@ -260,10 +276,10 @@ public class NDSGuiImpl extends NDSGui {
     public NSCRFolderNode registerNscrGUI(NSCR nscr) {
         LOGGER.info("Creating GUI for NSCR File: " + nscr.getFileName());
         setFolder("View/Loaded Files");
-        NSCRFolderNode imageFolderNode = scrRes(nscr.getFileName(), nscr);
+        NSCRFolderNode scrFolderNode = scrRes(nscr.getFileName(), nscr);
         LOGGER.info("Created GUI for NSCR File: " + nscr.getFileName());
         setFolder(null);
-        return imageFolderNode;
+        return scrFolderNode;
     }
 
     public NCGRFolderNode registerNcgrGUI(NCGR ncgr) {
@@ -287,27 +303,37 @@ public class NDSGuiImpl extends NDSGui {
     public EvoFolderNode registerEvoGUI(EvolutionNFSFile evo) {
         LOGGER.info("Creating GUI for Evolution Bin File: " + evo.getFileName());
         setFolder("View/Loaded Files");
-        EvoFolderNode paletteFolderNode = evolution(evo);
+        EvoFolderNode evoFolderNode = evolution(evo);
         setFolder(null);
         LOGGER.info("Created GUI for Evolution Bin File: " + evo.getFileName());
-        return paletteFolderNode;
+        return evoFolderNode;
     }
+
+    public GrowthFolderNode registerGrowthGUI(GrowNFSFile grow) {
+        LOGGER.info("Creating GUI for Growth Bin File: " + grow.getFileName());
+        setFolder("View/Loaded Files");
+        GrowthFolderNode growthFolderNode = growth(grow);
+        setFolder(null);
+        LOGGER.info("Created GUI for Growth Bin File: " + grow.getFileName());
+        return growthFolderNode;
+    }
+
 
     public StatsFolderNode registerStatsGUI(StatsNFSFile stats) {
         LOGGER.info("Creating GUI for Personal Bin File: " + stats.getFileName());
         setFolder("View/Loaded Files");
-        StatsFolderNode paletteFolderNode = personal(stats);
+        StatsFolderNode statsFolderNode = personal(stats);
         setFolder(null);
         LOGGER.info("Created GUI for Personal Bin File: " + stats.getFileName());
-        return paletteFolderNode;
+        return statsFolderNode;
     }
 
     public LearnFolderNode registerLearnGUI(LearnsetNFSFile learn) {
         LOGGER.info("Creating GUI for Learnset Bin File: " + learn.getFileName());
         setFolder("View/Loaded Files");
-        LearnFolderNode paletteFolderNode = learnset(learn);
+        LearnFolderNode learnFolderNode = learnset(learn);
         setFolder(null);
         LOGGER.info("Created GUI for Learnset Bin File: " + learn.getFileName());
-        return paletteFolderNode;
+        return learnFolderNode;
     }
 }
