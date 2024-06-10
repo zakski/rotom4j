@@ -6,7 +6,11 @@ import com.szadowsz.nds4j.reader.Buffer;
 import com.szadowsz.nds4j.reader.MemBuf;
 
 import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HexFormat;
 
 
 /**
@@ -31,6 +35,13 @@ public class GrowNFSFile extends BinNFSFile {
         processEntries();
     }
 
+    public static byte reverse(byte b) {
+        int res = 0;
+        for (int bi = b, i = 0; i < 8; i++, bi >>>= 1)
+            res = (res << 1) | (bi & 1);
+
+        return (byte) res;
+    }
 
     /**
      * Process the raw data into XP Required for Levels
@@ -38,8 +49,9 @@ public class GrowNFSFile extends BinNFSFile {
     protected void processEntries() {
         MemBuf dataBuf = MemBuf.create(rawData);
         MemBuf.MemBufReader reader = dataBuf.reader();
-
-        for (int i = 0; i < LEVELS; i++){
+        reader.skip(8);
+        xp[0]=0;
+        for (int i = 1; i < LEVELS; i++){
             xp[i] = reader.readInt();
         }
     }
