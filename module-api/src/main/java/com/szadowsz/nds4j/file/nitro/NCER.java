@@ -19,6 +19,7 @@
 
 package com.szadowsz.nds4j.file.nitro;
 
+import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
 import com.szadowsz.nds4j.data.NFSFormat;
 import com.szadowsz.nds4j.data.nfs.Cell;
@@ -27,6 +28,7 @@ import com.szadowsz.nds4j.reader.MemBuf;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 /**
  * An object representation of an NCER file
@@ -77,7 +79,7 @@ public class NCER extends GenericNFSFile {
     private boolean tacu;
 
     private Cell[] cells;
-    private NCGR image;
+    private NCGR ncgr;
 
     private String lablID;
     private int lablSectionSize;
@@ -99,6 +101,13 @@ public class NCER extends GenericNFSFile {
         int fileSize = dataBuf.writer().getPosition();
 
         readGenericNtrHeader(reader);
+
+        File[] ncgrs = new File(path).getParentFile().listFiles(f -> (f.getName().endsWith(".NCGR") ||
+                f.getName().endsWith(".NCBR")) &&
+                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.fileName));
+        if (ncgrs.length > 0) {
+            this.ncgr = NCGR.fromFile(ncgrs[0]);
+        }
 
         // reader position is now 0x10
         readFile(reader);
@@ -271,23 +280,27 @@ public class NCER extends GenericNFSFile {
      * @param image a <code>NCGR</code>
      */
     public void setNCGR(NCGR image) {
-        this.image = image;
+        this.ncgr = image;
     }
 
     public void setNCLR(NCLR image) {
-        this.image.setPalette(image);
+        this.ncgr.setPalette(image);
     }
 
     public NCGR getNCGR(){
-        return image;
+        return ncgr;
     }
 
     public NCLR getNCLR(){
-        return image.getNCLR();
+        return (ncgr !=null)? ncgr.getNCLR():NCLR.DEFAULT;
     }
 
     public int getBitDepth(){
-        return image.getBitDepth();
+        return ncgr.getBitDepth();
+    }
+
+    public int getCellsCount(){
+        return cells.length;
     }
 
     public Cell.CellImage getCellImage(int i) throws NitroException {
@@ -303,9 +316,7 @@ public class NCER extends GenericNFSFile {
     public BufferedImage getNcerImage(int i) throws NitroException {
         Cell cell = cells[i];
 
-        //todo undo this being 80
-//        BufferedImage output = new BufferedImage(cell.maxX - cell.minX, cell.maxY - cell.minY, BufferedImage.TYPE_INT_RGB);
-        BufferedImage output = new BufferedImage(80, 80, BufferedImage.TYPE_INT_RGB);
+        BufferedImage output = new BufferedImage(cell.getWidth(), cell.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = (Graphics2D) output.getGraphics();
 
         Cell.OAM.OamImage[] images = cell.getImages();
@@ -317,5 +328,34 @@ public class NCER extends GenericNFSFile {
         g.dispose();
 
         return output;
+    }
+
+    public void recolorImage() throws NitroException {
+        for (int i = 0; i < cells.length; i++) {
+            Cell.OAM.OamImage[] images = cells[i].getImages();
+            for (int j = 0; j < images.length; j++) {
+                images[j].recolorImage();
+            }
+        }
+    }
+
+    /**
+     * Generates an object representation of an NSCR file from a file on disk
+     *
+     * @param path a <code>String</code> containing the path to a NSCR file on disk
+     * @return an <code>IndexedImage</code> object
+     */
+    public static NCER fromFile(String path) throws NitroException {
+        return fromFile(new File(path));
+    }
+
+    /**
+     * Generates an object representation of an NSCR file from a file on disk
+     *
+     * @param file a <code>File</code> containing the path to a NSCR file on disk
+     * @return an <code>IndexedImage</code> object
+     */
+    public static NCER fromFile(File file) throws NitroException {
+        return (NCER) NFSFactory.fromFile(file);
     }
 }

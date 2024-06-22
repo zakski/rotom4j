@@ -7,6 +7,7 @@ import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.BaseNFSFile;
 import com.szadowsz.nds4j.file.bin.BinNFSFile;
 import com.szadowsz.nds4j.file.bin.PlaceholderNFSFile;
+import com.szadowsz.nds4j.file.nitro.NCER;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
 import com.szadowsz.nds4j.file.nitro.NSCR;
@@ -98,6 +99,9 @@ public class NFSFactory {
             }
             case NSCR -> {
                 return new NSCR(path, name, comp, compData, data);
+            }
+            case NCER -> {
+                return new NCER(path, name, comp, compData, data);
             }
             case BINARY -> {
                 if (data != null && data.length > 4) {

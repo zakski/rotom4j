@@ -62,15 +62,42 @@ public class NCGR extends GenericNFSFile {
     private int width;
 
     private byte[] imgTilesFlat;
-    private byte[][] imgTiles;
 
     private int tileSize;
 
     private NCLR palette = NCLR.DEFAULT;
-    private float zoom;
+    private float zoom = 1;
 
     private TileForm order;
     private byte[] tilePal;
+
+    public NCGR(int height,int width,int bitDepth,NCLR palette) throws NitroException {
+        super(NFSFormat.NCGR, null, null, CompFormat.NONE, null, null);
+        if (height % 8 != 0)
+            throw new NitroException(String.format("%d was provided for image height, but a multiple of 8 is required.", height));
+
+        if (width % 8 != 0)
+            throw new NitroException(String.format("%d was provided for image width, but a multiple of 8 is required.", width));
+
+        this.height = height;
+        this.charTilesHeight = height / 8;
+        this.width = width;
+        this.charTilesWidth = width / 8;
+
+        if (bitDepth != 4 && bitDepth != 8)
+            bitDepth = 4;
+        this.charBitDepth = ColorFormat.valueOf(bitDepth);
+
+        charTiledataSize = (long) charTilesWidth * charTilesHeight;
+        charTiledData = new byte[charTilesWidth * charTilesHeight][];
+        charData = new byte[(int) charTiledataSize];
+
+        this.palette = palette;
+
+
+        image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
+        setImagePixels(palette);
+    }
 
     public NCGR(String path, String name, CompFormat comp,  byte[] compData, byte[] data) throws NitroException {
         super(NFSFormat.NCGR,path,name,comp,compData,data);
@@ -224,7 +251,6 @@ public class NCGR extends GenericNFSFile {
         this.width = width;
         this.height = height;
 
-        zoom = 1;
         //startByte = 0;
         tilePal = new byte[tiles.length * (tileSize / this.charBitDepth.bits)];
 
@@ -264,8 +290,6 @@ public class NCGR extends GenericNFSFile {
 
     private void readData(MemBuf.MemBufReader reader) {
         int nChars = getTileCount();
-        charTiledData = new byte[nChars][];
-        charData = new byte[(int)charTiledataSize];
         int nPresentTiles = (int)charTiledataSize >> 5;
         int tilesY = getHeight();
         int tilesX = getWidth();
@@ -276,31 +300,35 @@ public class NCGR extends GenericNFSFile {
             nChars = nPresentTiles;
             tilesX = ChrGuessWidth(nChars);
             tilesY = nChars / tilesX;
+            this.height = tilesY * 8;
+            this.width = tilesX * 8;
+
         }
+        charTiledData = new byte[nChars][];
+        charData = new byte[(int)charTiledataSize];
 
-            int bufferIndex = 0;
-            for (int i = 0; i < nChars; i++) {
-                charTiledData[i] = new byte[64];
-                byte[] tile = charTiledData[i];
+        int bufferIndex = 0;
+        for (int i = 0; i < nChars; i++) {
+            charTiledData[i] = new byte[64];
+            byte[] tile = charTiledData[i];
 
-                if (charBitDepth.bits == 8) {
-                    for (int j = 0; j < 64; j++) {
-                        int data = reader.readByte() & 0xff;
-                        tile[j] = (byte) data;
-                        charData[bufferIndex++] = (byte) data;
-                    }
-                } else if (charBitDepth.bits == 4) {
-                    //4-bit graphics: unpack
-                    for (int j = 0; j < 32; j++) {
-                        byte data = (byte) reader.readByte();
-                        tile[j * 2] = (byte) (data & 0xF);
-                        tile[j * 2 + 1] = (byte) (data >> 4);
-                        charData[bufferIndex++] = data;
-                    }
+            if (charBitDepth.bits == 8) {
+                for (int j = 0; j < 64; j++) {
+                    int data = reader.readByte() & 0xff;
+                    tile[j] = (byte) data;
+                    charData[bufferIndex++] = (byte) data;
+                }
+            } else if (charBitDepth.bits == 4) {
+                //4-bit graphics: unpack
+                for (int j = 0; j < 32; j++) {
+                    byte data = (byte) reader.readByte();
+                    tile[j * 2] = (byte) (data & 0xF);
+                    tile[j * 2 + 1] = (byte) (data >> 4);
+                    charData[bufferIndex++] = data;
                 }
             }
-            System.out.println();
-//        charData = reader.readBytes((int) charTiledataSize); // TODO
+        }
+            //        charData = reader.readBytes((int) charTiledataSize); // TODO
     }
 
     @Override
@@ -319,6 +347,8 @@ public class NCGR extends GenericNFSFile {
         charSectionSize = reader.readUInt32();
         charTilesHeight = reader.readShort(); //0x18
         charTilesWidth = reader.readShort(); //0x1A
+        this.height = this.charTilesHeight * 8;
+        this.width = this.charTilesWidth * 8;
         charBitDepth = ColorFormat.valueOf(reader.readInt());
         charUnknown1 = reader.readUInt16();
         charMappingType = reader.readUInt16(); // 0x22
@@ -340,8 +370,6 @@ public class NCGR extends GenericNFSFile {
             sopcCharSize = reader.readUInt16();
             sopcNChars = reader.readUInt16();
         }
-        this.height = this.charTilesHeight * 8;
-        this.width = this.charTilesWidth * 8;
 
 
         setImageData(charData, width, height, charBitDepth, order, 8);

@@ -9,6 +9,7 @@ import com.szadowsz.nds4j.app.nodes.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nscr.NSCRFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
+import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
 import com.szadowsz.nds4j.file.bin.GrowNFSFile;
 import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
@@ -44,7 +45,7 @@ public class NDSGuiImpl extends NDSGui {
         super(sketch, settings);
     }
 
-    public NCERFolderNode cellBank(String path, NCER ncer) {
+    public NCERFolderNode cellBank(String path, NCER ncer) throws NitroException {
         String fullPath = getFolder() + path;
         if(isPathTakenByUnexpectedType(fullPath, NCGRFolderNode.class)){
             return null;//defaultOption == null ? options[0] : defaultOption;
@@ -284,7 +285,7 @@ public class NDSGuiImpl extends NDSGui {
         setFolder(null);
         LOGGER.info("Created GUI for Narc File: " + narc.getFileName());
     }
-    public NCERFolderNode registerNcerGUI(NCER ncer) {
+    public NCERFolderNode registerNcerGUI(NCER ncer) throws NitroException {
         LOGGER.info("Creating GUI for NCER File: " + ncer.getFileName());
         setFolder("View/Loaded Files");
         NCERFolderNode cellBankFolderNode = cellBank(ncer.getFileName(), ncer);

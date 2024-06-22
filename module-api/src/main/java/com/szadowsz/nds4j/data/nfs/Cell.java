@@ -150,6 +150,14 @@ public class Cell {
         oams[index].palette = (attr2 >> 12) & 0xF;
     }
 
+    public int getWidth() {
+        return Math.abs(maxX - minX);
+    }
+
+    public int getHeight() {
+        return Math.abs(maxY - minY);
+    }
+
     public String toString() {
         return name;
     }
@@ -241,15 +249,17 @@ public class Cell {
             private boolean update;
 
             private OamImage() throws NitroException {
-//                generateImageData();
+                generateImageData();
             }
 
-//            private void generateImageData() throws NitroException {
-//                if (NCER.oamSize[shape][size][0] != storedWidth || NCER.oamSize[shape][size][1] != storedHeight) {
-//                    storedHeight = NCER.oamSize[shape][size][1];
-//                    storedWidth = NCER.oamSize[shape][size][0];
-//                    oamImage = new NCGR(storedHeight, storedWidth, ncer.getBitDepth(), ncer.getNCLR());
-//                }
+            private void generateImageData() throws NitroException {
+                if (NCER.oamSize[shape][size][0] != storedWidth || NCER.oamSize[shape][size][1] != storedHeight) {
+                    storedHeight = NCER.oamSize[shape][size][1];
+                    storedWidth = NCER.oamSize[shape][size][0];
+                    if (ncer.getNCGR() != null) {
+                        oamImage = new NCGR(storedHeight, storedWidth, ncer.getBitDepth(), ncer.getNCLR());
+                    }
+                }
 //
 //                int startByte = (tileOffset << (byte) ncer.mappingType) * (ncer.getBitDepth() * 8) + partitionOffset;
 //                byte[] imageData;
@@ -266,8 +276,8 @@ public class Cell {
 //                }
 ////                    NCGR.NcgrUtils.convertOffsetToCoordinate(imageData, startByte, cell.getWidth() * cell.getHeight(), image, image.getNumTiles(), (image.getWidth() / 8) / image.getColsPerChunk(), image.getColsPerChunk(), image.getRowsPerChunk(), cell);
 ////                    NCGR.NcgrUtils.convertFromTiles4BppAlternate(imageData, cell, startByte);
-//                update = false;
-//            }
+                update = false;
+            }
 
             /**
              * Generates and returns a visual (image) representation of the parent <code>OAM</code> given the parent
@@ -277,9 +287,9 @@ public class Cell {
              */
             public BufferedImage getImage() throws NitroException {
                 if (update) {
-//                    generateImageData();
+                    generateImageData();
                 }
-                return oamImage.getImage();
+                return (oamImage!=null)?oamImage.getImage():null;
             }
 
             public int getPixelValue(int x, int y) {
@@ -302,6 +312,10 @@ public class Cell {
             @Override
             public int hashCode() {
                 return oamImage.hashCode();
+            }
+
+            public void recolorImage() throws NitroException {
+                oamImage.recolorImage();
             }
 
             @Override

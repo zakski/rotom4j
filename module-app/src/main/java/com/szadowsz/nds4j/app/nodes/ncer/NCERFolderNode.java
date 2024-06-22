@@ -27,20 +27,34 @@ public class NCERFolderNode extends FolderNode {
 
     private final NCER ncer;
 
+    private final String CELL_NODE = "Cell";
     private final String ZOOM_NODE = "Zoom";
     private final String SELECT_NCGR_FILE = "Select NCGR";
     private final String SELECT_NCLR_FILE = "Select NClR";
 
-    public NCERFolderNode(String path, FolderNode parent, NCER ncer) {
+    public NCERFolderNode(String path, FolderNode parent, NCER ncer) throws NitroException {
         super(path, parent);
         this.ncer = ncer;
         children.clear();
         children.add(new NCERPreviewNode(path + "/" + ncer.getFileName(), this,ncer));
+        children.add(new SliderNode(path + "/" + CELL_NODE, this, 0.0f, 0.0f, ncer.getCellsCount()-1, true){
+            @Override
+            protected void onValueFloatChanged() {
+                super.onValueFloatChanged();
+                try {
+                    recolorImage();
+                    ((NCERPreviewNode)findChildByName(ncer.getFileName())).loadImage(ncer.getNcerImage((int) valueFloat));
+                } catch (NitroException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        });
         children.add(new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, true){
             @Override
             protected void onValueFloatChanged() {
                 super.onValueFloatChanged();
-                ncer.setZoom(valueFloat);
+             //   ncer.setZoom(valueFloat);
                 try {
                     recolorImage();
                 } catch (NitroException e) {
@@ -63,10 +77,12 @@ public class NCERFolderNode extends FolderNode {
         if (ncgrPath != null) {
             Processing.prefs.put("openNarcPath", new File(ncgrPath).getParentFile().getAbsolutePath());
            try {
-                LOGGER.info("Loading NCGR File: " + ncgrPath);
-                ncer.setNCGR(NCGR.fromFile(ncgrPath));
-                recolorImage();
-                LOGGER.info("Loaded NCGR File: " + ncgrPath);
+               LOGGER.info("Loading NCGR File: " + ncgrPath);
+               ncer.setNCGR(NCGR.fromFile(ncgrPath));
+               recolorImage();
+               SliderNode sliderNode = (SliderNode) findChildByName(CELL_NODE);
+               ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getNcerImage((int) sliderNode.valueFloat));
+               LOGGER.info("Loaded NCGR File: " + ncgrPath);
             } catch (IOException e) {
                 LOGGER.error("NCGR Load Failed",e);
             }
@@ -83,6 +99,8 @@ public class NCERFolderNode extends FolderNode {
                 LOGGER.info("Loading NCLR File: " + nclrPath);
                 ncer.setNCLR(NCLR.fromFile(nclrPath));
                 recolorImage();
+                SliderNode sliderNode = (SliderNode) findChildByName(CELL_NODE);
+                ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getNcerImage((int) sliderNode.valueFloat));
                 LOGGER.info("Loaded NCLR File: " + nclrPath);
             } catch (IOException e) {
                 LOGGER.error("NCLR Load Failed",e);
@@ -97,17 +115,18 @@ public class NCERFolderNode extends FolderNode {
     }
 
     public void recolorImage() throws NitroException {
+        ncer.getNCGR().recolorImage();
         ncer.recolorImage();
-        ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getImage());
         this.window.windowSizeX = autosuggestWindowWidthForContents();
     }
 
     @Override
     public float autosuggestWindowWidthForContents() {
+        float suggested = super.autosuggestWindowWidthForContents();
         if (ncer.getNCGR() != null) {
-            return ((NCERPreviewNode) children.get(0)).image.width;
+            return Math.max(suggested,((NCERPreviewNode) children.get(0)).image.width);
         } else {
-            return ncer.getWidth();
+            return suggested;
         }
     }
 

@@ -6,10 +6,7 @@ import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
 import com.szadowsz.nds4j.file.bin.GrowNFSFile;
 import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
 import com.szadowsz.nds4j.file.bin.StatsNFSFile;
-import com.szadowsz.nds4j.file.nitro.NCGR;
-import com.szadowsz.nds4j.file.nitro.NCLR;
-import com.szadowsz.nds4j.file.nitro.NSCR;
-import com.szadowsz.nds4j.file.nitro.Narc;
+import com.szadowsz.nds4j.file.nitro.*;
 import com.szadowsz.ui.NDSGuiSettings;
 import com.szadowsz.ui.input.ActivateByType;
 import com.szadowsz.ui.node.impl.ButtonNode;
@@ -37,6 +34,7 @@ public class Processing extends PApplet {
     protected NDSGuiSettings settings;
 
     final static String selectNarcFile = "Open Narc File";
+    final static String selectNCERFile = "Open NCER File";
     final static String selectNSCRFile = "Open NSCR File";
     final static String selectNCGRFile = "Open NCGR File";
     final static String selectNCLRFile = "Open NClR File";
@@ -73,6 +71,22 @@ public class Processing extends PApplet {
             }
         }
     }
+
+    private void createNcerUI() {
+        String lastPath = prefs.get("openNarcPath", System.getProperty("user.dir"));
+        String ncerPath = FileChooser.selectNcerFile(gui.getGuiCanvas().parent, lastPath,selectNCERFile);
+        if (ncerPath != null) {
+            prefs.put("openNarcPath", new File(ncerPath).getParentFile().getAbsolutePath());
+            try {
+                LOGGER.info("Loading NCER File: " + ncerPath);
+                NcerManager.getInstance().registerNCER(gui, NCER.fromFile(ncerPath));
+                LOGGER.info("Loaded NCER File: " + ncerPath);
+            } catch (IOException e) {
+                LOGGER.error("NCER Load Failed",e);
+            }
+        }
+    }
+
     private void createNscrUI() {
         String lastPath = prefs.get("openNarcPath", System.getProperty("user.dir"));
         String nscrPath = FileChooser.selectNscrFile(gui.getGuiCanvas().parent, lastPath,selectNSCRFile);
@@ -185,6 +199,8 @@ public class Processing extends PApplet {
     private void register2DFileButtons() {
         // Tier 1a open
         gui.pushDropdown("Open 2D File");
+        ButtonNode selectNcer = gui.button(selectNCERFile);
+        selectNcer.registerAction(ActivateByType.RELEASE, this::createNcerUI);
         ButtonNode selectNscr = gui.button(selectNSCRFile);
         selectNscr.registerAction(ActivateByType.RELEASE, this::createNscrUI);
         ButtonNode selectNcgr = gui.button(selectNCGRFile);

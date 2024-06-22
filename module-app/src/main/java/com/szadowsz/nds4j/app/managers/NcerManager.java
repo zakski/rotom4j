@@ -1,6 +1,7 @@
 package com.szadowsz.nds4j.app.managers;
 
 import com.szadowsz.nds4j.app.NDSGuiImpl;
+import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCER;
 import com.szadowsz.nds4j.file.nitro.NSCR;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public class NcerManager {
         return singleton;
     }
 
-    public NCER registerNCER(NDSGuiImpl gui, NCER ncer) {
+    public NCER registerNCER(NDSGuiImpl gui, NCER ncer) throws NitroException {
         if (!ncerFileMap.containsKey(ncer.getFileName())) {
             LOGGER.info("Registering GUI for NCER File: " + ncer.getFileName());
             ncerFileMap.put(ncer.getFileName(), ncer);

@@ -162,6 +162,33 @@ public class FileChooser {
      * @param prompt File Dialog Prompt Title
      * @return the absolute path name for the selected NSCR, or null if action cancelled.
      */
+    public static String selectNcerFile(PApplet sketchWindow, String lastPath, String prompt) {
+        LOGGER.info("Selecting NCER File");
+        File selectedFile = null;
+        Frame frame = getFrame(sketchWindow);
+        // Frame frame = (sketchWindow == null) ? null : sketchWindow.frame;
+        if (PApplet.platform == MACOS) { // && PApplet.useNativeSelect != false) {
+            selectedFile = getFileOnMac(frame, prompt, ncerNameFilter, lastPath);
+        } else {
+            selectedFile = getFileOnOther(frame, prompt, ncerFilter, lastPath);
+        }
+        if (selectedFile != null) {
+            LOGGER.info("Selected NCER File: " + selectedFile.getAbsolutePath());
+            return selectedFile.getAbsolutePath();
+        } else {
+            LOGGER.info("No NCER File Selected");
+            return null;
+        }
+    }
+
+    /**
+     * Select a NSCR file from the local file system.
+     *
+     * @param sketchWindow parent processing window
+     * @param lastPath last path looked at by file selection dialog
+     * @param prompt File Dialog Prompt Title
+     * @return the absolute path name for the selected NSCR, or null if action cancelled.
+     */
     public static String selectNscrFile(PApplet sketchWindow, String lastPath, String prompt) {
         LOGGER.info("Selecting NSCR File");
         File selectedFile = null;

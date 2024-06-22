@@ -1,5 +1,7 @@
 package com.szadowsz.nds4j.app.nodes.ncer;
 
+import com.szadowsz.nds4j.data.nfs.Cell;
+import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCER;
 import com.szadowsz.nds4j.file.nitro.NSCR;
 import com.szadowsz.ui.node.AbstractNode;
@@ -21,13 +23,14 @@ public class NCERPreviewNode extends AbstractNode {
     private final NCER ncer;
     PImage image;
 
-    public NCERPreviewNode(String path, NCERFolderNode folder, NCER ncer) {
+    public NCERPreviewNode(String path, NCERFolderNode folder, NCER ncer) throws NitroException {
         super(NodeType.TRANSIENT,path, folder);
         this.ncer = ncer;
-        masterInlineNodeHeightInCells = ncer.getHeight() / cell +  ((ncer.getHeight() % cell != 0)?1:0);
-        size.x = ncer.getWidth();
-        size.y = ncer.getHeight();
-        loadImage(ncer.getImage());
+        BufferedImage image = ncer.getNcerImage(0);
+        size.x = image.getWidth();
+        size.y = image.getHeight();
+        masterInlineNodeHeightInCells = image.getHeight() / cell +  ((image.getHeight() % cell != 0)?1:0);
+        loadImage(image);
     }
 
     private void drawCheckerboard(PGraphics pg) {
