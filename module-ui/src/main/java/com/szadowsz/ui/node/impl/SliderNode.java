@@ -33,7 +33,7 @@ public class SliderNode extends AbstractNode {
 
     float valueFloatDefault;
     final float valueFloatMin;
-    final float valueFloatMax;
+    float valueFloatMax;
     final boolean valueFloatConstrained;
     float backgroundScrollX = 0;
     float mouseDeltaX, mouseDeltaY;
@@ -224,6 +224,16 @@ public class SliderNode extends AbstractNode {
                 setPrecisionIndexAndValue(i);
                 break;
             }
+        }
+    }
+
+    public void setMaxValue(int maxValue){
+        valueFloatMax = maxValue;
+        if (valueFloatMax < valueFloat){
+            valueFloat  = valueFloatMax;
+        }
+        if (valueFloatMax < valueFloatDefault){
+            valueFloatDefault  = valueFloatMax;
         }
     }
 

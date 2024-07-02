@@ -22,18 +22,25 @@ package com.szadowsz.nds4j.file.nitro;
 import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
 import com.szadowsz.nds4j.data.NFSFormat;
-import com.szadowsz.nds4j.data.nfs.Cell;
+import com.szadowsz.nds4j.data.nfs.cells.CellInfo;
+import com.szadowsz.nds4j.data.nfs.cells.CellPojo;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.reader.MemBuf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+import static java.awt.image.BufferedImage.TYPE_INT_RGB;
+
 /**
  * An object representation of an NCER file
  */
 public class NCER extends GenericNFSFile {
+    private static final Logger logger = LoggerFactory.getLogger(NCER.class);
+
     public static final int GX_OBJVRAMMODE_CHAR_2D = 0x000000;
     public static final int GX_OBJVRAMMODE_CHAR_1D_32K = 0x000010;
     public static final int GX_OBJVRAMMODE_CHAR_1D_64K = 0x100010;
@@ -60,7 +67,7 @@ public class NCER extends GenericNFSFile {
                     {8, 16}, {8, 32}, {16, 32}, {32, 64}
             }
     };
-    
+
     // CEBK (CEll BanK) section
     private String cebkId;
     private long cebkSectionSize;
@@ -78,12 +85,15 @@ public class NCER extends GenericNFSFile {
     private boolean vramTransfer;
     private boolean tacu;
 
-    private Cell[] cells;
+    private CellPojo[] cellPojos;
+    private CellInfo[] cells;
+
     private NCGR ncgr;
 
     private String lablID;
     private int lablSectionSize;
-  
+    private byte[] labl;
+
     private String uextID;
     private int uextSectionSize;
     private int uextUnknown;
@@ -113,73 +123,37 @@ public class NCER extends GenericNFSFile {
         readFile(reader);
     }
 
-    public static int[] getOamSize(Cell.OAM oam) {
-        return oamSize[oam.getShape()][oam.getSize()];
-    }
-    
-    private void readCells(MemBuf.MemBufReader reader, int[][] partitionData, int[] cellAttributes) {
-        int storedPos;
-        cells = new Cell[cebkNumBanks];
-
+    private void readCells(MemBuf.MemBufReader reader) {
+        cellPojos = new CellPojo[cebkNumBanks];
+        cells = new CellInfo[cebkNumBanks];
         for (int i = 0; i < cebkNumBanks; i++) {
             int cellCount = reader.readUInt16();
-            cells[i] = new Cell(this, cellCount, partitionData[i][0], partitionData[i][1], cellAttributes[i]);
-            cells[i].setAttributes(reader.readUInt16());
+            int cellAttr = reader.readUInt16();
+            CellPojo cell = cellPojos[i] = new CellPojo(cellCount,cellAttr);
             int cellOffset = reader.readInt();
-            cells[i].setMaxX(reader.readShort());
-            cells[i].setMaxY(reader.readShort());
-            cells[i].setMinX(reader.readShort());
-            cells[i].setMinY(reader.readShort());
-
-            storedPos = reader.getPosition();
-
-            if (cebkBankType == 0) {
-                reader.setPosition(reader.getPosition() + (cebkNumBanks - (i + 1)) * 8 + cellOffset);
+            System.out.println("CELL COUNT: " + cellCount);
+            if (cellCount != 0) {
+                int storedPos = reader.getPosition();
+                if (cebkBankType == 0) {
+                    reader.setPosition(reader.getPosition() + (cebkNumBanks - (i + 1)) * 8 + cellOffset);
+                } else {
+                    reader.setPosition(reader.getPosition() + (cebkNumBanks - (i + 1)) * 0x10 + cellOffset);
+                }
+                for (int j = 0; j < cellCount; j++) {
+                    cell.setOamAttrs(j, reader.readShort(), reader.readShort(), reader.readShort());
+                }
+                reader.setPosition(storedPos);
+                if (cebkBankType == 1) {
+                    cell.setBounds(reader.readShort(),reader.readShort(),reader.readShort(),reader.readShort());
+                }
             } else {
-                reader.setPosition(reader.getPosition() + (cebkNumBanks - (i + 1)) * 0x10 + cellOffset);
+                // Provide at least one OAM attribute for empty cells
+                cell.setEmptyAttributes(); // Disable rendering
             }
-
-            // read OAMs
-            for (int x = 0; x < cellCount; x++) {
-                int yCoord = reader.readByte();
-                byte attr0 = (byte) reader.readByte();
-                short attr1 = reader.readShort();
-                short attr2 = reader.readShort();
-
-                cells[i].setOam(x,yCoord,attr0,attr1,attr2);
-            }
-
-            reader.setPosition(storedPos);
         }
     }
 
-    private void readCellBank(MemBuf.MemBufReader reader) {
-        //cell bank data
-        cebkId = reader.readString(4); // 0x10
-        if (!cebkId.equals("KBEC")) {
-            throw new RuntimeException("Not a valid NCER file.");
-        }
-
-        cebkSectionSize = reader.readUInt32(); // 0x14
-        cebkNumBanks = reader.readUInt16(); // 0x18
-        cebkBankType = reader.readUInt16(); // 0x1A // 1 - with bounding rectangle, 0 - without
-        cebkBankDataOffset = reader.readUInt32(); // 0x1C
-        cebkMappingType = (int) (reader.readUInt32() & 0xFF); // 0x20
-        if (cebkMappingType < 5) {
-            cebkMappingMode = mappingModes[cebkMappingType];
-        } else {
-            cebkMappingMode = GX_OBJVRAMMODE_CHAR_1D_32K;
-        }
-
-        cebkPartitionDataOffset = reader.readInt(); // 0x24
-        cebkUnused = reader.readInt();
-        cebkTacuOffset = reader.readInt();
-
-        vramTransfer = cebkPartitionDataOffset != 0;
-        tacu = cebkTacuOffset != 0;
-
-        int storedPos = reader.getPosition();
-
+    private int[][] readVramTransfer(MemBuf.MemBufReader reader) {
         int[][] partitionData = new int[cebkNumBanks][2];
         if (vramTransfer) {
             reader.setPosition(NTR_HEADER_SIZE + cebkPartitionDataOffset + 8);
@@ -192,39 +166,48 @@ public class NCER extends GenericNFSFile {
                 partitionData[i] = new int[] {partitionOffset, partitionSize};
             }
         }
+        return partitionData;
+    }
 
-        int[] cellAttributes = new int[cebkNumBanks];
-        if (tacu) {
-            reader.setPosition(NTR_HEADER_SIZE + cebkTacuOffset + 8);
-
-            String tacuMagic = reader.readString(4);
-
-            if (!tacuMagic.equals("TACU")) {
-                throw new RuntimeException("Not a valid RECN file.");
-            }
-
-            int tacuSize = reader.readInt();
-            int numTacuCells = reader.readUInt16();
-
-            if (numTacuCells != cebkNumBanks)
-                throw new RuntimeException("Idk what to do here - tacu cell stuff");
-
-            cellAttributes = new int[numTacuCells];
-            int numAttributes = reader.readUInt16();
-
-            if (numAttributes != 1)
-                throw new RuntimeException("Idk what to do here - tacu attribute not 1?");
-
-            int cellAttributeOffset = reader.readInt();
-            reader.skip(cellAttributeOffset - 8);
-
-            for (int i = 0; i < numTacuCells; i++) {
-                cellAttributes[i] = reader.readInt();
-            }
+    private void readCellBank(MemBuf.MemBufReader reader) throws NitroException {
+        //cell bank data
+        cebkId = reader.readString(4); // 0x10
+        if (!cebkId.equals("KBEC")) {
+            throw new NitroException("Not a valid NCER file.");
         }
+        cebkSectionSize = reader.readUInt32(); // 0x14
 
-        reader.setPosition(storedPos); // reader is now at 0x30
-        readCells(reader, partitionData, cellAttributes);
+        cebkNumBanks = reader.readUInt16(); // 0x18
+        cebkBankType = reader.readUInt16(); // 0x1A // 1 - with bounding rectangle, 0 - without
+
+        cebkBankDataOffset = reader.readUInt32(); // 0x1C
+
+        cebkMappingType = (int) (reader.readUInt32() & 0xFF); // 0x20
+        if (cebkMappingType < 5) {
+            cebkMappingMode = mappingModes[cebkMappingType];
+        } else {
+            cebkMappingMode = GX_OBJVRAMMODE_CHAR_1D_32K;
+        }
+        readCells(reader);
+
+        // Check for VRAM transfer
+        cebkPartitionDataOffset = reader.readInt(); // 0x24
+        vramTransfer = cebkPartitionDataOffset != 0;
+
+        cebkUnused = reader.readInt();
+        cebkTacuOffset = reader.readInt();
+        tacu = cebkTacuOffset != 0;
+
+        int[][] partitionData = readVramTransfer(reader);
+
+        for (int i = 0; i < cebkNumBanks;i++){
+            CellPojo pojo = cellPojos[i];
+            int[] partition = partitionData[i];
+            cells[i] = new CellInfo(this,pojo,partition);
+        }
+        if (tacu) {
+            logger.warn("TACU NOT IMPLEMENTED");
+        }
     }
 
     private void readLabels(MemBuf.MemBufReader reader) {
@@ -233,24 +216,24 @@ public class NCER extends GenericNFSFile {
         if (!lablID.equals("LBAL")) {
             throw new RuntimeException("Not a valid RECN file.");
         }
-        lablSectionSize = reader.readInt();
-
-        long[] stringOffsets = new long[cebkNumBanks + 1];
-        stringOffsets[stringOffsets.length - 1] = lablSectionSize - 8 - (4L *cebkNumBanks);
-        for (int i = 0; i < cebkNumBanks; i++) {
-            long offset = reader.readUInt32();
-            if (offset >= lablSectionSize - 8) {
-                reader.setPosition(reader.getPosition() - 4);
-                offset = -1;
-            }
-            stringOffsets[i] = offset;
-        }
-
-        for (int i = 0; i < stringOffsets.length - 1; i++) {
-            if (stringOffsets[i] != -1) {
-                cells[i].setName(reader.readString((int) (stringOffsets[i+1] - stringOffsets[i])).trim());
-            }
-        }
+        lablSectionSize = reader.readInt() - 8;
+        labl = reader.readBytes(lablSectionSize);
+//        long[] stringOffsets = new long[cebkNumBanks + 1];
+//        stringOffsets[stringOffsets.length - 1] = lablSectionSize - (4L *cebkNumBanks);
+//        for (int i = 0; i < cebkNumBanks; i++) {
+//            long offset = reader.readUInt32();
+//            if (offset >= lablSectionSize) {
+//                reader.setPosition(reader.getPosition() - 4);
+//                offset = -1;
+//            }
+//            stringOffsets[i] = offset;
+//        }
+//
+//        for (int i = 0; i < stringOffsets.length - 1; i++) {
+//            if (stringOffsets[i] != -1) {
+//                cells[i].setName(reader.readString((int) (stringOffsets[i+1] - stringOffsets[i])).trim());
+//            }
+//        }
     }
 
     @Override
@@ -259,7 +242,7 @@ public class NCER extends GenericNFSFile {
         readCellBank(reader);
         if (!labelEnabled)
             return;
-        
+
         reader.setPosition(NTR_HEADER_SIZE + cebkSectionSize);
         readLabels(reader);
 
@@ -273,7 +256,6 @@ public class NCER extends GenericNFSFile {
         uextSectionSize = reader.readInt();
         uextUnknown = reader.readInt();
     }
-
 
     /**
      * Sets the parent <code>NCGR</code> used to display image data from this <code>CellBank</code>
@@ -300,62 +282,233 @@ public class NCER extends GenericNFSFile {
     }
 
     public int getCellsCount(){
-        return cells.length;
-    }
-
-    public Cell.CellImage getCellImage(int i) throws NitroException {
-        Cell cell = cells[i];
-        return cell.getImage();
-    }
-
-    public Cell.OAM.OamImage[] getCellImages(int i) throws NitroException {
-        Cell cell = cells[i];
-        return cell.getImages();
-    }
-
-    public BufferedImage getNcerImage(int i) throws NitroException {
-        Cell cell = cells[i];
-
-        BufferedImage output = new BufferedImage(cell.getWidth(), cell.getHeight(), BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = (Graphics2D) output.getGraphics();
-
-        Cell.OAM.OamImage[] images = cell.getImages();
-        for (int x = 0; x < images.length; x++) {
-            Cell.OAM oam = cell.getOams()[x];
-
-            g.drawImage(images[x].getImage(), oam.getCoordX() + output.getWidth() / 2, oam.getCoordY() + output.getHeight() / 2, null);
-        }
-        g.dispose();
-
-        return output;
-    }
-
-    public void recolorImage() throws NitroException {
-        for (int i = 0; i < cells.length; i++) {
-            Cell.OAM.OamImage[] images = cells[i].getImages();
-            for (int j = 0; j < images.length; j++) {
-                images[j].recolorImage();
-            }
-        }
+        return cellPojos.length;
     }
 
     /**
-     * Generates an object representation of an NSCR file from a file on disk
+     * Generates an object representation of an NCER file from a file on disk
      *
-     * @param path a <code>String</code> containing the path to a NSCR file on disk
-     * @return an <code>IndexedImage</code> object
+     * @param path a <code>String</code> containing the path to a NCER file on disk
+     * @return an <code>NCER</code> object
      */
     public static NCER fromFile(String path) throws NitroException {
         return fromFile(new File(path));
     }
 
     /**
-     * Generates an object representation of an NSCR file from a file on disk
+     * Generates an object representation of an NCER file from a file on disk
      *
-     * @param file a <code>File</code> containing the path to a NSCR file on disk
-     * @return an <code>IndexedImage</code> object
+     * @param file a <code>File</code> containing the path to a NCER file on disk
+     * @return an <code>NCER</code> object
      */
     public static NCER fromFile(File file) throws NitroException {
         return (NCER) NFSFactory.fromFile(file);
+    }
+
+    private int calcByteBoundary(int m){
+        return (1<<((((m)>>20)&0x7)+5));
+    }
+
+    private int calcCHName(int x, int m, int b){
+        return (calcByteBoundary(m)*(x)/((b)<<3));
+    }
+
+    private void renderCellObj(CellInfo.OAM info, int mapping, CellInfo vramTransfer, Color[] out, int[] width, int[] height, boolean checker) {
+        width[0] = info.getWidth();
+        height[0] = info.getHeight();
+
+        int tilesX = width[0] / 8;
+        int tilesY = height[0] / 8;
+
+        if (ncgr != null) {
+            int charSize = ncgr.getBitDepth() * 8;
+            int ncgrStart = calcCHName(info.getOffset(), mapping, ncgr.getBitDepth());
+            for (int y = 0; y < tilesY; y++) {
+                for (int x = 0; x < tilesX; x++) {
+                    Color[] block = new Color[64];
+
+                    int bitsOffset = x * 8 + (y * 8 * tilesX * 8);
+                    int index;
+                    if (NCGR.calcIsNCGR2D(mapping)) {
+                        int ncx = x + ncgrStart % ncgr.getTileWidth();
+                        int ncy = y + ncgrStart / ncgr.getTileWidth();
+                        index = ncx + ncgr.getTileWidth() * ncy;
+                    } else {
+                        index = ncgrStart + x + y * tilesX;
+                    }
+
+                    ncgr.chrRenderCharacterTransfer(index, vramTransfer, block, info.getPalette(), true);
+                    for (int i = 0; i < 8; i++) {
+                        System.arraycopy(block, i * 8, out, bitsOffset + tilesX * 8 * i, 8);
+                    }
+                }
+            }
+        }
+
+        // render checker
+//        if (checker) {
+//            for (int i = 0; i < info.getWidth() * info.getHeight(); i++) {
+//                int x = i % info.getWidth();
+//                int y = i / info.getWidth();
+//                int ch = ((x >> 2) ^ (y >> 2)) & 1;
+//                int c = out[i];
+//                if ((c & 0xFF000000) == 0) {
+//                    out[i] = ch != 0 ? 0xFFFFFF : 0xC0C0C0;
+//                }
+//            }
+//        }
+    }
+
+//    private BufferedImage renderCellObj(CellInfo.OAM info, int mapping, BufferedImage out,  boolean checker) {
+//	    BufferedImage image = new BufferedImage(info.getWidth(),info.getHeight(),BufferedImage.TYPE_INT_RGB);
+//        int tilesX = image.getWidth() / 8;
+//        int tilesY = image.getHeight() / 8;
+//
+//        if (ncgr != null) {
+//            int charSize = ncgr.getBitDepth() * 8;
+//            int ncgrStart = calcCHName(info.getOffset(), mapping, ncgr.getBitDepth());
+//            for (int y = 0; y < tilesY; y++) {
+//                for (int x = 0; x < tilesX; x++) {
+//                    int bitsOffset = x * 8 + (y * 8 * tilesX * 8);
+//                    int index;
+//                    if (calcIsNCGR2D(mapping)) {
+//                        int ncx = x + ncgrStart % ncgr.getTileWidth();
+//                        int ncy = y + ncgrStart / ncgr.getTileWidth();
+//                        index = ncx + ncgr.getTileWidth() * ncy;
+//                    } else {
+//                        index = ncgrStart + x + y * tilesX;
+//                    }
+//
+//                    ncgr.renderCharacterTransfer(index, info, image, vramTransfer,true);
+//                    for (int i = 0; i < 8; i++) {
+//                        memcpy(out + bitsOffset + tilesX * 8 * i, block + i * 8, 32);
+//                    }
+//                }
+//            }
+//        }
+//
+//        //render checker
+//        if (checker) {
+//            for (int i = 0; i < info.getWidth() * info.getHeight(); i++) {
+//                int x = i % info.getWidth();
+//                int y = i / info.getWidth();
+//                int ch = ((x >> 2) ^ (y >> 2)) & 1;
+//                Color c = out[i];
+//                if ((c & 0xFF000000) == 0) {
+//                    out[i] = ch ? 0xFFFFFF : 0xC0C0C0;
+//                }
+//            }
+//        }
+//    }
+
+//    public BufferedImage renderCell(Color[] px, CellInfo cell, int xOffs, int yOffs){
+//        //BufferedImage block = new BufferedImage(64,64,BufferedImage.TYPE_INT_RGB);
+//        Color[] block = new Color[64 * 64];
+//        for (int i = cell.getOams().length - 1; i >= 0; i--) {
+//            CellInfo.OAM info = cell.getOams()[i];
+//            int[] entryWidth = new int[1];
+//            int[] entryHeight = new int[1];
+//            renderCellObj(info, cebkMappingMode, cell, block,entryWidth,entryHeight,false);
+//
+//            //HV flip? Only if not affine!
+//            if (!info.getRotationScaling()) {
+//                int[] temp = new int[64];
+//                if (info.getFlipY()) {
+//                    for (int j = 0; j < info.getHeight() / 2; j++) {
+//                        System.arraycopy(block, j * info.getWidth(), temp, 0, info.getWidth());
+//                        System.arraycopy(block, (info.getHeight() - 1 - j) * info.getWidth(), block, j * info.getWidth(), info.getWidth());
+//                        System.arraycopy(temp, 0, block, (info.getHeight() - 1 - j) * info.getWidth(), info.getWidth());
+//                    }
+//                }
+//                if (info.getFlipX()) {
+//                    for (int j = 0; j < info.getWidth() / 2;j++) {
+//                        for (int k = 0; k < info.getHeight(); k++) {
+//                            Color left = block[j + k * info.getWidth()];
+//                            block[j + k * info.getWidth()] = block[info.getWidth() - 1 - i + j * info.getWidth()];
+//                            block[info.getWidth() - 1 - j + k * info.getWidth()] = left;
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if (!info.getSizeDisable()) {
+//                int x = info.getX();
+//                int y = info.getY();
+//                //adjust for double size
+//                if (info.getDoubleSize()) {
+//                    x += info.getWidth() / 2;
+//                    y += info.getHeight() / 2;
+//                }
+//                //copy data
+//                if (!info.getRotationScaling()) {
+//                    for (int j = 0; j < info.getHeight(); j++) {
+//                        int _y = (y + j + yOffs) & 0xFF;
+//                        for (int k = 0; k < info.getWidth(); k++) {
+//                            int _x = (x + k + xOffs) & 0x1FF;
+//                            Color col = block[j * info.getWidth() + k];
+//                            if (col.getRGB() >>> 24 != 0) {
+//                                 px[_x + _y * 512] = block[j * info.getWidth() + k];
+//                            }
+//                        }
+//                    }
+//                } else {
+//                    //transform about center
+//                    int realWidth = info.getWidth() << info.getDoubleSizeAsInt();
+//                    int realHeight = info.getHeight() << info.getDoubleSizeAsInt();
+//                    int cx = realWidth / 2;
+//                    int cy = realHeight / 2;
+//                    int realX = x - (realWidth - info.getWidth()) / 2;
+//                    int realY = y - (realHeight - info.getHeight()) / 2;
+//                    for (int j = 0; j < realHeight; j++) {
+//                        int destY = (realY + j + yOffs) & 0xFF;
+//                        for (int k = 0; k < realWidth; k++) {
+//                            int destX = (realX + k + xOffs) & 0x1FF;
+//
+//                            int srcX = (int) ((k - cx) * 1.0 + (j - cy) * 1.0) + cx;
+//                            int srcY = (int) ((k - cx) * 1.0 + (j - cy) * 1.0) + cy;
+//
+//                            if (info.getDoubleSize()) {
+//                                srcX -= realWidth / 4;
+//                                srcY -= realHeight / 4;
+//                            }
+//                            if (srcX >= 0 && srcY >= 0 && srcX < info.getWidth() && srcY < info.getHeight()) {
+//                                Color src = block[srcY * info.getWidth() + srcX];
+//                                if (src.getRGB() >>> 24 != 0)  px[destX + destY * 512] = src;
+//                            }
+//
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return block;
+//    }
+
+    public CellInfo getCell(int index){
+        return cells[index];
+    }
+
+    public BufferedImage getImage(int cellNum, int oamNum) {
+        CellInfo cell = cells[cellNum];
+        CellInfo.OAM info = cell.getOam(oamNum);
+        int[] entryWidth = new int[1];
+        int[] entryHeight = new int[1];
+
+        Color[] bits = new Color[info.getWidth() * info.getHeight()];
+        renderCellObj(info, cebkMappingMode, cell, bits, entryWidth,entryHeight,false);
+        return createBitmap(entryWidth[0], entryHeight[0], bits);
+    }
+
+    private BufferedImage createBitmap(int width, int height, Color[] bits) {
+        int pos = 0;
+        BufferedImage image = new BufferedImage(width,height,TYPE_INT_RGB);
+        for (int h = 0; h < height; h++) {
+            for (int w = 0; w < width; w++) {
+                Color color = bits[pos];
+                pos++;
+                image.setRGB(w, h, color.getRGB());
+            }
+        }
+        return image;
     }
 }

@@ -1,9 +1,7 @@
 package com.szadowsz.nds4j.app.nodes.ncer;
 
-import com.szadowsz.nds4j.data.nfs.Cell;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCER;
-import com.szadowsz.nds4j.file.nitro.NSCR;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeType;
 import com.szadowsz.ui.store.ShaderStore;
@@ -26,7 +24,7 @@ public class NCERPreviewNode extends AbstractNode {
     public NCERPreviewNode(String path, NCERFolderNode folder, NCER ncer) throws NitroException {
         super(NodeType.TRANSIENT,path, folder);
         this.ncer = ncer;
-        BufferedImage image = ncer.getNcerImage(0);
+        BufferedImage image = ncer.getImage(0,0);
         size.x = image.getWidth();
         size.y = image.getHeight();
         masterInlineNodeHeightInCells = image.getHeight() / cell +  ((image.getHeight() % cell != 0)?1:0);

@@ -2,6 +2,7 @@ package com.szadowsz.nds4j.app.nodes.ncer;
 
 import com.szadowsz.nds4j.app.Processing;
 import com.szadowsz.nds4j.app.utils.FileChooser;
+import com.szadowsz.nds4j.data.nfs.cells.CellInfo;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCER;
 import com.szadowsz.nds4j.file.nitro.NCGR;
@@ -28,6 +29,7 @@ public class NCERFolderNode extends FolderNode {
     private final NCER ncer;
 
     private final String CELL_NODE = "Cell";
+    private final String OAM_NODE = "OAM";
     private final String ZOOM_NODE = "Zoom";
     private final String SELECT_NCGR_FILE = "Select NCGR";
     private final String SELECT_NCLR_FILE = "Select NClR";
@@ -41,12 +43,19 @@ public class NCERFolderNode extends FolderNode {
             @Override
             protected void onValueFloatChanged() {
                 super.onValueFloatChanged();
-                try {
-                    recolorImage();
-                    ((NCERPreviewNode)findChildByName(ncer.getFileName())).loadImage(ncer.getNcerImage((int) valueFloat));
-                } catch (NitroException e) {
-                    throw new RuntimeException(e);
-                }
+                SliderNode oam = ((SliderNode)findChildByName(OAM_NODE));
+                CellInfo ncerCell = ncer.getCell((int) valueFloat);
+                oam.setMaxValue(ncerCell.getOamCount()-1);
+                ((NCERPreviewNode)findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) valueFloat, (int) oam.valueFloat));
+            }
+        });
+        CellInfo ncerCell = ncer.getCell(0);
+        children.add(new SliderNode(path + "/" + OAM_NODE, this, 0.0f, 0.0f, ncerCell.getOamCount()-1, true){
+            @Override
+            protected void onValueFloatChanged() {
+                super.onValueFloatChanged();
+                SliderNode cell = ((SliderNode)findChildByName(CELL_NODE));
+                ((NCERPreviewNode)findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) cell.valueFloat, (int) valueFloat));
             }
 
         });
@@ -80,8 +89,9 @@ public class NCERFolderNode extends FolderNode {
                LOGGER.info("Loading NCGR File: " + ncgrPath);
                ncer.setNCGR(NCGR.fromFile(ncgrPath));
                recolorImage();
-               SliderNode sliderNode = (SliderNode) findChildByName(CELL_NODE);
-               ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getNcerImage((int) sliderNode.valueFloat));
+               SliderNode cellNode = (SliderNode) findChildByName(CELL_NODE);
+               SliderNode oamNode = (SliderNode) findChildByName(OAM_NODE);
+               ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) cellNode.valueFloat,(int) oamNode.valueFloat));
                LOGGER.info("Loaded NCGR File: " + ncgrPath);
             } catch (IOException e) {
                 LOGGER.error("NCGR Load Failed",e);
@@ -100,7 +110,9 @@ public class NCERFolderNode extends FolderNode {
                 ncer.setNCLR(NCLR.fromFile(nclrPath));
                 recolorImage();
                 SliderNode sliderNode = (SliderNode) findChildByName(CELL_NODE);
-                ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getNcerImage((int) sliderNode.valueFloat));
+                SliderNode cellNode = (SliderNode) findChildByName(CELL_NODE);
+                SliderNode oamNode = (SliderNode) findChildByName(OAM_NODE);
+                ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) cellNode.valueFloat,(int) oamNode.valueFloat));
                 LOGGER.info("Loaded NCLR File: " + nclrPath);
             } catch (IOException e) {
                 LOGGER.error("NCLR Load Failed",e);
@@ -116,7 +128,6 @@ public class NCERFolderNode extends FolderNode {
 
     public void recolorImage() throws NitroException {
         ncer.getNCGR().recolorImage();
-        ncer.recolorImage();
         this.window.windowSizeX = autosuggestWindowWidthForContents();
     }
 

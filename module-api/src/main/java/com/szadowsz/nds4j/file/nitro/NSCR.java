@@ -150,43 +150,13 @@ public class NSCR extends GenericNFSFile {
         if (ncgr == null) {
             return;
         }
-
-        //byte[] bits = getIndexedNscrBits(tileBase);
-        //image =  renderIndexedNscr(bits);
-        //public int[] renderNscrBits(NCLR nclr, int tileBase, int[] widthHeight, int tileMarks, int hlStart, int hlEnd, int hlMode, int selStartX, int selStartY, int selEndX, int selEndY, boolean transparent) {
-        //            DWORD *bits = renderNscrBits(this, ncgr, ncgr.getPalette(), tileBase, &outWidth, &outHeight, -1, -1, -1, PALVIEWER_SELMODE_2D,
-//                    -1, -1, -1, -1, -1);
         try {
             image = renderNscr(tileBase, false, -1, -1, -1, -1, PALVIEWER_SELMODE_2D, 1, -1, -1, -1, -1, false);
         } catch (Exception e){
             throw new InvalidFileException("Image Rendering Failed",e);
         }
-//        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-//        NTFS[] currMap = new NTFS[mapData.length];
-//        for (int i = 0; i < mapData.length; i++) {
-//            currMap[i] = new NTFS(mapData[i]);
-//        }
-//        Byte[] tiles = applyMap(currMap, ncgr.getCharData(), ncgr.getBitDepth(), ncgr.getTileSize());
-//        setImageData(tiles, ncgr.getCharBitDepth(), ncgr.getTileSize());
-
     }
-//						if (nclr->nColors <= 256) {
-//        //write 8bpp indexed
-//        COLOR32 palette[256] = { 0 };
-//        int transparentOutput = 1;
-//        int paletteSize = 1 << ncgr->nBits;
-//        if (nclr != NULL) {
-//            for (int i = 0; i < min(nclr->nColors, 256); i++) {
-//                int makeTransparent = transparentOutput && ((i % paletteSize) == 0);
-//
-//                palette[i] = ColorConvertFromDS(nclr->colors[i]);
-//                if (!makeTransparent) palette[i] |= 0xFF000000;
-//            }
-//        }
-//        unsigned char *bits = renderNscrIndexed(nscr, ncgr, data->tileBase, &width, &height, TRUE);
-//        ImgWriteIndexed(bits, width, height, palette, 256, location);
-//        free(bits);
-//    }
+
     public int nscrGetTileEx(int charBase, int x, int y, Color[] out, int[] tileNo, boolean transparent) {
         if (ncgr == null) {
             Arrays.fill(out, 0);

@@ -1,4 +1,4 @@
-package com.szadowsz.nds4j.data.nfs;
+package com.szadowsz.nds4j.data.nfs.cells;
 
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCER;
@@ -10,7 +10,11 @@ import java.awt.image.BufferedImage;
  * An individual "Cell", or "Bank" within an NCER.
  * In theory, this represents one assembled image.
  */
-public class Cell {
+public class CellInfo {
+    private static final int[][] widths = new int[][]{ {8, 16, 32, 64}, {16, 32, 32, 64}, {8, 8, 16, 32} };
+    private static final int[][] heights = new int[][]{ {8, 16, 32, 64}, {8, 8, 16, 32}, {16, 32, 32, 64} };
+
+
     private final NCER ncer;
     String name;
     int tacuData;
@@ -30,7 +34,7 @@ public class Cell {
      *
      * @param oamCount an <code>int</code> representing the number of OAMs in the cell
      */
-    public Cell(NCER ncer, int oamCount, int partitionOffset, int partitionSize, int tacuData) {
+    public CellInfo(NCER ncer, int oamCount, int partitionOffset, int partitionSize, int tacuData) {
         this.ncer = ncer;
         attributes = new CellAttribute();
         oams = new OAM[oamCount];
@@ -43,21 +47,22 @@ public class Cell {
         this.tacuData = tacuData;
     }
 
-    public OAM.OamImage[] getImages() throws NitroException {
-        int[] index = null;
-
-        OAM.OamImage[] images = new OAM.OamImage[oams.length];
-
+    public CellInfo(NCER ncer, CellPojo pojo, int[] partition) {
+        this.ncer = ncer;
+        this.maxX = pojo.maxX;
+        this.maxY = pojo.maxY;
+        this.minX = pojo.minX;
+        this.minY = pojo.minY;
+        oams = new OAM[pojo.nAttribs];
         for (int i = 0; i < oams.length; i++) {
-            OAM oam = oams[i];
-
-            if (oam == null)
-                break;
-
-            images[i] = oam.getImage(i, index);
+            oams[i] = new OAM();
+            setOam(i,pojo.getOamAttrs(i));
         }
+        attributes = new CellAttribute();
+        setAttributes(pojo.cellAttr);
+        this.partitionOffset = partition[0];
+        this.partitionSize = partition[1];
 
-        return images;
     }
 
     public String getName() {
@@ -66,22 +71,6 @@ public class Cell {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getTacuData() {
-        return tacuData;
-    }
-
-    public void setTacuData(int tacuData) {
-        this.tacuData = tacuData;
-    }
-
-    public CellAttribute getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(CellAttribute attributes) {
-        this.attributes = attributes;
     }
 
     public void setAttributes(int cellAttrs) {
@@ -128,27 +117,79 @@ public class Cell {
         return oams;
     }
 
+    public int getOamCount() {
+        return oams.length;
+    }
+
+    public OAM getOam(int index) {
+        return oams[index];
+    }
+
     public void setOams(OAM[] oams) {
         this.oams = oams;
     }
 
-    public void setOam(int index, int yCoord, byte attr0, short attr1, short attr2) {
-        oams[index].yCoord = yCoord; // bits 0-7
-        oams[index].rotation = (attr0 & 1) == 1; //bit 8
-        oams[index].sizeDisable = ((attr0 >> 1) & 1) == 1; //bit 9 Obj Size (if rotation) or Obj Disable (if not rotation)
-        oams[index].mode = (attr0 >> 2) & 3; //bits 10-11
-        oams[index].mosaic = ((attr0 >> 4) & 1) == 1; //bit 12
-        oams[index].colors = ((attr0 >> 5) & 1) == 0 ? 16 : 256; //bit 13
-        oams[index].shape = (attr0 >> 6) & 3; //bits 14-15
 
-        oams[index].xCoord = (attr1 & 0x01ff) >= 0x100 ? (attr1 & 0x01ff) - 0x200 : (attr1 & 0x01ff);
-        oams[index].rotationScaling = (attr1 >> 9) & 0x1F;
-        oams[index].size = (attr1 >> 14) & 3;
-
-        oams[index].tileOffset = attr2 & 0x3FF;
-        oams[index].priority = (attr2 >> 10) & 3;
-        oams[index].palette = (attr2 >> 12) & 0xF;
+    public int getPartitionOffset(){
+        return partitionOffset;
     }
+
+    public int getPartitionSize(){
+        return partitionSize;
+    }
+
+    private int[] CellGetObjDimensions(int shape, int size) {
+        return new int[] {widths[shape][size], heights[shape][size]};
+    }
+
+    public void setOam(int index, short[] attrs) {
+        short attr0 = attrs[0];
+        short attr1 = attrs[1];
+        short attr2 = attrs[2];
+
+        oams[index].xCoord = attr1 & 0x1FF;
+        oams[index].yCoord = attr0 & 0xFF; // bits 0-7
+        oams[index].shape = attr0 >> 14; // bits 14-15
+        oams[index].size = attr1 >> 14;
+
+        int[] dims = CellGetObjDimensions(oams[index].shape,  oams[index].size);
+        oams[index].width = dims[0];
+        oams[index].height = dims[1];
+                
+        oams[index].tileOffset = attr2 & 0x3FF;
+        oams[index].priority = (attr2 >> 10) & 0x3;
+        oams[index].palette = (attr2 >> 12) & 0xF;
+        oams[index].mode = (attr0 >> 10) & 3; //bits 10-11
+        oams[index].mosaic = ((attr0 >> 12) & 1); //bit 12
+
+        oams[index].rotation = (attr0 >> 8) == 1; //bit 8
+        if (oams[index].rotation){
+            oams[index].flipX = false;
+            oams[index].flipY = false;
+            oams[index].doubleSize = (attr0 >> 9) & 1;
+            oams[index].sizeDisable = 0; //bit 9 Obj Size (if rotation) or Obj Disable (if not rotation)
+            oams[index].rotationScaling = (attr1 >> 9) & 0x1F;
+        } else {
+            oams[index].flipX = ((attr1 >> 12) & 1) == 1;
+            oams[index].flipY = ((attr1 >> 13) & 1) == 1;
+            oams[index].doubleSize = 0;
+            oams[index].sizeDisable = ((attr0 >> 9) & 1); //bit 9 Obj Size (if rotation) or Obj Disable (if not rotation)
+            oams[index].rotationScaling = 0;
+        }
+        boolean is8 = ((attr0 >> 13) & 1) == 1;
+        oams[index].characterBits = 4;
+        if (is8) {
+            oams[index].characterBits = 8;
+        }
+        //oams[index].mode = (attr0 >> 2) & 3; //bits 10-11
+        //oams[index].mosaic = ((attr0 >> 4) & 1) == 1; //bit 12
+        //oams[index].colors = ((attr0 >> 5) & 1) == 0 ? 16 : 256; //bit 13
+        //oams[index].shape = (attr0 >> 6) & 3; //bits 14-15
+
+        //oams[index].xCoord = (attr1 & 0x01ff) >= 0x100 ? (attr1 & 0x01ff) - 0x200 : (attr1 & 0x01ff);
+        //oams[index].size = (attr1 >> 14) & 3;
+
+     }
 
     public int getWidth() {
         return Math.abs(maxX - minX);
@@ -172,9 +213,9 @@ public class Cell {
         int boundingSphereRadius;
     }
 
-    public CellImage getImage() throws NitroException {
-        return new CellImage();
-    }
+//    public CellImage getImage() throws NitroException {
+//        return new CellImage();
+//    }
 
     /**
      * An individual OAM within an NCER (<code>CellBank</code>).
@@ -182,18 +223,22 @@ public class Cell {
      * the data used to generate them from an NCGR (<code>NCGR</code>).
      */
     public class OAM {
-        // attr0
+       // attr0
         int yCoord;
         boolean rotation;
-        boolean sizeDisable;
+        int sizeDisable;
         int mode;
-        boolean mosaic;
-        int colors;
+        int mosaic;
+        //int colors;
+        int characterBits;
         int shape;
+        int doubleSize;
 
         // attr1
         int xCoord;
         int rotationScaling;
+        boolean flipX;
+        boolean flipY;
         int size;
 
         // attr2
@@ -201,11 +246,14 @@ public class Cell {
         int priority;
         int palette;
 
-        public int getCoordX(){
+        int width;
+        int height;
+
+        public int getX(){
             return xCoord;
         }
 
-        public int getCoordY(){
+        public int getY(){
             return yCoord;
         }
 
@@ -213,8 +261,48 @@ public class Cell {
             return shape;
         }
 
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public int getOffset() {
+            return tileOffset;
+        }
+
         public int getSize() {
             return size;
+        }
+
+        public int getPalette() {
+            return palette;
+        }
+
+        public boolean getFlipY() {
+            return flipY;
+        }
+
+        public boolean getFlipX() {
+            return flipX;
+        }
+
+        public boolean getRotationScaling() {
+            return rotationScaling == 1;
+        }
+
+        public boolean getSizeDisable(){
+            return sizeDisable == 1;
+        }
+
+        public boolean getDoubleSize(){
+            return doubleSize == 1;
+        }
+
+        public int getDoubleSizeAsInt(){
+            return doubleSize;
         }
 
         public OAM.OamImage getImage(int i, int[] index) throws NitroException {
@@ -322,48 +410,6 @@ public class Cell {
             public String toString() {
                 return String.format("%dx%d shadow with tile offset %d of %s", oamImage.getHeight(), oamImage.getWidth(), tileOffset, oamImage.toString());
             }
-        }
-    }
-
-    /**
-     * This is a visual representation of a given <code>Cell</code> within its parent NCGR (<code>NCGR</code>).
-     */
-    public class CellImage {
-        private NCGR cellImage;
-        private boolean update;
-        private OAM.OamImage[] oamImages;
-
-        private CellImage() throws NitroException {
-            generateImageData();
-        }
-
-        private void generateImageData() throws NitroException {
-           // cellImage = new NCGR(maxY - minY + 1, maxX - minX + 1, ncer.getBitDepth(), ncer.getNCLR());
-
-            int startX;
-            int startY;
-            oamImages = getImages();
-
-            for (int i = 0; i < oamImages.length; i++) {
-                OAM oam = oams[i];
-                startX = oam.xCoord + cellImage.getWidth() / 2;
-                startY = oam.yCoord + cellImage.getHeight() / 2;
-
-                for (int row = 0; row < oamImages[i].getHeight(); row++) {
-                    for (int col = 0; col < oamImages[i].getWidth(); col++) {
-                        //cellImage.setPixelValue(startX + col, startY + row, oamImages[i].getPixelValue(col, row));
-                    }
-                }
-            }
-
-            update = false;
-        }
-
-        public BufferedImage getImage() throws NitroException {
-            if (update) {
-                generateImageData();
-            }
-            return cellImage.getImage();
         }
     }
 }
