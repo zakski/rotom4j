@@ -306,3 +306,126 @@
 //        return px;
 //    }
 //}
+//public class NcerViewer extends JPanel {
+//    private NCER ncer;
+//    private NCGR ncgr;
+//    private NCLR nclr;
+//    private int cell;
+//    private int oam;
+//    private boolean showObjOutline;
+//    private boolean showCellBounds;
+//    private boolean showGuidelines;
+//    private int[] frameBuffer;
+//    private Configuration configuration;
+//
+//    public NcerViewer() {
+//        frameBuffer = new int[256 * 512];
+//    }
+//
+//    @Override
+//    protected void paintComponent(Graphics g) {
+//        super.paintComponent(g);
+//        Graphics2D g2d = (Graphics2D) g;
+//
+//        NCER_CELL cell = ncer.cells[this.cell];
+//        NCER_CELL_INFO info = new NCER_CELL_INFO();
+//        CellDecodeOamAttributes(info, cell, oam);
+//
+//        Arrays.fill(frameBuffer, 0);
+//        CHAR_VRAM_TRANSFER transferEntry = null;
+//        if (ncer.vramTransfer != null) {
+//            transferEntry = ncer.vramTransfer[this.cell];
+//        }
+//        int[] bits = CellRenderCell(frameBuffer, ncer.cells[this.cell], ncer.mappingMode, ncgr, nclr, transferEntry,
+//                256, 128, configuration.renderTransparent, showObjOutline ? oam : -1, 1.0f, 0.0f, 0.0f, 1.0f);
+//
+//        // draw lines if needed
+//        if (showCellBounds) {
+//            int minX = (cell.minX + 256) & 0x1FF;
+//            int maxX = (cell.maxX + 256 - 1) & 0x1FF;
+//            int minY = (cell.minY + 128) & 0xFF;
+//            int maxY = (cell.maxY + 128 - 1) & 0xFF;
+//
+//            for (int i = 0; i < 256; i++) {
+//                if ((bits[i * 512 + minX] >>> 24) != 0xFE) bits[i * 512 + minX] = 0xFF0000FF;
+//                if ((bits[i * 512 + maxX] >>> 24) != 0xFE) bits[i * 512 + maxX] = 0xFF0000FF;
+//            }
+//            for (int i = 0; i < 512; i++) {
+//                if ((bits[minY * 512 + i] >>> 24) != 0xFE) bits[minY * 512 + i] = 0xFF0000FF;
+//                if ((bits[maxY * 512 + i] >>> 24) != 0xFE) bits[maxY * 512 + i] = 0xFF0000FF;
+//            }
+//        }
+//
+//        // draw solid color background if transparency disabled
+//        if (!configuration.renderTransparent) {
+//            int bgColor = 0;
+//            if (nclr != null) bgColor = ColorConvertFromDS(nclr.colors[0]);
+//            bgColor = Integer.reverseBytes(bgColor);
+//            for (int i = 0; i < 256 * 512; i++) {
+//                int c = bits[i];
+//                if ((c >>> 24) == 0) bits[i] = bgColor;
+//                else if ((c >>> 24) == 0xFE) bits[i] = ((bgColor + 0x808080) & 0xFFFFFF) | 0xFE000000;
+//            }
+//        }
+//
+//        // draw editor guidelines if enabled
+//        if (showGuidelines) {
+//            // dotted lines at X=0 and Y=0
+//            int centerColor = 0xFF0000; // red
+//            int auxColor = 0x00FF00; // green
+//            int minorColor = 0x002F00;
+//
+//            for (int i = 0; i < 512; i++) {
+//                // major guideline
+//                int c = bits[i + 128 * 512];
+//                if ((c >>> 24) != 0xFE) if ((i & 1) != 0) bits[i + 128 * 512] ^= centerColor;
+//
+//                // auxiliary guidelines
+//                c = bits[i + 64 * 512];
+//                if ((c >>> 24) != 0xFE) if ((i & 1) != 0) bits[i + 64 * 512] ^= auxColor;
+//                c = bits[i + 192 * 512];
+//                if ((c >>> 24) != 0xFE) if ((i & 1) != 0) bits[i + 192 * 512] ^= auxColor;
+//
+//                // minor guidelines
+//                for (int j = 0; j < 256; j += 8) {
+//                    if (j == 64 || j == 128 || j == 192) continue;
+//
+//                    c = bits[i + j * 512];
+//                    if ((c >>> 24) != 0xFE) if ((i & 1) != 0) bits[i + j * 512] ^= minorColor;
+//                }
+//            }
+//            for (int i = 0; i < 256; i++) {
+//                // major guideline
+//                int c = bits[256 + i * 512];
+//                if ((c >>> 24) != 0xFE) if ((i & 1) != 0) bits[256 + i * 512] ^= centerColor;
+//
+//                // auxiliary guidelines
+//                c = bits[128 + i * 512];
+//                if ((c >>> 24) != 0xFE) if ((i & 1) != 0) bits[128 + i * 512] ^= auxColor;
+//                c = bits[384 + i * 512];
+//                if ((c >>> 24) != 0xFE) if ((i & 1) != 0) bits[384 + i * 512] ^= auxColor;
+//
+//                // minor guidelines
+//                for (int j = 0; j < 512; j += 8) {
+//                    if (j == 128 || j == 256 || j == 384) continue;
+//
+//                    c = bits[j + i * 512];
+//                    if ((c >>> 24) != 0xFE) if ((i & 1) != 0) bits[j + i * 512] ^= minorColor;
+//                }
+//            }
+//        }
+//
+//        BufferedImage image = new BufferedImage(512, 256, BufferedImage.TYPE_INT_ARGB);
+//        image.setRGB(0, 0, 512, 256, bits, 0, 512);
+//        g2d.drawImage(image, 0, 0, null);
+//
+//        int width, height;
+//        int[] objBits = new int[info.width * info.height];
+//        CellRenderObj(info, ncer.mappingMode, ncgr, nclr, null, objBits, width, height, 1);
+//        BufferedImage objImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+//        objImage.setRGB(0, 0, width, height, objBits, 0, width);
+//        g2d.drawImage(objImage, 512 - 69, 256 + 5, null);
+//    }
+//
+//    // Other methods and classes (NCER, NCGR, NCLR, etc.) need to be implemented
+//}

@@ -406,7 +406,7 @@ public class NCGR extends GenericNFSFile {
 //        }
 //        return 0;
 //    }
-    private int chriRenderCharacter(byte[] chr, int depth, int previewPalette, Color[] out, boolean transparent) {
+    private int chriRenderCharacter(byte[] chr, int depth, int previewPalette, int[] out, boolean transparent) {
         for (int i = 0; i < 64; i++) {
             int index = chr[i] & 0xFF;
             if (index != 0 || !transparent) {
@@ -414,9 +414,9 @@ public class NCGR extends GenericNFSFile {
                 if (palette != null && (index + (previewPalette << depth)) < palette.getNumColors()) {
                     w = palette.getColor(index + (previewPalette << depth));
                 }
-                out[i] = w;
+                out[i] = w.getRGB();
             } else {
-                out[i] = new Color(0);
+                out[i] = 0;
             }
         }
         return 0;
@@ -442,7 +442,7 @@ public class NCGR extends GenericNFSFile {
 //        }
 //    }
 
-    private int chrRenderCharacter(int chNo, Color[] out, int previewPalette, boolean transparent) {
+    private int chrRenderCharacter(int chNo, int[] out, int previewPalette, boolean transparent) {
         if (chNo < getTileCount()) {
             byte[] tile = charTiledData[chNo];
             return chriRenderCharacter(tile, getTileCount(), previewPalette, out, transparent);
@@ -452,7 +452,7 @@ public class NCGR extends GenericNFSFile {
         }
     }
 
-    public int chrRenderCharacterTransfer(int chNo, CellInfo transfer, Color[] out, int palette, boolean transparent) {
+    public int chrRenderCharacterTransfer(int chNo, CellInfo transfer, int[] out, int palette, boolean transparent) {
         // if transfer == null, render as normal
         if (transfer == null) {
             return chrRenderCharacter(chNo, out, palette, transparent);

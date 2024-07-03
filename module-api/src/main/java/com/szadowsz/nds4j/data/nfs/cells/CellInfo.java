@@ -32,21 +32,7 @@ public class CellInfo {
     /**
      * Creates a new Cell for use in a CellBank
      *
-     * @param oamCount an <code>int</code> representing the number of OAMs in the cell
      */
-    public CellInfo(NCER ncer, int oamCount, int partitionOffset, int partitionSize, int tacuData) {
-        this.ncer = ncer;
-        attributes = new CellAttribute();
-        oams = new OAM[oamCount];
-        for (int i = 0; i < oamCount; i++) {
-            oams[i] = new OAM();
-        }
-        name = "";
-        this.partitionOffset = partitionOffset;
-        this.partitionSize = partitionSize;
-        this.tacuData = tacuData;
-    }
-
     public CellInfo(NCER ncer, CellPojo pojo, int[] partition) {
         this.ncer = ncer;
         this.maxX = pojo.maxX;
@@ -213,17 +199,13 @@ public class CellInfo {
         int boundingSphereRadius;
     }
 
-//    public CellImage getImage() throws NitroException {
-//        return new CellImage();
-//    }
-
     /**
      * An individual OAM within an NCER (<code>CellBank</code>).
      * This represents the sub-images that make up a Cell/Bank, or more accurately,
      * the data used to generate them from an NCGR (<code>NCGR</code>).
      */
     public class OAM {
-       // attr0
+        // attr0
         int yCoord;
         boolean rotation;
         int sizeDisable;
@@ -249,11 +231,11 @@ public class CellInfo {
         int width;
         int height;
 
-        public int getX(){
+        public int getX() {
             return xCoord;
         }
 
-        public int getY(){
+        public int getY() {
             return yCoord;
         }
 
@@ -293,123 +275,16 @@ public class CellInfo {
             return rotationScaling == 1;
         }
 
-        public boolean getSizeDisable(){
+        public boolean getSizeDisable() {
             return sizeDisable == 1;
         }
 
-        public boolean getDoubleSize(){
+        public boolean getDoubleSize() {
             return doubleSize == 1;
         }
 
-        public int getDoubleSizeAsInt(){
+        public int getDoubleSizeAsInt() {
             return doubleSize;
-        }
-
-        public OAM.OamImage getImage(int i, int[] index) throws NitroException {
-            boolean draw = false;
-            if (index == null)
-                draw = true;
-            else
-                for (int j : index)
-                    if (j == i) {
-                        draw = true;
-                        break;
-                    }
-
-            if (!draw)
-                return null;
-
-            int num_pal = palette;
-            if (num_pal >= ncer.getNCLR().getNumColors())
-                num_pal = 0;
-//                Arrays.fill(cell_img.tilePal, num_pal);
-
-            return new OAM.OamImage();
-        }
-
-        /**
-         * This is a visual representation of a given OAM within its parent NCGR (<code>NCGR</code>) and <code>Cell</code>
-         */
-        public class OamImage {
-            private NCGR oamImage;
-            int storedWidth = 0;
-            int storedHeight = 0;
-            private boolean update;
-
-            private OamImage() throws NitroException {
-                generateImageData();
-            }
-
-            private void generateImageData() throws NitroException {
-                if (NCER.oamSize[shape][size][0] != storedWidth || NCER.oamSize[shape][size][1] != storedHeight) {
-                    storedHeight = NCER.oamSize[shape][size][1];
-                    storedWidth = NCER.oamSize[shape][size][0];
-                    if (ncer.getNCGR() != null) {
-                        oamImage = new NCGR(storedHeight, storedWidth, ncer.getBitDepth(), ncer.getNCLR());
-                    }
-                }
-//
-//                int startByte = (tileOffset << (byte) ncer.mappingType) * (ncer.getBitDepth() * 8) + partitionOffset;
-//                byte[] imageData;
-//
-//                switch (oamImage.getBitDepth()) {
-//                    case 4:
-//                        imageData = NCGR.NcgrUtils.convertToTiles4Bpp(ncer.getNCGR());
-//                        NCGR.NcgrUtils.convertFromTiles4Bpp(imageData, oamImage, startByte);
-//                        break;
-//                    case 8:
-//                        imageData = NCGR.NcgrUtils.convertToTiles8Bpp(ncer.getNCGR());
-//                        NCGR.NcgrUtils.convertFromTiles8Bpp(imageData, oamImage, startByte);
-//                        break;
-//                }
-////                    NCGR.NcgrUtils.convertOffsetToCoordinate(imageData, startByte, cell.getWidth() * cell.getHeight(), image, image.getNumTiles(), (image.getWidth() / 8) / image.getColsPerChunk(), image.getColsPerChunk(), image.getRowsPerChunk(), cell);
-////                    NCGR.NcgrUtils.convertFromTiles4BppAlternate(imageData, cell, startByte);
-                update = false;
-            }
-
-            /**
-             * Generates and returns a visual (image) representation of the parent <code>OAM</code> given the parent
-             * <code>NCGR</code> providing image data
-             *
-             * @return a <code>BufferedImage</code>
-             */
-            public BufferedImage getImage() throws NitroException {
-                if (update) {
-                    generateImageData();
-                }
-                return (oamImage!=null)?oamImage.getImage():null;
-            }
-
-            public int getPixelValue(int x, int y) {
-                return 0;//oamImage.getPixelValue(x, y);
-            }
-
-            public int getHeight() {
-                return oamImage.getHeight();
-            }
-
-            public int getWidth() {
-                return oamImage.getWidth();
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                return oamImage.equals(o);
-            }
-
-            @Override
-            public int hashCode() {
-                return oamImage.hashCode();
-            }
-
-            public void recolorImage() throws NitroException {
-                oamImage.recolorImage();
-            }
-
-            @Override
-            public String toString() {
-                return String.format("%dx%d shadow with tile offset %d of %s", oamImage.getHeight(), oamImage.getWidth(), tileOffset, oamImage.toString());
-            }
         }
     }
 }
