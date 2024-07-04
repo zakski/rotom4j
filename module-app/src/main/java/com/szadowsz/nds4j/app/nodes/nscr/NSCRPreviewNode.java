@@ -21,9 +21,9 @@ public class NSCRPreviewNode extends AbstractNode {
     PImage image;
 
     public NSCRPreviewNode(String path, NSCRFolderNode folder, NSCR nscr) {
-        super(NodeType.TRANSIENT,path, folder);
+        super(NodeType.TRANSIENT, path, folder);
         this.nscr = nscr;
-        masterInlineNodeHeightInCells = nscr.getHeight() / cell +  ((nscr.getHeight() % cell != 0)?1:0);
+        masterInlineNodeHeightInCells = nscr.getHeight() / cell + ((nscr.getHeight() % cell != 0) ? 1 : 0);
         size.x = nscr.getWidth();
         size.y = nscr.getHeight();
         loadImage(nscr.getImage());
@@ -36,7 +36,7 @@ public class NSCRPreviewNode extends AbstractNode {
         pg.rectMode(CORNER);
         pg.fill(1);
         pg.noStroke();
-        pg.rect(0,0, size.x, size.y);
+        pg.rect(0, 0, size.x, size.y);
         pg.resetShader();
     }
 
@@ -60,19 +60,10 @@ public class NSCRPreviewNode extends AbstractNode {
         return 0;
     }
 
-    public void loadImage(BufferedImage bufferedImage) {
-        this.image = null;
-        if (bufferedImage != null) {
-            this.image = new PImage(bufferedImage.getWidth(), bufferedImage.getHeight(), PConstants.RGB);
-            image.loadPixels();
-            for (int h = 0; h < bufferedImage.getHeight(); h++){
-                for (int w = 0; w < bufferedImage.getWidth(); w++){
-                    image.set(w,h, bufferedImage.getRGB(w,h));
-                }
-            }
-            masterInlineNodeHeightInCells = image.height / cell;
-            size.x = image.width;
-            size.y = image.height;
-        }
+    public void loadImage(PImage pImage) {
+        this.image = pImage;
+        masterInlineNodeHeightInCells = image.height / cell;
+        size.x = image.width;
+        size.y = image.height;
     }
 }

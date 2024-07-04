@@ -237,11 +237,11 @@ public class SliderNode extends AbstractNode {
         }
     }
 
-    void decreasePrecision() {
+    public void decreasePrecision() {
         setPrecisionIndexAndValue(min(currentPrecisionIndex + 1, precisionRange.size() - 1));
     }
 
-    void increasePrecision() {
+    public void increasePrecision() {
         setPrecisionIndexAndValue(max(currentPrecisionIndex - 1, 0));
     }
 

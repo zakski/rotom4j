@@ -1,7 +1,10 @@
 package com.szadowsz.nds4j.app.nodes.nscr;
 
 import com.szadowsz.nds4j.app.Processing;
+import com.szadowsz.nds4j.app.nodes.ncgr.NCGRPreviewNode;
+import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
+import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
@@ -14,6 +17,7 @@ import com.szadowsz.ui.node.impl.SliderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
+import processing.core.PImage;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,11 +39,11 @@ public class NSCRFolderNode extends FolderNode {
         this.nscr = nscr;
         children.clear();
         children.add(new NSCRPreviewNode(path + "/" + nscr.getFileName(), this,nscr));
-        children.add(new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, true){
+
+        SliderNode zoom = new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, true){
             @Override
             protected void onValueFloatChanged() {
                 super.onValueFloatChanged();
-                nscr.setZoom(valueFloat);
                 try {
                     recolorImage();
                 } catch (NitroException e) {
@@ -47,7 +51,10 @@ public class NSCRFolderNode extends FolderNode {
                 }
             }
 
-        });
+        };
+        zoom.increasePrecision();
+        children.add(zoom);
+
         ButtonNode selectNcgr = new ButtonNode(path + "/" + SELECT_NCGR_FILE,this);
         selectNcgr.registerAction(ActivateByType.RELEASE, this::selectNcgr);
         children.add(selectNcgr);
@@ -97,8 +104,14 @@ public class NSCRFolderNode extends FolderNode {
 
     public void recolorImage() throws NitroException {
         nscr.recolorImage();
-        ((NSCRPreviewNode) findChildByName(nscr.getFileName())).loadImage(nscr.getImage());
+
+        PImage pImage = ImageUtils.convertToPImage(nscr.getImage());
+        float zoom = ((SliderNode) findChildByName(ZOOM_NODE)).valueFloat;
+        pImage.resize(Math.round(pImage.width*zoom),0);
+
+        ((NSCRPreviewNode) findChildByName(nscr.getFileName())).loadImage(pImage);
         this.window.windowSizeX = autosuggestWindowWidthForContents();
+        this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
     }
 
     @Override

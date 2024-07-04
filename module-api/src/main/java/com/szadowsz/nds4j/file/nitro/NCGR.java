@@ -68,7 +68,6 @@ public class NCGR extends GenericNFSFile {
     private int tileSize;
 
     private NCLR palette = NCLR.DEFAULT;
-    private float zoom = 1;
 
     private TileForm order;
     private byte[] tilePal;
@@ -179,16 +178,7 @@ public class NCGR extends GenericNFSFile {
      * @return a <code>BufferedImage</code> representation of this <code>IndexedImage</code>
      */
     public BufferedImage getImage() {
-        BufferedImage after = new BufferedImage(
-                Math.round(image.getWidth()*zoom),
-                Math.round(image.getHeight()*zoom),
-                TYPE_INT_RGB);
-        AffineTransform at = new AffineTransform();
-        at.scale(zoom, zoom);
-        AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-        after = scaleOp.filter(image, after);
-
-        return after;
+        return image;
     }
 
     protected Color getColor16(byte[] data,int pos, NCLR palette){
@@ -250,10 +240,6 @@ public class NCGR extends GenericNFSFile {
             case colors256 -> process256ColorPalette(tiles,palette,width,height);
             default -> throw new InvalidFileException("Unsupported Colour Format: " + format);
         }
-    }
-
-    public void setZoom(float valueFloat) {
-        zoom = valueFloat;
     }
 
     public void setImagePixels(NCLR palette) throws InvalidFileException {

@@ -71,17 +71,6 @@ public class FolderNode extends AbstractNode {
 
     private String getInlineDisplayNameOverridableByContents(String name) {
         String overridableName = name;
-//        String desiredClassName = TextNode.class.getSimpleName();
-//        AbstractNode renamingNode = findChildByName("");
-//        if(renamingNode == null || !renamingNode.className.contains(desiredClassName)){
-//            renamingNode = findChildByNameStartsWith("label");
-//        }
-//        if(renamingNode == null || !renamingNode.className.contains(desiredClassName)){
-//            renamingNode = findChildByNameStartsWith("name");
-//        }
-//        if(renamingNode != null && renamingNode.className.contains(desiredClassName) && ((TextNode) renamingNode).stringValue.length() > 0){
-//            overridableName = ((TextNode) renamingNode).stringValue;
-//        }
         return overridableName;
     }
 
@@ -126,20 +115,6 @@ public class FolderNode extends AbstractNode {
      * @return
      */
     private boolean isFolderActiveJudgingByContents() {
-//        String desiredClassName = ToggleNode.class.getSimpleName();
-//        AbstractNode enabledNode = findChildByName("");
-//        if(enabledNode == null || !enabledNode.className.contains(desiredClassName)){
-//            enabledNode = findChildByNameStartsWith("active");
-//        }
-//        if(enabledNode == null || !enabledNode.className.contains(desiredClassName)){
-//            enabledNode = findChildByNameStartsWith("enabled");
-//        }
-//        if(enabledNode == null || !enabledNode.className.contains(desiredClassName)){
-//            enabledNode = findChildByNameStartsWith("visible");
-//        }
-//        return enabledNode != null &&
-//                enabledNode.className.contains(desiredClassName) &&
-//                ((ToggleNode) enabledNode).valueBoolean;
         return false;
     }
 
@@ -183,20 +158,6 @@ public class FolderNode extends AbstractNode {
         this.isInlineNodeDragged = false;
     }
 
-    //    @Override
-//    public void keyPressedOverNode(LazyKeyEvent e, float x, float y) {
-//        // copy + paste whole folders of controls
-//        if ((e.isControlDown() && e.getKeyCode() == KeyCodes.C)) {
-//            ClipboardUtils.setClipboardString(JsonSaveStore.getFolderAsJsonString(this));
-//            e.consume();
-//        }
-//        if (e.isControlDown() && e.getKeyCode() == KeyCodes.V) {
-//            String toPaste = ClipboardUtils.getClipboardString();
-//            JsonSaveStore.loadStateFromJsonString(toPaste, path);
-//            e.consume();
-//        }
-//    }
-//
     private float autosuggestWindowWidthFor1Col() {
         float maximumSpaceTotal = cell * LayoutStore.defaultWindowWidthInCells;
         if (!LayoutStore.getAutosuggestWindowWidth()) {

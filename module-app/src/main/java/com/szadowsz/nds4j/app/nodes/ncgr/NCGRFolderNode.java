@@ -3,6 +3,7 @@ package com.szadowsz.nds4j.app.nodes.ncgr;
 import com.szadowsz.nds4j.app.Processing;
 import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
+import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
@@ -15,6 +16,7 @@ import com.szadowsz.ui.store.JsonSaveStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
+import processing.core.PImage;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,11 +46,10 @@ public class NCGRFolderNode extends FolderNode {
         this.ncgr = ncgr;
         children.clear();
         children.add(new NCGRPreviewNode(path + "/" + ncgr.getFileName(), this,ncgr));
-        children.add(new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, true){
+        SliderNode zoom = new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, true){
             @Override
             protected void onValueFloatChanged() {
                 super.onValueFloatChanged();
-                ncgr.setZoom(valueFloat);
                 try {
                     recolorImage();
                 } catch (NitroException e) {
@@ -56,7 +57,10 @@ public class NCGRFolderNode extends FolderNode {
                 }
             }
 
-        });
+        };
+        zoom.increasePrecision();
+        children.add(zoom);
+
         ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
         selectNcLr.registerAction(ActivateByType.RELEASE, this::selectNclr);
         children.add(selectNcLr);
@@ -64,10 +68,16 @@ public class NCGRFolderNode extends FolderNode {
     }
 
     public void recolorImage() throws NitroException {
-        ncgr.recolorImage();
-        ((NCGRPreviewNode) findChildByName(ncgr.getFileName())).loadImage(ncgr.getImage());
         ((NCLRFolderNode)findChildByName(PALETTE_NODE_NAME)).setPalette(ncgr.getNCLR());
+        ncgr.recolorImage();
+
+        PImage pImage = ImageUtils.convertToPImage(ncgr.getImage());
+        float zoom = ((SliderNode) findChildByName(ZOOM_NODE)).valueFloat;
+        pImage.resize(Math.round(pImage.width*zoom),0);
+
+        ((NCGRPreviewNode) findChildByName(ncgr.getFileName())).loadImage(pImage);
         this.window.windowSizeX = autosuggestWindowWidthForContents();
+        this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
     }
     private void selectNclr() {
         String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));

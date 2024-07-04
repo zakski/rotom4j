@@ -1,5 +1,6 @@
 package com.szadowsz.nds4j.app.nodes.ncgr;
 
+import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeType;
@@ -20,17 +21,11 @@ class NCGRPreviewNode extends AbstractNode {
     NCGRPreviewNode(String path, FolderNode folder, NCGR ncgr) {
         super(NodeType.TRANSIENT,path, folder);
         BufferedImage bufferedImage = ncgr.getImage();
-        loadImage(bufferedImage);
+        loadImage(ImageUtils.convertToPImage(bufferedImage));
     }
 
-    public void loadImage(BufferedImage bufferedImage) {
-        image = new PImage(bufferedImage.getWidth(), bufferedImage.getHeight(), PConstants.RGB);
-        image.loadPixels();
-        for (int h = 0; h < bufferedImage.getHeight(); h++){
-           for (int w = 0; w < bufferedImage.getWidth(); w++){
-               image.set(w,h, bufferedImage.getRGB(w,h));
-           }
-       }
+    public void loadImage(PImage pImage) {
+        image = pImage;
         masterInlineNodeHeightInCells = image.height / cell;
         size.x = image.width;
         size.y = image.height;
