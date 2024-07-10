@@ -9,6 +9,8 @@ import com.szadowsz.nds4j.data.nfs.cells.CellInfo;
 import com.szadowsz.nds4j.exception.InvalidFileException;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.reader.MemBuf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -24,6 +26,7 @@ import static java.awt.image.BufferedImage.TYPE_INT_RGB;
  * An NCGR file is a Nintendo proprietary DS format used for storing graphics (images).
  */
 public class NCGR extends GenericNFSFile {
+    private static final Logger logger = LoggerFactory.getLogger(NCGR.class);
 
     /**
      * Based on how an NCER or NSCR is set to read an NCGR file, or how the game is programmed to read an NCGR file,
@@ -67,7 +70,7 @@ public class NCGR extends GenericNFSFile {
 
     private int tileSize;
 
-    private NCLR palette = NCLR.DEFAULT;
+    private NCLR palette;
 
     private TileForm order;
     private byte[] tilePal;
@@ -113,6 +116,8 @@ public class NCGR extends GenericNFSFile {
         super(NFSFormat.NCGR,path,name,comp,compData,data);
 
         MemBuf buf = MemBuf.create(rawData);
+        int fileSize = buf.writer().getPosition();
+        logger.info("\nNCGR file, " + fileName + ", initialising with size of " + fileSize + " bytes");
 
         MemBuf.MemBufReader reader = buf.reader();
         readGenericNtrHeader(reader);
@@ -123,8 +128,13 @@ public class NCGR extends GenericNFSFile {
         File[] palettes = new File(path).getParentFile().listFiles(f -> f.getName().endsWith(".NCLR") &&
                 f.getName().substring(0,f.getName().lastIndexOf('.')).equals(this.fileName));
         if (palettes.length>0) {
+            logger.info("Found corresponding NCLR file, " + palettes[0]);
             this.palette = NCLR.fromFile(palettes[0]);
+            logger.info("Read NCLR file\n");
+        } else {
+            this.palette = NCLR.DEFAULT;
         }
+        logger.info("Reading NCGR file data");
         readFile(reader);
     }
 

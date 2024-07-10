@@ -96,6 +96,7 @@ public class NCLR extends GenericNFSFile {
      * @return byte data
      */
     protected static byte[] generateData(int palettes, int numColors) {
+        LOGGER.info("\nGenerating default NCLR with " + palettes + " palettes and " + numColors + "colours");
         // bitDepth=8
         //paletteMagic=TTLP
         //paletteSectionSize=56
@@ -198,6 +199,8 @@ public class NCLR extends GenericNFSFile {
 
         MemBuf buf = MemBuf.create();
         buf.writer().write(rawData);
+        int fileSize = buf.writer().getPosition();
+        LOGGER.info("\nNCLR file, " + fileName + ", initialising with size of " + fileSize + " bytes");
 
         MemBuf.MemBufReader reader = buf.reader();
         readGenericNtrHeader(reader);
@@ -205,6 +208,7 @@ public class NCLR extends GenericNFSFile {
         reader.setPosition(0);
         this.headerData = reader.readTo(headerLength);
 
+        LOGGER.info("Reading NCLR file data");
         readFile(reader);
     }
 

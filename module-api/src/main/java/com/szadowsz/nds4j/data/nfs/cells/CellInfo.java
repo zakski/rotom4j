@@ -1,16 +1,16 @@
 package com.szadowsz.nds4j.data.nfs.cells;
 
-import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCER;
-import com.szadowsz.nds4j.file.nitro.NCGR;
-
-import java.awt.image.BufferedImage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An individual "Cell", or "Bank" within an NCER.
  * In theory, this represents one assembled image.
  */
 public class CellInfo {
+    private static final Logger logger = LoggerFactory.getLogger(CellInfo.class);
+
     private static final int[][] widths = new int[][]{ {8, 16, 32, 64}, {16, 32, 32, 64}, {8, 8, 16, 32} };
     private static final int[][] heights = new int[][]{ {8, 16, 32, 64}, {8, 8, 16, 32}, {16, 32, 32, 64} };
 
@@ -36,9 +36,13 @@ public class CellInfo {
     public CellInfo(NCER ncer, CellPojo pojo, int[] partition) {
         this.ncer = ncer;
         this.maxX = pojo.maxX;
+        logger.info("Cell maxX: " + this.maxX);
         this.maxY = pojo.maxY;
+        logger.info("Cell maxY: " + this.maxY);
         this.minX = pojo.minX;
+        logger.info("Cell minX: " + this.minX);
         this.minY = pojo.minY;
+        logger.info("Cell minY: " + this.minY);
         oams = new OAM[pojo.nAttribs];
         for (int i = 0; i < oams.length; i++) {
             oams[i] = new OAM();
@@ -47,8 +51,9 @@ public class CellInfo {
         attributes = new CellAttribute();
         setAttributes(pojo.cellAttr);
         this.partitionOffset = partition[0];
+        logger.info("Cell partitionOffset: " + this.partitionOffset);
         this.partitionSize = partition[1];
-
+        logger.info("Cell partitionSize: " + this.partitionSize);
     }
 
     public String getName() {
@@ -61,10 +66,15 @@ public class CellInfo {
 
     public void setAttributes(int cellAttrs) {
         attributes.hFlip = ((cellAttrs >> 8) & 1) == 1;
+        logger.info("Cell hFlip=" + this.attributes.hFlip);
         attributes.vFlip = ((cellAttrs >> 9) & 1) == 1;
+        logger.info("Cell vFlip=" + this.attributes.vFlip);
         attributes.hvFlip = ((cellAttrs >> 10) & 1) == 1;
+        logger.info("Cell hvFlip=" + this.attributes.hvFlip);
         attributes.boundingRectangle = ((cellAttrs >> 11) & 1) == 1;
+        logger.info("Cell boundingRectangle=" + this.attributes.boundingRectangle);
         attributes.boundingSphereRadius = cellAttrs & 0x3F;
+        logger.info("Cell boundingSphereRadius: " + this.attributes.boundingSphereRadius);
     }
 
     public short getMaxX() {
@@ -134,21 +144,33 @@ public class CellInfo {
         short attr2 = attrs[2];
 
         oams[index].xCoord = attr1 & 0x1FF;
+        logger.info("Oam @ " + index + " xCoord: " + oams[index].xCoord);
         oams[index].yCoord = attr0 & 0xFF; // bits 0-7
+        logger.info("Oam @ " + index + " yCoord: " + oams[index].yCoord);
         oams[index].shape = attr0 >> 14; // bits 14-15
+        logger.info("Oam @ " + index + " shape: " + oams[index].shape);
         oams[index].size = attr1 >> 14;
+        logger.info("Oam @ " + index + " size: " + oams[index].size);
 
         int[] dims = CellGetObjDimensions(oams[index].shape,  oams[index].size);
         oams[index].width = dims[0];
         oams[index].height = dims[1];
-                
+        logger.info("Oam @ " + index + " width: " + oams[index].width);
+        logger.info("Oam @ " + index + " height: " + oams[index].height);
+
         oams[index].tileOffset = attr2 & 0x3FF;
+        logger.info("Oam @ " + index + " tileOffset: " + oams[index].tileOffset);
         oams[index].priority = (attr2 >> 10) & 0x3;
+        logger.info("Oam @ " + index + " priority: " + oams[index].priority);
         oams[index].palette = (attr2 >> 12) & 0xF;
+        logger.info("Oam @ " + index + " palette: " + oams[index].palette);
         oams[index].mode = (attr0 >> 10) & 3; //bits 10-11
+        logger.info("Oam @ " + index + " mode: " + oams[index].mode);
         oams[index].mosaic = ((attr0 >> 12) & 1); //bit 12
+        logger.info("Oam @ " + index + " mosaic: " + oams[index].mosaic);
 
         oams[index].rotation = (attr0 >> 8) == 1; //bit 8
+        logger.info("Oam @ " + index + " rotation=" + oams[index].rotation);
         if (oams[index].rotation){
             oams[index].flipX = false;
             oams[index].flipY = false;
@@ -162,11 +184,17 @@ public class CellInfo {
             oams[index].sizeDisable = ((attr0 >> 9) & 1); //bit 9 Obj Size (if rotation) or Obj Disable (if not rotation)
             oams[index].rotationScaling = 0;
         }
+        logger.info("Oam @ " + index + " flipX=" + oams[index].flipX);
+        logger.info("Oam @ " + index + " flipY=" + oams[index].flipY);
+        logger.info("Oam @ " + index + " doubleSize: " + oams[index].doubleSize);
+        logger.info("Oam @ " + index + " sizeDisable: " + oams[index].sizeDisable);
+        logger.info("Oam @ " + index + " rotationScaling: " + oams[index].rotationScaling);
         boolean is8 = ((attr0 >> 13) & 1) == 1;
         oams[index].characterBits = 4;
         if (is8) {
             oams[index].characterBits = 8;
         }
+        logger.info("Oam @ " + index + " characterBits: " + oams[index].characterBits);
         //oams[index].mode = (attr0 >> 2) & 3; //bits 10-11
         //oams[index].mosaic = ((attr0 >> 4) & 1) == 1; //bit 12
         //oams[index].colors = ((attr0 >> 5) & 1) == 0 ? 16 : 256; //bit 13
