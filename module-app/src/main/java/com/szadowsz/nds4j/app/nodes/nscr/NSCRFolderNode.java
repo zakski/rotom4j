@@ -1,8 +1,6 @@
 package com.szadowsz.nds4j.app.nodes.nscr;
 
 import com.szadowsz.nds4j.app.Processing;
-import com.szadowsz.nds4j.app.nodes.ncgr.NCGRPreviewNode;
-import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.exception.NitroException;

@@ -1,5 +1,6 @@
 package com.szadowsz.nds4j.app.nodes.nscr;
 
+import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.ui.store.ShaderStore;
 import com.szadowsz.nds4j.file.nitro.NSCR;
 import com.szadowsz.ui.node.AbstractNode;
@@ -26,7 +27,7 @@ public class NSCRPreviewNode extends AbstractNode {
         masterInlineNodeHeightInCells = nscr.getHeight() / cell + ((nscr.getHeight() % cell != 0) ? 1 : 0);
         size.x = nscr.getWidth();
         size.y = nscr.getHeight();
-        loadImage(nscr.getImage());
+        loadImage(ImageUtils.convertToPImage((nscr.getImage())));
     }
 
     private void drawCheckerboard(PGraphics pg) {
