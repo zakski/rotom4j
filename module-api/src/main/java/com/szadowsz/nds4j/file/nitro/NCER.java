@@ -1462,8 +1462,7 @@ public class NCER extends GenericNFSFile {
         bits = new int [info.getWidth() * info.getHeight()];
         renderObj(info, cebkMappingMode, null, bits, width, height, true);
 
-        image = new BufferedImage(info.getWidth(), info.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        image.setRGB(0, 0, info.getWidth(), info.getHeight(), bits, 0, info.getWidth());
+        image.setRGB(512/2 - info.getWidth()/2, 256/2 - info.getHeight()/2, info.getWidth(), info.getHeight(), bits, 0, info.getWidth());
 
 
         return image;
