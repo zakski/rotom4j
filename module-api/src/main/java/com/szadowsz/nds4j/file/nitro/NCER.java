@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -1146,6 +1147,326 @@ public class NCER extends GenericNFSFile {
         if (ncgr != null) {
             ncgr.setPalette(nclr);
         }
+    }
+
+    private int calcByteBoundary(int m) {
+        return (1 << ((((m) >> 20) & 0x7) + 5));
+    }
+
+    private int calcCHName(int x, int m, int b) {
+        return (calcByteBoundary(m) * (x) / ((b) << 3));
+    }
+
+    private void renderObj(CellInfo.OAM info, int mapping, CellInfo vramTransfer, int[] out, int[] width, int[] height, boolean checker) {
+        width[0] = info.getWidth();
+        height[0] = info.getHeight();
+
+        int tilesX = width[0] / 8;
+        int tilesY = height[0] / 8;
+
+        if (ncgr != null) {
+            int charSize = ncgr.getBitDepth() * 8;
+            int ncgrStart = calcCHName(info.getOffset(), mapping, ncgr.getBitDepth());
+            for (int y = 0; y < tilesY; y++) {
+                for (int x = 0; x < tilesX; x++) {
+                    int[] block = new int[64];
+
+                    int bitsOffset = x * 8 + (y * 8 * tilesX * 8);
+                    int index;
+                    if (NCGR.calcIsNCGR2D(mapping)) {
+                        int ncx = x + ncgrStart % ncgr.getTileWidth();
+                        int ncy = y + ncgrStart / ncgr.getTileWidth();
+                        index = ncx + ncgr.getTileWidth() * ncy;
+                    } else {
+                        index = ncgrStart + x + y * tilesX;
+                    }
+
+                    ncgr.chrRenderCharacterTransfer(index, vramTransfer, block, info.getPalette(), true);
+                    for (int i = 0; i < 8; i++) {
+                        System.arraycopy(block, i * 8, out, bitsOffset + tilesX * 8 * i, 8);
+                    }
+                }
+            }
+        }
+
+        // render checker
+        if (checker) {
+            for (int i = 0; i < info.getWidth() * info.getHeight(); i++) {
+                int x = i % info.getWidth();
+                int y = i / info.getWidth();
+                int ch = ((x >> 2) ^ (y >> 2)) & 1;
+                int c = out[i];
+                if ((c & 0xFF000000) == 0) {
+                    out[i] = ch != 0 ? 0xFFFFFF : 0xC0C0C0;
+                }
+            }
+        }
+    }
+        protected void flipCell(CellInfo.OAM info, int[] block) {
+        if (!info.getRotationScaling()) {
+            int[] temp = new int[64];
+            if (info.getFlipY()) {
+                for (int j = 0; j < info.getHeight() / 2; j++) {
+                    System.arraycopy(block, j * info.getWidth(), temp, 0, info.getWidth());
+                    System.arraycopy(block, (info.getHeight() - 1 - j) * info.getWidth(), block, j * info.getWidth(), info.getWidth());
+                    System.arraycopy(temp, 0, block, (info.getHeight() - 1 - j) * info.getWidth(), info.getWidth());
+                }
+            }
+            if (info.getFlipX()) {
+                for (int j = 0; j < info.getWidth() / 2; j++) {
+                    for (int k = 0; k < info.getHeight(); k++) {
+                        int left = block[j + k * info.getWidth()];
+                        block[j + k * info.getWidth()] = block[info.getWidth() - 1 - j + k * info.getWidth()];
+                        block[info.getWidth() - 1 - j + k * info.getWidth()] = left;
+                    }
+                }
+            }
+        }
+    }
+
+    protected void rotateScaleCell(int[] px, CellInfo.OAM info, int[] block, int xOffs, int yOffs, float a, float b, float c, float d) {
+        int x = info.getX();
+        int y = info.getY();
+        // adjust for double size
+        if (info.getDoubleSize()) {
+            x += info.getWidth() / 2;
+            y += info.getHeight() / 2;
+        }
+        // copy data
+        if (!info.getRotationScaling()) {
+            for (int j = 0; j < info.getHeight(); j++) {
+                int _y = (y + j + yOffs) & 0xFF;
+                for (int k = 0; k < info.getWidth(); k++) {
+                    int _x = (x + k + xOffs) & 0x1FF;
+                    int col = block[j * info.getWidth() + k];
+                    if (col >>> 24 != 0) {
+                        px[_x + _y * 512] = block[j * info.getWidth() + k];
+                    }
+                }
+            }
+        } else {
+            // transform about center
+            int realWidth = info.getWidth() << (info.getDoubleSize() ? 1 : 0);
+            int realHeight = info.getHeight() << (info.getDoubleSize() ? 1 : 0);
+            int cx = realWidth / 2;
+            int cy = realHeight / 2;
+            int realX = x - (realWidth - info.getWidth()) / 2;
+            int realY = y - (realHeight - info.getHeight()) / 2;
+            for (int j = 0; j < realHeight; j++) {
+                int destY = (realY + j + yOffs) & 0xFF;
+                for (int k = 0; k < realWidth; k++) {
+                    int destX = (realX + k + xOffs) & 0x1FF;
+
+                    int srcX = (int) ((k - cx) * a + (j - cy) * b) + cx;
+                    int srcY = (int) ((k - cx) * c + (j - cy) * d) + cy;
+
+                    if (info.getDoubleSize()) {
+                        srcX -= realWidth / 4;
+                        srcY -= realHeight / 4;
+                    }
+                    if (srcX >= 0 && srcY >= 0 && srcX < info.getWidth() && srcY < info.getHeight()) {
+                        int src = block[srcY * info.getWidth() + srcX];
+                        if (src >>> 24 != 0) px[destX + destY * 512] = src;
+                    }
+                }
+            }
+        }
+    }
+
+    protected void outlineCell(int[] px, int xOffs, int yOffs, CellInfo.OAM info) {
+        int outlineWidth = info.getWidth() << (info.getDoubleSize() ? 1 : 0);
+        int outlineHeight = info.getHeight() << (info.getDoubleSize() ? 1 : 0);
+        for (int j = 0; j < outlineWidth; j++) {
+            int _x = (j + info.getX() + xOffs) & 0x1FF;
+            int _y = (info.getY() + yOffs) & 0xFF;
+            int _y2 = (_y + outlineHeight - 1) & 0xFF;
+            px[_x + _y * 512] = 0xFE000000;
+            px[_x + _y2 * 512] = 0xFE000000;
+        }
+        for (int j = 0; j < outlineHeight; j++) {
+            int _x = (info.getX() + xOffs) & 0x1FF;
+            int _y = (info.getY() + j + yOffs) & 0xFF;
+            int _x2 = (_x + outlineWidth - 1) & 0x1FF;
+            px[_x + _y * 512] = 0xFE000000;
+            px[_x2 + _y * 512] = 0xFE000000;
+        }
+    }
+
+    // CellRenderCell
+    protected int[] renderCell(int[] px, CellInfo cell, int mapping, int xOffs, int yOffs, boolean checker, int outline, float a, float b, float c, float d) {
+        int[] block = new int[64 * 64];
+        for (int i = cell.getOamCount() - 1; i >= 0; i--) {
+            CellInfo.OAM info = cell.getOam(i);
+            int[] entryWidth = new int[1];
+            int[] entryHeight = new int[1];
+
+            renderObj(info, mapping, cell, block, entryWidth, entryHeight, false);
+
+            // HV flip? Only if not affine!
+            flipCell(info, block);
+
+            if (!info.getSizeDisable()) {
+                rotateScaleCell(px, info, block, xOffs, yOffs, a, b, c, d);
+
+                // outline
+                if (outline == -2 || outline == i) {
+                    outlineCell(px, xOffs, yOffs, info);
+                }
+            }
+        }
+
+        // apply checker background
+        if (checker) {
+            for (int y = 0; y < 256; y++) {
+                for (int x = 0; x < 512; x++) {
+                    int index = y * 512 + x;
+                    if (px[index] >>> 24 == 0) {
+                        int p = ((x >> 2) ^ (y >> 2)) & 1;
+                        px[index] = (p != 0) ? 0xFFFFFF : 0xC0C0C0;
+                    }
+                }
+            }
+        }
+        return px;
+    }
+
+    public int REVERSE(int x) {
+        return ((x)&0xFF00FF00)|(((x)&0xFF)<<16)|(((x)>>16)&0xFF);
+    }
+
+
+    public BufferedImage getImage() {
+        CellInfo cell = cells[0];
+        int[] frameBuffer = new int [256 * 512];
+        int[] bits = renderCell(frameBuffer, cells[0], cebkMappingMode, 256, 128, false, -1, 1.0f, 0.0f, 0.0f, 1.0f);
+
+        boolean showCellBounds = true;
+        boolean showGuidelines = true;
+        boolean renderTransparent = false;
+        if (showCellBounds) {
+            int minX = cell.getMinX() + 256, maxX = cell.getMaxX() + 256 - 1;
+            int minY = cell.getMinY() + 128, maxY = cell.getMaxY() + 128 - 1;
+            minX = minX & 0x1FF;
+            maxX = maxX & 0x1FF;
+            minY = minY & 0xFF;
+            maxY = maxY & 0xFF;
+
+            for (int i = 0; i < 256; i++) {
+                if (bits[i * 512 + minX] >> 24 != 0xFE) bits[i * 512 + minX] = 0xFF0000FF;
+                if (bits[i * 512 + maxX] >> 24 != 0xFE) bits[i * 512 + maxX] = 0xFF0000FF;
+            }
+            for (int i = 0; i < 512; i++) {
+                if (bits[minY * 512 + i] >> 24 != 0xFE) bits[minY * 512 + i] = 0xFF0000FF;
+                if (bits[maxY * 512 + i] >> 24 != 0xFE) bits[maxY * 512 + i] = 0xFF0000FF;
+            }
+        }
+
+        //draw solid color background if transparency disabled
+        if (!renderTransparent) {
+            int bgColor = 0;
+            if (ncgr != null) {
+                bgColor = getNCLR().getColor(0).getRGB();
+            }
+            bgColor = REVERSE(bgColor);
+            for (int i = 0; i < 256 * 512; i++) {
+                int c = bits[i];
+                if ((c >> 24) == 0) {
+                    bits[i] = bgColor;
+                } else if ((c >> 24) == 0xFE) {
+                    bits[i] = ((bgColor + 0x808080) & 0xFFFFFF) | 0xFE000000;
+                }
+            }
+        }
+
+        //draw editor guidelines if enabled
+        if (showGuidelines) {
+            //dotted lines at X=0 an Y=0
+            int centerColor = 0xFF0000; //red
+            int auxColor = 0x00FF00; //green
+            int minorColor = 0x002F00;
+
+            for (int i = 0; i < 512; i++) {
+                //major guideline
+                int c = bits[i + 128 * 512];
+                if ((c >> 24) != 0xFE) {
+                    if ((i & 1) == 1) {
+                        bits[i + 128 * 512] ^= centerColor;
+                    }
+                }
+
+                //auxiliary guidelines
+                c = bits[i + 64 * 512];
+                if ((c >> 24) != 0xFE){
+                    if ((i & 1) == 1) {
+                        bits[i + 64 * 512] ^= auxColor;
+                    }
+                }
+                c = bits[i + 192 * 512];
+                if ((c >> 24) != 0xFE) {
+                    if ((i & 1) == 1) {
+                        bits[i + 192 * 512] ^= auxColor;
+                    }
+                }
+
+                //minor guidelines
+                for (int j = 0; j < 256; j += 8) {
+                    if (j == 64 || j == 128 || j == 192) continue;
+
+                    c = bits[i + j * 512];
+                    if ((c >> 24) != 0xFE) {
+                        if ((i & 1) == 1) {
+                            bits[i + j * 512] ^= minorColor;
+                        }
+                    }
+                }
+            }
+            for (int i = 0; i < 256; i++) {
+                //major guideline
+                int c = bits[256 + i * 512];
+                if ((c >> 24) != 0xFE) {
+                    if ((i & 1) == 1) {
+                        bits[256 + i * 512] ^= centerColor;
+                    }
+                }
+
+                //auxiliary guidelines
+                c = bits[128 + i * 512];
+                if ((c >> 24) != 0xFE) {
+                    if ((i & 1) == 1){
+                        bits[128 + i * 512] ^= auxColor;
+                    }
+                }
+                c = bits[384 + i * 512];
+                if ((c >> 24) != 0xFE) {
+                    if ((i & 1) == 1) bits[384 + i * 512] ^= auxColor;
+                }
+
+                //minor guidelines
+                for (int j = 0; j < 512; j += 8) {
+                    if (j == 128 || j == 256 || j == 384) continue;
+
+                    c = bits[j + i * 512];
+                    if ((c >> 24) != 0xFE) {
+                        if ((i & 1) == 1){
+                            bits[j + i * 512] ^= minorColor;
+                        }
+                    }
+                }
+            }
+        }
+        BufferedImage image = new BufferedImage(512, 256, BufferedImage.TYPE_INT_ARGB);
+        image.setRGB(0, 0, 512, 256, bits, 0, 512);
+
+        CellInfo.OAM info = cell.getOam(0);
+        int[] width = new int[1], height = new int[1];
+        bits = new int [info.getWidth() * info.getHeight()];
+        renderObj(info, cebkMappingMode, null, bits, width, height, true);
+
+        image = new BufferedImage(info.getWidth(), info.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        image.setRGB(0, 0, info.getWidth(), info.getHeight(), bits, 0, info.getWidth());
+
+
+        return image;
     }
 
     /**

@@ -24,7 +24,7 @@ public class NCERPreviewNode extends AbstractNode {
     public NCERPreviewNode(String path, NCERFolderNode folder, NCER ncer) throws NitroException {
         super(NodeType.TRANSIENT,path, folder);
         this.ncer = ncer;
-        BufferedImage image = new BufferedImage(256,256,BufferedImage.TYPE_INT_RGB);//ncer.getImage(0,0);
+        BufferedImage image = ncer.getImage();
         size.x = image.getWidth();
         size.y = image.getHeight();
         masterInlineNodeHeightInCells = image.getHeight() / cell +  ((image.getHeight() % cell != 0)?1:0);
