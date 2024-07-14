@@ -83,7 +83,7 @@ public class NCER extends GenericNFSFile {
     private int cebkMappingType;
     private int cebkMappingMode;
     private int cebkPartitionDataOffset;
-    private int cebkUnused;
+    private byte[] cebkUnused;
     private int cebkTacuOffset;
     private int cebkMaxPartitionSize;
     private int cebkFirstPartitionDataOffset;
@@ -145,8 +145,9 @@ public class NCER extends GenericNFSFile {
             if (nOAMEntries != 0) {
                 int storedPos = reader.getPosition();
                 reader.setPosition(start + cebkNumCells*perCellDataSize + attrOffset);
+                logger.info("Cell @ " + i + " Oam pos: " + reader.getPosition());
                 for (int j = 0; j < nOAMEntries; j++) {
-                    cell.setOamAttrs(j, reader.readShort(), reader.readShort(), reader.readShort());
+                    cell.setOamAttrs(j, reader.readUInt16(), reader.readUInt16(), reader.readUInt16());
                 }
                 logger.info("Cell @ " + i +" oam read index @ " + reader.getPosition());
                 reader.setPosition(storedPos);
@@ -163,6 +164,8 @@ public class NCER extends GenericNFSFile {
 
     private void readCellBank(MemBuf.MemBufReader reader) throws NitroException {
         //cell bank data
+        int cebkPos = reader.getPosition();
+
         cebkId = reader.readString(4); // 0x10
         if (!cebkId.equals("KBEC")) {
             throw new NitroException("Not a valid NCER file.");
@@ -184,6 +187,7 @@ public class NCER extends GenericNFSFile {
 
         cebkDataOffset = reader.readUInt32(); // 0x1C
         logger.info("CEBK data offset " + cebkDataOffset + " bytes");
+        logger.info("CEBK data start " + (cebkPos + cebkDataOffset + 8) + " bytes");
 
         cebkMappingType = (int) (reader.readUInt32() & 0xFF); // 0x20
         if (cebkMappingType < 5) {
@@ -199,6 +203,7 @@ public class NCER extends GenericNFSFile {
         cebkPartitionDataOffset = reader.readInt(); // 0x24
         vramTransfer = cebkPartitionDataOffset != 0;
         logger.info("vram transfer expected=" + vramTransfer);
+        cebkUnused = reader.readBytes(8);
 
         readCells(reader, perCellDataSize);
     }
@@ -1131,6 +1136,10 @@ public class NCER extends GenericNFSFile {
         return result;
     }
 
+    public int getCellsCount(){
+        return cebkNumCells;
+    }
+
     public NCGR getNCGR() {
         return ncgr;
     }
@@ -1305,7 +1314,7 @@ public class NCER extends GenericNFSFile {
             // HV flip? Only if not affine!
             flipCell(info, block);
 
-            if (!info.getSizeDisable()) {
+            if (!info.getObjDisable()) {
                 rotateScaleCell(px, info, block, xOffs, yOffs, a, b, c, d);
 
                 // outline
@@ -1335,10 +1344,10 @@ public class NCER extends GenericNFSFile {
     }
 
 
-    public BufferedImage getImage() {
-        CellInfo cell = cells[0];
+    public BufferedImage getImage(int cellNum) {
+        CellInfo cell = cells[cellNum];
         int[] frameBuffer = new int [256 * 512];
-        int[] bits = renderCell(frameBuffer, cells[0], cebkMappingMode, 256, 128, false, -1, 1.0f, 0.0f, 0.0f, 1.0f);
+        int[] bits = renderCell(frameBuffer, cells[cellNum], cebkMappingMode, 256, 128, false, -1, 1.0f, 0.0f, 0.0f, 1.0f);
 
         boolean showCellBounds = true;
         boolean showGuidelines = true;

@@ -245,7 +245,7 @@ public class SliderNode extends AbstractNode {
         setPrecisionIndexAndValue(max(currentPrecisionIndex - 1, 0));
     }
 
-    protected void setPrecisionIndexAndValue(int newPrecisionIndex) {
+    public void setPrecisionIndexAndValue(int newPrecisionIndex) {
         if (!validatePrecision(newPrecisionIndex)) {
             return;
         }

@@ -138,72 +138,87 @@ public class CellInfo {
         return new int[] {widths[shape][size], heights[shape][size]};
     }
 
-    public void setOam(int index, short[] attrs) {
-        short attr0 = attrs[0];
-        short attr1 = attrs[1];
-        short attr2 = attrs[2];
+    public void setOam(int index, int[] attrs) {
+        int attr0 = attrs[0];
+        int attr1 = attrs[1];
+        int attr2 = attrs[2];
 
-        oams[index].xCoord = attr1 & 0x1FF;
-        logger.info("Oam @ " + index + " xCoord: " + oams[index].xCoord);
-        oams[index].yCoord = attr0 & 0xFF; // bits 0-7
+        // Obj 0
+        oams[index].yCoord = attr0 & 0xFF; // Bits 0-7 -> signed
         logger.info("Oam @ " + index + " yCoord: " + oams[index].yCoord);
-        oams[index].shape = attr0 >> 14; // bits 14-15
+
+        oams[index].rotation = (attr0 >> 8) == 1; // Bit 8 -> Rotation / Scale flag
+        logger.info("Oam @ " + index + " rotation=" + oams[index].rotation);
+
+        if (oams[index].rotation) {
+            oams[index].objDisable = ((attr0 >> 9) & 1); // Bit 9 -> if rotation
+            logger.info("Oam @ " + index + " objDisable: " + oams[index].objDisable);
+        } else {
+            oams[index].doubleSize = ((attr0 >> 9) & 1); // Bit 9 -> if !rotation
+            logger.info("Oam @ " + index + " doubleSize: " + oams[index].doubleSize);
+        }
+
+        oams[index].mode = (attr0 >> 10) & 3; // Bits 10-11 -> 0 = normal; 1 = semi-trans; 2 = window; 3 = invalid
+        logger.info("Oam @ " + index + " mode: " + oams[index].mode);
+
+        oams[index].mosaic = ((attr0 >> 12) & 1); // Bit 12
+        logger.info("Oam @ " + index + " mosaic: " + oams[index].mosaic);
+
+        if (((attr0 >> 13) & 1) == 1) { // Bit 13 -> 0 = 4bit; 1 = 8bit
+            oams[index].characterBits = 8;
+        } else {
+            oams[index].characterBits = 4;
+        }
+        logger.info("Oam @ " + index + " characterBits: " + oams[index].characterBits);
+
+        oams[index].shape = ((attr0 >> 14) & 3); // Bit14-15 -> 0 = square; 1 = horizontal; 2 = vertial; 3 = invalid
         logger.info("Oam @ " + index + " shape: " + oams[index].shape);
-        oams[index].size = attr1 >> 14;
+
+
+        // Obj 1
+        oams[index].xCoord = attr1 & 0x1FF;  // Bits 0-8 (unsigned)
+        logger.info("Oam @ " + index + " xCoord: " + oams[index].xCoord);
+//        if (oams[index].xCoord >= 0x100) { // TODO needed?
+//            oams[index].xCoord -= 0x200;
+//        }
+//        logger.info("Oam @ " + index + " xCoord: " + oams[index].xCoord);
+
+
+        if (oams[index].rotation) {
+            oams[index].rotationScaling = (attr1 >> 9) & 0x1F;  // Bits 9-13 -> Parameter selection
+            logger.info("Oam @ " + index + " rotationScaling: " + oams[index].rotationScaling);
+        } else {
+            oams[index].unused = ((attr1 >> 9) & 7); // Bits 9-11
+
+            oams[index].flipX = ((attr1 >> 12) & 1) == 1; // Bit 12
+            logger.info("Oam @ " + index + " flipX=" + oams[index].flipX);
+
+            oams[index].flipY = ((attr1 >> 13) & 1) == 1;  // Bit 13
+            logger.info("Oam @ " + index + " flipY=" + oams[index].flipY);
+        }
+
+        oams[index].size = (attr1 >> 14) & 3; // Bits 14-15
         logger.info("Oam @ " + index + " size: " + oams[index].size);
 
+        // Obj 2
+        oams[index].tileOffset = attr2 & 0x3FF; // Bits 0-9
+        logger.info("Oam @ " + index + " tileOffset: " + oams[index].tileOffset);
+
+        oams[index].priority = (attr2 >> 10) & 0x3; // Bits 10-11
+        logger.info("Oam @ " + index + " priority: " + oams[index].priority);
+
+        oams[index].palette = (attr2 >> 12) & 0xF; // Bits 12-15
+        logger.info("Oam @ " + index + " palette: " + oams[index].palette);
+
+//            Size size = Get_OAMSize(oam.obj0.shape, oam.obj1.size);
+//            oam.width = (ushort)size.Width;
+//            oam.height = (ushort)size.Height;
         int[] dims = CellGetObjDimensions(oams[index].shape,  oams[index].size);
         oams[index].width = dims[0];
         oams[index].height = dims[1];
         logger.info("Oam @ " + index + " width: " + oams[index].width);
         logger.info("Oam @ " + index + " height: " + oams[index].height);
-
-        oams[index].tileOffset = attr2 & 0x3FF;
-        logger.info("Oam @ " + index + " tileOffset: " + oams[index].tileOffset);
-        oams[index].priority = (attr2 >> 10) & 0x3;
-        logger.info("Oam @ " + index + " priority: " + oams[index].priority);
-        oams[index].palette = (attr2 >> 12) & 0xF;
-        logger.info("Oam @ " + index + " palette: " + oams[index].palette);
-        oams[index].mode = (attr0 >> 10) & 3; //bits 10-11
-        logger.info("Oam @ " + index + " mode: " + oams[index].mode);
-        oams[index].mosaic = ((attr0 >> 12) & 1); //bit 12
-        logger.info("Oam @ " + index + " mosaic: " + oams[index].mosaic);
-
-        oams[index].rotation = (attr0 >> 8) == 1; //bit 8
-        logger.info("Oam @ " + index + " rotation=" + oams[index].rotation);
-        if (oams[index].rotation){
-            oams[index].flipX = false;
-            oams[index].flipY = false;
-            oams[index].doubleSize = (attr0 >> 9) & 1;
-            oams[index].sizeDisable = 0; //bit 9 Obj Size (if rotation) or Obj Disable (if not rotation)
-            oams[index].rotationScaling = (attr1 >> 9) & 0x1F;
-        } else {
-            oams[index].flipX = ((attr1 >> 12) & 1) == 1;
-            oams[index].flipY = ((attr1 >> 13) & 1) == 1;
-            oams[index].doubleSize = 0;
-            oams[index].sizeDisable = ((attr0 >> 9) & 1); //bit 9 Obj Size (if rotation) or Obj Disable (if not rotation)
-            oams[index].rotationScaling = 0;
-        }
-        logger.info("Oam @ " + index + " flipX=" + oams[index].flipX);
-        logger.info("Oam @ " + index + " flipY=" + oams[index].flipY);
-        logger.info("Oam @ " + index + " doubleSize: " + oams[index].doubleSize);
-        logger.info("Oam @ " + index + " sizeDisable: " + oams[index].sizeDisable);
-        logger.info("Oam @ " + index + " rotationScaling: " + oams[index].rotationScaling);
-        boolean is8 = ((attr0 >> 13) & 1) == 1;
-        oams[index].characterBits = 4;
-        if (is8) {
-            oams[index].characterBits = 8;
-        }
-        logger.info("Oam @ " + index + " characterBits: " + oams[index].characterBits);
-        //oams[index].mode = (attr0 >> 2) & 3; //bits 10-11
-        //oams[index].mosaic = ((attr0 >> 4) & 1) == 1; //bit 12
-        //oams[index].colors = ((attr0 >> 5) & 1) == 0 ? 16 : 256; //bit 13
-        //oams[index].shape = (attr0 >> 6) & 3; //bits 14-15
-
-        //oams[index].xCoord = (attr1 & 0x01ff) >= 0x100 ? (attr1 & 0x01ff) - 0x200 : (attr1 & 0x01ff);
-        //oams[index].size = (attr1 >> 14) & 3;
-
-     }
+    }
 
     public int getWidth() {
         return Math.abs(maxX - minX);
@@ -236,7 +251,7 @@ public class CellInfo {
         // attr0
         int yCoord;
         boolean rotation;
-        int sizeDisable;
+        int objDisable;
         int mode;
         int mosaic;
         //int colors;
@@ -247,6 +262,7 @@ public class CellInfo {
         // attr1
         int xCoord;
         int rotationScaling;
+        int unused;
         boolean flipX;
         boolean flipY;
         int size;
@@ -303,8 +319,8 @@ public class CellInfo {
             return rotationScaling == 1;
         }
 
-        public boolean getSizeDisable() {
-            return sizeDisable == 1;
+        public boolean getObjDisable() {
+            return objDisable == 1;
         }
 
         public boolean getDoubleSize() {

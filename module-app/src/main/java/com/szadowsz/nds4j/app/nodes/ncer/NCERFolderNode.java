@@ -39,16 +39,18 @@ public class NCERFolderNode extends FolderNode {
         this.ncer = ncer;
         children.clear();
         children.add(new NCERPreviewNode(path + "/" + ncer.getFileName(), this,ncer));
-//        children.add(new SliderNode(path + "/" + CELL_NODE, this, 0.0f, 0.0f, ncer.getCellsCount()-1, true){
-//            @Override
-//            protected void onValueFloatChanged() {
-//                super.onValueFloatChanged();
-//                SliderNode oam = ((SliderNode)findChildByName(OAM_NODE));
-//                CellInfo ncerCell = ncer.getCell((int) valueFloat);
-//                oam.setMaxValue(ncerCell.getOamCount()-1);
-//                ((NCERPreviewNode)findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) valueFloat, (int) oam.valueFloat));
-//            }
-//        });
+        SliderNode cell = new SliderNode(path + "/" + CELL_NODE, this, 0.0f, 0.0f, ncer.getCellsCount()-1, true){
+            @Override
+            protected void onValueFloatChanged() {
+                super.onValueFloatChanged();
+                //SliderNode oam = ((SliderNode)findChildByName(OAM_NODE));
+                //CellInfo ncerCell = ncer.getCell((int) valueFloat);
+                //oam.setMaxValue(ncerCell.getOamCount()-1);
+                ((NCERPreviewNode)findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) valueFloat));
+            }
+        };
+        cell.setPrecisionIndexAndValue(4);
+        children.add(cell);
 //        CellInfo ncerCell = ncer.getCell(0);
 //        children.add(new SliderNode(path + "/" + OAM_NODE, this, 0.0f, 0.0f, ncerCell.getOamCount()-1, true){
 //            @Override
@@ -91,7 +93,7 @@ public class NCERFolderNode extends FolderNode {
                recolorImage();
                SliderNode cellNode = (SliderNode) findChildByName(CELL_NODE);
                SliderNode oamNode = (SliderNode) findChildByName(OAM_NODE);
-          //     ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) cellNode.valueFloat,(int) oamNode.valueFloat));
+               ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) cellNode.valueFloat));
                LOGGER.info("Loaded NCGR File: " + ncgrPath);
             } catch (IOException e) {
                 LOGGER.error("NCGR Load Failed",e);
@@ -109,10 +111,9 @@ public class NCERFolderNode extends FolderNode {
                 LOGGER.info("Loading NCLR File: " + nclrPath);
                 ncer.setNCLR(NCLR.fromFile(nclrPath));
                 recolorImage();
-                SliderNode sliderNode = (SliderNode) findChildByName(CELL_NODE);
                 SliderNode cellNode = (SliderNode) findChildByName(CELL_NODE);
                 SliderNode oamNode = (SliderNode) findChildByName(OAM_NODE);
-         //       ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) cellNode.valueFloat,(int) oamNode.valueFloat));
+                ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) cellNode.valueFloat));
                 LOGGER.info("Loaded NCLR File: " + nclrPath);
             } catch (IOException e) {
                 LOGGER.error("NCLR Load Failed",e);
