@@ -2,6 +2,8 @@ package com.szadowsz.nds4j.app.nodes.ncgr;
 
 import com.szadowsz.nds4j.app.Processing;
 import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
+import com.szadowsz.nds4j.app.nodes.util.NitroFolderNode;
+import com.szadowsz.nds4j.app.nodes.util.PreviewNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.exception.NitroException;
@@ -9,6 +11,7 @@ import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
 import com.szadowsz.ui.constants.GlobalReferences;
 import com.szadowsz.ui.input.ActivateByType;
+import com.szadowsz.ui.node.LayoutType;
 import com.szadowsz.ui.node.impl.ButtonNode;
 import com.szadowsz.ui.node.impl.FolderNode;
 import com.szadowsz.ui.node.impl.SliderNode;
@@ -24,17 +27,15 @@ import java.io.IOException;
 import static com.szadowsz.ui.store.LayoutStore.cell;
 
 
-public class NCGRFolderNode extends FolderNode {
+public class NCGRFolderNode extends NitroFolderNode {
 
     private final String PALETTE_NODE_NAME = "palette";
-    private final String ZOOM_NODE = "Zoom";
-    private final String SELECT_NCLR_FILE = "Select NClR";
     protected static final Logger LOGGER = LoggerFactory.getLogger(NCGRFolderNode.class);
 
     private NCGR ncgr;
 
     public NCGRFolderNode(String path, FolderNode parent, NCGR ncgr) {
-        super(path, parent);
+        super(path, parent, LayoutType.VERTICAL_1_COL);
         setImage(ncgr);
         JsonSaveStore.overwriteWithLoadedStateIfAny(this);
     }
@@ -45,21 +46,8 @@ public class NCGRFolderNode extends FolderNode {
         }
         this.ncgr = ncgr;
         children.clear();
-        children.add(new NCGRPreviewNode(path + "/" + ncgr.getFileName(), this,ncgr));
-        SliderNode zoom = new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, true){
-            @Override
-            protected void onValueFloatChanged() {
-                super.onValueFloatChanged();
-                try {
-                    recolorImage();
-                } catch (NitroException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-        };
-        zoom.increasePrecision();
-        children.add(zoom);
+        children.add(new PreviewNode(path + "/" + ncgr.getFileName(), this,ncgr));
+        children.add(createZoom());
 
         ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
         selectNcLr.registerAction(ActivateByType.RELEASE, this::selectNclr);
@@ -67,15 +55,15 @@ public class NCGRFolderNode extends FolderNode {
         children.add(new NCLRFolderNode(path + "/" + PALETTE_NODE_NAME, this,ncgr.getNCLR()));
     }
 
+    @Override
     public void recolorImage() throws NitroException {
         ((NCLRFolderNode)findChildByName(PALETTE_NODE_NAME)).setPalette(ncgr.getNCLR());
         ncgr.recolorImage();
 
-        PImage pImage = ImageUtils.convertToPImage(ncgr.getImage());
-        float zoom = ((SliderNode) findChildByName(ZOOM_NODE)).valueFloat;
-        pImage.resize(Math.round(pImage.width*zoom),0);
+        PImage pImage = resizeImage(ncgr.getImage());
 
-        ((NCGRPreviewNode) findChildByName(ncgr.getFileName())).loadImage(pImage);
+        ((PreviewNode) findChildByName(ncgr.getFileName())).loadImage(pImage);
+
         this.window.windowSizeX = autosuggestWindowWidthForContents();
         this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
     }
@@ -97,13 +85,6 @@ public class NCGRFolderNode extends FolderNode {
 
     @Override
     public float autosuggestWindowWidthForContents() {
-        return ((NCGRPreviewNode)children.get(0)).image.width;
-    }
-
-    @Override
-    protected void drawNodeForeground(PGraphics pg, String name) {
-        drawLeftText(pg, name);
-        drawRightBackdrop(pg, cell);
-     //       drawRightTextToNotOverflowLeftText(pg, getValueAsString(), name, true); //we need to calculate how much space is left for value after the name is displayed
+        return ((PreviewNode)children.get(0)).getImage().width;
     }
 }

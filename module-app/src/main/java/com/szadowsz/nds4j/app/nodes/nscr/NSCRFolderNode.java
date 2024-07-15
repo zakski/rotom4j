@@ -1,61 +1,43 @@
 package com.szadowsz.nds4j.app.nodes.nscr;
 
 import com.szadowsz.nds4j.app.Processing;
+import com.szadowsz.nds4j.app.nodes.util.NitroFolderNode;
+import com.szadowsz.nds4j.app.nodes.util.PreviewNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
-import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
 import com.szadowsz.nds4j.file.nitro.NSCR;
 import com.szadowsz.ui.constants.GlobalReferences;
 import com.szadowsz.ui.input.ActivateByType;
+import com.szadowsz.ui.node.LayoutType;
 import com.szadowsz.ui.node.impl.ButtonNode;
 import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.node.impl.SliderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PGraphics;
 import processing.core.PImage;
 
 import java.io.File;
 import java.io.IOException;
 
-import static com.szadowsz.ui.store.LayoutStore.cell;
 
-
-public class NSCRFolderNode extends FolderNode {
+public class NSCRFolderNode extends NitroFolderNode {
     protected static final Logger LOGGER = LoggerFactory.getLogger(NSCRFolderNode.class);
 
     private final NSCR nscr;
 
-    private final String ZOOM_NODE = "Zoom";
-    private final String SELECT_NCGR_FILE = "Select NCGR";
-    private final String SELECT_NCLR_FILE = "Select NClR";
-
     public NSCRFolderNode(String path, FolderNode parent, NSCR nscr) {
-        super(path, parent);
+        super(path, parent, LayoutType.VERTICAL_1_COL);
         this.nscr = nscr;
         children.clear();
-        children.add(new NSCRPreviewNode(path + "/" + nscr.getFileName(), this,nscr));
+        children.add(new PreviewNode(path + "/" + nscr.getFileName(), this,nscr));
 
-        SliderNode zoom = new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, true){
-            @Override
-            protected void onValueFloatChanged() {
-                super.onValueFloatChanged();
-                try {
-                    recolorImage();
-                } catch (NitroException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-        };
-        zoom.increasePrecision();
-        children.add(zoom);
+        children.add(createZoom());
 
         ButtonNode selectNcgr = new ButtonNode(path + "/" + SELECT_NCGR_FILE,this);
         selectNcgr.registerAction(ActivateByType.RELEASE, this::selectNcgr);
         children.add(selectNcgr);
+
         ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
         selectNcLr.registerAction(ActivateByType.RELEASE, this::selectNclr);
         children.add(selectNcLr);
@@ -100,14 +82,14 @@ public class NSCRFolderNode extends FolderNode {
         }
     }
 
+    @Override
     public void recolorImage() throws NitroException {
         nscr.recolorImage();
 
-        PImage pImage = ImageUtils.convertToPImage(nscr.getImage());
-        float zoom = ((SliderNode) findChildByName(ZOOM_NODE)).valueFloat;
-        pImage.resize(Math.round(pImage.width*zoom),0);
+        PImage pImage = resizeImage(nscr.getImage());
 
-        ((NSCRPreviewNode) findChildByName(nscr.getFileName())).loadImage(pImage);
+        ((PreviewNode) findChildByName(nscr.getFileName())).loadImage(pImage);
+
         this.window.windowSizeX = autosuggestWindowWidthForContents();
         this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
     }
@@ -115,16 +97,9 @@ public class NSCRFolderNode extends FolderNode {
     @Override
     public float autosuggestWindowWidthForContents() {
         if (nscr.getNCGR() != null) {
-            return ((NSCRPreviewNode) children.get(0)).image.width;
+            return ((PreviewNode) children.get(0)).getImage().width;
         } else {
             return nscr.getWidth();
         }
-    }
-
-    @Override
-    protected void drawNodeForeground(PGraphics pg, String name) {
-        drawLeftText(pg, name);
-        drawRightBackdrop(pg, cell);
-        //       drawRightTextToNotOverflowLeftText(pg, getValueAsString(), name, true); //we need to calculate how much space is left for value after the name is displayed
     }
 }

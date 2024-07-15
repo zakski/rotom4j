@@ -2,6 +2,7 @@ package com.szadowsz.nds4j.file.nitro;
 
 import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
+import com.szadowsz.nds4j.data.Imageable;
 import com.szadowsz.nds4j.data.NFSFormat;
 import com.szadowsz.nds4j.data.nfs.ColorFormat;
 import com.szadowsz.nds4j.data.nfs.NTFS;
@@ -19,7 +20,7 @@ import java.util.Arrays;
 
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;
 
-public class NSCR extends GenericNFSFile {
+public class NSCR extends GenericNFSFile implements Imageable {
 
     // Block Header section
     private String id;                   // NRCS = 0x4E524353

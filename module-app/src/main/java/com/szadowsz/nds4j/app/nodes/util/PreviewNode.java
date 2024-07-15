@@ -1,36 +1,34 @@
-package com.szadowsz.nds4j.app.nodes.nscr;
+package com.szadowsz.nds4j.app.nodes.util;
 
 import com.szadowsz.nds4j.app.utils.ImageUtils;
-import com.szadowsz.ui.store.ShaderStore;
-import com.szadowsz.nds4j.file.nitro.NSCR;
+import com.szadowsz.nds4j.data.Imageable;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeType;
-import processing.core.PConstants;
+import com.szadowsz.ui.node.impl.FolderNode;
+import com.szadowsz.ui.store.ShaderStore;
 import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.opengl.PShader;
 
-import java.awt.image.BufferedImage;
-
 import static com.szadowsz.ui.store.LayoutStore.cell;
 import static processing.core.PConstants.CORNER;
 
-public class NSCRPreviewNode extends AbstractNode {
+public class PreviewNode extends AbstractNode {
 
     private final String checkerboardShaderPath = "checkerboard.glsl";
-    private final NSCR nscr;
+    private final Imageable imageable;
     PImage image;
 
-    public NSCRPreviewNode(String path, NSCRFolderNode folder, NSCR nscr) {
+    public PreviewNode(String path, FolderNode folder, Imageable imageable) {
         super(NodeType.TRANSIENT, path, folder);
-        this.nscr = nscr;
-        masterInlineNodeHeightInCells = nscr.getHeight() / cell + ((nscr.getHeight() % cell != 0) ? 1 : 0);
-        size.x = nscr.getWidth();
-        size.y = nscr.getHeight();
-        loadImage(ImageUtils.convertToPImage((nscr.getImage())));
+        this.imageable = imageable;
+        masterInlineNodeHeightInCells = imageable.getHeight() / cell + ((imageable.getHeight() % cell != 0) ? 1 : 0);
+        size.x = imageable.getWidth();
+        size.y = imageable.getHeight();
+        loadImage(ImageUtils.convertToPImage((imageable.getImage())));
     }
 
-    private void drawCheckerboard(PGraphics pg) {
+    protected void drawCheckerboard(PGraphics pg) {
         PShader checkerboardShader = ShaderStore.getorLoadShader(checkerboardShaderPath);
         checkerboardShader.set("quadPos", pos.x, pos.y);
         pg.shader(checkerboardShader);
@@ -63,8 +61,12 @@ public class NSCRPreviewNode extends AbstractNode {
 
     public void loadImage(PImage pImage) {
         this.image = pImage;
-        masterInlineNodeHeightInCells = image.height / cell;
+        masterInlineNodeHeightInCells = imageable.getHeight() / cell + ((imageable.getHeight() % cell != 0) ? 1 : 0);
         size.x = image.width;
         size.y = image.height;
+    }
+
+    public PImage getImage(){
+        return image;
     }
 }

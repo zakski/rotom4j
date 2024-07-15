@@ -2,6 +2,7 @@ package com.szadowsz.nds4j.file.nitro;
 
 import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
+import com.szadowsz.nds4j.data.Imageable;
 import com.szadowsz.nds4j.data.NFSFormat;
 import com.szadowsz.nds4j.data.nfs.ColorFormat;
 import com.szadowsz.nds4j.data.nfs.TileForm;
@@ -25,7 +26,7 @@ import static java.awt.image.BufferedImage.TYPE_INT_RGB;
  * An object representation of an NCGR file. <p>
  * An NCGR file is a Nintendo proprietary DS format used for storing graphics (images).
  */
-public class NCGR extends GenericNFSFile {
+public class NCGR extends GenericNFSFile implements Imageable {
     private static final Logger logger = LoggerFactory.getLogger(NCGR.class);
 
     /**
@@ -143,6 +144,7 @@ public class NCGR extends GenericNFSFile {
      *
      * @return an <code>int</code>
      */
+    @Override
     public int getWidth() {
         return width;
     }
@@ -161,6 +163,7 @@ public class NCGR extends GenericNFSFile {
      *
      * @return an <code>int</code>
      */
+    @Override
     public int getHeight() {
         return height;
     }
@@ -187,6 +190,7 @@ public class NCGR extends GenericNFSFile {
      *
      * @return a <code>BufferedImage</code> representation of this <code>IndexedImage</code>
      */
+    @Override
     public BufferedImage getImage() {
         return image;
     }
