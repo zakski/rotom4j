@@ -36,13 +36,13 @@ public class CellInfo {
     public CellInfo(NCER ncer, CellPojo pojo, int[] partition) {
         this.ncer = ncer;
         this.maxX = pojo.maxX;
-        logger.info("Cell maxX: " + this.maxX);
+        logger.debug("Cell maxX: " + this.maxX);
         this.maxY = pojo.maxY;
-        logger.info("Cell maxY: " + this.maxY);
+        logger.debug("Cell maxY: " + this.maxY);
         this.minX = pojo.minX;
-        logger.info("Cell minX: " + this.minX);
+        logger.debug("Cell minX: " + this.minX);
         this.minY = pojo.minY;
-        logger.info("Cell minY: " + this.minY);
+        logger.debug("Cell minY: " + this.minY);
         oams = new OAM[pojo.nAttribs];
         for (int i = 0; i < oams.length; i++) {
             oams[i] = new OAM();
@@ -51,9 +51,9 @@ public class CellInfo {
         attributes = new CellAttribute();
         setAttributes(pojo.cellAttr);
         this.partitionOffset = partition[0];
-        logger.info("Cell partitionOffset: " + this.partitionOffset);
+        logger.debug("Cell partitionOffset: " + this.partitionOffset);
         this.partitionSize = partition[1];
-        logger.info("Cell partitionSize: " + this.partitionSize);
+        logger.debug("Cell partitionSize: " + this.partitionSize);
     }
 
     public String getName() {
@@ -66,15 +66,15 @@ public class CellInfo {
 
     public void setAttributes(int cellAttrs) {
         attributes.hFlip = ((cellAttrs >> 8) & 1) == 1;
-        logger.info("Cell hFlip=" + this.attributes.hFlip);
+        logger.debug("Cell hFlip=" + this.attributes.hFlip);
         attributes.vFlip = ((cellAttrs >> 9) & 1) == 1;
-        logger.info("Cell vFlip=" + this.attributes.vFlip);
+        logger.debug("Cell vFlip=" + this.attributes.vFlip);
         attributes.hvFlip = ((cellAttrs >> 10) & 1) == 1;
-        logger.info("Cell hvFlip=" + this.attributes.hvFlip);
+        logger.debug("Cell hvFlip=" + this.attributes.hvFlip);
         attributes.boundingRectangle = ((cellAttrs >> 11) & 1) == 1;
-        logger.info("Cell boundingRectangle=" + this.attributes.boundingRectangle);
+        logger.debug("Cell boundingRectangle=" + this.attributes.boundingRectangle);
         attributes.boundingSphereRadius = cellAttrs & 0x3F;
-        logger.info("Cell boundingSphereRadius: " + this.attributes.boundingSphereRadius);
+        logger.debug("Cell boundingSphereRadius: " + this.attributes.boundingSphereRadius);
     }
 
     public short getMaxX() {
@@ -145,70 +145,70 @@ public class CellInfo {
 
         // Obj 0
         oams[index].yCoord = attr0 & 0xFF; // Bits 0-7 -> signed
-        logger.info("Oam @ " + index + " yCoord: " + oams[index].yCoord);
+        logger.debug("Oam @ " + index + " yCoord: " + oams[index].yCoord);
 
         oams[index].rotation = (attr0 >> 8) == 1; // Bit 8 -> Rotation / Scale flag
-        logger.info("Oam @ " + index + " rotation=" + oams[index].rotation);
+        logger.debug("Oam @ " + index + " rotation=" + oams[index].rotation);
 
         if (oams[index].rotation) {
             oams[index].objDisable = ((attr0 >> 9) & 1); // Bit 9 -> if rotation
-            logger.info("Oam @ " + index + " objDisable: " + oams[index].objDisable);
+            logger.debug("Oam @ " + index + " objDisable: " + oams[index].objDisable);
         } else {
             oams[index].doubleSize = ((attr0 >> 9) & 1); // Bit 9 -> if !rotation
-            logger.info("Oam @ " + index + " doubleSize: " + oams[index].doubleSize);
+            logger.debug("Oam @ " + index + " doubleSize: " + oams[index].doubleSize);
         }
 
         oams[index].mode = (attr0 >> 10) & 3; // Bits 10-11 -> 0 = normal; 1 = semi-trans; 2 = window; 3 = invalid
-        logger.info("Oam @ " + index + " mode: " + oams[index].mode);
+        logger.debug("Oam @ " + index + " mode: " + oams[index].mode);
 
         oams[index].mosaic = ((attr0 >> 12) & 1); // Bit 12
-        logger.info("Oam @ " + index + " mosaic: " + oams[index].mosaic);
+        logger.debug("Oam @ " + index + " mosaic: " + oams[index].mosaic);
 
         if (((attr0 >> 13) & 1) == 1) { // Bit 13 -> 0 = 4bit; 1 = 8bit
             oams[index].characterBits = 8;
         } else {
             oams[index].characterBits = 4;
         }
-        logger.info("Oam @ " + index + " characterBits: " + oams[index].characterBits);
+        logger.debug("Oam @ " + index + " characterBits: " + oams[index].characterBits);
 
         oams[index].shape = ((attr0 >> 14) & 3); // Bit14-15 -> 0 = square; 1 = horizontal; 2 = vertial; 3 = invalid
-        logger.info("Oam @ " + index + " shape: " + oams[index].shape);
+        logger.debug("Oam @ " + index + " shape: " + oams[index].shape);
 
 
         // Obj 1
         oams[index].xCoord = attr1 & 0x1FF;  // Bits 0-8 (unsigned)
-        logger.info("Oam @ " + index + " xCoord: " + oams[index].xCoord);
+        logger.debug("Oam @ " + index + " xCoord: " + oams[index].xCoord);
 //        if (oams[index].xCoord >= 0x100) { // TODO needed?
 //            oams[index].xCoord -= 0x200;
 //        }
-//        logger.info("Oam @ " + index + " xCoord: " + oams[index].xCoord);
+//        logger.debug("Oam @ " + index + " xCoord: " + oams[index].xCoord);
 
 
         if (oams[index].rotation) {
             oams[index].rotationScaling = (attr1 >> 9) & 0x1F;  // Bits 9-13 -> Parameter selection
-            logger.info("Oam @ " + index + " rotationScaling: " + oams[index].rotationScaling);
+            logger.debug("Oam @ " + index + " rotationScaling: " + oams[index].rotationScaling);
         } else {
             oams[index].unused = ((attr1 >> 9) & 7); // Bits 9-11
 
             oams[index].flipX = ((attr1 >> 12) & 1) == 1; // Bit 12
-            logger.info("Oam @ " + index + " flipX=" + oams[index].flipX);
+            logger.debug("Oam @ " + index + " flipX=" + oams[index].flipX);
 
             oams[index].flipY = ((attr1 >> 13) & 1) == 1;  // Bit 13
-            logger.info("Oam @ " + index + " flipY=" + oams[index].flipY);
+            logger.debug("Oam @ " + index + " flipY=" + oams[index].flipY);
         }
 
         oams[index].size = (attr1 >> 14) & 3; // Bits 14-15
-        logger.info("Oam @ " + index + " size: " + oams[index].size);
+        logger.debug("Oam @ " + index + " size: " + oams[index].size);
 
         // Obj 2
         oams[index].tileOffset = attr2 & 0x3FF; // Bits 0-9
-        logger.info("Oam @ " + index + " tileOffset: " + oams[index].tileOffset);
+        logger.debug("Oam @ " + index + " tileOffset: " + oams[index].tileOffset);
 
         oams[index].priority = (attr2 >> 10) & 0x3; // Bits 10-11
-        logger.info("Oam @ " + index + " priority: " + oams[index].priority);
+        logger.debug("Oam @ " + index + " priority: " + oams[index].priority);
 
         oams[index].palette = (attr2 >> 12) & 0xF; // Bits 12-15
-        logger.info("Oam @ " + index + " palette: " + oams[index].palette);
+        logger.debug("Oam @ " + index + " palette: " + oams[index].palette);
 
 //            Size size = Get_OAMSize(oam.obj0.shape, oam.obj1.size);
 //            oam.width = (ushort)size.Width;
@@ -216,8 +216,8 @@ public class CellInfo {
         int[] dims = CellGetObjDimensions(oams[index].shape,  oams[index].size);
         oams[index].width = dims[0];
         oams[index].height = dims[1];
-        logger.info("Oam @ " + index + " width: " + oams[index].width);
-        logger.info("Oam @ " + index + " height: " + oams[index].height);
+        logger.debug("Oam @ " + index + " width: " + oams[index].width);
+        logger.debug("Oam @ " + index + " height: " + oams[index].height);
     }
 
     public int getWidth() {

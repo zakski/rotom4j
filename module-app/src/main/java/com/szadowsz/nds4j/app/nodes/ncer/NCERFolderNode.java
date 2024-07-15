@@ -88,13 +88,13 @@ public class NCERFolderNode extends FolderNode {
         if (ncgrPath != null) {
             Processing.prefs.put("openNarcPath", new File(ncgrPath).getParentFile().getAbsolutePath());
            try {
-               LOGGER.info("Loading NCGR File: " + ncgrPath);
+               LOGGER.debug("Loading NCGR File: " + ncgrPath);
                ncer.setNCGR(NCGR.fromFile(ncgrPath));
                recolorImage();
                SliderNode cellNode = (SliderNode) findChildByName(CELL_NODE);
                SliderNode oamNode = (SliderNode) findChildByName(OAM_NODE);
                ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) cellNode.valueFloat));
-               LOGGER.info("Loaded NCGR File: " + ncgrPath);
+               LOGGER.debug("Loaded NCGR File: " + ncgrPath);
             } catch (IOException e) {
                 LOGGER.error("NCGR Load Failed",e);
             }
@@ -108,13 +108,13 @@ public class NCERFolderNode extends FolderNode {
             Processing.prefs.put("openNarcPath", new File(nclrPath).getParentFile().getAbsolutePath());
             NCLR original = ncer.getNCLR();
             try {
-                LOGGER.info("Loading NCLR File: " + nclrPath);
+                LOGGER.debug("Loading NCLR File: " + nclrPath);
                 ncer.setNCLR(NCLR.fromFile(nclrPath));
                 recolorImage();
                 SliderNode cellNode = (SliderNode) findChildByName(CELL_NODE);
                 SliderNode oamNode = (SliderNode) findChildByName(OAM_NODE);
                 ((NCERPreviewNode) findChildByName(ncer.getFileName())).loadImage(ncer.getImage((int) cellNode.valueFloat));
-                LOGGER.info("Loaded NCLR File: " + nclrPath);
+                LOGGER.debug("Loaded NCLR File: " + nclrPath);
             } catch (IOException e) {
                 LOGGER.error("NCLR Load Failed",e);
                 ncer.setNCLR(original);
