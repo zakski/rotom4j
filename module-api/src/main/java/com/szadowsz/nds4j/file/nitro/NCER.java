@@ -274,10 +274,13 @@ public class NCER extends GenericNFSFile {
     }
 
     private int calcByteBoundary(int m) {
-        return (1 << ((((m) >> 20) & 0x7) + 5));
+        int result = (1 << ((((m) >> 20) & 0x7) + 5));
+        logger.info("Byte Boundary result " + result);
+        return result;
     }
 
     private int calcCHName(int x, int m, int b) {
+        logger.info("Calculating CHName with tile Offset " + x + ", mapping " + m + ", bits " + b);
         return (calcByteBoundary(m) * (x) / ((b) << 3));
     }
 
@@ -290,6 +293,7 @@ public class NCER extends GenericNFSFile {
 
         if (ncgr != null) {
             int ncgrStart = calcCHName(info.getOffset(), mapping, ncgr.getBitDepth());
+            logger.info("NCGR Tile Start = " + ncgrStart);
             for (int y = 0; y < tilesY; y++) {
                 for (int x = 0; x < tilesX; x++) {
                     int[] block = new int[64];
@@ -304,7 +308,7 @@ public class NCER extends GenericNFSFile {
                         index = ncgrStart + x + y * tilesX;
                     }
 
-                    ncgr.chrRenderCharacterTransfer(index, vramTransfer, block, info.getPalette(), true);
+                    ncgr.chrRenderCharacterTransfer(index, this.vramTransfer,vramTransfer, block, info.getPalette(), true);
                     for (int i = 0; i < 8; i++) {
                         System.arraycopy(block, i * 8, out, bitsOffset + tilesX * 8 * i, 8);
                     }
@@ -464,7 +468,7 @@ public class NCER extends GenericNFSFile {
         int[] bits = renderCell(frameBuffer, cells[cellNum], cebkMappingMode, 256, 128, false, -1, 1.0f, 0.0f, 0.0f, 1.0f);
 
         boolean showCellBounds = true;
-        boolean showGuidelines = true;
+        boolean showGuidelines = false;
         boolean renderTransparent = false;
         if (showCellBounds) {
             int minX = cell.getMinX() + 256, maxX = cell.getMaxX() + 256 - 1;

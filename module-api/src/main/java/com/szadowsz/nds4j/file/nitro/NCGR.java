@@ -348,60 +348,6 @@ public class NCGR extends GenericNFSFile {
         }
     }
 
-//    void ChrGetChar(int chno, CellInfo.OAM info, byte[] out) {
-//        //get character source address
-//        int chrSize = 8 * getBitDepth();
-//        int srcAddr = chno * chrSize;
-//        if ((srcAddr + chrSize) < info->dstAddr || srcAddr >= (info->dstAddr + info->size)) {
-//            if (chno < ncgr->nTiles)
-//                memcpy(out, charTiledData[chno], 64);
-//            else
-//                memset(out, 0, 64);
-//            return;
-//        }
-//
-//        //character is within the destination region. For bytes within the region, copy from src.
-//        //TODO: handle bitmapped graphics transfers too
-//        for (int i = 0; i < 64; i++) {
-//            //copy charTiledData[chrno][i] to out[i]
-//            unsigned int pxaddr = srcAddr + (i >> (ncgr->nBits == 4 ? 1 : 0));
-//            if (pxaddr >= info->dstAddr && pxaddr < (info->dstAddr + info->size)) {
-//                //in transfer destination
-//                pxaddr = pxaddr - info->dstAddr + info->srcAddr;
-//                unsigned int transferChr = pxaddr / chrSize;
-//                unsigned int transferChrPxOffset = pxaddr % chrSize;
-//                unsigned int pxno = transferChrPxOffset;
-//                if (ncgr->nBits == 4) {
-//                    pxno <<= 1;
-//                    pxno += (i & 1);
-//                }
-//                out[i] = charTiledData[transferChr][pxno];
-//            } else {
-//                //out of transfer destination
-//                out[i] = charTiledData[chno][i];
-//            }
-//        }
-//    }
-
-//    int chriRenderCharacter(byte[] chr, int depth, int paletteNum, BufferedImage out, boolean transparent) {
-//        int i = 0;
-//        for (int h = 0; h < out.getHeight(); h++) {
-//            for (int w = 0; w < out.getWidth(); w++) {
-//                int index = chr[i];
-//                if (index > 0 || !transparent) {
-//                    Color color = new Color(0);
-//                    if (palette != null && (index + (paletteNum << depth)) < palette.getNumColors()) {
-//                        color = palette.getColor(paletteNum << depth);
-//                    }
-//                    image.setRGB(w, h, color.getRGB());
-//                } else {
-//                    image.setRGB(w, h, 0);
-//                }
-//                i++;
-//            }
-//        }
-//        return 0;
-//    }
     private int chriRenderCharacter(byte[] chr, int depth, int previewPalette, int[] out, boolean transparent) {
         for (int i = 0; i < 64; i++) {
             int index = chr[i] & 0xFF;
@@ -418,62 +364,43 @@ public class NCGR extends GenericNFSFile {
         return 0;
     }
 
-//    int chrRenderCharacter(int chNo, BufferedImage out, int previewPalette, boolean transparent) {
-//        if (chNo < getTileCount()) {
-//            byte[] tile = charTiledData[chNo];
-//            return chriRenderCharacter(tile, getBitDepth(), previewPalette, out, transparent);
-//        } else {
-//            return 1;
-//        }
-//    }
-
-//    int renderCharacterTransfer(int chNo, CellInfo.OAM info, BufferedImage out, boolean transfer, boolean transparent) {
-//        //if transfer == NULL, render as normal
-//        if (!transfer) {
-//            return ChrRenderCharacter(chNo, out, info.getPalette(), transparent);
-//        } else {// read graphics and render
-//            byte[] buf = new byte[64];
-//            ChrGetChar(chNo, info, buf);
-//            return ChriRenderCharacter(buf, getBitDepth(), info.getPalette(), out, transparent);
-//        }
-//    }
-
     private int chrRenderCharacter(int chNo, int[] out, int previewPalette, boolean transparent) {
         if (chNo < getTileCount()) {
+            logger.debug("NCGR Processing Tile Transfer, tile " + chNo);
             byte[] tile = charTiledData[chNo];
             return chriRenderCharacter(tile, getTileCount(), previewPalette, out, transparent);
         } else {
+            logger.debug("NCGR Blanking Tile Transfer, tile " + chNo);
             Arrays.fill(out, 0);
             return 1;
         }
     }
 
-    public int chrRenderCharacterTransfer(int chNo, CellInfo transfer, int[] out, int palette, boolean transparent) {
+    public int chrRenderCharacterTransfer(int chNo, boolean transfer, CellInfo transferInfo,int[] out, int palette, boolean transparent) {
+        logger.info("NCGR Tile Transfer, tile " + chNo + ", vram=" + transfer + ", palette " + palette + ", transparent=" + transparent);
         // if transfer == null, render as normal
-        if (transfer == null) {
+        if (!transfer) {
             return chrRenderCharacter(chNo, out, palette, transparent);
         }
 
         // else, read graphics and render
         byte[] buf = new byte[64];
-        chrGetChar(chNo, transfer, buf);
+        chrGetChar(chNo, transferInfo, buf);
         return chriRenderCharacter(buf, getTileCount(), palette, out, transparent);
     }
 
     private void readData(MemBuf.MemBufReader reader) {
         int nChars = getTileCount();
         int nPresentTiles = (int)charTiledataSize >> 5;
-        int tilesY = getHeight();
-        int tilesX = getWidth();
         if (charBitDepth.bits == 8) {
             nPresentTiles >>= 1;
         }
         if (calcIsNCGR1D(charMappingType) || nChars != nPresentTiles) {
             nChars = nPresentTiles;
-            tilesX = ChrGuessWidth(nChars);
-            tilesY = nChars / tilesX;
-            this.height = tilesY * 8;
-            this.width = tilesX * 8;
+            charTilesWidth = ChrGuessWidth(nChars);
+            charTilesHeight = nChars / charTilesWidth;
+            this.height = charTilesHeight * 8;
+            this.width = charTilesWidth * 8;
 
         }
         charTiledData = new byte[nChars][];
@@ -517,8 +444,8 @@ public class NCGR extends GenericNFSFile {
             throw new RuntimeException("Not a valid NCGR file.");
         }
         charSectionSize = reader.readUInt32();
-        charTilesHeight = reader.readShort(); //0x18
-        charTilesWidth = reader.readShort(); //0x1A
+        charTilesHeight = reader.readUInt16(); //0x18
+        charTilesWidth = reader.readUInt16(); //0x1A
         this.height = this.charTilesHeight * 8;
         this.width = this.charTilesWidth * 8;
         charBitDepth = ColorFormat.valueOf(reader.readInt());
