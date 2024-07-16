@@ -21,6 +21,7 @@ package com.szadowsz.nds4j.file.nitro;
 
 import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
+import com.szadowsz.nds4j.data.Imageable;
 import com.szadowsz.nds4j.data.NFSFormat;
 import com.szadowsz.nds4j.data.nfs.cells.CellInfo;
 import com.szadowsz.nds4j.data.nfs.cells.CellPojo;
@@ -36,7 +37,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * An object representation of an NCER file
  */
-public class NCER extends GenericNFSFile {
+public class NCER extends GenericNFSFile implements Imageable {
     private static final Logger logger = LoggerFactory.getLogger(NCER.class);
 
     public static final int GX_OBJVRAMMODE_CHAR_2D = 0x000000;
@@ -53,6 +54,9 @@ public class NCER extends GenericNFSFile {
             GX_OBJVRAMMODE_CHAR_1D_256K,
             GX_OBJVRAMMODE_CHAR_2D
     };
+
+    protected static final int BACKGROUND_WIDTH = 512;
+    protected static final int BACKGROUND_HEIGHT = 256;
 
     private NCGR ncgr;
 
@@ -255,6 +259,15 @@ public class NCER extends GenericNFSFile {
         return cebkNumCells;
     }
 
+    @Override
+    public int getWidth() {
+        return BACKGROUND_WIDTH;
+    }
+
+    public int getHeight(){
+        return BACKGROUND_HEIGHT;
+    }
+
     public NCGR getNCGR() {
         return ncgr;
     }
@@ -269,7 +282,7 @@ public class NCER extends GenericNFSFile {
 
     public void setNCLR(NCLR nclr) {
         if (ncgr != null) {
-            ncgr.setPalette(nclr);
+            ncgr.setNCLR(nclr);
         }
     }
 
@@ -461,6 +474,10 @@ public class NCER extends GenericNFSFile {
         return ((x)&0xFF00FF00)|(((x)&0xFF)<<16)|(((x)>>16)&0xFF);
     }
 
+    @Override
+    public BufferedImage getImage() {
+        return getImage(0);
+    }
 
     public BufferedImage getImage(int cellNum) {
         CellInfo cell = cells[cellNum];
@@ -581,8 +598,8 @@ public class NCER extends GenericNFSFile {
                 }
             }
         }
-        BufferedImage image = new BufferedImage(512, 256, BufferedImage.TYPE_INT_ARGB);
-        image.setRGB(0, 0, 512, 256, bits, 0, 512);
+        BufferedImage image = new BufferedImage(BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        image.setRGB(0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, bits, 0, BACKGROUND_WIDTH);
 
         CellInfo.OAM info = cell.getOam(0);
         int[] width = new int[1], height = new int[1];

@@ -6,7 +6,6 @@ import com.szadowsz.nds4j.app.nodes.util.PreviewNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCGR;
-import com.szadowsz.nds4j.file.nitro.NCLR;
 import com.szadowsz.nds4j.file.nitro.NSCR;
 import com.szadowsz.ui.constants.GlobalReferences;
 import com.szadowsz.ui.input.ActivateByType;
@@ -27,7 +26,7 @@ public class NSCRFolderNode extends NitroFolderNode {
     private final NSCR nscr;
 
     public NSCRFolderNode(String path, FolderNode parent, NSCR nscr) {
-        super(path, parent, LayoutType.VERTICAL_1_COL);
+        super(path, parent, LayoutType.VERTICAL_1_COL,nscr);
         this.nscr = nscr;
         children.clear();
         children.add(new PreviewNode(path + "/" + nscr.getFileName(), this,nscr));
@@ -39,7 +38,7 @@ public class NSCRFolderNode extends NitroFolderNode {
         children.add(selectNcgr);
 
         ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
-        selectNcLr.registerAction(ActivateByType.RELEASE, this::selectNclr);
+        selectNcLr.registerAction(ActivateByType.RELEASE, this::selectPalette);
         children.add(selectNcLr);
     }
 
@@ -55,29 +54,6 @@ public class NSCRFolderNode extends NitroFolderNode {
                 LOGGER.info("Loaded NCGR File: " + ncgrPath);
             } catch (IOException e) {
                 LOGGER.error("NCGR Load Failed",e);
-            }
-        }
-    }
-
-    private void selectNclr() {
-        String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
-        String nclrPath = FileChooser.selectNclrFile(GlobalReferences.gui.getGuiCanvas().parent, lastPath,SELECT_NCLR_FILE);
-        if (nclrPath != null) {
-            Processing.prefs.put("openNarcPath", new File(nclrPath).getParentFile().getAbsolutePath());
-            NCLR original = nscr.getNCGR().getNCLR();
-            try {
-                LOGGER.info("Loading NCLR File: " + nclrPath);
-                nscr.setNCLR(NCLR.fromFile(nclrPath));
-                recolorImage();
-                LOGGER.info("Loaded NCLR File: " + nclrPath);
-            } catch (IOException e) {
-                LOGGER.error("NCLR Load Failed",e);
-                nscr.setNCLR(original);
-                try {
-                    recolorImage();
-                } catch (Throwable t){
-                    throw new RuntimeException(t);
-                }
             }
         }
     }

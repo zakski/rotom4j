@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Arrays;
@@ -213,6 +211,7 @@ public class NCGR extends GenericNFSFile implements Imageable {
         }
     }
 
+    @Override
     public NCLR getNCLR() {
         return palette;
     }
@@ -241,7 +240,8 @@ public class NCGR extends GenericNFSFile implements Imageable {
         return charTilesHeight * charTilesWidth;
     }
 
-    public void setPalette(NCLR palette) {
+    @Override
+    public void setNCLR(NCLR palette) {
         this.palette = palette;
     }
 

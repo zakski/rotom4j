@@ -103,12 +103,17 @@ public class NSCR extends GenericNFSFile implements Imageable {
         return this.ncgr;
     }
 
+    public NCLR getNCLR(){
+        return (ncgr!=null)?ncgr.getNCLR():NCLR.DEFAULT;
+    }
+
     public void setNCGR(NCGR ncgr) {
         this.ncgr = ncgr;
     }
 
+    @Override
     public void setNCLR(NCLR nclr) {
-        this.ncgr.setPalette(nclr);
+        this.ncgr.setNCLR(nclr);
     }
 
     public void setZoom(float valueFloat) {

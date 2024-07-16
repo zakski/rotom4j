@@ -5,7 +5,6 @@ import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.nodes.util.NitroFolderNode;
 import com.szadowsz.nds4j.app.nodes.util.PreviewNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
-import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NCLR;
@@ -14,17 +13,13 @@ import com.szadowsz.ui.input.ActivateByType;
 import com.szadowsz.ui.node.LayoutType;
 import com.szadowsz.ui.node.impl.ButtonNode;
 import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.node.impl.SliderNode;
 import com.szadowsz.ui.store.JsonSaveStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PGraphics;
 import processing.core.PImage;
 
 import java.io.File;
 import java.io.IOException;
-
-import static com.szadowsz.ui.store.LayoutStore.cell;
 
 
 public class NCGRFolderNode extends NitroFolderNode {
@@ -35,7 +30,7 @@ public class NCGRFolderNode extends NitroFolderNode {
     private NCGR ncgr;
 
     public NCGRFolderNode(String path, FolderNode parent, NCGR ncgr) {
-        super(path, parent, LayoutType.VERTICAL_1_COL);
+        super(path, parent, LayoutType.VERTICAL_1_COL,ncgr);
         setImage(ncgr);
         JsonSaveStore.overwriteWithLoadedStateIfAny(this);
     }
@@ -50,7 +45,7 @@ public class NCGRFolderNode extends NitroFolderNode {
         children.add(createZoom());
 
         ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
-        selectNcLr.registerAction(ActivateByType.RELEASE, this::selectNclr);
+        selectNcLr.registerAction(ActivateByType.RELEASE, this::selectPalette);
         children.add(selectNcLr);
         children.add(new NCLRFolderNode(path + "/" + PALETTE_NODE_NAME, this,ncgr.getNCLR()));
     }
@@ -66,21 +61,6 @@ public class NCGRFolderNode extends NitroFolderNode {
 
         this.window.windowSizeX = autosuggestWindowWidthForContents();
         this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
-    }
-    private void selectNclr() {
-        String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
-        String nclrPath = FileChooser.selectNclrFile(GlobalReferences.gui.getGuiCanvas().parent, lastPath,SELECT_NCLR_FILE);
-        if (nclrPath != null) {
-            Processing.prefs.put("openNarcPath", new File(nclrPath).getParentFile().getAbsolutePath());
-            try {
-                LOGGER.info("Loading NCLR File: " + nclrPath);
-                ncgr.setPalette(NCLR.fromFile(nclrPath));
-                recolorImage();
-                LOGGER.info("Loaded NCLR File: " + nclrPath);
-            } catch (IOException e) {
-                LOGGER.error("NCLR Load Failed",e);
-            }
-        }
     }
 
     @Override
