@@ -33,7 +33,6 @@ public class PreviewNode extends AbstractNode {
         checkerboardShader.set("quadPos", pos.x, pos.y);
         pg.shader(checkerboardShader);
         pg.rectMode(CORNER);
-        pg.fill(1);
         pg.noStroke();
         pg.rect(0, 0, size.x, size.y);
         pg.resetShader();

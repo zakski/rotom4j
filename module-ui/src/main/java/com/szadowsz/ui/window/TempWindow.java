@@ -9,6 +9,7 @@ import com.szadowsz.ui.node.impl.FolderNode;
 import com.szadowsz.ui.store.FontStore;
 import com.szadowsz.ui.store.LayoutStore;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PGraphics;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
@@ -110,7 +111,7 @@ public class TempWindow extends Window {
 
     @Override
     protected void drawInlineFolderChildrenVertically(PGraphics pg) {
-        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained), PApplet.JAVA2D);
+        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained), PConstants.P2D);
         float y = 0;
         contentBuffer.beginDraw();
         contentBuffer.textFont(FontStore.getMainFont());

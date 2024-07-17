@@ -281,7 +281,7 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
         this.ncgr = ncgr;
     }
 
-    public void setNCLR(NCLR nclr) {
+    public void setNCLR(NCLR nclr) throws NitroException {
         if (ncgr != null) {
             ncgr.setNCLR(nclr);
         }
@@ -322,7 +322,7 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
                         index = ncgrStart + x + y * tilesX;
                     }
 
-                    ncgr.chrRenderCharacterTransfer(index, this.vramTransfer,vramTransfer, block, info.getPalette(), true);
+                    ncgr.renderTile(index, this.vramTransfer,vramTransfer, block, info.getPalette(), true);
                     for (int i = 0; i < 8; i++) {
                         System.arraycopy(block, i * 8, out, bitsOffset + tilesX * 8 * i, 8);
                     }

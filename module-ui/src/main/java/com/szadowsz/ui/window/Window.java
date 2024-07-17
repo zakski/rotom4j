@@ -561,7 +561,7 @@ public class Window implements UserInputSubscriber {
      * @param pg Processing Graphics Context
      */
     private void drawInlineFolderChildrenHorizontally(PGraphics pg) {
-        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeX, (int) windowSizeY, PApplet.JAVA2D);
+        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeX, (int) windowSizeY, PConstants.P2D);
         contentBuffer.beginDraw();
         contentBuffer.textFont(FontStore.getMainFont());
         contentBuffer.textAlign(LEFT, CENTER);
@@ -622,7 +622,7 @@ public class Window implements UserInputSubscriber {
      * @param pg Processing Graphics Context
      */
     protected void drawInlineFolderChildrenVertically(PGraphics pg) {
-        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained - cell), PApplet.JAVA2D);
+        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained - cell), PConstants.P2D);
         float y = cell;
         contentBuffer.beginDraw();
         contentBuffer.textFont(FontStore.getMainFont());
@@ -663,7 +663,7 @@ public class Window implements UserInputSubscriber {
      * @param pg Processing Graphics Context
      */
     protected void drawInlineFolderChildrenVerticalCols(PGraphics pg) {
-        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained - cell), PApplet.JAVA2D);
+        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained - cell), PConstants.P2D);
 
         float y = cell;
 

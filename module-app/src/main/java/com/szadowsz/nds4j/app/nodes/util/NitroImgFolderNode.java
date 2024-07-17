@@ -64,13 +64,11 @@ public abstract class NitroImgFolderNode extends FolderNode {
             try {
                 LOGGER.debug("Loading NCLR File: " + nclrPath);
                 imageable.setNCLR(NCLR.fromFile(nclrPath));
-                recolorImage();
                 LOGGER.info("Loaded NCLR File: " + nclrPath);
             } catch (IOException e) {
                 LOGGER.error("NCLR Load Failed",e);
-                imageable.setNCLR(original);
                 try {
-                    recolorImage();
+                    imageable.setNCLR(original);
                 } catch (Throwable t){
                     throw new RuntimeException(t);
                 }

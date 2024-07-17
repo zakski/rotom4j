@@ -112,7 +112,7 @@ public class NSCR extends GenericNFSFile implements ComplexImageable {
     }
 
     @Override
-    public void setNCLR(NCLR nclr) {
+    public void setNCLR(NCLR nclr) throws NitroException {
         this.ncgr.setNCLR(nclr);
     }
 
