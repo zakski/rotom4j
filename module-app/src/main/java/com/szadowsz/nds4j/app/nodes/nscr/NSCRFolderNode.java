@@ -1,13 +1,9 @@
 package com.szadowsz.nds4j.app.nodes.nscr;
 
-import com.szadowsz.nds4j.app.Processing;
-import com.szadowsz.nds4j.app.nodes.util.NitroFolderNode;
+import com.szadowsz.nds4j.app.nodes.util.NitroCmpFolderNode;
 import com.szadowsz.nds4j.app.nodes.util.PreviewNode;
-import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.nds4j.file.nitro.NSCR;
-import com.szadowsz.ui.constants.GlobalReferences;
 import com.szadowsz.ui.input.ActivateByType;
 import com.szadowsz.ui.node.LayoutType;
 import com.szadowsz.ui.node.impl.ButtonNode;
@@ -16,11 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PImage;
 
-import java.io.File;
-import java.io.IOException;
 
-
-public class NSCRFolderNode extends NitroFolderNode {
+public class NSCRFolderNode extends NitroCmpFolderNode {
     protected static final Logger LOGGER = LoggerFactory.getLogger(NSCRFolderNode.class);
 
     private final NSCR nscr;
@@ -40,22 +33,6 @@ public class NSCRFolderNode extends NitroFolderNode {
         ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
         selectNcLr.registerAction(ActivateByType.RELEASE, this::selectPalette);
         children.add(selectNcLr);
-    }
-
-    private void selectNcgr() {
-        String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
-        String ncgrPath = FileChooser.selectNcgrFile(GlobalReferences.gui.getGuiCanvas().parent, lastPath,SELECT_NCGR_FILE);
-        if (ncgrPath != null) {
-            Processing.prefs.put("openNarcPath", new File(ncgrPath).getParentFile().getAbsolutePath());
-           try {
-                LOGGER.info("Loading NCGR File: " + ncgrPath);
-                nscr.setNCGR(NCGR.fromFile(ncgrPath));
-                recolorImage();
-                LOGGER.info("Loaded NCGR File: " + ncgrPath);
-            } catch (IOException e) {
-                LOGGER.error("NCGR Load Failed",e);
-            }
-        }
     }
 
     @Override

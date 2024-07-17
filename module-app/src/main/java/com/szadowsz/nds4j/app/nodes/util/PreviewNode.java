@@ -61,7 +61,7 @@ public class PreviewNode extends AbstractNode {
 
     public void loadImage(PImage pImage) {
         this.image = pImage;
-        masterInlineNodeHeightInCells = imageable.getHeight() / cell + ((imageable.getHeight() % cell != 0) ? 1 : 0);
+        masterInlineNodeHeightInCells = image.height / cell + ((image.height % cell != 0) ? 1 : 0);
         size.x = image.width;
         size.y = image.height;
     }

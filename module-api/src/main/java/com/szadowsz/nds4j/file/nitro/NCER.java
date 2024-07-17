@@ -21,12 +21,13 @@ package com.szadowsz.nds4j.file.nitro;
 
 import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
-import com.szadowsz.nds4j.data.Imageable;
+import com.szadowsz.nds4j.data.ComplexImageable;
 import com.szadowsz.nds4j.data.NFSFormat;
 import com.szadowsz.nds4j.data.nfs.cells.CellInfo;
 import com.szadowsz.nds4j.data.nfs.cells.CellPojo;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.reader.MemBuf;
+import com.szadowsz.nds4j.utils.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * An object representation of an NCER file
  */
-public class NCER extends GenericNFSFile implements Imageable {
+public class NCER extends GenericNFSFile implements ComplexImageable {
     private static final Logger logger = LoggerFactory.getLogger(NCER.class);
 
     public static final int GX_OBJVRAMMODE_CHAR_2D = 0x000000;
@@ -484,10 +485,7 @@ public class NCER extends GenericNFSFile implements Imageable {
         int[] frameBuffer = new int [256 * 512];
         int[] bits = renderCell(frameBuffer, cells[cellNum], cebkMappingMode, 256, 128, false, -1, 1.0f, 0.0f, 0.0f, 1.0f);
 
-        boolean showCellBounds = true;
-        boolean showGuidelines = false;
-        boolean renderTransparent = false;
-        if (showCellBounds) {
+        if (Configuration.isShowCellBounds()) {
             int minX = cell.getMinX() + 256, maxX = cell.getMaxX() + 256 - 1;
             int minY = cell.getMinY() + 128, maxY = cell.getMaxY() + 128 - 1;
             minX = minX & 0x1FF;
@@ -506,7 +504,7 @@ public class NCER extends GenericNFSFile implements Imageable {
         }
 
         //draw solid color background if transparency disabled
-        if (!renderTransparent) {
+        if (!Configuration.isRenderTransparent()) {
             int bgColor = 0;
             if (ncgr != null) {
                 bgColor = getNCLR().getColor(0).getRGB();
@@ -523,7 +521,7 @@ public class NCER extends GenericNFSFile implements Imageable {
         }
 
         //draw editor guidelines if enabled
-        if (showGuidelines) {
+        if (Configuration.isShowGuidelines()) {
             //dotted lines at X=0 an Y=0
             int centerColor = 0xFF0000; //red
             int auxColor = 0x00FF00; //green

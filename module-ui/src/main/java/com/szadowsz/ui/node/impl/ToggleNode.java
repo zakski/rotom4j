@@ -4,12 +4,18 @@ import com.google.gson.JsonElement;
 import com.google.gson.annotations.Expose;
 import com.szadowsz.ui.constants.theme.ThemeColorType;
 import com.szadowsz.ui.constants.theme.ThemeStore;
+import com.szadowsz.ui.input.ActivateByType;
 import com.szadowsz.ui.input.mouse.GuiMouseEvent;
+import com.szadowsz.ui.input.mouse.MouseAction;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeType;
 import com.szadowsz.ui.store.JsonSaveStore;
 import com.szadowsz.ui.store.LayoutStore;
 import processing.core.PGraphics;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
 import static processing.core.PConstants.CENTER;
@@ -20,6 +26,9 @@ public class ToggleNode extends AbstractNode {
     public
     boolean valueBoolean;
     protected boolean armed = false;
+
+    protected List<Consumer<Boolean>> actions = new CopyOnWriteArrayList<>();
+
 
     public ToggleNode(String path, FolderNode folder, boolean defaultValue) {
         super(NodeType.VALUE, path, folder);
@@ -75,6 +84,7 @@ public class ToggleNode extends AbstractNode {
         super.mouseReleasedOverNodeEvent(e);
         if(armed){
             valueBoolean = !valueBoolean;
+            actions.forEach(a -> a.accept(valueBoolean));
             onValueChangingActionEnded();
         }
         armed = false;
@@ -102,5 +112,9 @@ public class ToggleNode extends AbstractNode {
     @Override
     public String getValueAsString() {
         return String.valueOf(valueBoolean);
+    }
+
+    public void registerAction(Consumer<Boolean> o) {
+        actions.add(o);
     }
 }

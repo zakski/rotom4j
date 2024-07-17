@@ -22,9 +22,9 @@ import java.io.IOException;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
 
-public abstract class NitroFolderNode extends FolderNode {
+public abstract class NitroImgFolderNode extends FolderNode {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NCGRFolderNode.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NitroImgFolderNode.class);
 
     protected static final String ZOOM_NODE = "Zoom";
     protected static final String SELECT_NCGR_FILE = "Select NCGR";
@@ -33,7 +33,7 @@ public abstract class NitroFolderNode extends FolderNode {
     protected Imageable imageable;
 
 
-    public NitroFolderNode(String path, FolderNode parent, LayoutType layout, Imageable imageable) {
+    public NitroImgFolderNode(String path, FolderNode parent, LayoutType layout, Imageable imageable) {
         super(path, parent, layout);
         this.imageable = imageable;
     }
@@ -85,11 +85,13 @@ public abstract class NitroFolderNode extends FolderNode {
         return pImage;
     }
 
-    protected abstract void recolorImage() throws NitroException;
 
     @Override
     protected void drawNodeForeground(PGraphics pg, String name) {
         drawLeftText(pg, name);
         drawRightBackdrop(pg, cell);
     }
+
+    public abstract void recolorImage() throws NitroException;
+
 }

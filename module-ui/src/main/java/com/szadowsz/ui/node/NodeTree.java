@@ -141,6 +141,27 @@ public class NodeTree {
         return result;
     }
 
+    public static <T extends AbstractNode> List<T> getAllNodesAsList(Class<T> clazz) {
+        List<T> result = new ArrayList<>();
+        Queue<AbstractNode> queue = new LinkedList<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            AbstractNode node = queue.poll();
+            try {
+                result.add(clazz.cast(node));
+            } catch (ClassCastException t) {
+
+            }
+            if (node.type == NodeType.FOLDER) {
+                FolderNode folder = (FolderNode) node;
+                for (AbstractNode child : folder.children) {
+                    queue.offer(child);
+                }
+            }
+        }
+        return result;
+    }
+
     public static void setAllNodesMouseOverToFalse() {
         setAllOtherNodesMouseOverToFalse(null);
     }

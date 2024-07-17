@@ -381,7 +381,7 @@ public class NCGR extends GenericNFSFile implements Imageable {
     }
 
     public int chrRenderCharacterTransfer(int chNo, boolean transfer, CellInfo transferInfo,int[] out, int palette, boolean transparent) {
-        logger.info("NCGR Tile Transfer, tile " + chNo + ", vram=" + transfer + ", palette " + palette + ", transparent=" + transparent);
+        logger.debug("NCGR Tile Transfer, tile " + chNo + ", vram=" + transfer + ", palette " + palette + ", transparent=" + transparent);
         // if transfer == null, render as normal
         if (!transfer) {
             return chrRenderCharacter(chNo, out, palette, transparent);
