@@ -76,6 +76,38 @@ public class PreviewNode extends AbstractNode {
         }
     }
 
+
+    protected void drawVerticalGuidelines(int centerColor, int auxColor, int minorColor) {
+        for (int i = 0; i < image.height; i++) {
+            //major guideline
+            int c = background.get(image.width / 2, i);
+            if ((i & 1) == 1) {
+                background.set(image.width / 2, i, c ^ centerColor);
+            }
+
+            //auxiliary guidelines
+            c = background.get(image.width / 4, i);
+            if ((i & 1) == 1) {
+                background.set(image.width / 4, i, c ^ auxColor);
+            }
+
+            c = background.get((image.width/4)*3, i);
+            if ((i & 1) == 1) {
+                background.set((image.width / 4)*3, i, c ^ auxColor);
+            }
+
+            //minor guidelines
+            for (int j = 0; j < image.width; j += 8) {
+                if (j == image.width/4 || j == image.width/2 || j == (image.width/4)*3) continue;
+
+                c = background.get(j,i);
+                if ((i & 1) == 1) {
+                    background.set(j,i,c ^ minorColor);
+                }
+            }
+        }
+    }
+
     protected void createBG() {
         // create checker background
         background = new PImage(image.width, image.height, PImage.RGB);
@@ -95,36 +127,10 @@ public class PreviewNode extends AbstractNode {
             int minorColor = 0x002F00;
 
             drawHorizontalGuidelines(centerColor, auxColor, minorColor);
-            for (int i = 0; i < image.height; i++) {
-                //major guideline
-                int c = background.get(image.width / 2, i);
-                if ((i & 1) == 1) {
-                    background.set(image.width / 2, i, c ^ centerColor);
-                }
-
-                //auxiliary guidelines
-                c = background.get(image.width / 4, i);
-                if ((i & 1) == 1) {
-                    background.set(image.width / 4, i, c ^ auxColor);
-                }
-
-                c = background.get((image.width/4)*3, i);
-                if ((i & 1) == 1) {
-                    background.set((image.width / 4)*3, i, c ^ auxColor);
-                }
-
-                //minor guidelines
-                for (int j = 0; j < image.width; j += 8) {
-                    if (j == image.width/4 || j == image.width/2 || j == (image.width/4)*3) continue;
-
-                    c = background.get(j,i);
-                    if ((i & 1) == 1) {
-                        background.set(j,i,c ^ minorColor);
-                    }
-                }
-            }
+            drawVerticalGuidelines(centerColor, auxColor, minorColor);
         }
     }
+
 
     @Override
     public float getRequiredWidthForHorizontalLayout() {

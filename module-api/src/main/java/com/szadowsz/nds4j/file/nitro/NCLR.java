@@ -229,7 +229,7 @@ public class NCLR extends GenericNFSFile {
      */
     public Color getColor(int index) {
         if (index >= numColors) {
-            return null;
+            return new Color(0);
         }
         return colors[index];
     }
