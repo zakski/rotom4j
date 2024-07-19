@@ -311,10 +311,8 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
             logger.info("NCGR Tile Start = " + ncgrStart);
             for (int y = 0; y < tilesY; y++) {
                 for (int x = 0; x < tilesX; x++) {
-                    logger.info("NCGR Tile Coordinate x=" + x + ", y=" + y);
 
                     int bitsOffset = x * 8 + (y * 8 * tilesX * 8);
-                    logger.info("NCGR bits Offset =" + bitsOffset);
                     int index;
                     if (NCGR.calcIsNCGR2D(mapping)) {
                         int ncx = x + ncgrStart % ncgr.getTileWidth();
@@ -323,8 +321,6 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
                     } else {
                         index = ncgrStart + x + y * tilesX;
                     }
-                    logger.info("NCGR Tile index=" + index);
-
                     Color[] block = ncgr.renderTile(index, this.vramTransfer,vramTransfer, info.getPalette());
                     for (int i = 0; i < 8; i++) {
                         System.arraycopy(block, i * 8, out, bitsOffset + tilesX * 8 * i, 8);
