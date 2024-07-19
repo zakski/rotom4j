@@ -25,7 +25,6 @@ import processing.core.PConstants;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -54,6 +53,7 @@ public class Processing extends PApplet {
     final static String showCellBounds = "Cell Bounds";
     final static String showGuidelines = "Guidelines";
     final static String showTransparent = "Render Transparent";
+    final static String showBackground = "Render Background";
 
     private void setLookAndFeel() {
         try {
@@ -304,6 +304,19 @@ public class Processing extends PApplet {
         ToggleNode renderTransparent = gui.toggle(showTransparent, Configuration.isRenderTransparent());
         renderTransparent.registerAction((b) -> {
             Configuration.setRenderTransparent(b);
+            List<NitroImgFolderNode> nodes = NodeTree.getAllNodesAsList(NitroImgFolderNode.class);
+            nodes.forEach(n -> {
+                try {
+                    n.recolorImage();
+                } catch (NitroException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        });
+
+        ToggleNode renderBackground = gui.toggle(showBackground, Configuration.isBackground());
+        renderBackground.registerAction((b) -> {
+            Configuration.setRenderBackground(b);
             List<NitroImgFolderNode> nodes = NodeTree.getAllNodesAsList(NitroImgFolderNode.class);
             nodes.forEach(n -> {
                 try {

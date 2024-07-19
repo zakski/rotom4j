@@ -39,41 +39,41 @@ public class NCGR extends GenericNFSFile implements Imageable {
 //    private int paletteIdx = 0;
 
     // first section: CHAR (CHARacter data)
-    private String charMagic;
-    private long charSectionSize;
-    private int charTilesHeight;
-    private int charTilesWidth;
-    private ColorFormat charBitDepth;
-    private int charUnknown1;
-    private int charMappingType;
-    private long charTiledFlag;
-    private long charTiledataSize;
-    private long charUnknown3;
-    private byte[] charData;
-    private byte[][] charTiledData;
-    private boolean sopc;
+    protected String charMagic;
+    protected long charSectionSize;
+    protected int charTilesHeight;
+    protected int charTilesWidth;
+    protected ColorFormat charBitDepth;
+    protected int charUnknown1;
+    protected int charMappingType;
+    protected long charTiledFlag;
+    protected long charTiledataSize;
+    protected long charUnknown3;
+    protected byte[] charData;
+    protected byte[][] charTiledData;
+    protected boolean sopc;
 
     // second section: SOPC
-    private String sopcMagic;
-    private long sopcSectionSize;
-    private long sopcUnknown1;
-    private int sopcCharSize;
-    private int sopcNChars;
+    protected String sopcMagic;
+    protected long sopcSectionSize;
+    protected long sopcUnknown1;
+    protected int sopcCharSize;
+    protected int sopcNChars;
 
     // image info
-    private BufferedImage image;
+    protected BufferedImage image;
 
-    private byte[] original;
-    private int height;
-    private int width;
+    protected byte[] original;
+    protected int height;
+    protected int width;
 
-    private byte[] imgTilesFlat;
+    protected byte[] imgTilesFlat;
 
-    private int tileSize;
+    protected int tileSize;
 
-    private NCLR palette;
+    protected NCLR palette;
 
-    private TileForm order;
+    protected TileForm order;
 
     public static boolean calcIsNCGR2D(int m) {
         return ((m) == NCER.GX_OBJVRAMMODE_CHAR_2D);
@@ -83,7 +83,7 @@ public class NCGR extends GenericNFSFile implements Imageable {
         return (!calcIsNCGR2D(m));
     }
 
-    public NCGR(int height,int width,int bitDepth,NCLR palette) throws NitroException {
+    public NCGR(int height, int width, int bitDepth, NCLR palette) throws NitroException {
         super(NFSFormat.NCGR, null, null, CompFormat.NONE, null, null);
         if (height % 8 != 0)
             throw new NitroException(String.format("%d was provided for image height, but a multiple of 8 is required.", height));
@@ -111,8 +111,8 @@ public class NCGR extends GenericNFSFile implements Imageable {
         setImagePixels();
     }
 
-    public NCGR(String path, String name, CompFormat comp,  byte[] compData, byte[] data) throws NitroException {
-        super(NFSFormat.NCGR,path,name,comp,compData,data);
+    public NCGR(String path, String name, CompFormat comp, byte[] compData, byte[] data) throws NitroException {
+        super(NFSFormat.NCGR, path, name, comp, compData, data);
 
         MemBuf buf = MemBuf.create(rawData);
         int fileSize = buf.writer().getPosition();
@@ -125,8 +125,8 @@ public class NCGR extends GenericNFSFile implements Imageable {
         this.headerData = reader.readTo(headerLength);
 
         File[] palettes = new File(path).getParentFile().listFiles(f -> f.getName().endsWith(".NCLR") &&
-                f.getName().substring(0,f.getName().lastIndexOf('.')).equals(this.fileName));
-        if (palettes.length>0) {
+                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.fileName));
+        if (palettes.length > 0) {
             logger.info("Found corresponding NCLR file, " + palettes[0]);
             this.palette = NCLR.fromFile(palettes[0]);
             logger.info("Read NCLR file\n");
@@ -179,7 +179,7 @@ public class NCGR extends GenericNFSFile implements Imageable {
         return charData;
     }
 
-    public TileForm getTileOrder(){
+    public TileForm getTileOrder() {
         return order;
     }
 
@@ -193,7 +193,16 @@ public class NCGR extends GenericNFSFile implements Imageable {
         return image;
     }
 
-    protected Color getColor16(byte[] data,int pos, NCLR palette){
+    protected byte[] byteToBit4(byte data) {
+        byte[] bit4 = new byte[2];
+
+        bit4[0] = (byte) (data & 0x0F);
+        bit4[1] = (byte) ((data & 0xF0) >> 4);
+
+        return bit4;
+    }
+
+    protected Color getColor16(byte[] data, int pos) {
         if (data.length <= (pos / 2)) {
             return new Color(255, 255, 255, 0);
         }
@@ -203,23 +212,49 @@ public class NCGR extends GenericNFSFile implements Imageable {
         if (index > 0 || !Configuration.isRenderTransparent()) {
             c = palette.getColor(index);
         } else {
+            logger.warn("NCGR Blank i=" + pos + " paletterIndex=" + index + " colours=" + palette.getNumColors());
             c = new Color(255, 255, 255, 0);
         }
         return c;
     }
 
-    protected Color getColor256(byte[] data,int pos, NCLR palette){
+    protected Color getColor256(byte[] data, int pos) {
         if (data.length > pos && palette.getNumColors() > data[pos]) {
-            int index =  Byte.toUnsignedInt(data[pos]);
+            int index = Byte.toUnsignedInt(data[pos]);
             if (index > 0 || !Configuration.isRenderTransparent()) {
                 return palette.getColor(index);
             } else {
+                logger.warn("NCGR Blank i=" + pos + " paletterIndex=" + index + " colours=" + palette.getNumColors());
                 return new Color(255, 255, 255, 0);
             }
         } else {
+            logger.warn("NCGR Blank i=" + pos + " paletterIndex=" + data[pos] + " colours=" + palette.getNumColors());
             return new Color(255, 255, 255, 0);
         }
     }
+
+    protected void process16ColorPalette(byte[] tiles, int width, int height) {
+        int pos = 0;
+        image = new BufferedImage(width, height, TYPE_INT_ARGB);
+        for (int h = 0; h < height; h++) {
+            for (int w = 0; w < width; w++) {
+                Color color = getColor16(tiles, pos++);
+                image.setRGB(w, h, color.getRGB());
+            }
+        }
+    }
+
+    protected void process256ColorPalette(byte[] tiles, int width, int height) {
+        int pos = 0;
+        image = new BufferedImage(width, height, TYPE_INT_ARGB);
+        for (int h = 0; h < height; h++) {
+            for (int w = 0; w < width; w++) {
+                Color color = getColor256(tiles, pos++);
+                image.setRGB(w, h, color.getRGB());
+            }
+        }
+    }
+
 
     @Override
     public NCLR getNCLR() {
@@ -238,15 +273,15 @@ public class NCGR extends GenericNFSFile implements Imageable {
         return charTiledData;
     }
 
-    public ColorFormat getCharBitDepth(){
+    public ColorFormat getCharBitDepth() {
         return charBitDepth;
     }
 
-    public int getBitDepth(){
+    public int getBitDepth() {
         return this.charBitDepth.bits;
     }
 
-    public int getTileCount(){
+    public int getTileCount() {
         return charTilesHeight * charTilesWidth;
     }
 
@@ -260,15 +295,15 @@ public class NCGR extends GenericNFSFile implements Imageable {
         if (tiles.length == 0) {
             return;
         }
-        switch (format){
-            case colors16 -> process16ColorPalette(tiles,width,height);
-            case colors256 -> process256ColorPalette(tiles,width,height);
+        switch (format) {
+            case colors16 -> process16ColorPalette(tiles, width, height);
+            case colors256 -> process256ColorPalette(tiles, width, height);
             default -> throw new InvalidFileException("Unsupported Colour Format: " + format);
         }
     }
 
     public void setImagePixels() throws InvalidFileException {
-        if (order == TileForm.Horizontal){
+        if (order == TileForm.Horizontal) {
             imgTilesFlat = linealToHorizontal(charData, width, height, this.charBitDepth.bits, tileSize);
         } else {
             imgTilesFlat = charData;
@@ -311,15 +346,14 @@ public class NCGR extends GenericNFSFile implements Imageable {
     }
 
 
-    private void renderTile(int chno, CellInfo transfer, byte[] out) {
+    protected byte[] renderTile(int chno, CellInfo transfer) {
+        byte[] out = new byte[64];
         // if transfer == null, don't simulate any VRAM transfer operation
         if (transfer == null) {
             if (chno < getTileCount()) {
                 System.arraycopy(charTiledData[chno], 0, out, 0, 64);
-            } else {
-                Arrays.fill(out, (byte) 0);
             }
-            return;
+            return out;
         }
 
         // get character source address
@@ -328,10 +362,8 @@ public class NCGR extends GenericNFSFile implements Imageable {
         if ((srcAddr + chrSize) < transfer.getPartitionOffset() || srcAddr >= (transfer.getPartitionOffset() + transfer.getPartitionSize())) {
             if (chno < getTileCount()) {
                 System.arraycopy(charTiledData[chno], 0, out, 0, 64);
-            } else {
-                Arrays.fill(out, (byte) 0);
             }
-            return;
+            return out;
         }
 
         // character is within the destination region. For bytes within the region, copy from src.
@@ -355,52 +387,63 @@ public class NCGR extends GenericNFSFile implements Imageable {
                 out[i] = charTiledData[chno][i];
             }
         }
+        return out;
     }
 
-    private int renderTile(byte[] chr, int depth, int previewPalette, int[] out, boolean transparent) {
-        for (int i = 0; i < 64; i++) {
-            int index = chr[i] & 0xFF;
-            if (index != 0 || !transparent) {
+
+    protected Color[] renderTile(byte[] tile, int palNum) throws NitroException {
+        if (palNum > 0) {
+            logger.warn("NCGR renderTile, unsupported palette " + palNum);
+        }
+
+        Color[] out = new Color[tile.length];
+        for (int i = 0; i < tile.length; i++) {
+            int index = tile[i] & 0xFF;
+            if (index != 0 || !Configuration.isRenderTransparent()) {
                 Color w = new Color(0);
-                if (palette != null && (index + (previewPalette << depth)) < palette.getNumColors()) {
-                    w = palette.getColor(index + (previewPalette << depth));
+                if (palette != null && (index + (palNum << charBitDepth.bits)) < palette.getNumColors()) {
+                    w = palette.getColor(index + (palNum << charBitDepth.bits));
                 }
-                out[i] = w.getRGB();
+                out[i] = w;
             } else {
-                out[i] = 0;
+                out[i] = new Color(0);
             }
+//            switch (charBitDepth) {
+//                case colors16 -> out[i] = getColor16(tile, i);
+//                case colors256 -> out[i] = getColor256(tile, i);
+//                default -> throw new NitroException("Unsupported Colour Format: " + charBitDepth);
+//            }
         }
-        return 0;
+        return out;
     }
 
-    private int renderTile(int chNo, int[] out, int previewPalette, boolean transparent) {
-        if (chNo < getTileCount()) {
-            logger.debug("NCGR Processing Tile Transfer, tile " + chNo);
-            byte[] tile = charTiledData[chNo];
-            return renderTile(tile, getTileCount(), previewPalette, out, transparent);
+    protected Color[] renderTile(int tileNo, int palNum) throws NitroException {
+        if (tileNo < getTileCount()) {
+            logger.debug("NCGR Processing Tile Transfer, tile " + tileNo);
+            return renderTile(charTiledData[tileNo], palNum);
         } else {
-            logger.debug("NCGR Blanking Tile Transfer, tile " + chNo);
-            Arrays.fill(out, 0);
-            return 1;
+            logger.warn("NCGR Blanking Tile Transfer, tile " + tileNo);
+            Color[] out = new Color[64];
+            Arrays.fill(out, new Color(0));
+            return out;
         }
     }
 
-    public int renderTile(int chNo, boolean transfer, CellInfo transferInfo, int[] out, int palette, boolean transparent) {
-        logger.debug("NCGR Tile Transfer, tile " + chNo + ", vram=" + transfer + ", palette " + palette + ", transparent=" + transparent);
+    public Color[] renderTile(int chNo, boolean transfer, CellInfo transferInfo, int palNum) throws NitroException {
+        logger.debug("NCGR Tile Transfer, tile " + chNo + ", vram=" + transfer + ", palette " + palNum);
         // if transfer == null, render as normal
         if (!transfer) {
-            return renderTile(chNo, out, palette, transparent);
+            return renderTile(chNo, palNum);
         }
 
         // else, read graphics and render
-        byte[] buf = new byte[64];
-        renderTile(chNo, transferInfo, buf);
-        return renderTile(buf, getTileCount(), palette, out, transparent);
+        byte[] buf = renderTile(chNo, transferInfo);
+        return renderTile(buf, palNum);
     }
 
-    private void readData(MemBuf.MemBufReader reader) {
+    protected void readData(MemBuf.MemBufReader reader) {
         int nChars = getTileCount();
-        int nPresentTiles = (int)charTiledataSize >> 5;
+        int nPresentTiles = (int) charTiledataSize >> 5;
         if (charBitDepth.bits == 8) {
             nPresentTiles >>= 1;
         }
@@ -413,7 +456,7 @@ public class NCGR extends GenericNFSFile implements Imageable {
 
         }
         charTiledData = new byte[nChars][];
-        charData = new byte[(int)charTiledataSize];
+        charData = new byte[(int) charTiledataSize];
 
         int bufferIndex = 0;
         for (int i = 0; i < nChars; i++) {
@@ -483,39 +526,6 @@ public class NCGR extends GenericNFSFile implements Imageable {
         setImageData(charData, width, height, charBitDepth, order, 8);
     }
 
-    protected byte[] byteToBit4(byte data) {
-        byte[] bit4 = new byte[2];
-
-        bit4[0] = (byte)(data & 0x0F);
-        bit4[1] = (byte)((data & 0xF0) >> 4);
-
-        return bit4;
-    }
-
-    protected void process16ColorPalette(byte[] tiles, int width, int height){
-        int pos = 0;
-        image = new BufferedImage(width,height,TYPE_INT_ARGB);
-        for (int h = 0; h < height; h++) {
-            for (int w = 0; w < width; w++) {
-                Color color = getColor16(tiles, pos, palette);
-                pos++;
-                image.setRGB(w, h, color.getRGB());
-            }
-        }
-    }
-
-    protected void process256ColorPalette(byte[] tiles, int width, int height){
-        int pos = 0;
-        image = new BufferedImage(width,height,TYPE_INT_ARGB);
-        for (int h = 0; h < height; h++) {
-            for (int w = 0; w < width; w++) {
-                Color color = getColor256(tiles, pos, palette);
-                pos++;
-                image.setRGB(w, h, color.getRGB());
-            }
-        }
-    }
-
     public void recolorImage() throws NitroException {
         setImagePixels();
     }
@@ -537,7 +547,7 @@ public class NCGR extends GenericNFSFile implements Imageable {
      * @return an <code>IndexedImage</code> object
      */
     public static NCGR fromFile(File file) throws NitroException {
-       return (NCGR) NFSFactory.fromFile(file);
+        return (NCGR) NFSFactory.fromFile(file);
     }
 
     protected byte[] linealToHorizontal(byte[] lineal, int width, int height, int bpp, int tile_size) {

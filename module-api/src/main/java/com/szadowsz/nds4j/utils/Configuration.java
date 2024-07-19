@@ -2,11 +2,13 @@ package com.szadowsz.nds4j.utils;
 
 public class Configuration {
 
-    private static boolean showCellBounds = true;
+    private static boolean showCellBounds;
 
-    private static boolean showGuidelines = false;
+    private static boolean showGuidelines;
 
-    private static boolean renderTransparent = true;
+    private static boolean renderTransparent;
+
+    private static boolean renderWithBackground;
 
     private Configuration(){}
 
@@ -23,6 +25,9 @@ public class Configuration {
         return renderTransparent;
     }
 
+    public static synchronized boolean isBackground() {
+        return renderWithBackground;
+    }
     public static synchronized void setShowCellBounds(boolean toggle) {
         showCellBounds = toggle;
     }
@@ -34,4 +39,9 @@ public class Configuration {
     public static synchronized void setRenderTransparent(boolean toggle) {
         renderTransparent = toggle;
     }
+
+    public static synchronized void setRenderBackground(boolean toggle) {
+        renderWithBackground = toggle;
+    }
+
 }

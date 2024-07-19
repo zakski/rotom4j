@@ -31,6 +31,7 @@ import com.szadowsz.nds4j.utils.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -289,16 +290,16 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
 
     private int calcByteBoundary(int m) {
         int result = (1 << ((((m) >> 20) & 0x7) + 5));
-        logger.info("Byte Boundary result " + result);
+        logger.debug("Byte Boundary result " + result);
         return result;
     }
 
     private int calcCHName(int x, int m, int b) {
-        logger.info("Calculating CHName with tile Offset " + x + ", mapping " + m + ", bits " + b);
+        logger.debug("Calculating CHName with tile Offset " + x + ", mapping " + m + ", bits " + b);
         return (calcByteBoundary(m) * (x) / ((b) << 3));
     }
 
-    private void renderObj(CellInfo.OAM info, int mapping, CellInfo vramTransfer, int[] out, int[] width, int[] height, boolean checker) {
+    private void renderObj(CellInfo.OAM info, int mapping, CellInfo vramTransfer, Color[] out, int[] width, int[] height) throws NitroException {
         width[0] = info.getWidth();
         height[0] = info.getHeight();
 
@@ -310,9 +311,10 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
             logger.info("NCGR Tile Start = " + ncgrStart);
             for (int y = 0; y < tilesY; y++) {
                 for (int x = 0; x < tilesX; x++) {
-                    int[] block = new int[64];
+                    logger.info("NCGR Tile Coordinate x=" + x + ", y=" + y);
 
                     int bitsOffset = x * 8 + (y * 8 * tilesX * 8);
+                    logger.info("NCGR bits Offset =" + bitsOffset);
                     int index;
                     if (NCGR.calcIsNCGR2D(mapping)) {
                         int ncx = x + ncgrStart % ncgr.getTileWidth();
@@ -321,29 +323,19 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
                     } else {
                         index = ncgrStart + x + y * tilesX;
                     }
+                    logger.info("NCGR Tile index=" + index);
 
-                    ncgr.renderTile(index, this.vramTransfer,vramTransfer, block, info.getPalette(), true);
+                    Color[] block = ncgr.renderTile(index, this.vramTransfer,vramTransfer, info.getPalette());
                     for (int i = 0; i < 8; i++) {
                         System.arraycopy(block, i * 8, out, bitsOffset + tilesX * 8 * i, 8);
                     }
                 }
             }
-        }
-
-        // render checker
-        if (checker) {
-            for (int i = 0; i < info.getWidth() * info.getHeight(); i++) {
-                int x = i % info.getWidth();
-                int y = i / info.getWidth();
-                int ch = ((x >> 2) ^ (y >> 2)) & 1;
-                int c = out[i];
-                if ((c & 0xFF000000) == 0) {
-                    out[i] = ch != 0 ? 0xFFFFFF : 0xC0C0C0;
-                }
-            }
+            logger.info("NCGR Tile end");
         }
     }
-        protected void flipCell(CellInfo.OAM info, int[] block) {
+
+    protected void flipCell(CellInfo.OAM info, Color[] block) {
         if (!info.getRotationScaling()) {
             int[] temp = new int[64];
             if (info.getFlipY()) {
@@ -356,7 +348,7 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
             if (info.getFlipX()) {
                 for (int j = 0; j < info.getWidth() / 2; j++) {
                     for (int k = 0; k < info.getHeight(); k++) {
-                        int left = block[j + k * info.getWidth()];
+                        Color left = block[j + k * info.getWidth()];
                         block[j + k * info.getWidth()] = block[info.getWidth() - 1 - j + k * info.getWidth()];
                         block[info.getWidth() - 1 - j + k * info.getWidth()] = left;
                     }
@@ -365,7 +357,7 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
         }
     }
 
-    protected void rotateScaleCell(int[] px, CellInfo.OAM info, int[] block, int xOffs, int yOffs, float a, float b, float c, float d) {
+    protected void rotateScaleCell(Color[] px, CellInfo.OAM info, Color[] block, int xOffs, int yOffs, float a, float b, float c, float d) {
         int x = info.getX();
         int y = info.getY();
         // adjust for double size
@@ -379,8 +371,8 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
                 int _y = (y + j + yOffs) & 0xFF;
                 for (int k = 0; k < info.getWidth(); k++) {
                     int _x = (x + k + xOffs) & 0x1FF;
-                    int col = block[j * info.getWidth() + k];
-                    if (col >>> 24 != 0) {
+                    Color col = block[j * info.getWidth() + k];
+                    if (col.getRGB() >>> 24 != 0) {
                         px[_x + _y * 512] = block[j * info.getWidth() + k];
                     }
                 }
@@ -406,42 +398,43 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
                         srcY -= realHeight / 4;
                     }
                     if (srcX >= 0 && srcY >= 0 && srcX < info.getWidth() && srcY < info.getHeight()) {
-                        int src = block[srcY * info.getWidth() + srcX];
-                        if (src >>> 24 != 0) px[destX + destY * 512] = src;
+                        Color src = block[srcY * info.getWidth() + srcX];
+                        if (src.getRGB() >>> 24 != 0) px[destX + destY * 512] = src;
                     }
                 }
             }
         }
     }
 
-    protected void outlineCell(int[] px, int xOffs, int yOffs, CellInfo.OAM info) {
+    protected void outlineCell(Color[] px, int xOffs, int yOffs, CellInfo.OAM info) {
         int outlineWidth = info.getWidth() << (info.getDoubleSize() ? 1 : 0);
         int outlineHeight = info.getHeight() << (info.getDoubleSize() ? 1 : 0);
         for (int j = 0; j < outlineWidth; j++) {
             int _x = (j + info.getX() + xOffs) & 0x1FF;
-            int _y = (info.getY() + yOffs) & 0xFF;
-            int _y2 = (_y + outlineHeight - 1) & 0xFF;
-            px[_x + _y * 512] = 0xFE000000;
-            px[_x + _y2 * 512] = 0xFE000000;
+            int _y = (info.getY() + yOffs - 1) & 0xFF;
+            int _y2 = (_y + outlineHeight + 1) & 0xFF;
+            px[_x + _y * 512] = new Color(0xFE000000);;
+            px[_x + _y2 * 512] = new Color(0xFE000000);;
         }
         for (int j = 0; j < outlineHeight; j++) {
-            int _x = (info.getX() + xOffs) & 0x1FF;
+            int _x = (info.getX() + xOffs - 1) & 0x1FF;
             int _y = (info.getY() + j + yOffs) & 0xFF;
-            int _x2 = (_x + outlineWidth - 1) & 0x1FF;
-            px[_x + _y * 512] = 0xFE000000;
-            px[_x2 + _y * 512] = 0xFE000000;
+            int _x2 = (_x + outlineWidth + 1) & 0x1FF;
+            px[_x + _y * 512] = new Color(0xFE000000);
+            px[_x2 + _y * 512] = new Color(0xFE000000);;
         }
     }
 
     // CellRenderCell
-    protected int[] renderCell(int[] px, CellInfo cell, int mapping, int xOffs, int yOffs, boolean checker, int outline, float a, float b, float c, float d) {
-        int[] block = new int[64 * 64];
+    protected Color[] renderCell(CellInfo cell, int mapping, int xOffs, int yOffs, boolean outline, float a, float b, float c, float d) throws NitroException {
+        Color[] px = new Color[256 * 512];
+        Color[] block = new Color[64 * 64];
         for (int i = cell.getOamCount() - 1; i >= 0; i--) {
             CellInfo.OAM info = cell.getOam(i);
             int[] entryWidth = new int[1];
             int[] entryHeight = new int[1];
 
-            renderObj(info, mapping, cell, block, entryWidth, entryHeight, false);
+            renderObj(info, mapping, cell, block, entryWidth, entryHeight);
 
             // HV flip? Only if not affine!
             flipCell(info, block);
@@ -450,162 +443,67 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
                 rotateScaleCell(px, info, block, xOffs, yOffs, a, b, c, d);
 
                 // outline
-                if (outline == -2 || outline == i) {
+                if (outline) {
                     outlineCell(px, xOffs, yOffs, info);
-                }
-            }
-        }
-
-        // apply checker background
-        if (checker) {
-            for (int y = 0; y < 256; y++) {
-                for (int x = 0; x < 512; x++) {
-                    int index = y * 512 + x;
-                    if (px[index] >>> 24 == 0) {
-                        int p = ((x >> 2) ^ (y >> 2)) & 1;
-                        px[index] = (p != 0) ? 0xFFFFFF : 0xC0C0C0;
-                    }
                 }
             }
         }
         return px;
     }
 
-    public int REVERSE(int x) {
-        return ((x)&0xFF00FF00)|(((x)&0xFF)<<16)|(((x)>>16)&0xFF);
-    }
-
     @Override
     public BufferedImage getImage() {
-        return getImage(0);
+        try {
+            return getImage(0);
+        } catch (NitroException n){
+            logger.error("Error displaying NCER Image",n);
+            return null;
+        }
     }
 
-    public BufferedImage getImage(int cellNum) {
+    public BufferedImage getImage(int cellNum) throws NitroException {
         CellInfo cell = cells[cellNum];
-        int[] frameBuffer = new int [256 * 512];
-        int[] bits = renderCell(frameBuffer, cells[cellNum], cebkMappingMode, 256, 128, false, -1, 1.0f, 0.0f, 0.0f, 1.0f);
-
-        if (Configuration.isShowCellBounds()) {
-            int minX = cell.getMinX() + 256, maxX = cell.getMaxX() + 256 - 1;
-            int minY = cell.getMinY() + 128, maxY = cell.getMaxY() + 128 - 1;
-            minX = minX & 0x1FF;
-            maxX = maxX & 0x1FF;
-            minY = minY & 0xFF;
-            maxY = maxY & 0xFF;
-
-            for (int i = 0; i < 256; i++) {
-                if (bits[i * 512 + minX] >> 24 != 0xFE) bits[i * 512 + minX] = 0xFF0000FF;
-                if (bits[i * 512 + maxX] >> 24 != 0xFE) bits[i * 512 + maxX] = 0xFF0000FF;
+        BufferedImage image = new BufferedImage(BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BufferedImage.TYPE_INT_ARGB);;
+        Color[] colors;
+        if (Configuration.isBackground()) {
+            colors = renderCell(cells[cellNum], cebkMappingMode, 256, 128, Configuration.isShowGuidelines(), 1.0f, 0.0f, 0.0f, 1.0f);
+            int[] bits = new int[colors.length];
+            for (int i = 0; i < bits.length;i++){
+                bits[i] = colors[i].getRGB();
             }
-            for (int i = 0; i < 512; i++) {
-                if (bits[minY * 512 + i] >> 24 != 0xFE) bits[minY * 512 + i] = 0xFF0000FF;
-                if (bits[maxY * 512 + i] >> 24 != 0xFE) bits[maxY * 512 + i] = 0xFF0000FF;
+            if (Configuration.isShowCellBounds()) {
+                int minX = cell.getMinX() + 256, maxX = cell.getMaxX() + 256 - 1;
+                int minY = cell.getMinY() + 128, maxY = cell.getMaxY() + 128 - 1;
+                minX = minX & 0x1FF;
+                maxX = maxX & 0x1FF;
+                minY = minY & 0xFF;
+                maxY = maxY & 0xFF;
+
+                for (int i = 0; i < 256; i++) {
+                    if (bits[i * 512 + minX] >> 24 != 0xFE) bits[i * 512 + minX] = 0xFF0000FF;
+                    if (bits[i * 512 + maxX] >> 24 != 0xFE) bits[i * 512 + maxX] = 0xFF0000FF;
+                }
+                for (int i = 0; i < 512; i++) {
+                    if (bits[minY * 512 + i] >> 24 != 0xFE) bits[minY * 512 + i] = 0xFF0000FF;
+                    if (bits[maxY * 512 + i] >> 24 != 0xFE) bits[maxY * 512 + i] = 0xFF0000FF;
+                }
             }
+            image.setRGB(0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, bits, 0, BACKGROUND_WIDTH);
         }
-
-        //draw solid color background if transparency disabled
-        if (!Configuration.isRenderTransparent()) {
-            int bgColor = 0;
-            if (ncgr != null) {
-                bgColor = getNCLR().getColor(0).getRGB();
-            }
-            bgColor = REVERSE(bgColor);
-            for (int i = 0; i < 256 * 512; i++) {
-                int c = bits[i];
-                if ((c >> 24) == 0) {
-                    bits[i] = bgColor;
-                } else if ((c >> 24) == 0xFE) {
-                    bits[i] = ((bgColor + 0x808080) & 0xFFFFFF) | 0xFE000000;
-                }
-            }
-        }
-
-        //draw editor guidelines if enabled
-        if (Configuration.isShowGuidelines()) {
-            //dotted lines at X=0 an Y=0
-            int centerColor = 0xFF0000; //red
-            int auxColor = 0x00FF00; //green
-            int minorColor = 0x002F00;
-
-            for (int i = 0; i < 512; i++) {
-                //major guideline
-                int c = bits[i + 128 * 512];
-                if ((c >> 24) != 0xFE) {
-                    if ((i & 1) == 1) {
-                        bits[i + 128 * 512] ^= centerColor;
-                    }
-                }
-
-                //auxiliary guidelines
-                c = bits[i + 64 * 512];
-                if ((c >> 24) != 0xFE){
-                    if ((i & 1) == 1) {
-                        bits[i + 64 * 512] ^= auxColor;
-                    }
-                }
-                c = bits[i + 192 * 512];
-                if ((c >> 24) != 0xFE) {
-                    if ((i & 1) == 1) {
-                        bits[i + 192 * 512] ^= auxColor;
-                    }
-                }
-
-                //minor guidelines
-                for (int j = 0; j < 256; j += 8) {
-                    if (j == 64 || j == 128 || j == 192) continue;
-
-                    c = bits[i + j * 512];
-                    if ((c >> 24) != 0xFE) {
-                        if ((i & 1) == 1) {
-                            bits[i + j * 512] ^= minorColor;
-                        }
-                    }
-                }
-            }
-            for (int i = 0; i < 256; i++) {
-                //major guideline
-                int c = bits[256 + i * 512];
-                if ((c >> 24) != 0xFE) {
-                    if ((i & 1) == 1) {
-                        bits[256 + i * 512] ^= centerColor;
-                    }
-                }
-
-                //auxiliary guidelines
-                c = bits[128 + i * 512];
-                if ((c >> 24) != 0xFE) {
-                    if ((i & 1) == 1){
-                        bits[128 + i * 512] ^= auxColor;
-                    }
-                }
-                c = bits[384 + i * 512];
-                if ((c >> 24) != 0xFE) {
-                    if ((i & 1) == 1) bits[384 + i * 512] ^= auxColor;
-                }
-
-                //minor guidelines
-                for (int j = 0; j < 512; j += 8) {
-                    if (j == 128 || j == 256 || j == 384) continue;
-
-                    c = bits[j + i * 512];
-                    if ((c >> 24) != 0xFE) {
-                        if ((i & 1) == 1){
-                            bits[j + i * 512] ^= minorColor;
-                        }
-                    }
-                }
-            }
-        }
-        BufferedImage image = new BufferedImage(BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BufferedImage.TYPE_INT_ARGB);
-        image.setRGB(0, 0, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, bits, 0, BACKGROUND_WIDTH);
-
         CellInfo.OAM info = cell.getOam(0);
         int[] width = new int[1], height = new int[1];
-        bits = new int [info.getWidth() * info.getHeight()];
-        renderObj(info, cebkMappingMode, null, bits, width, height, true);
-
-        image.setRGB(512/2 - info.getWidth()/2, 256/2 - info.getHeight()/2, info.getWidth(), info.getHeight(), bits, 0, info.getWidth());
-
+        colors = new Color[info.getWidth() * info.getHeight()];
+        renderObj(info, cebkMappingMode, null, colors, width, height);
+        int[] bits = new int[colors.length];
+        for (int i = 0; i < bits.length;i++){
+            bits[i] = colors[i].getRGB();
+        }
+        if (Configuration.isBackground()) {
+            image.setRGB(512 / 2 - info.getWidth() / 2, 256 / 2 - info.getHeight() / 2, info.getWidth(), info.getHeight(), bits, 0, info.getWidth());
+        } else {
+            image = new BufferedImage(width[0], height[0], BufferedImage.TYPE_INT_ARGB);
+            image.setRGB(0, 0, width[0], height[0], bits, 0, width[0]);
+        }
 
         return image;
     }
