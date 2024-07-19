@@ -372,6 +372,28 @@ public class NDSGui {
     }
 
     /**
+     * Gets the current value of a toggle control element.
+     * lazily initializes it if needed and sets its value to the specified parameter default.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param defaultValue default value of the toggle
+     * @return current value of the toggle
+     */
+    public ToggleNode toggle(String path, boolean defaultValue) {
+        String fullPath = getFolder() + path;
+        if(isPathTakenByUnexpectedType(fullPath, ButtonNode.class)){
+            return null;
+        }
+        ToggleNode node = (ToggleNode) findNode(fullPath);
+        if (node == null) {
+            FolderNode folder = NodeTree.findParentFolderLazyInitPath(fullPath);
+            node = new ToggleNode(fullPath, folder, defaultValue);
+            insertNodeAtItsPath(node);
+        }
+        return node;
+    }
+
+    /**
      * Gets the currently selected string from a list of options in a gui control element.
      * Lazily initializes the radio element if needed - any later changes in the options parameter will be ignored.
      * Sets the default value to the first value in the list.

@@ -33,7 +33,7 @@ public class SliderNode extends AbstractNode {
 
     float valueFloatDefault;
     final float valueFloatMin;
-    final float valueFloatMax;
+    float valueFloatMax;
     final boolean valueFloatConstrained;
     float backgroundScrollX = 0;
     float mouseDeltaX, mouseDeltaY;
@@ -227,15 +227,25 @@ public class SliderNode extends AbstractNode {
         }
     }
 
-    void decreasePrecision() {
+    public void setMaxValue(int maxValue){
+        valueFloatMax = maxValue;
+        if (valueFloatMax < valueFloat){
+            valueFloat  = valueFloatMax;
+        }
+        if (valueFloatMax < valueFloatDefault){
+            valueFloatDefault  = valueFloatMax;
+        }
+    }
+
+    public void decreasePrecision() {
         setPrecisionIndexAndValue(min(currentPrecisionIndex + 1, precisionRange.size() - 1));
     }
 
-    void increasePrecision() {
+    public void increasePrecision() {
         setPrecisionIndexAndValue(max(currentPrecisionIndex - 1, 0));
     }
 
-    protected void setPrecisionIndexAndValue(int newPrecisionIndex) {
+    public void setPrecisionIndexAndValue(int newPrecisionIndex) {
         if (!validatePrecision(newPrecisionIndex)) {
             return;
         }

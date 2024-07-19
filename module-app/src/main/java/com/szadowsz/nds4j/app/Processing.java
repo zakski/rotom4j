@@ -1,19 +1,21 @@
 package com.szadowsz.nds4j.app;
 
 import com.szadowsz.nds4j.app.managers.*;
+import com.szadowsz.nds4j.app.nodes.util.NitroImgFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
+import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
 import com.szadowsz.nds4j.file.bin.GrowNFSFile;
 import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
 import com.szadowsz.nds4j.file.bin.StatsNFSFile;
-import com.szadowsz.nds4j.file.nitro.NCGR;
-import com.szadowsz.nds4j.file.nitro.NCLR;
-import com.szadowsz.nds4j.file.nitro.NSCR;
-import com.szadowsz.nds4j.file.nitro.Narc;
+import com.szadowsz.nds4j.file.nitro.*;
+import com.szadowsz.nds4j.utils.Configuration;
 import com.szadowsz.ui.NDSGuiSettings;
 import com.szadowsz.ui.input.ActivateByType;
+import com.szadowsz.ui.node.NodeTree;
 import com.szadowsz.ui.node.impl.ButtonNode;
 import com.szadowsz.ui.node.impl.FolderNode;
+import com.szadowsz.ui.node.impl.ToggleNode;
 import com.szadowsz.ui.window.WindowManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ import processing.core.PConstants;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
@@ -37,6 +40,7 @@ public class Processing extends PApplet {
     protected NDSGuiSettings settings;
 
     final static String selectNarcFile = "Open Narc File";
+    final static String selectNCERFile = "Open NCER File";
     final static String selectNSCRFile = "Open NSCR File";
     final static String selectNCGRFile = "Open NCGR File";
     final static String selectNCLRFile = "Open NClR File";
@@ -45,6 +49,11 @@ public class Processing extends PApplet {
     final static String selectStatsFile = "Open Personal File";
     final static String selectLearnFile = "Open Learnset File";
     final static String selectGrowthFile = "Open Growth File";
+
+    final static String showCellBounds = "Cell Bounds";
+    final static String showGuidelines = "Guidelines";
+    final static String showTransparent = "Render Transparent";
+    final static String showBackground = "Render Background";
 
     private void setLookAndFeel() {
         try {
@@ -73,6 +82,22 @@ public class Processing extends PApplet {
             }
         }
     }
+
+    private void createNcerUI() {
+        String lastPath = prefs.get("openNarcPath", System.getProperty("user.dir"));
+        String ncerPath = FileChooser.selectNcerFile(gui.getGuiCanvas().parent, lastPath,selectNCERFile);
+        if (ncerPath != null) {
+            prefs.put("openNarcPath", new File(ncerPath).getParentFile().getAbsolutePath());
+            try {
+                LOGGER.info("Loading NCER File: " + ncerPath);
+                NcerManager.getInstance().registerNCER(gui, NCER.fromFile(ncerPath));
+                LOGGER.info("Loaded NCER File: " + ncerPath);
+            } catch (IOException e) {
+                LOGGER.error("NCER Load Failed",e);
+            }
+        }
+    }
+
     private void createNscrUI() {
         String lastPath = prefs.get("openNarcPath", System.getProperty("user.dir"));
         String nscrPath = FileChooser.selectNscrFile(gui.getGuiCanvas().parent, lastPath,selectNSCRFile);
@@ -185,6 +210,8 @@ public class Processing extends PApplet {
     private void register2DFileButtons() {
         // Tier 1a open
         gui.pushDropdown("Open 2D File");
+        ButtonNode selectNcer = gui.button(selectNCERFile);
+        selectNcer.registerAction(ActivateByType.RELEASE, this::createNcerUI);
         ButtonNode selectNscr = gui.button(selectNSCRFile);
         selectNscr.registerAction(ActivateByType.RELEASE, this::createNscrUI);
         ButtonNode selectNcgr = gui.button(selectNCGRFile);
@@ -218,6 +245,14 @@ public class Processing extends PApplet {
         gui.popFolder();
     }
 
+    private void registerFileOptions() {
+        // Tier 1bc open
+        FolderNode loaded = gui.pushFolder("Loaded Files");
+        WindowManager.uncoverOrCreateWindow(loaded,false,cell,cell*2,null);
+        // Tier 1c close
+        gui.popFolder();
+    }
+
     private void buildFileDropdown() {
         // Tier 0a open
         gui.pushDropdown("File");
@@ -236,6 +271,65 @@ public class Processing extends PApplet {
         gui.popFolder();
     }
 
+    private void buildOptionsDropdown() {
+        // Tier 0c open
+        gui.pushDropdown("Options");
+
+        ToggleNode cellBounds =gui.toggle(showCellBounds, Configuration.isShowCellBounds());
+        cellBounds.registerAction((b) -> {
+            Configuration.setShowCellBounds(b);
+            List<NitroImgFolderNode> nodes = NodeTree.getAllNodesAsList(NitroImgFolderNode.class);
+            nodes.forEach(n -> {
+                try {
+                    n.recolorImage();
+                } catch (NitroException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        });
+
+        ToggleNode guidelines = gui.toggle(showGuidelines, Configuration.isShowGuidelines());
+        guidelines.registerAction((b) -> {
+            Configuration.setShowGuidelines(b);
+            List<NitroImgFolderNode> nodes = NodeTree.getAllNodesAsList(NitroImgFolderNode.class);
+            nodes.forEach(n -> {
+                try {
+                    n.recolorImage();
+                } catch (NitroException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        });
+
+        ToggleNode renderTransparent = gui.toggle(showTransparent, Configuration.isRenderTransparent());
+        renderTransparent.registerAction((b) -> {
+            Configuration.setRenderTransparent(b);
+            List<NitroImgFolderNode> nodes = NodeTree.getAllNodesAsList(NitroImgFolderNode.class);
+            nodes.forEach(n -> {
+                try {
+                    n.recolorImage();
+                } catch (NitroException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        });
+
+        ToggleNode renderBackground = gui.toggle(showBackground, Configuration.isBackground());
+        renderBackground.registerAction((b) -> {
+            Configuration.setRenderBackground(b);
+            List<NitroImgFolderNode> nodes = NodeTree.getAllNodesAsList(NitroImgFolderNode.class);
+            nodes.forEach(n -> {
+                try {
+                    n.recolorImage();
+                } catch (NitroException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        });
+        // Tier 0c close
+        gui.popFolder();
+    }
+
     @Override
     public void setup() {
         surface.setTitle("NDS4J");
@@ -244,6 +338,7 @@ public class Processing extends PApplet {
         gui = new NDSGuiImpl(this,settings);
         buildFileDropdown();
         buildViewDropdown();
+        buildOptionsDropdown();
     }
 
     @Override

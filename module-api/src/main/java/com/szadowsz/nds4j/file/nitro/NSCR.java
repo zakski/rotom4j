@@ -2,11 +2,14 @@ package com.szadowsz.nds4j.file.nitro;
 
 import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
+import com.szadowsz.nds4j.data.ComplexImageable;
 import com.szadowsz.nds4j.data.NFSFormat;
 import com.szadowsz.nds4j.data.nfs.ColorFormat;
+import com.szadowsz.nds4j.data.nfs.NTFS;
 import com.szadowsz.nds4j.exception.InvalidFileException;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.reader.MemBuf;
+import com.szadowsz.nds4j.utils.Configuration;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -16,9 +19,10 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;
 
-public class NSCR extends GenericNFSFile {
+public class NSCR extends GenericNFSFile implements ComplexImageable {
 
     // Block Header section
     private String id;                   // NRCS = 0x4E524353
@@ -37,12 +41,6 @@ public class NSCR extends GenericNFSFile {
 
     // image info
     private BufferedImage image;
-    private byte[] charData;
-    private ColorFormat charBitDepth;
-    private int tileSize;
-    private int bitDepth;
-    private float zoom;
-    private byte[] imgTiles;
 
     public NSCR(String path, String fileName, CompFormat comp, byte[] compData, byte[] data) throws NitroException {
         super(NFSFormat.NSCR, path, fileName, comp, compData, data);
@@ -54,8 +52,6 @@ public class NSCR extends GenericNFSFile {
         int headerLength = reader.getPosition();
         reader.setPosition(0);
         this.headerData = reader.readTo(headerLength);
-
-        zoom = 1.0f;
 
         File[] ncgrs = new File(path).getParentFile().listFiles(f -> (f.getName().endsWith(".NCGR") ||
                 f.getName().endsWith(".NCBR")) &&
@@ -74,18 +70,9 @@ public class NSCR extends GenericNFSFile {
      */
     public BufferedImage getImage() {
         if (image != null) {
-            BufferedImage after = new BufferedImage(
-                    Math.round(image.getWidth() * zoom),
-                    Math.round(image.getHeight() * zoom),
-                    TYPE_INT_RGB);
-            AffineTransform at = new AffineTransform();
-            at.scale(zoom, zoom);
-            AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-            after = scaleOp.filter(image, after);
-
-            return after;
+            return image;
         } else {
-            return null;
+            return new BufferedImage(getWidth(),getHeight(),TYPE_INT_ARGB);
         }
     }
 
@@ -97,20 +84,24 @@ public class NSCR extends GenericNFSFile {
         return height;
     }
 
-    public NCGR getNSGR() {
+    public NCGR getNCGR() {
         return this.ncgr;
+    }
+
+    public NCLR getNCLR(){
+        return (ncgr!=null)?ncgr.getNCLR():NCLR.DEFAULT;
     }
 
     public void setNCGR(NCGR ncgr) {
         this.ncgr = ncgr;
     }
 
-    public void setNCLR(NCLR nclr) {
-        this.ncgr.setPalette(nclr);
-    }
-
-    public void setZoom(float valueFloat) {
-        zoom = valueFloat;
+    @Override
+    public void setNCLR(NCLR nclr) throws NitroException {
+        if (ncgr != null) {
+            this.ncgr.setNCLR(nclr);
+            recolorImage();
+        }
     }
 
     /**
@@ -149,43 +140,13 @@ public class NSCR extends GenericNFSFile {
         if (ncgr == null) {
             return;
         }
-
-        //byte[] bits = getIndexedNscrBits(tileBase);
-        //image =  renderIndexedNscr(bits);
-        //public int[] renderNscrBits(NCLR nclr, int tileBase, int[] widthHeight, int tileMarks, int hlStart, int hlEnd, int hlMode, int selStartX, int selStartY, int selEndX, int selEndY, boolean transparent) {
-        //            DWORD *bits = renderNscrBits(this, ncgr, ncgr.getPalette(), tileBase, &outWidth, &outHeight, -1, -1, -1, PALVIEWER_SELMODE_2D,
-//                    -1, -1, -1, -1, -1);
         try {
-            image = renderNscr(tileBase, false, -1, -1, -1, -1, PALVIEWER_SELMODE_2D, 1, -1, -1, -1, -1, false);
+            image = renderNscr(tileBase, Configuration.isRenderTransparent());
         } catch (Exception e){
             throw new InvalidFileException("Image Rendering Failed",e);
         }
-//        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-//        NTFS[] currMap = new NTFS[mapData.length];
-//        for (int i = 0; i < mapData.length; i++) {
-//            currMap[i] = new NTFS(mapData[i]);
-//        }
-//        Byte[] tiles = applyMap(currMap, ncgr.getCharData(), ncgr.getBitDepth(), ncgr.getTileSize());
-//        setImageData(tiles, ncgr.getCharBitDepth(), ncgr.getTileSize());
-
     }
-//						if (nclr->nColors <= 256) {
-//        //write 8bpp indexed
-//        COLOR32 palette[256] = { 0 };
-//        int transparentOutput = 1;
-//        int paletteSize = 1 << ncgr->nBits;
-//        if (nclr != NULL) {
-//            for (int i = 0; i < min(nclr->nColors, 256); i++) {
-//                int makeTransparent = transparentOutput && ((i % paletteSize) == 0);
-//
-//                palette[i] = ColorConvertFromDS(nclr->colors[i]);
-//                if (!makeTransparent) palette[i] |= 0xFF000000;
-//            }
-//        }
-//        unsigned char *bits = renderNscrIndexed(nscr, ncgr, data->tileBase, &width, &height, TRUE);
-//        ImgWriteIndexed(bits, width, height, palette, 256, location);
-//        free(bits);
-//    }
+
     public int nscrGetTileEx(int charBase, int x, int y, Color[] out, int[] tileNo, boolean transparent) {
         if (ncgr == null) {
             Arrays.fill(out, 0);
@@ -200,10 +161,10 @@ public class NSCR extends GenericNFSFile {
             return 1;
         }
 
-        int tileData = data[y * nWidthTiles + x];
-        int tileNumber = tileData & 0x3FF;
-        int transform = (tileData >> 10) & 0x3;
-        int paletteNumber = (tileData >> 12) & 0xF;
+        NTFS tileData = mapData[y * nWidthTiles + x];
+        int tileNumber = tileData.nTile;
+        int transform = tileData.transform;
+        int paletteNumber = tileData.nPalette;
         if (tileNo != null) {
             tileNo[0] = tileNumber;
         }
@@ -265,7 +226,7 @@ public class NSCR extends GenericNFSFile {
     private static final int PALVIEWER_SELMODE_2D = 1;
 
     public Color[] renderNscrBits(int tileBase, boolean transparent) {
-        image = new BufferedImage(width,height,TYPE_INT_RGB);
+        image = new BufferedImage(width,height,TYPE_INT_ARGB);
         Color[] bits = new Color[width * height];
         Arrays.fill(bits, new Color(0));
 
@@ -297,23 +258,11 @@ public class NSCR extends GenericNFSFile {
         return bits;
     }
 
-    public BufferedImage renderNscr(int tileBase, boolean drawGrid, int highlightNclr, int highlightTile, int hlStart, int hlEnd, int hlMode, int scale, int selStartX, int selStartY, int selEndX, int selEndY, boolean transparent) {
+    public BufferedImage renderNscr(int tileBase, boolean transparent) {
         if (ncgr == null) {
             return null;
         }
-
-//        if (highlightNclr != -1) {
-//            highlightNclr += tileBase;
-//        }
-        //public int[] renderNscrBits(NCLR nclr, int tileBase, int[] widthHeight, int tileMarks, int hlStart, int hlEnd, int hlMode, int selStartX, int selStartY, int selEndX, int selEndY, boolean transparent) {
-        Color[] bits = renderNscrBits(tileBase,/* highlightNclr, hlStart, hlEnd, hlMode, selStartX, selStartY, selEndX, selEndY,*/ transparent);
-//
-//        int hovX = -1, hovY = -1;
-//        if (highlightTile != -1) {
-//            hovX = highlightTile % (this.width / 8);
-//            hovY = highlightTile / (this.width / 8);
-//        }
-//        return createTileBitmap2(bits, hovX, hovY, scale, drawGrid, 8, false, true);
+        renderNscrBits(tileBase, transparent);
         return image;
     }
 
@@ -343,26 +292,6 @@ public class NSCR extends GenericNFSFile {
         }
         if (this.ncgr != null) {
             createImage();
-        }
-    }
-
-    class NTFS implements Cloneable {             // Nintedo Tile Format Screen
-        public int nTile; //        0-9     (0-1023)    (a bit less in 256 color mode, because there'd be otherwise no room for the bg map)
-         public int transform;
-        public byte xFlip;  //      10    Horizontal Flip (0=Normal, 1=Mirrored)
-        public byte yFlip;  //      11    Vertical Flip   (0=Normal, 1=Mirrored)
-
-        public int nPalette; //    12-15    (0-15)      (Not used in 256 color/1 palette mode)
-
-        public NTFS() {
-        }
-
-        public NTFS(NTFS original) {
-            nPalette = original.nPalette;
-            transform = original.transform;
-            xFlip = original.xFlip;
-            yFlip = original.yFlip;
-            nTile = original.nTile;
         }
     }
 
