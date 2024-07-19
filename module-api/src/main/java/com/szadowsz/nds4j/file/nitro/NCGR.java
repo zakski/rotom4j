@@ -419,7 +419,7 @@ public class NCGR extends GenericNFSFile implements Imageable {
     }
 
     public Color[] renderTile(int tileNo, boolean transfer, CellInfo transferInfo, int palNum) throws NitroException {
-        logger.info("NCGR Tile Info, tile=" + tileNo + ", vram=" + transfer + ", palette=" + palNum + ", bitDepth=" + charBitDepth);
+        logger.debug("NCGR Tile Info, tile=" + tileNo + ", vram=" + transfer + ", palette=" + palNum + ", bitDepth=" + charBitDepth);
         // if transfer == null, render as normal
         if (!transfer) {
             return renderTile(tileNo, palNum);

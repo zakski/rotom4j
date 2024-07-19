@@ -308,7 +308,7 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
 
         if (ncgr != null) {
             int ncgrStart = calcCHName(info.getOffset(), mapping, ncgr.getBitDepth());
-            logger.info("NCGR Tile Start = " + ncgrStart);
+            logger.debug("NCGR Tile Start = " + ncgrStart);
             for (int y = 0; y < tilesY; y++) {
                 for (int x = 0; x < tilesX; x++) {
 
@@ -327,7 +327,7 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
                     }
                 }
             }
-            logger.info("NCGR Tile end");
+            logger.debug("NCGR Tile end");
         }
     }
 
