@@ -1,4 +1,4 @@
-package com.szadowsz.nds4j.app.nodes.nclr;
+package com.szadowsz.nds4j.app.nodes.nitro.nclr;
 
 import com.szadowsz.ui.constants.theme.ThemeColorType;
 import com.szadowsz.ui.constants.theme.ThemeStore;

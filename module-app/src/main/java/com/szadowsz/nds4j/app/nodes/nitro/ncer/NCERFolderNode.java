@@ -1,7 +1,7 @@
-package com.szadowsz.nds4j.app.nodes.ncer;
+package com.szadowsz.nds4j.app.nodes.nitro.ncer;
 
-import com.szadowsz.nds4j.app.nodes.util.NitroCmpFolderNode;
-import com.szadowsz.nds4j.app.nodes.util.PreviewNode;
+import com.szadowsz.nds4j.app.nodes.nitro.NitroCmpFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.PreviewNode;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCER;
 import com.szadowsz.ui.input.ActivateByType;

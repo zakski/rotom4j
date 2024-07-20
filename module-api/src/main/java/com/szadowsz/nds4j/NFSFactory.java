@@ -7,11 +7,7 @@ import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.BaseNFSFile;
 import com.szadowsz.nds4j.file.bin.BinNFSFile;
 import com.szadowsz.nds4j.file.bin.PlaceholderNFSFile;
-import com.szadowsz.nds4j.file.nitro.NCER;
-import com.szadowsz.nds4j.file.nitro.NCGR;
-import com.szadowsz.nds4j.file.nitro.NCLR;
-import com.szadowsz.nds4j.file.nitro.NSCR;
-import com.szadowsz.nds4j.file.nitro.UnspecifiedNFSFile;
+import com.szadowsz.nds4j.file.nitro.*;
 import com.szadowsz.nds4j.reader.Buffer;
 import com.szadowsz.nds4j.reader.HexInputStream;
 import org.slf4j.Logger;
@@ -102,6 +98,9 @@ public class NFSFactory {
             }
             case NCER -> {
                 return new NCER(path, name, comp, compData, data);
+            }
+            case NANR -> {
+                return new NANR(path, name, comp, compData, data);
             }
             case BINARY -> {
                 if (data != null && data.length > 4) {

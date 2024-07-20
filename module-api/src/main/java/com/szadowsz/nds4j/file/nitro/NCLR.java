@@ -97,14 +97,6 @@ public class NCLR extends GenericNFSFile {
      */
     protected static byte[] generateData(int palettes, int numColors) {
         LOGGER.info("\nGenerating default NCLR with " + palettes + " palettes and " + numColors + "colours");
-        // bitDepth=8
-        //paletteMagic=TTLP
-        //paletteSectionSize=56
-        //compNum=10
-        //paletteUnknown1=0
-        //paletteLength=32
-        //colorStartOffset=16
-        //numColors=16]
         MemBuf dataBuf = MemBuf.create();
         MemBuf.MemBufWriter writer = dataBuf.writer();
         Color[] colors;
@@ -267,9 +259,9 @@ public class NCLR extends GenericNFSFile {
     @Override
     protected void readFile(MemBuf.MemBufReader reader) throws InvalidFileException {
         // reader position is now 0x10
-        int indexPLTT = NnsG2dFindBlockBySignature(reader,"PLTT");
+        int indexPLTT = findBlockBySignature(reader,"PLTT");
         LOGGER.info("PLTT Index: " + indexPLTT);
-        int indexPCMP = NnsG2dFindBlockBySignature(reader,"PCMP");
+        int indexPCMP = findBlockBySignature(reader,"PCMP");
         LOGGER.info("PCMP Index: " + indexPCMP);
 
         // 0x0 - palette data
@@ -309,7 +301,7 @@ public class NCLR extends GenericNFSFile {
 
         // 0x14 - Colors Per Palette
         long colorStartOffset = reader.readUInt32();
-        LOGGER.info("Colors Per Palette: " + colorStartOffset);
+        LOGGER.info("Color Offset: " + colorStartOffset);
 
         // Set number of colours based on bit depth.
         this.numColorsPerPalette = (bitDepth == ColorFormat.colors16)? 16 : 256;

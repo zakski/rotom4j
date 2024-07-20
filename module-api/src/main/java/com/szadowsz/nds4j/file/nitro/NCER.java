@@ -216,13 +216,13 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
     protected void readFile(MemBuf.MemBufReader reader) throws NitroException {
         logger.debug("Read NCER data");
         logger.info("Current index @ " + reader.getPosition());
-        int cebk = NnsG2dFindBlockBySignature(reader, "CEBK");
+        int cebk = findBlockBySignature(reader, "CEBK");
         logger.info("Found CEBK section @ " + cebk);
-        int tacu = NnsG2dFindBlockBySignature(reader, "TACU");
+        int tacu = findBlockBySignature(reader, "TACU");
         logger.info("Found TACU section @ " + tacu);
-        int labl = NnsG2dFindBlockBySignature(reader, "LABL");
+        int labl = findBlockBySignature(reader, "LABL");
         logger.info("Found LABL section @ " + labl);
-        int uext = NnsG2dFindBlockBySignature(reader, "UEXT");
+        int uext = findBlockBySignature(reader, "UEXT");
         logger.info("Found UEXT section @ " + uext);
 
         readCellBank(reader); // process CEBK, current index should point to that block already

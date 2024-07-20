@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class EvoFileManager {
-    static Logger LOGGER = LoggerFactory.getLogger(NcgrManager.class);
+    static Logger LOGGER = LoggerFactory.getLogger(EvoFileManager.class);
 
     private static EvoFileManager singleton;
 

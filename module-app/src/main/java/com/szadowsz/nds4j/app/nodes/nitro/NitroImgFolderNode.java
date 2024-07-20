@@ -1,7 +1,6 @@
-package com.szadowsz.nds4j.app.nodes.util;
+package com.szadowsz.nds4j.app.nodes.nitro;
 
 import com.szadowsz.nds4j.app.Processing;
-import com.szadowsz.nds4j.app.nodes.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.data.Imageable;

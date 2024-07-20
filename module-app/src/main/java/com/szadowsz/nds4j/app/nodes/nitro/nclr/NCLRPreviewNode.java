@@ -1,4 +1,4 @@
-package com.szadowsz.nds4j.app.nodes.nclr;
+package com.szadowsz.nds4j.app.nodes.nitro.nclr;
 
 import com.szadowsz.ui.store.ShaderStore;
 import com.szadowsz.nds4j.file.nitro.NCLR;

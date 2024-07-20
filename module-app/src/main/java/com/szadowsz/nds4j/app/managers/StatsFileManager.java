@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StatsFileManager {
-    static Logger LOGGER = LoggerFactory.getLogger(NcgrManager.class);
+    static Logger LOGGER = LoggerFactory.getLogger(NitroFileManager.class);
 
     private static StatsFileManager singleton;
 

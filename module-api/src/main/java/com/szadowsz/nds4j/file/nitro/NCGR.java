@@ -83,6 +83,26 @@ public class NCGR extends GenericNFSFile implements Imageable {
         return (!calcIsNCGR2D(m));
     }
 
+    /**
+     * Generates an object representation of an NCGR file from a file on disk
+     *
+     * @param path a <code>String</code> containing the path to a NCGR file on disk
+     * @return an <code>IndexedImage</code> object
+     */
+    public static NCGR fromFile(String path) throws NitroException {
+        return fromFile(new File(path));
+    }
+
+    /**
+     * Generates an object representation of an NCGR file from a file on disk
+     *
+     * @param file a <code>File</code> containing the path to a NCGR file on disk
+     * @return an <code>IndexedImage</code> object
+     */
+    public static NCGR fromFile(File file) throws NitroException {
+        return (NCGR) NFSFactory.fromFile(file);
+    }
+
     public NCGR(int height, int width, int bitDepth, NCLR palette) throws NitroException {
         super(NFSFormat.NCGR, null, null, CompFormat.NONE, null, null);
         if (height % 8 != 0)
@@ -476,70 +496,49 @@ public class NCGR extends GenericNFSFile implements Imageable {
 
     @Override
     protected void readFile(MemBuf.MemBufReader reader) throws InvalidFileException {
-//        // IndexedImage.fromFile(path, 0, 0, 1, 1, true);
-//        this.sopc = this.numBlocks == 2;
-//        boolean scanFrontToBack = true;
-
         this.sopc = this.numBlocks == 2;
-        // reader position is now 0x10
+
         // Read the first section: CHAR (CHARacter data)
-        charMagic = reader.readString(4);
+        charMagic = reader.readString(4);  // reader position is now 0x10 (0x0)
         if (!charMagic.equals("RAHC")) {
             throw new RuntimeException("Not a valid NCGR file.");
         }
-        charSectionSize = reader.readUInt32();
-        charTilesHeight = reader.readUInt16(); //0x18
-        charTilesWidth = reader.readUInt16(); //0x1A
+        charSectionSize = reader.readUInt32(); // 0x14 (0x4)
+
+        charTilesHeight = reader.readUInt16(); // 0x18 (0x8)
+        charTilesWidth = reader.readUInt16();  // 0x1A (0xA)
         this.height = this.charTilesHeight * 8;
         this.width = this.charTilesWidth * 8;
-        charBitDepth = ColorFormat.valueOf(reader.readInt());
-        charUnknown1 = reader.readUInt16();
-        charMappingType = reader.readUInt16(); // 0x22
-        charTiledFlag = reader.readUInt32();
+
+        charBitDepth = ColorFormat.valueOf(reader.readInt()); // 0x1C (0xC)
+
+        charUnknown1 = reader.readUInt16();    // 0x20 (0x10)
+        charMappingType = reader.readUInt16(); // 0x22 (0x12)
+
+        charTiledFlag = reader.readUInt32();   // 0x24 (0x14)
         if ((charTiledFlag & 0xFF) == 0x0) {
             order = TileForm.Horizontal;
         } else {
             order = TileForm.Lineal;
         }
-        charTiledataSize = reader.readUInt32();
-        charUnknown3 = reader.readUInt32();
+        charTiledataSize = reader.readUInt32(); // 0x28 (0x18)
+        charUnknown3 = reader.readUInt32();     // 0x2C (0x1C)
         readData(reader);
 
         // Read the second section: SOPC
         if (sopc && reader.getBuffer().length > 0) {
-            sopcMagic = reader.readString(4);
-            sopcSectionSize = reader.readUInt32();
-            sopcUnknown1 = reader.readUInt32();
-            sopcCharSize = reader.readUInt16();
-            sopcNChars = reader.readUInt16();
+            sopcMagic = reader.readString(4);  // (0x0)
+            sopcSectionSize = reader.readUInt32(); // (0x4)
+            sopcUnknown1 = reader.readUInt32();    // (0x8)
+            sopcCharSize = reader.readUInt16();    // (0xC)
+            sopcNChars = reader.readUInt16();      // (0xE)
         }
-
 
         setImageData(charData, width, height, charBitDepth, order, 8);
     }
 
     public void recolorImage() throws NitroException {
         setImagePixels();
-    }
-
-    /**
-     * Generates an object representation of an NCGR file from a file on disk
-     *
-     * @param path a <code>String</code> containing the path to a NCGR file on disk
-     * @return an <code>IndexedImage</code> object
-     */
-    public static NCGR fromFile(String path) throws NitroException {
-        return fromFile(new File(path));
-    }
-
-    /**
-     * Generates an object representation of an NCGR file from a file on disk
-     *
-     * @param file a <code>File</code> containing the path to a NCGR file on disk
-     * @return an <code>IndexedImage</code> object
-     */
-    public static NCGR fromFile(File file) throws NitroException {
-        return (NCGR) NFSFactory.fromFile(file);
     }
 
     protected byte[] linealToHorizontal(byte[] lineal, int width, int height, int bpp, int tile_size) {

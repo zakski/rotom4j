@@ -1,7 +1,7 @@
 package com.szadowsz.nds4j.app;
 
 import com.szadowsz.nds4j.app.managers.*;
-import com.szadowsz.nds4j.app.nodes.util.NitroImgFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.NitroImgFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
@@ -40,6 +40,7 @@ public class Processing extends PApplet {
     protected NDSGuiSettings settings;
 
     final static String selectNarcFile = "Open Narc File";
+    final static String selectNANRFile = "Open NANR File";
     final static String selectNCERFile = "Open NCER File";
     final static String selectNSCRFile = "Open NSCR File";
     final static String selectNCGRFile = "Open NCGR File";
@@ -83,6 +84,21 @@ public class Processing extends PApplet {
         }
     }
 
+    private void createNanrUI() {
+        String lastPath = prefs.get("openNarcPath", System.getProperty("user.dir"));
+        String nanrPath = FileChooser.selectNanrFile(gui.getGuiCanvas().parent, lastPath,selectNANRFile);
+        if (nanrPath != null) {
+            prefs.put("openNarcPath", new File(nanrPath).getParentFile().getAbsolutePath());
+            try {
+                LOGGER.info("Loading NANR File: " + nanrPath);
+                NitroFileManager.getInstance().registerNANR(gui, NANR.fromFile(nanrPath));
+                LOGGER.info("Loaded NANR File: " + nanrPath);
+            } catch (IOException e) {
+                LOGGER.error("NANR Load Failed",e);
+            }
+        }
+    }
+
     private void createNcerUI() {
         String lastPath = prefs.get("openNarcPath", System.getProperty("user.dir"));
         String ncerPath = FileChooser.selectNcerFile(gui.getGuiCanvas().parent, lastPath,selectNCERFile);
@@ -90,7 +106,7 @@ public class Processing extends PApplet {
             prefs.put("openNarcPath", new File(ncerPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.info("Loading NCER File: " + ncerPath);
-                NcerManager.getInstance().registerNCER(gui, NCER.fromFile(ncerPath));
+                NitroFileManager.getInstance().registerNCER(gui, NCER.fromFile(ncerPath));
                 LOGGER.info("Loaded NCER File: " + ncerPath);
             } catch (IOException e) {
                 LOGGER.error("NCER Load Failed",e);
@@ -105,7 +121,7 @@ public class Processing extends PApplet {
             prefs.put("openNarcPath", new File(nscrPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.info("Loading NSCR File: " + nscrPath);
-                NscrManager.getInstance().registerNSCR(gui, NSCR.fromFile(nscrPath));
+                NitroFileManager.getInstance().registerNSCR(gui, NSCR.fromFile(nscrPath));
                 LOGGER.info("Loaded NSCR File: " + nscrPath);
             } catch (IOException e) {
                 LOGGER.error("NSCR Load Failed",e);
@@ -120,7 +136,7 @@ public class Processing extends PApplet {
             prefs.put("openNarcPath", new File(ncgrPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.info("Loading NCGR File: " + ncgrPath);
-                NcgrManager.getInstance().registerNCGR(gui, NCGR.fromFile(ncgrPath));
+                NitroFileManager.getInstance().registerNCGR(gui, NCGR.fromFile(ncgrPath));
                 LOGGER.info("Loaded NCGR File: " + ncgrPath);
             } catch (IOException e) {
                 LOGGER.error("NCGR Load Failed",e);
@@ -135,7 +151,7 @@ public class Processing extends PApplet {
             prefs.put("openNarcPath", new File(nclrPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.info("Loading NCLR File: " + nclrPath);
-                NclrManager.getInstance().registerNCLR(gui, NCLR.fromFile(nclrPath));
+                NitroFileManager.getInstance().registerNCLR(gui, NCLR.fromFile(nclrPath));
                 LOGGER.info("Loaded NCLR File: " + nclrPath);
             } catch (IOException e) {
                 LOGGER.error("NCLR Load Failed",e);

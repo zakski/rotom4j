@@ -1,8 +1,8 @@
-package com.szadowsz.nds4j.app.nodes.ncgr;
+package com.szadowsz.nds4j.app.nodes.nitro.ncgr;
 
-import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
-import com.szadowsz.nds4j.app.nodes.util.NitroImgFolderNode;
-import com.szadowsz.nds4j.app.nodes.util.PreviewNode;
+import com.szadowsz.nds4j.app.nodes.nitro.nclr.NCLRFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.NitroImgFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.PreviewNode;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.NCGR;
 import com.szadowsz.ui.input.ActivateByType;

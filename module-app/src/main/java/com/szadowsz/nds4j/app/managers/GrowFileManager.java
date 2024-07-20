@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GrowFileManager {
-    static Logger LOGGER = LoggerFactory.getLogger(NcgrManager.class);
+    static Logger LOGGER = LoggerFactory.getLogger(GrowFileManager.class);
 
     private static GrowFileManager singleton;
 
