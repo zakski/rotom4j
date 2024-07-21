@@ -60,6 +60,43 @@ public class CellInfo {
         return name;
     }
 
+    public short getMaxX() {
+        return maxX;
+    }
+
+    public short getMaxY() {
+        return maxY;
+    }
+
+    public short getMinX() {
+        return minX;
+    }
+
+    public short getMinY() {
+        return minY;
+    }
+
+    public int getOamCount() {
+        return oams.length;
+    }
+
+    public OAM getOam(int index) {
+        return oams[index];
+    }
+
+
+    public int getPartitionOffset(){
+        return partitionOffset;
+    }
+
+    public int getPartitionSize(){
+        return partitionSize;
+    }
+
+    private int[] getObjDimensions(int shape, int size) {
+        return new int[] {widths[shape][size], heights[shape][size]};
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -77,67 +114,6 @@ public class CellInfo {
         logger.debug("Cell boundingSphereRadius: " + this.attributes.boundingSphereRadius);
     }
 
-    public short getMaxX() {
-        return maxX;
-    }
-
-    public void setMaxX(short maxX) {
-        this.maxX = maxX;
-    }
-
-    public short getMaxY() {
-        return maxY;
-    }
-
-    public void setMaxY(short maxY) {
-        this.maxY = maxY;
-    }
-
-    public short getMinX() {
-        return minX;
-    }
-
-    public void setMinX(short minX) {
-        this.minX = minX;
-    }
-
-    public short getMinY() {
-        return minY;
-    }
-
-    public void setMinY(short minY) {
-        this.minY = minY;
-    }
-
-    public OAM[] getOams() {
-        return oams;
-    }
-
-    public int getOamCount() {
-        return oams.length;
-    }
-
-    public OAM getOam(int index) {
-        return oams[index];
-    }
-
-    public void setOams(OAM[] oams) {
-        this.oams = oams;
-    }
-
-
-    public int getPartitionOffset(){
-        return partitionOffset;
-    }
-
-    public int getPartitionSize(){
-        return partitionSize;
-    }
-
-    private int[] CellGetObjDimensions(int shape, int size) {
-        return new int[] {widths[shape][size], heights[shape][size]};
-    }
-
     public void setOam(int index, int[] attrs) {
         int attr0 = attrs[0];
         int attr1 = attrs[1];
@@ -151,11 +127,11 @@ public class CellInfo {
         logger.debug("Oam @ " + index + " rotation=" + oams[index].rotation);
 
         if (oams[index].rotation) {
-            oams[index].objDisable = ((attr0 >> 9) & 1); // Bit 9 -> if rotation
-            logger.debug("Oam @ " + index + " objDisable: " + oams[index].objDisable);
-        } else {
-            oams[index].doubleSize = ((attr0 >> 9) & 1); // Bit 9 -> if !rotation
+            oams[index].doubleSize = ((attr0 >> 9) & 1); // Bit 9 -> if rotation
             logger.debug("Oam @ " + index + " doubleSize: " + oams[index].doubleSize);
+        } else {
+            oams[index].objDisable = ((attr0 >> 9) & 1); // Bit 9 -> if !rotation
+            logger.debug("Oam @ " + index + " objDisable: " + oams[index].objDisable);
         }
 
         oams[index].mode = (attr0 >> 10) & 3; // Bits 10-11 -> 0 = normal; 1 = semi-trans; 2 = window; 3 = invalid
@@ -210,10 +186,7 @@ public class CellInfo {
         oams[index].palette = (attr2 >> 12) & 0xF; // Bits 12-15
         logger.debug("Oam @ " + index + " palette: " + oams[index].palette);
 
-//            Size size = Get_OAMSize(oam.obj0.shape, oam.obj1.size);
-//            oam.width = (ushort)size.Width;
-//            oam.height = (ushort)size.Height;
-        int[] dims = CellGetObjDimensions(oams[index].shape,  oams[index].size);
+        int[] dims = getObjDimensions(oams[index].shape,  oams[index].size);
         oams[index].width = dims[0];
         oams[index].height = dims[1];
         logger.debug("Oam @ " + index + " width: " + oams[index].width);

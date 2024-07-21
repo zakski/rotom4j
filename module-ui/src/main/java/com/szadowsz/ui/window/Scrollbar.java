@@ -6,7 +6,6 @@ import com.szadowsz.ui.constants.theme.ThemeStore;
 import com.szadowsz.ui.input.UserInputSubscriber;
 import com.szadowsz.ui.input.mouse.GuiMouseEvent;
 import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PGraphics;
 
 import static com.szadowsz.ui.utils.Coordinates.isPointInRect;
@@ -72,6 +71,7 @@ public class Scrollbar implements UserInputSubscriber {
      */
     public void setVisible(boolean visible) {
         this.visible = visible;
+        this.bufferInvalid = true;
     }
 
     protected void updateBuffer(float posX, float posY, float windowSizeY, float windowHeight) {
@@ -81,7 +81,7 @@ public class Scrollbar implements UserInputSubscriber {
         if (this.factor != factor || bufferInvalid) {
             updateValues(posX, posY, width, windowSizeY, windowHeight, loose);
 
-            buffer = GlobalReferences.app.createGraphics((int) width, (int) windowSizeY, PConstants.P2D);
+            buffer = GlobalReferences.app.createGraphics((int) width, (int) windowSizeY, PApplet.JAVA2D);
             buffer.rectMode(PApplet.CORNER);
             buffer.beginDraw();
             // Draw the track
@@ -177,7 +177,7 @@ public class Scrollbar implements UserInputSubscriber {
     }
 
     public void draw(PGraphics pg, float posX, float posY, float windowSizeX, float windowSizeY, float windowHeight) {
-        if (!visible)
+        if (!visible || windowSizeY <= 0)
             return;
         pg.pushMatrix();
         updateBuffer(posX + windowSizeX, posY, windowSizeY, windowHeight);
