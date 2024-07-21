@@ -4,7 +4,7 @@ import com.szadowsz.nds4j.app.nodes.nitro.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.NitroImgFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.PreviewNode;
 import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.nitro.NCGR;
+import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.ui.input.ActivateByType;
 import com.szadowsz.ui.node.LayoutType;
 import com.szadowsz.ui.node.impl.ButtonNode;

@@ -1,6 +1,6 @@
 package com.szadowsz.nds4j.file.index;
 
-import com.szadowsz.nds4j.data.NFSFormat;
+import com.szadowsz.nds4j.file.NFSFormat;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

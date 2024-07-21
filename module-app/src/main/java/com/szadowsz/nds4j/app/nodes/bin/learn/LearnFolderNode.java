@@ -1,7 +1,7 @@
 package com.szadowsz.nds4j.app.nodes.bin.learn;
 
-import com.szadowsz.nds4j.data.ref.MovesDex;
-import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
+import com.szadowsz.nds4j.ref.MovesDex;
+import com.szadowsz.nds4j.file.bin.learnset.LearnsetNFSFile;
 import com.szadowsz.ui.node.LayoutType;
 import com.szadowsz.ui.node.impl.FolderNode;
 import org.slf4j.Logger;

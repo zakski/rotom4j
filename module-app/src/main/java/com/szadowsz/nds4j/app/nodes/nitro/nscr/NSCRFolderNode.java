@@ -3,7 +3,7 @@ package com.szadowsz.nds4j.app.nodes.nitro.nscr;
 import com.szadowsz.nds4j.app.nodes.nitro.NitroCmpFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.PreviewNode;
 import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.nitro.NSCR;
+import com.szadowsz.nds4j.file.nitro.nscr.NSCR;
 import com.szadowsz.ui.input.ActivateByType;
 import com.szadowsz.ui.node.LayoutType;
 import com.szadowsz.ui.node.impl.ButtonNode;

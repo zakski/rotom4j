@@ -1,10 +1,10 @@
 package com.szadowsz.nds4j.app.data;
 
-import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
-import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
-import com.szadowsz.nds4j.file.bin.StatsNFSFile;
-import com.szadowsz.nds4j.file.nitro.NCGR;
-import com.szadowsz.nds4j.file.nitro.NCLR;
+import com.szadowsz.nds4j.file.bin.evo.EvolutionNFSFile;
+import com.szadowsz.nds4j.file.bin.learnset.LearnsetNFSFile;
+import com.szadowsz.nds4j.file.bin.stats.StatsNFSFile;
+import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
+import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
 
 public class Pokemon {
     private StatsNFSFile stats;

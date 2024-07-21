@@ -1,7 +1,7 @@
 package com.szadowsz.nds4j.file.bin;
 
-import com.szadowsz.nds4j.data.BinFormat;
-import com.szadowsz.nds4j.data.NFSFormat;
+import com.szadowsz.nds4j.file.BinFormat;
+import com.szadowsz.nds4j.file.NFSFormat;
 
 /**
  * Class to represent an empty file that exists in the Narc

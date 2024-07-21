@@ -2,8 +2,8 @@ package com.szadowsz.nds4j.file.nitro;
 
 import com.szadowsz.nds4j.compression.CompFormat;
 import com.szadowsz.nds4j.compression.JavaDSDecmp;
-import com.szadowsz.nds4j.data.NFSFormat;
-import com.szadowsz.nds4j.data.nfs.Endianness;
+import com.szadowsz.nds4j.file.NFSFormat;
+import com.szadowsz.nds4j.file.nitro.data.Endianness;
 import com.szadowsz.nds4j.exception.InvalidDataException;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.BaseNFSFile;

@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 
 import com.szadowsz.nds4j.app.nodes.nitro.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.nitro.NCLR;
+import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
 import com.szadowsz.ui.node.impl.FolderNode;
 import com.szadowsz.ui.store.NormColorStore;
 import org.slf4j.Logger;

@@ -2,8 +2,8 @@ package com.szadowsz.nds4j.app.nodes.nitro;
 
 import com.szadowsz.nds4j.app.Processing;
 import com.szadowsz.nds4j.app.utils.FileChooser;
-import com.szadowsz.nds4j.data.ComplexImageable;
-import com.szadowsz.nds4j.file.nitro.NCGR;
+import com.szadowsz.nds4j.file.ComplexImageable;
+import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.ui.constants.GlobalReferences;
 import com.szadowsz.ui.node.LayoutType;
 import com.szadowsz.ui.node.impl.FolderNode;

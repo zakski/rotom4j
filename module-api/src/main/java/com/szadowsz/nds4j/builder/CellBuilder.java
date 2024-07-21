@@ -1,6 +1,6 @@
 //package com.szadowsz.nds4j.builder;
 //
-//import com.szadowsz.nds4j.file.nitro.NCER;
+//import com.szadowsz.nds4j.file.nitro.ncer.NCER;
 //
 //import java.awt.*;
 //import java.util.ArrayList;

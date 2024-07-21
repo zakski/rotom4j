@@ -1,7 +1,7 @@
 package com.szadowsz.nds4j.app.nodes.nitro.nclr;
 
 import com.szadowsz.ui.store.ShaderStore;
-import com.szadowsz.nds4j.file.nitro.NCLR;
+import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
 import com.szadowsz.ui.input.keys.GuiKeyEvent;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeType;

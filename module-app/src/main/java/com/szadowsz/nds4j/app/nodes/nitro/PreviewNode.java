@@ -1,7 +1,7 @@
 package com.szadowsz.nds4j.app.nodes.nitro;
 
 import com.szadowsz.nds4j.app.utils.ImageUtils;
-import com.szadowsz.nds4j.data.Imageable;
+import com.szadowsz.nds4j.file.Imageable;
 import com.szadowsz.nds4j.utils.Configuration;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeType;

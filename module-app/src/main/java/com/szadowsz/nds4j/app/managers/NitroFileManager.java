@@ -4,6 +4,11 @@ package com.szadowsz.nds4j.app.managers;
 import com.szadowsz.nds4j.app.NDSGuiImpl;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.*;
+import com.szadowsz.nds4j.file.nitro.nanr.NANR;
+import com.szadowsz.nds4j.file.nitro.ncer.NCER;
+import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
+import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
+import com.szadowsz.nds4j.file.nitro.nscr.NSCR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

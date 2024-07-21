@@ -1,6 +1,6 @@
 package com.szadowsz.nds4j;
 
-import com.szadowsz.nds4j.data.ref.RomFormat;
+import com.szadowsz.nds4j.ref.RomFormat;
 
 public class NFSConstants {
 
