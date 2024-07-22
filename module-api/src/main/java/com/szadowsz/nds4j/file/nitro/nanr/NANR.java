@@ -20,16 +20,19 @@ import java.io.File;
 public class NANR extends GenericNFSFile implements ComplexImageable {
     private static final Logger logger = LoggerFactory.getLogger(NANR.class);
 
-    // ABNK  section
+    // ABNK
+
+    // header
     private String abnkMagic;
     private long abnkSectionSize;
 
-    private int nSequences;
+    // Data
+    private int nAnimations;
     private int nTotalFrames;
-    private long sequenceArrayOffset;
-    private long frameArrayOffset;
-    private long animationOffset;
-    private byte[] padding;
+    private int animationsOffset;
+    private int framesHeaderOffset;
+    private int framesDataOffset;
+    private byte[] padding1;
 
     private AnimeSequence[] sequences;  //animation sequences
 
@@ -74,7 +77,7 @@ public class NANR extends GenericNFSFile implements ComplexImageable {
 
     @Override
     public NCLR getNCLR() {
-        return (ncgr != null)?ncgr.getNCLR():NCLR.DEFAULT;
+        return (ncgr != null) ? ncgr.getNCLR() : NCLR.DEFAULT;
     }
 
     @Override
@@ -89,55 +92,135 @@ public class NANR extends GenericNFSFile implements ComplexImageable {
 
     @Override
     public void setNCLR(NCLR nclr) throws NitroException {
-        if (ncgr != null){
+        if (ncgr != null) {
             ncgr.setNCLR(nclr);
         }
     }
 
+    private void readFrames(MemBuf.MemBufReader reader, AnimeSequence ani, int frameHeadStart, int aniNum, int frameDataStart) {
+        for (int j = 0; j < ani.nFrames; j++) {
+            FrameData frame = ani.frames[j] = new FrameData();
+
+            // Frame header
+            frame.headerPos = frameHeadStart + j * 8;
+            reader.setPosition(frame.headerPos);
+
+            frame.dataOffset = reader.readUInt32();
+            logger.info("Animation " + aniNum + " Frame " + j + " Data Offset: " + frame.dataOffset);
+
+            frame.frameDuration = reader.readUInt16();
+            logger.info("Animation " + aniNum + " Frame " + j + " Duration: " + frame.frameDuration);
+
+            frame.constant = reader.readUInt16();
+            logger.info("Animation " + aniNum + " Frame " + j + " Constant: " + frame.constant);
+
+            // Frame Data
+            reader.setPosition(frameDataStart + frame.dataOffset);
+
+            frame.cellIndex = reader.readUInt16();
+            logger.info("Animation " + aniNum + " Frame " + j + " Cell: " + frame.cellIndex);
+
+            int og = reader.getPosition();
+            int tmp = reader.readUInt16();
+            if (tmp == 52428) { // 0xCCCC
+                frame.type = 0;
+                logger.info("Animation " + aniNum + " Frame " + j + " Type: 0");
+                frame.garbage = tmp;
+            } else if (tmp == 48879) { // 0xBEEF
+                frame.type = 2;
+                logger.info("Animation " + aniNum + " Frame " + j + " Type: 2");
+                frame.xDisplace = reader.readUInt16();
+                frame.yDisplace = reader.readUInt16();
+            } else {
+                reader.setPosition(og);
+                frame.type = 1;
+                logger.info("Animation " + aniNum + " Frame " + j + " Type: 1");
+                frame.transform = reader.readBytes(10);
+                frame.xDisplace = reader.readUInt16();
+                frame.yDisplace = reader.readUInt16();
+            }
+
+            if (frame.type>0){
+                logger.info("Animation " + aniNum + " Frames " + j + " xDisplace: " + frame.xDisplace);
+                logger.info("Animation " + aniNum + " Frames " + j + " yDisplace: " + frame.yDisplace);
+            }
+        }
+    }
+
+
     @Override
     protected void readFile(MemBuf.MemBufReader reader) throws NitroException {
+//        int abnk = findBlockBySignature(reader, "ABNK");
+//        logger.info("Found ABNK section @ " + abnk);
+
         abnkMagic = reader.readString(4);
-        if (!abnkMagic.equals("ABNK")) {
+        if (!abnkMagic.equals("KNBA")) {
             throw new RuntimeException("Not a valid NANR file.");
         }
         abnkSectionSize = reader.readUInt32();
 
-        int abnk = findBlockBySignature(reader, "ABNK");
-        logger.info("Found ABNK section @ " + abnk);
+        int start = reader.getPosition();
+        logger.info("ABNK offset start @ " + start);
 
-        nSequences = reader.readUInt16();
+        nAnimations = reader.readUInt16();
+        logger.info("ABNK Animations Count: " + nAnimations);
+
         nTotalFrames = reader.readUInt16();
-        sequenceArrayOffset = reader.readUInt32();
-        frameArrayOffset = reader.readUInt32();
-        animationOffset = reader.readUInt32();
-        padding = reader.readBytes(8);
+        logger.info("ABNK Frame Count: " + nTotalFrames);
+
+        animationsOffset = reader.readInt();
+        logger.info("ABNK Animations Offset: " + animationsOffset);
+        int aniStart = start + animationsOffset;
+        logger.info("ABNK Animations Pos: " + aniStart);
+
+        framesHeaderOffset = reader.readInt();
+        logger.info("ABNK Frame Header Offset: " + framesHeaderOffset);
+        int frameHeadStart = start + framesHeaderOffset;
+        logger.info("ABNK Frame Header Pos: " + frameHeadStart);
+
+        framesDataOffset = reader.readInt();
+        logger.info("ABNK Frame Data Offset: " + framesDataOffset);
+        int frameDataStart = start + framesDataOffset;
+        logger.info("ABNK Frame Data Pos: " + frameDataStart);
+
+        padding1 = reader.readBytes(8);
         logger.info("Current Position " + reader.getPosition());
 
-        // Bank header
-        sequences = new AnimeSequence[nSequences];
-        for (int i = 0; i < nSequences; i++) {
+        // Animations
+        sequences = new AnimeSequence[nAnimations];
+        for (int i = 0; i < nAnimations; i++) {
             AnimeSequence ani = sequences[i] = new AnimeSequence();
+
             ani.nFrames = reader.readInt();
-            ani.type = reader.readUInt16();
-//            ani.unknown1 = br.ReadUInt16();
-//            ani.unknown2 = br.ReadUInt16();
-//            ani.unknown3 = br.ReadUInt16();
-//            ani.offset_frame = br.ReadUInt32();
-
-            // Frame header
             ani.frames = new FrameData[ani.nFrames];
-            for (int j = 0; j < ani.nFrames; j++) {
-                FrameData frame = ani.frames[j] = new FrameData();
+            logger.info("Animation " + i + " Frames: " + ani.nFrames);
 
-//                br.BaseStream.Position = 0x18 + nanr.abnk.offset1 + j * 0x08 + ani.offset_frame;
-//                frame.offset_data = br.ReadUInt32();
-//                frame.unknown1 = br.ReadUInt16();
-//                frame.constant = br.ReadUInt16();
-//
-//                // Frame data
-//                br.BaseStream.Position = 0x18 + nanr.abnk.offset2 + frame.offset_data;
-//                frame.data.nCell = br.ReadUInt16();
+            ani.type = reader.readUInt16();
+            logger.info("Animation " + i + " Type: " + ani.type);
+            switch (ani.type) {
+                case 0:
+                    ani.size = 4;
+                    break;
+                case 1:
+                    ani.size = 16;
+                    break;
+                case 2:
+                    ani.size = 8;
+                    break;
             }
+            ani.unknown1 = reader.readUInt16();
+            ani.unknown2 = reader.readUInt32();
+            ani.startFrameIndex = reader.readInt();
+
+            int aniPos = reader.getPosition();
+            logger.info("Animation " + i + " startFrameIndex: " + ani.startFrameIndex);
+            int framePos = start + framesHeaderOffset + ani.startFrameIndex;
+            logger.info("Animation " + i + " index: " + framePos);
+            reader.setPosition(framePos);
+
+            // Read Frames
+            readFrames(reader, ani, frameHeadStart, i, frameDataStart);
+            reader.setPosition(aniPos);
         }
     }
 

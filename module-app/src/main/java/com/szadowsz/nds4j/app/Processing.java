@@ -231,6 +231,8 @@ public class Processing extends PApplet {
     private void register2DFileButtons() {
         // Tier 1a open
         gui.pushDropdown("Open 2D File");
+        ButtonNode selectNanr = gui.button(selectNANRFile);
+        selectNanr.registerAction(ActivateByType.RELEASE, this::createNanrUI);
         ButtonNode selectNcer = gui.button(selectNCERFile);
         selectNcer.registerAction(ActivateByType.RELEASE, this::createNcerUI);
         ButtonNode selectNscr = gui.button(selectNSCRFile);
