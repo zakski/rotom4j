@@ -46,8 +46,8 @@ import java.util.Objects;
 /**
  * An object representation of a NARC file (Nitro-Archive)
  */
-public class Narc extends GenericNFSFile {
-    static Logger LOGGER = LoggerFactory.getLogger(Narc.class);
+public class NARC extends GenericNFSFile {
+    static Logger LOGGER = LoggerFactory.getLogger(NARC.class);
 
     public static final int FATB_HEADER_SIZE = 0x0C;
     public static final int FIMG_HEADER_SIZE = 8;
@@ -60,7 +60,7 @@ public class Narc extends GenericNFSFile {
      * Read NARC data, and create a filename table and a list of files.
      * @param data a <code>byte[]</code> representation of a <code>Narc</code>
      */
-    public Narc(File file, byte[] data) throws IOException {
+    public NARC(File file, byte[] data) throws IOException {
         super(NFSFormat.NARC, (file!=null)?file.getName():"",data);
         MemBuf buf = MemBuf.create(rawData);
         MemBuf.MemBufReader reader = buf.reader();
@@ -142,7 +142,7 @@ public class Narc extends GenericNFSFile {
      * @param file a <code>String</code> containing the path to a NARC file on disk
      * @return a <code>Narc</code> object
      */
-    public static Narc fromFile(String file) throws IOException {
+    public static NARC fromFile(String file) throws IOException {
         return fromFile(new File(file));
     }
 
@@ -151,8 +151,8 @@ public class Narc extends GenericNFSFile {
      * @param file a <code>File</code> object representing the path to a NARC file on disk
      * @return a <code>Narc</code> object
      */
-    public static Narc fromFile(File file) throws IOException {
-        return new Narc(file, Buffer.readFile(file.getAbsolutePath()));
+    public static NARC fromFile(File file) throws IOException {
+        return new NARC(file, Buffer.readFile(file.getAbsolutePath()));
     }
 
 //    /**
@@ -542,7 +542,7 @@ public class Narc extends GenericNFSFile {
             return false;
         }
 
-        Narc narc = (Narc) o;
+        NARC narc = (NARC) o;
 
         if (rawFiles.size() == narc.rawFiles.size())
         {

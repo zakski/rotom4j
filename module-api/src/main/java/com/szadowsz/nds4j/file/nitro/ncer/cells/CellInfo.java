@@ -19,12 +19,12 @@ public class CellInfo {
     String name;
     int tacuData;
 
-    CellAttribute attributes;
-    short maxX;
-    short maxY;
-    short minX;
-    short minY;
-    OAM[] oams;
+    public CellAttribute attributes;
+    public short maxX;
+    public short maxY;
+    public short minX;
+    public short minY;
+    public OAM[] oams;
 
     private int partitionOffset;
     private int partitionSize;

@@ -94,6 +94,26 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
     private long  uextSectionSize;
     private byte[] uextData;
 
+    /**
+     * Generates an object representation of an NCER file from a file on disk
+     *
+     * @param path a <code>String</code> containing the path to a NCER file on disk
+     * @return an <code>NCER</code> object
+     */
+    public static NCER fromFile(String path) throws NitroException {
+        return fromFile(new File(path));
+    }
+
+    /**
+     * Generates an object representation of an NCER file from a file on disk
+     *
+     * @param file a <code>File</code> containing the path to a NCER file on disk
+     * @return an <code>NCER</code> object
+     */
+    public static NCER fromFile(File file) throws NitroException {
+        return (NCER) NFSFactory.fromFile(file);
+    }
+
     public NCER(String path, String fileName, CompFormat comp, byte[] compData, byte[] data) throws NitroException {
         super(NFSFormat.NCER, path, fileName, comp, compData, data);
         MemBuf dataBuf = MemBuf.create(data);
@@ -450,6 +470,10 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
         return px;
     }
 
+    public CellInfo getCell(int index){
+        return cells[index];
+    }
+
     @Override
     public BufferedImage getImage() {
         try {
@@ -505,25 +529,5 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
         }
 
         return image;
-    }
-
-    /**
-     * Generates an object representation of an NCER file from a file on disk
-     *
-     * @param path a <code>String</code> containing the path to a NCER file on disk
-     * @return an <code>NCER</code> object
-     */
-    public static NCER fromFile(String path) throws NitroException {
-        return fromFile(new File(path));
-    }
-
-    /**
-     * Generates an object representation of an NCER file from a file on disk
-     *
-     * @param file a <code>File</code> containing the path to a NCER file on disk
-     * @return an <code>NCER</code> object
-     */
-    public static NCER fromFile(File file) throws NitroException {
-        return (NCER) NFSFactory.fromFile(file);
     }
 }

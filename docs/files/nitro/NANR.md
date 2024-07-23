@@ -10,46 +10,47 @@ Nintendo Animation Resource (NANR/RNAN)
 
 ## #1 Animation BaNK Section (ABNK)
 
-| Offset | Length | Name                            | Variable            | Description                                 |
-|--------|--------|---------------------------------|---------------------|---------------------------------------------|
-| 0x0    | 0x4    | Magic ID                        | abnkMagic           | #KNBA (0x4B4E4241)                          |
-| 0x4    | 0x4    | Section Size                    | abnkSectionSize     | Size of this section, including the header. |
-| 0x8    | 0x2    | Animations Count                | nAnimations         | Each animation is 16 bytes.                 |
-| 0xA    | 0x2    | Frame Count                     | nTotalFrames        | Each animation is 8 bytes.                  |
-| 0xC    | 0x4    | Animations Block Offset         | animationsOffset    | 0x18. Relative to start of Section + 0x8.   |
-| 0x10   | 0x4    | Frame Header Block Offset       | framesHeaderOffset  | Relative to start of Section + 0x8.         |
-| 0x14   | 0x4    | Frame Data Block Offset         | framesDataOffset    | Relative to start of Section + 0x8.         |
-|        |        |                                 |                     |                                             |
-| 0x18   | 0x8    | Padding                         | padding1            | 0x0.                                        |
-|        |        |                                 |                     |                                             |
-| DATA   |        | Animation Block                 | sequences           | x Animations Count                          |
-| 0x0    | 0x4    | Frame Count                     | ani.nFrames         |                                             |
-| 0x4    | 0x2    | Data Type                       | ani.type            | 0 = 4 bytes<br>1 = 16 bytes<br>2 = 8 bytes  |
-| 0x6    | 0x2    | UNKNOWN                         | ani.unknown1        |                                             |
-| 0x8    | 0x4    | UNKNOWN                         | ani.unknown2        |                                             |
-| 0xC    | 0x4    | First Frame Header Offset       | ani.startFrameIndex | Relative to start of Header Block.          |
-|        |        |                                 |                     |                                             |
-|        | 0x1    | Padding                         |                     | 0x0.                                        |
-|        |        |                                 |                     |                                             |
-| DATA   |        | Frame Header Block              |                     | x Frame Count                               |
-| 0x0    | 0x4    | Frame Data Offset               | frame.dataOffset    | Relative to start of Frame Data Block.      |
-| 0x4    | 0x2    | Frame Duration                  | frame.frameDuration | ~= (1/60)s?                                 |
-| 0x6    | 0x2    | UNKNOWN Constant                | frame.constant      | Always (0xBEEF)                             |
-|        |        |                                 |                     |                                             |
-|        | 0x1    | Padding                         |                     | 0x0.                                        |
-|        |        |                                 |                     |                                             |
-| DATA   |        | Frame Data Block                |                     | x Frame Count                               |
-| 0x0    | 0x2    | Cell Index                      | frame.cellIndex     |                                             |
-|        |        | Type 0 - Normal                 | frame.type          |                                             |
-| 0x2    | 0x2    | Garbage                         | frame.garbage       | Last frame will be 0xCCCC                   |
-|        |        | Type 1 - Transform/Displacement | frame.type          |                                             |
-| 0x2    | 0xA    | Transform                       | frame.transform     |                                             |
-| 0xC    | 0x2    | X Displacement                  | frame.xDisplace     |                                             |
-| 0xE    | 0x2    | X Displacement                  | frame.yDisplace     |                                             |
-|        |        | Type 2 - Displacement           | frame.type          |                                             |
-| 0x2    | 0x2    | Constant                        |                     | 0xBEEF                                      |
-| 0x4    | 0x2    | X Displacement                  | frame.xDisplace     |                                             |
-| 0x6    | 0x2    | X Displacement                  | frame.yDisplace     |                                             |
+| Offset | Length | Name                            | Variable             | Description                                 |
+|--------|--------|---------------------------------|----------------------|---------------------------------------------|
+| 0x0    | 0x4    | Magic ID                        | abnkMagic            | #KNBA (0x4B4E4241)                          |
+| 0x4    | 0x4    | Section Size                    | abnkSectionSize      | Size of this section, including the header. |
+| 0x8    | 0x2    | Animations Count                | nAnimations          | Each animation is 16 bytes.                 |
+| 0xA    | 0x2    | Frame Count                     | nTotalFrames         | Each animation is 8 bytes.                  |
+| 0xC    | 0x4    | Animations Block Offset         | animationsOffset     | 0x18. Relative to start of Section + 0x8.   |
+| 0x10   | 0x4    | Frame Header Block Offset       | framesHeaderOffset   | Relative to start of Section + 0x8.         |
+| 0x14   | 0x4    | Frame Data Block Offset         | framesDataOffset     | Relative to start of Section + 0x8.         |
+|        |        |                                 |                      |                                             |
+| 0x18   | 0x8    | Padding                         | padding1             | 0x0.                                        |
+|        |        |                                 |                      |                                             |
+| DATA   |        | Animation Block                 | sequences            | x Animations Count                          |
+| 0x0    | 0x2    | Frame Count                     | ani.nFrames          |                                             |
+| 0x2    | 0x2    | Start Frame Loop                | ani.loopStartFrame   | Relative to start of Header Block.          |
+| 0x4    | 0x2    | Animation Element               | ani.animationElement |                                             |
+| 0x6    | 0x2    | Animation Type                  | ani.animationType    |                                             |
+| 0x8    | 0x4    | Playback Mode                   | ani.playbackMode     |                                             |
+| 0xC    | 0x4    | First Frame Header Offset       | ani.startFrameOffset |                                             |
+|        |        |                                 |                      |                                             |
+|        | 0x1    | Padding                         |                      | 0x0.                                        |
+|        |        |                                 |                      |                                             |
+| DATA   |        | Frame Header Block              |                      | x Frame Count                               |
+| 0x0    | 0x4    | Frame Data Offset               | frame.dataOffset     | Relative to start of Frame Data Block.      |
+| 0x4    | 0x2    | Frame Duration                  | frame.frameDuration  | ~= (1/60)s?                                 |
+| 0x6    | 0x2    | UNKNOWN Constant                | frame.constant       | Always (0xBEEF)                             |
+|        |        |                                 |                      |                                             |
+|        | 0x1    | Padding                         |                      | 0x0.                                        |
+|        |        |                                 |                      |                                             |
+| DATA   |        | Frame Data Block                |                      | x Frame Count                               |
+| 0x0    | 0x2    | Cell Index                      | frame.cellIndex      |                                             |
+|        |        | Type 0 - Normal                 | frame.type           |                                             |
+| 0x2    | 0x2    | Garbage                         | frame.garbage        | Last frame will be 0xCCCC                   |
+|        |        | Type 1 - Transform/Displacement | frame.type           |                                             |
+| 0x2    | 0xA    | Transform                       | frame.transform      |                                             |
+| 0xC    | 0x2    | X Displacement                  | frame.xDisplace      |                                             |
+| 0xE    | 0x2    | Y Displacement                  | frame.yDisplace      |                                             |
+|        |        | Type 2 - Displacement           | frame.type           |                                             |
+| 0x2    | 0x2    | Constant                        |                      | 0xBEEF                                      |
+| 0x4    | 0x2    | X Displacement                  | frame.xDisplace      |                                             |
+| 0x6    | 0x2    | Y Displacement                  | frame.yDisplace      |                                             |
 
 ## Transform Details
 The transform is usually of this format: {B, A, C, D, E}, with: E = 0

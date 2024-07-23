@@ -8,6 +8,7 @@ import com.szadowsz.nds4j.file.nitro.nanr.anime.AnimeSequence;
 import com.szadowsz.nds4j.file.nitro.nanr.anime.FrameData;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.GenericNFSFile;
+import com.szadowsz.nds4j.file.nitro.ncer.NCER;
 import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
 import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.nds4j.reader.MemBuf;
@@ -36,7 +37,27 @@ public class NANR extends GenericNFSFile implements ComplexImageable {
 
     private AnimeSequence[] sequences;  //animation sequences
 
-    private NCGR ncgr;
+    private NCER ncer;
+
+    /**
+     * Generates an object representation of an NANR file from a file on disk
+     *
+     * @param path a <code>String</code> containing the path to a NANR file on disk
+     * @return an <code>NANR</code> object
+     */
+    public static NANR fromFile(String path) throws NitroException {
+        return fromFile(new File(path));
+    }
+
+    /**
+     * Generates an object representation of an NANR file from a file on disk
+     *
+     * @param file a <code>File</code> containing the path to a NANR file on disk
+     * @return an <code>NANR</code> object
+     */
+    public static NANR fromFile(File file) throws NitroException {
+        return (NANR) NFSFactory.fromFile(file);
+    }
 
     public NANR(String path, String fileName, CompFormat comp, byte[] compData, byte[] data) throws NitroException {
         super(NFSFormat.NANR, path, fileName, comp, compData, data);
@@ -47,13 +68,12 @@ public class NANR extends GenericNFSFile implements ComplexImageable {
 
         readGenericNtrHeader(reader);
 
-        File[] ncgrs = new File(path).getParentFile().listFiles(f -> (f.getName().endsWith(".NCGR") ||
-                f.getName().endsWith(".NCBR")) &&
+        File[] ncers = new File(path).getParentFile().listFiles(f -> f.getName().endsWith(".NCER")  &&
                 f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.fileName));
-        if (ncgrs != null && ncgrs.length > 0) {
-            logger.debug("Found corresponding NCGR file, " + ncgrs[0]);
-            this.ncgr = NCGR.fromFile(ncgrs[0]);
-            logger.debug("Read NCGR file\n");
+        if (ncers != null && ncers.length > 0) {
+            logger.debug("Found corresponding NCER file, " + ncers[0]);
+            this.ncer = NCER.fromFile(ncers[0]);
+            logger.debug("Read NCER file\n");
         }
 
         // reader position is now 0x10
@@ -72,12 +92,12 @@ public class NANR extends GenericNFSFile implements ComplexImageable {
 
     @Override
     public NCGR getNCGR() {
-        return ncgr;
+        return (ncer != null) ? ncer.getNCGR() : null;
     }
 
     @Override
     public NCLR getNCLR() {
-        return (ncgr != null) ? ncgr.getNCLR() : NCLR.DEFAULT;
+        return (ncer != null) ? ncer.getNCLR() : NCLR.DEFAULT;
     }
 
     @Override
@@ -87,13 +107,15 @@ public class NANR extends GenericNFSFile implements ComplexImageable {
 
     @Override
     public void setNCGR(NCGR ncgr) {
-        this.ncgr = ncgr;
+        if (ncer != null) {
+            this.ncer.setNCGR(ncgr);
+        }
     }
 
     @Override
     public void setNCLR(NCLR nclr) throws NitroException {
-        if (ncgr != null) {
-            ncgr.setNCLR(nclr);
+        if (ncer != null) {
+            ncer.setNCLR(nclr);
         }
     }
 
@@ -147,12 +169,138 @@ public class NANR extends GenericNFSFile implements ComplexImageable {
         }
     }
 
-
+// void ReadNtrAnimation(char *path, struct JsonToAnimationOptions *options)
+//{
+//    for (int i = 0; i < options->sequenceCount; i++)
+//    {
+//        for (int j = 0; j < options->sequenceData[i]->frameCount; j++)
+//        {
+//            int frameOffset = offset + frameOffsets[i] + j * 0x8;
+//            options->sequenceData[i]->frameData[j]->resultOffset = data[frameOffset] | (data[frameOffset + 1] << 8) | (data[frameOffset + 2] << 16) | (data[frameOffset + 3] << 24);
+//            options->sequenceData[i]->frameData[j]->frameDelay = data[frameOffset + 4] | (data[frameOffset + 5] << 8);
+//            //0xBEEF
+//
+//            //the following is messy
+//            bool present = false;
+//            //check for offset in array
+//            for (int k = 0; k < options->frameCount; k++)
+//            {
+//                if (resultOffsets[k] == options->sequenceData[i]->frameData[j]->resultOffset)
+//                {
+//                    present = true;
+//                    break;
+//                }
+//            }
+//
+//            //add data if not present
+//            if (!present)
+//            {
+//                for (int k = 0; i < options->frameCount; k++)
+//                {
+//                    if (resultOffsets[k] == -1)
+//                    {
+//                        resultOffsets[k] = options->sequenceData[i]->frameData[j]->resultOffset;
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//    free(frameOffsets);
+//
+//    offset = 0x18 + (data[0x24] | (data[0x25] << 8) | (data[0x26] << 16) | (data[0x27] << 24)); //start of animation results
+//
+//    int k;
+//
+//    for (k = 0; k < options->frameCount; k++)
+//    {
+//        if (resultOffsets[k] == -1)
+//            break;
+//    }
+//    options->resultCount = k;
+//
+//    free(resultOffsets);
+//
+//    options->animationResults = malloc(sizeof(struct AnimationResults *) * options->resultCount);
+//
+//    for (int i = 0; i < options->resultCount; i++)
+//    {
+//        options->animationResults[i] = malloc(sizeof(struct AnimationResults));
+//    }
+//
+//    int resultOffset = 0;
+//    for (int i = 0; i < options->resultCount; i++)
+//    {
+//        if (data[offset + 2] == 0xCC && data[offset + 3] == 0xCC)
+//        {
+//            options->animationResults[i]->resultType = 0;
+//        }
+//        else if (data[offset + 2] == 0xEF && data[offset + 3] == 0xBE)
+//        {
+//            options->animationResults[i]->resultType = 2;
+//        }
+//        else
+//        {
+//            options->animationResults[i]->resultType = 1;
+//        }
+//        for (int j = 0; j < options->sequenceCount; j++)
+//        {
+//            for (int k = 0; k < options->sequenceData[j]->frameCount; k++)
+//            {
+//                if (options->sequenceData[j]->frameData[k]->resultOffset == resultOffset)
+//                {
+//                    options->sequenceData[j]->frameData[k]->resultId = i;
+//                }
+//            }
+//        }
+//        switch (options->animationResults[i]->resultType)
+//        {
+//            case 0: //index
+//                options->animationResults[i]->index = data[offset] | (data[offset + 1] << 8);
+//                resultOffset += 0x4;
+//                offset += 0x4;
+//                break;
+//
+//            case 1: //SRT
+//                options->animationResults[i]->dataSrt.index = data[offset] | (data[offset + 1] << 8);
+//                options->animationResults[i]->dataSrt.rotation = data[offset + 2] | (data[offset + 3] << 8);
+//                options->animationResults[i]->dataSrt.scaleX = data[offset + 4] | (data[offset + 5] << 8) | (data[offset + 6] << 16) | (data[offset + 7] << 24);
+//                options->animationResults[i]->dataSrt.scaleY = data[offset + 8] | (data[offset + 9] << 8) | (data[offset + 10] << 16) | (data[offset + 11] << 24);
+//                options->animationResults[i]->dataSrt.positionX = data[offset + 12] | (data[offset + 13] << 8);
+//                options->animationResults[i]->dataSrt.positionY = data[offset + 14] | (data[offset + 15] << 8);
+//                resultOffset += 0x10;
+//                offset += 0x10;
+//                break;
+//
+//            case 2: //T
+//                options->animationResults[i]->dataT.index = data[offset] | (data[offset + 1] << 8);
+//                options->animationResults[i]->dataT.positionX = data[offset + 4] | (data[offset + 5] << 8);
+//                options->animationResults[i]->dataT.positionY = data[offset + 6] | (data[offset + 7] << 8);
+//                resultOffset += 0x8;
+//                offset += 0x8;
+//                break;
+//        }
+//    }
+//
+//    if (options->labelEnabled)
+//    {
+//        options->labelCount = options->sequenceCount; //*should* be the same
+//        options->labels = malloc(sizeof(char *) * options->labelCount);
+//        offset += 0x8 + options->labelCount * 0x4; //skip to label data
+//        for (int i = 0; i < options->labelCount; i++)
+//        {
+//            options->labels[i] = malloc(strlen((char *)data + offset) + 1);
+//            strcpy(options->labels[i], (char *)data + offset);
+//            offset += strlen((char *)data + offset) + 1;
+//        }
+//    }
+//
+//    free(data);
+//}
+//
     @Override
     protected void readFile(MemBuf.MemBufReader reader) throws NitroException {
-//        int abnk = findBlockBySignature(reader, "ABNK");
-//        logger.info("Found ABNK section @ " + abnk);
-
         abnkMagic = reader.readString(4);
         if (!abnkMagic.equals("KNBA")) {
             throw new RuntimeException("Not a valid NANR file.");
@@ -163,9 +311,11 @@ public class NANR extends GenericNFSFile implements ComplexImageable {
         logger.info("ABNK offset start @ " + start);
 
         nAnimations = reader.readUInt16();
+        // options->sequenceCount = data[0x18] | (data[0x19] << 8);
         logger.info("ABNK Animations Count: " + nAnimations);
 
         nTotalFrames = reader.readUInt16();
+        //    options->frameCount = data[0x1A] | (data[0x1B] << 8);
         logger.info("ABNK Frame Count: " + nTotalFrames);
 
         animationsOffset = reader.readInt();
@@ -191,56 +341,40 @@ public class NANR extends GenericNFSFile implements ComplexImageable {
         for (int i = 0; i < nAnimations; i++) {
             AnimeSequence ani = sequences[i] = new AnimeSequence();
 
-            ani.nFrames = reader.readInt();
+            // options->sequenceData[i]->frameCount = data[offset] | (data[offset + 1] << 8);
+            ani.nFrames = reader.readUInt16(); // 0x0 (0-2) sequenceArray[i].nFrames = byteBuffer.getShort(sequenceArrayOffset + i * 12);
             ani.frames = new FrameData[ani.nFrames];
             logger.info("Animation " + i + " Frames: " + ani.nFrames);
 
-            ani.type = reader.readUInt16();
-            logger.info("Animation " + i + " Type: " + ani.type);
-            switch (ani.type) {
-                case 0:
-                    ani.size = 4;
-                    break;
-                case 1:
-                    ani.size = 16;
-                    break;
-                case 2:
-                    ani.size = 8;
-                    break;
-            }
-            ani.unknown1 = reader.readUInt16();
-            ani.unknown2 = reader.readUInt32();
-            ani.startFrameIndex = reader.readInt();
+            // options->sequenceData[i]->loopStartFrame = data[offset + 2] | (data[offset + 3] << 8);
+            ani.loopStartFrame = reader.readUInt16(); // 0x4 (0-2) sequenceArray[i].startFrameIndex = byteBuffer.getShort(sequenceArrayOffset + i * 12 + 2);
+
+            // options->sequenceData[i]->animationElement = data[offset + 4] | (data[offset + 5] << 8);
+            ani.animationElement = reader.readUInt16(); // 0x4 (0-2) sequenceArray[i].startFrameIndex = byteBuffer.getShort(sequenceArrayOffset + i * 12 + 2);
+            logger.info("Animation " + i + " Element: " + ani.animationElement);
+
+            // options->sequenceData[i]->animationType = data[offset + 6] | (data[offset + 7] << 8);
+            ani.animationType = reader.readUInt16(); // 0x6 (0-2) sequenceArray[i].type = byteBuffer.getInt(sequenceArrayOffset + i * 12 + 4);
+            logger.info("Animation " + i + " Type: " + ani.animationType);
+
+            // options->sequenceData[i]->playbackMode = data[offset + 8] | (data[offset + 9] << 8) | (data[offset + 10] << 16) | (data[offset + 11] << 24);
+            ani.playbackMode = reader.readUInt32(); // 0x8 (0-4) sequenceArray[i].mode = byteBuffer.getInt(sequenceArrayOffset + i * 12 + 8);
+            logger.info("Animation " + i + " Playback Mode: " + ani.playbackMode);
+
+            // frameOffsets[i] = data[offset + 12] | (data[offset + 13] << 8) | (data[offset + 14] << 16) | (data[offset + 15] << 24);
+            ani.startFrameOffset = reader.readInt();  // 0xC (0-4)
+            logger.info("Animation " + i + " startFrameOffset: " + ani.startFrameOffset);
+            int framePos = start + framesHeaderOffset + ani.startFrameOffset;
+            logger.info("Animation " + i + " Start Frame Index: " + framePos);
 
             int aniPos = reader.getPosition();
-            logger.info("Animation " + i + " startFrameIndex: " + ani.startFrameIndex);
-            int framePos = start + framesHeaderOffset + ani.startFrameIndex;
-            logger.info("Animation " + i + " index: " + framePos);
+            logger.info("Animation " + i + " Current Pos: " + aniPos);
             reader.setPosition(framePos);
+            logger.info("Animation " + i + " Frame 0 Pos: " + reader.getPosition());
 
             // Read Frames
             readFrames(reader, ani, frameHeadStart, i, frameDataStart);
             reader.setPosition(aniPos);
         }
-    }
-
-    /**
-     * Generates an object representation of an NANR file from a file on disk
-     *
-     * @param path a <code>String</code> containing the path to a NANR file on disk
-     * @return an <code>NANR</code> object
-     */
-    public static NANR fromFile(String path) throws NitroException {
-        return fromFile(new File(path));
-    }
-
-    /**
-     * Generates an object representation of an NANR file from a file on disk
-     *
-     * @param file a <code>File</code> containing the path to a NANR file on disk
-     * @return an <code>NANR</code> object
-     */
-    public static NANR fromFile(File file) throws NitroException {
-        return (NANR) NFSFactory.fromFile(file);
     }
 }

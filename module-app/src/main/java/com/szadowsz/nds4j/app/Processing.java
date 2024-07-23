@@ -9,7 +9,7 @@ import com.szadowsz.nds4j.file.bin.stats.GrowNFSFile;
 import com.szadowsz.nds4j.file.bin.learnset.LearnsetNFSFile;
 import com.szadowsz.nds4j.file.bin.stats.StatsNFSFile;
 import com.szadowsz.nds4j.file.nitro.nanr.NANR;
-import com.szadowsz.nds4j.file.nitro.narc.Narc;
+import com.szadowsz.nds4j.file.nitro.narc.NARC;
 import com.szadowsz.nds4j.file.nitro.ncer.NCER;
 import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
@@ -81,7 +81,7 @@ public class Processing extends PApplet {
             prefs.put("openNarcPath", new File(narcPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.info("Loading Narc File: " + narcPath);
-                NarcManager.getInstance().registerNarc(gui, Narc.fromFile(narcPath));
+                NarcManager.getInstance().registerNarc(gui, NARC.fromFile(narcPath));
                 LOGGER.info("Loaded Narc File: " + narcPath);
             } catch (IOException e) {
                 LOGGER.error("Narc Load Failed",e);

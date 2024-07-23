@@ -1,16 +1,18 @@
 package com.szadowsz.nds4j.file.nitro.nanr.anime;
 
 public class AnimeSequence {
-    public int nFrames;
 
-    public int type;
-    public int size;
-
-    public int unknown1;
-    public long unknown2;
-
-    public int startFrameIndex;
-
+    public int nFrames; // u16
     public FrameData[] frames;
+
+    public int loopStartFrame; // u16
+
+    public int animationElement; // u16
+
+    public int animationType; // u16
+
+    public long playbackMode; // u32
+
+    public int startFrameOffset; // u32
 }
 
