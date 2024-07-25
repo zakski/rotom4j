@@ -2,7 +2,7 @@ package com.szadowsz.nds4j.file.nitro.nscr;
 
 import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
-import com.szadowsz.nds4j.file.ComplexImageable;
+import com.szadowsz.nds4j.file.ImageableWithGraphic;
 import com.szadowsz.nds4j.file.NFSFormat;
 import com.szadowsz.nds4j.file.nitro.nscr.tiles.NTFS;
 import com.szadowsz.nds4j.exception.InvalidFileException;
@@ -21,7 +21,7 @@ import java.util.Arrays;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
-public class NSCR extends GenericNFSFile implements ComplexImageable {
+public class NSCR extends GenericNFSFile implements ImageableWithGraphic {
 
     // Block Header section
     private String id;                   // NRCS = 0x4E524353

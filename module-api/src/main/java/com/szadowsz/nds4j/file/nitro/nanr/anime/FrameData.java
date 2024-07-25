@@ -15,7 +15,9 @@ public class FrameData {
 
    public int garbage;
 
-   public byte[] transform;
+   public int rotation;
+   public int scaleX;
+   public int scaleY;
 
    public int xDisplace;
    public int yDisplace;

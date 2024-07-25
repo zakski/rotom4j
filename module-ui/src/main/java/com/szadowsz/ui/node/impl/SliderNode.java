@@ -88,6 +88,14 @@ public class SliderNode extends AbstractNode {
         JsonSaveStore.overwriteWithLoadedStateIfAny(this);
     }
 
+    public SliderNode(String path, FolderNode parentFolder, float defaultValue, float min, float max, float precision, boolean constrained) {
+        this(path, parentFolder,defaultValue,min,max,constrained);
+        int index = precisionRange.indexOf(precision);
+        if (index>=0){
+            currentPrecisionIndex = index;
+        }
+    }
+
     public void initSliderBackgroundShader() {
         ShaderStore.getorLoadShader(shaderPath);
     }

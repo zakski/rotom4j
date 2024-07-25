@@ -6,10 +6,12 @@ import com.szadowsz.nds4j.utils.Configuration;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeType;
 import com.szadowsz.ui.node.impl.FolderNode;
+import com.szadowsz.ui.store.FontStore;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
+import static processing.core.PApplet.ceil;
 
 public class PreviewNode extends AbstractNode {
 
@@ -134,9 +136,23 @@ public class PreviewNode extends AbstractNode {
 
     @Override
     public float getRequiredWidthForHorizontalLayout() {
-        return 0;
+        if (image != null) {
+            return image.width;
+        } else {
+            return 0;
+        }
     }
 
+    /**
+     * Method to calculate the width of the value
+     *
+     * @return width rounded up to whole cells
+     */
+    @Override
+    public float findValueTextWidthRoundedUpToWholeCells() {
+       float leftTextWidth = getRequiredWidthForHorizontalLayout();
+        return ceil(leftTextWidth / cell) * cell;
+    }
 
     public void loadImage(PImage pImage) {
         this.image = pImage;

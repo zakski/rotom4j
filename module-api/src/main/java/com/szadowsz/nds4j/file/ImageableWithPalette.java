@@ -3,13 +3,9 @@ package com.szadowsz.nds4j.file;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
 
-import java.awt.image.BufferedImage;
+public interface ImageableWithPalette extends Imageable {
 
-public interface Imageable {
+    NCLR getNCLR();
 
-    int getWidth();
-
-    int getHeight();
-
-    BufferedImage getImage();
+    void setNCLR(NCLR nclr) throws NitroException;
 }

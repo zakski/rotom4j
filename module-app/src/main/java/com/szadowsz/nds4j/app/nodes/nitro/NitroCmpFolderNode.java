@@ -2,7 +2,7 @@ package com.szadowsz.nds4j.app.nodes.nitro;
 
 import com.szadowsz.nds4j.app.Processing;
 import com.szadowsz.nds4j.app.utils.FileChooser;
-import com.szadowsz.nds4j.file.ComplexImageable;
+import com.szadowsz.nds4j.file.ImageableWithGraphic;
 import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.ui.constants.GlobalReferences;
 import com.szadowsz.ui.node.LayoutType;
@@ -16,9 +16,9 @@ import java.io.IOException;
 public abstract class NitroCmpFolderNode extends NitroImgFolderNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(NitroCmpFolderNode.class);
 
-    protected ComplexImageable complex;
+    protected ImageableWithGraphic complex;
 
-    public NitroCmpFolderNode(String path, FolderNode parent, LayoutType layout, ComplexImageable imageable) {
+    public NitroCmpFolderNode(String path, FolderNode parent, LayoutType layout, ImageableWithGraphic imageable) {
         super(path, parent, layout, imageable);
         this.complex = imageable;
     }

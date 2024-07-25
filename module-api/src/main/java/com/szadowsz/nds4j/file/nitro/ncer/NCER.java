@@ -21,7 +21,7 @@ package com.szadowsz.nds4j.file.nitro.ncer;
 
 import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
-import com.szadowsz.nds4j.file.ComplexImageable;
+import com.szadowsz.nds4j.file.ImageableWithGraphic;
 import com.szadowsz.nds4j.file.NFSFormat;
 import com.szadowsz.nds4j.file.nitro.ncer.cells.CellInfo;
 import com.szadowsz.nds4j.file.nitro.ncer.cells.CellPojo;
@@ -42,7 +42,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * An object representation of an NCER file
  */
-public class NCER extends GenericNFSFile implements ComplexImageable {
+public class NCER extends GenericNFSFile implements ImageableWithGraphic {
     private static final Logger logger = LoggerFactory.getLogger(NCER.class);
 
     public static final int GX_OBJVRAMMODE_CHAR_2D = 0x000000;
@@ -286,11 +286,21 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
 
     @Override
     public int getWidth() {
-        return BACKGROUND_WIDTH;
+        if (Configuration.isBackground()){
+            return BACKGROUND_WIDTH;
+        } else {
+            CellInfo.OAM info = getCell(0).getOam(0);
+            return info.getWidth();
+        }
     }
 
     public int getHeight(){
-        return BACKGROUND_HEIGHT;
+        if (Configuration.isBackground()){
+            return BACKGROUND_HEIGHT;
+        } else {
+            CellInfo.OAM info = getCell(0).getOam(0);
+            return info.getHeight();
+        }
     }
 
     public NCGR getNCGR() {
@@ -445,7 +455,7 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
     }
 
     // CellRenderCell
-    protected Color[] renderCell(CellInfo cell, int mapping, int xOffs, int yOffs, boolean outline, float a, float b, float c, float d) throws NitroException {
+    public Color[] renderCell(CellInfo cell, int mapping, int xOffs, int yOffs, boolean outline, float a, float b, float c, float d) throws NitroException {
         Color[] px = new Color[256 * 512];
         Color[] block = new Color[64 * 64];
         for (int i = cell.getOamCount() - 1; i >= 0; i--) {
@@ -472,6 +482,10 @@ public class NCER extends GenericNFSFile implements ComplexImageable {
 
     public CellInfo getCell(int index){
         return cells[index];
+    }
+
+    public int getMappingMode() {
+        return cebkMappingMode;
     }
 
     @Override

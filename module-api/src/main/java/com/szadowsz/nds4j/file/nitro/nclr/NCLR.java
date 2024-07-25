@@ -2,6 +2,7 @@ package com.szadowsz.nds4j.file.nitro.nclr;
 
 import com.szadowsz.nds4j.NFSFactory;
 import com.szadowsz.nds4j.compression.CompFormat;
+import com.szadowsz.nds4j.file.Imageable;
 import com.szadowsz.nds4j.file.NFSFormat;
 import com.szadowsz.nds4j.file.nitro.nclr.colors.ColorFormat;
 import com.szadowsz.nds4j.exception.InvalidFileException;
@@ -12,8 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import static com.szadowsz.nds4j.utils.ColorUtils.bgr555ToColor;
 import static com.szadowsz.nds4j.utils.ColorUtils.colorToBGR555;
@@ -21,7 +24,7 @@ import static com.szadowsz.nds4j.utils.ColorUtils.colorToBGR555;
 /**
  * An object representation of an NCLR file
  */
-public class NCLR extends GenericNFSFile {
+public class NCLR extends GenericNFSFile implements Imageable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NCLR.class);
 
@@ -214,49 +217,6 @@ public class NCLR extends GenericNFSFile {
         super(NFSFormat.NCLR, null, generateData((numColors>16)?16:1,numColors));
     }
 
-    /**
-     * Get a Color
-     *
-     * @param index color number
-     * @return color
-     */
-    public Color getColor(int index) {
-        if (index >= numColors) {
-            return new Color(0);
-        }
-        return colors[index];
-    }
-
-    /**
-     * Get a Color Palette
-     *
-     * @param index palette number
-     * @return the array of colors representing the palette
-     */
-    public Color[] getColorPalette(int index) {
-       return paletteColours[index];
-    }
-
-    /**
-     * Get Number of Colors stored in the NCLR
-     *
-     * @return color count
-     */
-    public int getNumColors() {
-        return numColors;
-    }
-
-    /**
-     * Set Color
-     *
-     * @param index color number
-     * @param color int representation of color
-     */
-    public void setColor(int index, int color) {
-        colors[index] = new Color(color);
-        paletteColours[index/numColorsPerPalette][index%numColorsPerPalette] = colors[index];
-    }
-
     @Override
     protected void readFile(MemBuf.MemBufReader reader) throws InvalidFileException {
         // reader position is now 0x10
@@ -336,5 +296,134 @@ public class NCLR extends GenericNFSFile {
         if (colors[colors.length - 1].equals(IR_COLOR)) {//honestly no clue why this is a thing
             this.ir = true;
         }
+    }
+
+    /**
+     * Get a Color
+     *
+     * @param index color number
+     * @return color
+     */
+    public Color getColor(int index) {
+        if (index >= numColors) {
+            return new Color(0);
+        }
+        return colors[index];
+    }
+
+    /**
+     * Get a Color Palette
+     *
+     * @param index palette number
+     * @return the array of colors representing the palette
+     */
+    public Color[] getColorPalette(int index) {
+        if (index < paletteColours.length) {
+            return paletteColours[index];
+        } else {
+            Color[] res = new Color[numColorsPerPalette];
+            Arrays.fill(res,new Color(0));
+            return res;
+        }
+    }
+
+    /**
+     * Get a Color from a Palette
+     *
+     * @param palIndex palette number
+     * @param colIndex colour number
+     * @return the color from the palette
+     */
+    public Color getColorInPalette(int palIndex, int colIndex) {
+        if (palIndex < paletteColours.length){
+            if (colIndex < numColorsPerPalette) {
+                return paletteColours[palIndex][colIndex];
+            }
+        }
+        return new Color(0);
+    }
+
+    @Override
+    public int getWidth() {
+        return 16*16;
+    }
+
+    @Override
+    public int getHeight() {
+        return (numColorsPerPalette/16)*16;
+    }
+
+    @Override
+    public BufferedImage getImage() {
+        return getImage(0);
+    }
+
+    public BufferedImage getImage(int paletteNum){
+        Color[] palette = paletteColours[paletteNum];
+
+        int heightInCol = palette.length/ 16;
+        heightInCol = Math.max(1,heightInCol);
+
+        BufferedImage image = new BufferedImage(16*16,heightInCol*16, BufferedImage.TYPE_INT_ARGB);
+
+        for(int i = 0; i < numColorsPerPalette; i++) {
+            Color c = palette[i];
+            int [] rgbArray = new int[16*16];
+            Arrays.fill(rgbArray,c.getRGB());
+
+            // |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|
+            // |16|
+            // xpos = 0, ypos = 1
+            // xpos = 0, ypos = 16
+
+            // |00|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|
+            // |16|17|
+            // xpos = 1, ypos = 1
+            // xpos = 16, ypos = 16
+
+            int xpos = (i % 16)*16;
+            int ypos = (i / 16) * 16;
+
+            image.setRGB(xpos,ypos,16,16,rgbArray,0,16);
+        }
+        return image;
+    }
+
+    /**
+     * Get Number of Colors stored in the NCLR
+     *
+     * @return color count
+     */
+    public int getNumColors() {
+        return numColors;
+    }
+
+    /**
+     * Get Number of Palettes stored in the NCLR
+     *
+     * @return palette count
+     */
+    public int getPaletteCount() {
+        return paletteColours.length;
+    }
+
+    /**
+     * Get Number of Colors in Palettes stored in the NCLR
+     *
+     * @return color count
+     */
+    public int getNumColorsPerPalette() {
+        return numColorsPerPalette;
+    }
+
+    /**
+     * Set Color
+     *
+     * @param index color number
+     * @param color int representation of color
+     */
+    public void setColor(int index, int color) {
+        colors[index] = new Color(color);
+        paletteColours[index/numColorsPerPalette][index%numColorsPerPalette] = colors[index];
     }
 }

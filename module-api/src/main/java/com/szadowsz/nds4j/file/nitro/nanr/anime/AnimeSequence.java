@@ -11,7 +11,7 @@ public class AnimeSequence {
 
     public int animationType; // u16
 
-    public long playbackMode; // u32
+    public int playbackMode; // u32
 
     public int startFrameOffset; // u32
 }

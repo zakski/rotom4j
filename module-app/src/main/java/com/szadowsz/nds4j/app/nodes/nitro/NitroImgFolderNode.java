@@ -5,6 +5,7 @@ import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.file.Imageable;
 import com.szadowsz.nds4j.exception.NitroException;
+import com.szadowsz.nds4j.file.ImageableWithPalette;
 import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
 import com.szadowsz.ui.constants.GlobalReferences;
 import com.szadowsz.ui.node.LayoutType;
@@ -29,16 +30,16 @@ public abstract class NitroImgFolderNode extends FolderNode {
     protected static final String SELECT_NCGR_FILE = "Select NCGR";
     protected static final String SELECT_NCLR_FILE = "Select NClR";
 
-    protected Imageable imageable;
+    protected ImageableWithPalette imageable;
 
 
-    public NitroImgFolderNode(String path, FolderNode parent, LayoutType layout, Imageable imageable) {
+    public NitroImgFolderNode(String path, FolderNode parent, LayoutType layout, ImageableWithPalette imageable) {
         super(path, parent, layout);
         this.imageable = imageable;
     }
 
     protected SliderNode createZoom(){
-        SliderNode zoom = new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, true){
+        SliderNode zoom = new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, 0.1f,true){
             @Override
             protected void onValueFloatChanged() {
                 super.onValueFloatChanged();
@@ -50,7 +51,6 @@ public abstract class NitroImgFolderNode extends FolderNode {
             }
 
         };
-        zoom.increasePrecision();
         return zoom;
     }
 
