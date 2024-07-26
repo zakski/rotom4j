@@ -22,36 +22,13 @@ import java.io.IOException;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
 
-public abstract class NitroImgFolderNode extends FolderNode {
-
+public abstract class NitroImgFolderNode<I extends ImageableWithPalette> extends NitroFolderNode<I> {
     private static final Logger LOGGER = LoggerFactory.getLogger(NitroImgFolderNode.class);
 
-    protected static final String ZOOM_NODE = "Zoom";
     protected static final String SELECT_NCGR_FILE = "Select NCGR";
-    protected static final String SELECT_NCLR_FILE = "Select NClR";
 
-    protected ImageableWithPalette imageable;
-
-
-    public NitroImgFolderNode(String path, FolderNode parent, LayoutType layout, ImageableWithPalette imageable) {
-        super(path, parent, layout);
-        this.imageable = imageable;
-    }
-
-    protected SliderNode createZoom(){
-        SliderNode zoom = new SliderNode(path + "/" + ZOOM_NODE, this, 1.0f, 1.0f, 4.0f, 0.1f,true){
-            @Override
-            protected void onValueFloatChanged() {
-                super.onValueFloatChanged();
-                try {
-                    recolorImage();
-                } catch (NitroException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-        };
-        return zoom;
+    public NitroImgFolderNode(String path, String selectName, FolderNode parent, LayoutType layout, I imageable) {
+        super(path, parent, layout, imageable, selectName);
     }
 
     protected void selectPalette() {
@@ -74,21 +51,4 @@ public abstract class NitroImgFolderNode extends FolderNode {
             }
         }
     }
-
-    protected PImage resizeImage(BufferedImage image){
-        PImage pImage = ImageUtils.convertToPImage(image);
-        float zoom = ((SliderNode) findChildByName(ZOOM_NODE)).valueFloat;
-        pImage.resize(Math.round(pImage.width*zoom),0);
-        return pImage;
-    }
-
-
-    @Override
-    protected void drawNodeForeground(PGraphics pg, String name) {
-        drawLeftText(pg, name);
-        drawRightBackdrop(pg, cell);
-    }
-
-    public abstract void recolorImage() throws NitroException;
-
 }

@@ -13,16 +13,13 @@ import org.slf4j.LoggerFactory;
 import processing.core.PImage;
 
 
-public class NSCRFolderNode extends NitroCmpFolderNode {
+public class NSCRFolderNode extends NitroCmpFolderNode<NSCR> {
     protected static final Logger LOGGER = LoggerFactory.getLogger(NSCRFolderNode.class);
 
-    private final NSCR nscr;
-
     public NSCRFolderNode(String path, FolderNode parent, NSCR nscr) {
-        super(path, parent, LayoutType.VERTICAL_1_COL,nscr);
-        this.nscr = nscr;
-        children.clear();
-        children.add(new PreviewNode(path + "/" + nscr.getFileName(), this,nscr));
+        super(path, SELECT_NSCR_FILE, parent, LayoutType.VERTICAL_1_COL,nscr);
+       children.clear();
+        children.add(new PreviewNode(path + "/" + imageable.getFileName(), this,imageable));
 
         children.add(createZoom());
 
@@ -37,11 +34,11 @@ public class NSCRFolderNode extends NitroCmpFolderNode {
 
     @Override
     public void recolorImage() throws NitroException {
-        nscr.recolorImage();
+        imageable.recolorImage();
 
-        PImage pImage = resizeImage(nscr.getImage());
+        PImage pImage = resizeImage(imageable.getImage());
 
-        ((PreviewNode) findChildByName(nscr.getFileName())).loadImage(pImage);
+        ((PreviewNode) findChildByName(imageable.getFileName())).loadImage(pImage);
 
         this.window.windowSizeX = autosuggestWindowWidthForContents();
         this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
@@ -49,10 +46,10 @@ public class NSCRFolderNode extends NitroCmpFolderNode {
 
     @Override
     public float autosuggestWindowWidthForContents() {
-        if (nscr.getNCGR() != null) {
+        if (imageable.getNCGR() != null) {
             return ((PreviewNode) children.get(0)).getImage().width;
         } else {
-            return nscr.getWidth();
+            return imageable.getWidth();
         }
     }
 }

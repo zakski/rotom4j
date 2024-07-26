@@ -15,42 +15,35 @@ import org.slf4j.LoggerFactory;
 import processing.core.PImage;
 
 
-public class NCGRFolderNode extends NitroImgFolderNode {
+public class NCGRFolderNode extends NitroImgFolderNode<NCGR> {
 
     private final String PALETTE_NODE_NAME = "palette";
     protected static final Logger LOGGER = LoggerFactory.getLogger(NCGRFolderNode.class);
 
-    private NCGR ncgr;
-
     public NCGRFolderNode(String path, FolderNode parent, NCGR ncgr) {
-        super(path, parent, LayoutType.VERTICAL_1_COL,ncgr);
-        setImage(ncgr);
+        super(path, SELECT_NCGR_FILE, parent, LayoutType.VERTICAL_1_COL,ncgr);
+        initNode();
         JsonSaveStore.overwriteWithLoadedStateIfAny(this);
     }
 
-    public void setImage(NCGR ncgr) {
-        if (ncgr == null) {
+    protected void initNode() {
+        if (imageable == null) {
             return;
         }
-        this.ncgr = ncgr;
         children.clear();
-        children.add(new PreviewNode(path + "/" + ncgr.getFileName(), this,ncgr));
+        children.add(new PreviewNode(path + "/" + imageable.getFileName(), this,imageable));
         children.add(createZoom());
-
-        ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
-        selectNcLr.registerAction(ActivateByType.RELEASE, this::selectPalette);
-        children.add(selectNcLr);
-        children.add(new NCLRFolderNode(path + "/" + PALETTE_NODE_NAME, this,ncgr.getNCLR()));
+        children.add(new NCLRFolderNode(path + "/" + PALETTE_NODE_NAME, this,imageable.getNCLR()));
     }
 
     @Override
     public void recolorImage() throws NitroException {
-        ((NCLRFolderNode)findChildByName(PALETTE_NODE_NAME)).setPalette(ncgr.getNCLR());
-        ncgr.recolorImage();
+        imageable.setNCLR(((NCLRFolderNode)findChildByName(PALETTE_NODE_NAME)).getImageable());
+        imageable.recolorImage();
 
-        PImage pImage = resizeImage(ncgr.getImage());
+        PImage pImage = resizeImage(imageable.getImage());
 
-        ((PreviewNode) findChildByName(ncgr.getFileName())).loadImage(pImage);
+        ((PreviewNode) findChildByName(imageable.getFileName())).loadImage(pImage);
 
         this.window.windowSizeX = autosuggestWindowWidthForContents();
         this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
@@ -58,6 +51,6 @@ public class NCGRFolderNode extends NitroImgFolderNode {
 
     @Override
     public float autosuggestWindowWidthForContents() {
-        return ((PreviewNode)children.get(0)).getImage().width;
+        return ((PreviewNode)children.getFirst()).getImage().width;
     }
 }

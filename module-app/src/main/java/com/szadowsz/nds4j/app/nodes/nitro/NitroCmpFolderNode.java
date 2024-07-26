@@ -13,14 +13,14 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 
-public abstract class NitroCmpFolderNode extends NitroImgFolderNode {
+public abstract class NitroCmpFolderNode<I extends ImageableWithGraphic> extends NitroImgFolderNode<I> {
     private static final Logger LOGGER = LoggerFactory.getLogger(NitroCmpFolderNode.class);
 
-    protected ImageableWithGraphic complex;
+    protected static final String SELECT_NSCR_FILE = "Select NSCR";
+    protected static final String SELECT_NCER_FILE = "Select NCER";
 
-    public NitroCmpFolderNode(String path, FolderNode parent, LayoutType layout, ImageableWithGraphic imageable) {
-        super(path, parent, layout, imageable);
-        this.complex = imageable;
+    public NitroCmpFolderNode(String path, String selectName, FolderNode parent, LayoutType layout, I imageable) {
+        super(path, selectName, parent, layout, imageable);
     }
 
     protected void selectNcgr() {
@@ -30,7 +30,7 @@ public abstract class NitroCmpFolderNode extends NitroImgFolderNode {
             Processing.prefs.put("openNarcPath", new File(ncgrPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.debug("Loading NCGR File: " + ncgrPath);
-                complex.setNCGR(NCGR.fromFile(ncgrPath));
+                imageable.setNCGR(NCGR.fromFile(ncgrPath));
                 recolorImage();
                 LOGGER.info("Loaded NCGR File: " + ncgrPath);
             } catch (IOException e) {

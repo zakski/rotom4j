@@ -16,18 +16,13 @@ import processing.core.PImage;
 import static com.szadowsz.ui.store.LayoutStore.cell;
 
 
-public class NANRFolderNode extends NitroCmpFolderNode {
-    protected static final Logger LOGGER = LoggerFactory.getLogger(NANRFolderNode.class);
-
-    private final NANR nanr;
-
-    private final String CELL_NODE = "Cell";
-    private final String SELECT_NCGR_FILE = "Select NCGR";
+public class NANRFolderNode extends NitroCmpFolderNode<NANR> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NANRFolderNode.class);
+    private static final String SELECT_NANR_FILE = "Select NANR";
 
     public NANRFolderNode(String path, FolderNode parent, NANR nanr) throws NitroException {
-        super(path, parent, LayoutType.VERTICAL_1_COL, nanr);
-        this.nanr = nanr;
-        children.clear();
+        super(path, SELECT_NANR_FILE, parent, LayoutType.VERTICAL_1_COL, nanr);
+         children.clear();
         //children.add(new PreviewNode(path + "/" + nanr.getFileName(), this,nanr));
 
         children.add(createZoom());
@@ -42,9 +37,9 @@ public class NANRFolderNode extends NitroCmpFolderNode {
     }
 
     public void recolorImage() throws NitroException {
-        nanr.getNCGR().recolorImage();
+        imageable.getNCGR().recolorImage();
 
-        PImage pImage = resizeImage(nanr.getImage());
+        PImage pImage = resizeImage(imageable.getImage());
 
         //((PreviewNode) findChildByName(nanr.getFileName())).loadImage(pImage);
 
@@ -55,7 +50,7 @@ public class NANRFolderNode extends NitroCmpFolderNode {
     @Override
     public float autosuggestWindowWidthForContents() {
         float suggested = super.autosuggestWindowWidthForContents();
-        if (nanr.getNCGR() != null) {
+        if (imageable.getNCGR() != null) {
             return Math.max(suggested,((PreviewNode) children.get(0)).getImage().width);
         } else {
             return suggested;

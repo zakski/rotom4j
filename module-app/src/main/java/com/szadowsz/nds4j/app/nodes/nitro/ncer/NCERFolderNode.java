@@ -17,17 +17,14 @@ import processing.core.PImage;
 import static com.szadowsz.ui.store.LayoutStore.cell;
 
 
-public class NCERFolderNode extends NitroCmpFolderNode {
+public class NCERFolderNode extends NitroCmpFolderNode<NCER> {
     protected static final Logger LOGGER = LoggerFactory.getLogger(NCERFolderNode.class);
 
-    private final NCER ncer;
-
-    private final String CELL_NODE = "Cell";
+     private final String CELL_NODE = "Cell";
     private final String SELECT_NCGR_FILE = "Select NCGR";
 
     public NCERFolderNode(String path, FolderNode parent, NCER ncer) throws NitroException {
-        super(path, parent, LayoutType.VERTICAL_1_COL, ncer);
-        this.ncer = ncer;
+        super(path, SELECT_NCER_FILE, parent, LayoutType.VERTICAL_1_COL, ncer);
         children.clear();
         children.add(new PreviewNode(path + "/" + ncer.getFileName(), this,ncer));
         SliderNode cell = new SliderNode(path + "/" + CELL_NODE, this, 0.0f, 0.0f, ncer.getCellsCount()-1, true){
@@ -56,13 +53,13 @@ public class NCERFolderNode extends NitroCmpFolderNode {
     }
 
     public void recolorImage() throws NitroException {
-        ncer.getNCGR().recolorImage();
+        imageable.getNCGR().recolorImage();
 
         SliderNode cellNode = (SliderNode) findChildByName(CELL_NODE);
 
-        PImage pImage = resizeImage(ncer.getImage((int) cellNode.valueFloat));
+        PImage pImage = resizeImage(imageable.getImage((int) cellNode.valueFloat));
 
-        ((PreviewNode) findChildByName(ncer.getFileName())).loadImage(pImage);
+        ((PreviewNode) findChildByName(imageable.getFileName())).loadImage(pImage);
 
         this.window.windowSizeX = autosuggestWindowWidthForContents();
         this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
@@ -71,7 +68,7 @@ public class NCERFolderNode extends NitroCmpFolderNode {
     @Override
     public float autosuggestWindowWidthForContents() {
         float suggested = super.autosuggestWindowWidthForContents();
-        if (ncer.getNCGR() != null) {
+        if (imageable.getNCGR() != null) {
             return Math.max(suggested,((PreviewNode) children.get(0)).getImage().width);
         } else {
             return suggested;
