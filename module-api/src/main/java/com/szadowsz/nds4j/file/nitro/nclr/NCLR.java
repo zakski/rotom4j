@@ -282,6 +282,9 @@ public class NCLR extends GenericNFSFile implements Imageable {
             for (int i = 0; i < numColors/numColorsPerPalette;i++) {
                 this.paletteColours[i] = new Color[numColorsPerPalette];
             }
+        } else {
+            this.paletteColours = new Color[1][];
+            this.paletteColours[0] = new Color[numColors];
         }
         this.compNum = compNum;
 
@@ -290,6 +293,8 @@ public class NCLR extends GenericNFSFile implements Imageable {
             this.colors[i] = bgr555ToColor((byte) reader.readByte(), (byte) reader.readByte());
             if (numColors > 16 && numColors % numColorsPerPalette == 0){
                 this.paletteColours[i/numColorsPerPalette][i%numColorsPerPalette] = this.colors[i];
+            } else {
+                this.paletteColours[0][i] = this.colors[i];
             }
         }
 

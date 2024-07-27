@@ -119,8 +119,10 @@ public class NSCR extends GenericNFSFile implements ImageableWithGraphic {
     }
 
     public void recolorImage() throws NitroException {
-        ncgr.recolorImage();
-        createImage();
+        if (ncgr != null) {
+            ncgr.recolorImage();
+            createImage();
+        }
     }
 
     protected NTFS createMapInfo(int value) {

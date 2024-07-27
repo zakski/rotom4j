@@ -500,7 +500,10 @@ public class NCER extends GenericNFSFile implements ImageableWithGraphic {
 
     public BufferedImage getImage(int cellNum) throws NitroException {
         CellInfo cell = cells[cellNum];
-        BufferedImage image = new BufferedImage(BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BufferedImage.TYPE_INT_ARGB);;
+        BufferedImage image = new BufferedImage(BACKGROUND_WIDTH, BACKGROUND_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        if (ncgr== null){
+            return image;
+        }
         Color[] colors;
         if (Configuration.isBackground()) {
             colors = renderCell(cells[cellNum], cebkMappingMode, 256, 128, Configuration.isShowGuidelines(), 1.0f, 0.0f, 0.0f, 1.0f);

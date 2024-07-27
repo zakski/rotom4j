@@ -140,6 +140,7 @@ public class NCLRFolderNode extends NitroFolderNode<NCLR> {
             if (spriteFolder != null) {
                 spriteFolder.recolorImage();
             }
+            this.window.close();
         } catch (IOException e) {
             LOGGER.error("NCLR Load Failed", e);
             try {

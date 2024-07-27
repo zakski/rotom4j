@@ -85,6 +85,9 @@ public abstract class NitroFolderNode<I extends Imageable> extends FolderNode {
      * @return appropriately scaled PImage
      */
     protected PImage resizeImage(BufferedImage image) {
+        if (image==null){
+            return null;
+        }
         PImage pImage = ImageUtils.convertToPImage(image);
         SliderNode zoomNode = (SliderNode) findChildByName(ZOOM_NODE);
         if (zoomNode != null) {

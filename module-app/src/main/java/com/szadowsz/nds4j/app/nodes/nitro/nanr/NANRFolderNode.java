@@ -27,13 +27,13 @@ public class NANRFolderNode extends NitroCmpFolderNode<NANR> {
 
         children.add(createZoom());
 
-        ButtonNode selectNcgr = new ButtonNode(path + "/" + SELECT_NCGR_FILE,this);
-        selectNcgr.registerAction(ActivateByType.RELEASE, this::selectNcgr);
-        children.add(selectNcgr);
-
-        ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
-        selectNcLr.registerAction(ActivateByType.RELEASE, this::selectPalette);
-        children.add(selectNcLr);
+//        ButtonNode selectNcgr = new ButtonNode(path + "/" + SELECT_NCGR_FILE,this);
+//        selectNcgr.registerAction(ActivateByType.RELEASE, this::selectNcgr);
+//        children.add(selectNcgr);
+//
+//        ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
+//        selectNcLr.registerAction(ActivateByType.RELEASE, this::selectPalette);
+//        children.add(selectNcLr);
     }
 
     public void recolorImage() throws NitroException {

@@ -2,6 +2,7 @@ package com.szadowsz.nds4j.app.nodes.nitro.nscr;
 
 import com.szadowsz.nds4j.app.nodes.nitro.NitroCmpFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.PreviewNode;
+import com.szadowsz.nds4j.app.nodes.nitro.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.nscr.NSCR;
 import com.szadowsz.ui.input.ActivateByType;
@@ -23,21 +24,15 @@ public class NSCRFolderNode extends NitroCmpFolderNode<NSCR> {
 
         children.add(createZoom());
 
-        ButtonNode selectNcgr = new ButtonNode(path + "/" + SELECT_NCGR_FILE,this);
-        selectNcgr.registerAction(ActivateByType.RELEASE, this::selectNcgr);
-        children.add(selectNcgr);
-
-        ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
-        selectNcLr.registerAction(ActivateByType.RELEASE, this::selectPalette);
-        children.add(selectNcLr);
+        children.add(new NCGRFolderNode(path + "/" + IMAGE_NODE_NAME, this,imageable.getNCGR()));
     }
 
     @Override
     public void recolorImage() throws NitroException {
+        super.recolorImage();
         imageable.recolorImage();
 
         PImage pImage = resizeImage(imageable.getImage());
-
         ((PreviewNode) findChildByName(imageable.getFileName())).loadImage(pImage);
 
         this.window.windowSizeX = autosuggestWindowWidthForContents();
