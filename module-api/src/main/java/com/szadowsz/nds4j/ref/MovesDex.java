@@ -1,8 +1,7 @@
 package com.szadowsz.nds4j.ref;
 
-import com.szadowsz.nds4j.NFSConstants;
+import com.szadowsz.nds4j.utils.Configuration;
 
-import javax.crypto.Mac;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -37,7 +36,7 @@ public class MovesDex {
     }
 
     public static String getPokemonNameByNo(int index) {
-        return switch (NFSConstants.getExpectedRom()) {
+        return switch (Configuration.getExpectedRom()) {
             default -> FINAL_MOVES.getOrDefault(index, "NONE");
         };
     }

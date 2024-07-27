@@ -44,7 +44,7 @@ public class NCGRFolderNode extends NitroImgFolderNode<NCGR> {
             return;
         }
         children.clear();
-        children.add(new PreviewNode(path + "/" + imageable.getFileName(), this,imageable));
+        children.add(new PreviewNode(path + "/" + PREVIEW_NODE, this,imageable));
         children.add(createZoom());
         children.add(new NCLRFolderNode(path + "/" + PALETTE_NODE_NAME, this,imageable.getNCLR()));
         if (cmpFolder != null) {

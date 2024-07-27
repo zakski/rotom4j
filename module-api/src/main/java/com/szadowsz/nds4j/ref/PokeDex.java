@@ -1,6 +1,6 @@
 package com.szadowsz.nds4j.ref;
 
-import com.szadowsz.nds4j.NFSConstants;
+import com.szadowsz.nds4j.utils.Configuration;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public final class PokeDex {
     }
 
     public static String getPokemonNameByNo(int index) {
-        return switch (NFSConstants.getExpectedRom()){
+        return switch (Configuration.getExpectedRom()){
             case FEB17 -> FEB17_DEX.getOrDefault(index,"NONE");
             case FINAL -> FINAL_DEX.getOrDefault(index,"NONE");
         };

@@ -38,6 +38,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * An object representation of an NCER file
@@ -457,6 +458,13 @@ public class NCER extends GenericNFSFile implements ImageableWithGraphic {
     // CellRenderCell
     public Color[] renderCell(CellInfo cell, int mapping, int xOffs, int yOffs, boolean outline, float a, float b, float c, float d) throws NitroException {
         Color[] px = new Color[256 * 512];
+        if (Configuration.isRenderTransparent()) {
+            Arrays.fill(px, new Color(255, 255, 255, 0));
+        } else{
+            Arrays.fill(px, getNCLR().getColor(0));
+
+        }
+
         Color[] block = new Color[64 * 64];
         for (int i = cell.getOamCount() - 1; i >= 0; i--) {
             CellInfo.OAM info = cell.getOam(i);

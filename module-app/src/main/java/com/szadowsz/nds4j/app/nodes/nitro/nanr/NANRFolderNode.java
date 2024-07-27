@@ -2,6 +2,8 @@ package com.szadowsz.nds4j.app.nodes.nitro.nanr;
 
 import com.szadowsz.nds4j.app.nodes.nitro.NitroCmpFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.PreviewNode;
+import com.szadowsz.nds4j.app.nodes.nitro.ncer.NCERFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.nanr.NANR;
 import com.szadowsz.ui.input.ActivateByType;
@@ -20,28 +22,24 @@ public class NANRFolderNode extends NitroCmpFolderNode<NANR> {
     private static final Logger LOGGER = LoggerFactory.getLogger(NANRFolderNode.class);
     private static final String SELECT_NANR_FILE = "Select NANR";
 
+    protected static final String CELL_NODE_NAME = "cell";
+
+
     public NANRFolderNode(String path, FolderNode parent, NANR nanr) throws NitroException {
         super(path, SELECT_NANR_FILE, parent, LayoutType.VERTICAL_1_COL, nanr);
          children.clear();
-        //children.add(new PreviewNode(path + "/" + nanr.getFileName(), this,nanr));
+         children.add(new PreviewNode(path + "/" + PREVIEW_NODE, this,nanr));
 
         children.add(createZoom());
 
-//        ButtonNode selectNcgr = new ButtonNode(path + "/" + SELECT_NCGR_FILE,this);
-//        selectNcgr.registerAction(ActivateByType.RELEASE, this::selectNcgr);
-//        children.add(selectNcgr);
-//
-//        ButtonNode selectNcLr = new ButtonNode(path + "/" + SELECT_NCLR_FILE,this);
-//        selectNcLr.registerAction(ActivateByType.RELEASE, this::selectPalette);
-//        children.add(selectNcLr);
+        children.add(new NCERFolderNode(path + "/" + CELL_NODE_NAME, this,imageable.getNCER()));
     }
 
     public void recolorImage() throws NitroException {
         imageable.getNCGR().recolorImage();
 
         PImage pImage = resizeImage(imageable.getImage());
-
-        //((PreviewNode) findChildByName(nanr.getFileName())).loadImage(pImage);
+        ((PreviewNode) findChildByName(PREVIEW_NODE)).loadImage(pImage);
 
         this.window.windowSizeX = autosuggestWindowWidthForContents();
         this.window.windowSizeXForContents = autosuggestWindowWidthForContents();

@@ -1,5 +1,7 @@
 package com.szadowsz.nds4j.utils;
 
+import com.szadowsz.nds4j.ref.RomFormat;
+
 public class Configuration {
 
     private static boolean showCellBounds;
@@ -10,8 +12,14 @@ public class Configuration {
 
     private static boolean renderWithBackground;
 
+    private static RomFormat romFormat;
+
     private Configuration(){}
 
+
+    public static synchronized RomFormat getExpectedRom(){
+        return romFormat;
+    }
 
     public static synchronized boolean isShowCellBounds() {
         return showCellBounds;
@@ -28,8 +36,13 @@ public class Configuration {
     public static synchronized boolean isBackground() {
         return renderWithBackground;
     }
+
     public static synchronized void setShowCellBounds(boolean toggle) {
         showCellBounds = toggle;
+    }
+
+    public static synchronized void setExpectedRom(RomFormat rom) {
+        romFormat = rom;
     }
 
     public static synchronized void setShowGuidelines(boolean toggle) {

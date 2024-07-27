@@ -367,6 +367,10 @@ public class NANR extends GenericNFSFile implements ImageableWithGraphic {
         }
     }
 
+    public NCER getNCER() {
+        return ncer;
+    }
+
     @Override
     public NCGR getNCGR() {
         return (ncer != null) ? ncer.getNCGR() : null;
@@ -398,6 +402,10 @@ public class NANR extends GenericNFSFile implements ImageableWithGraphic {
             }
         }
         return image;
+    }
+
+    public void setNCER(NCER ncer) {
+        this.ncer = ncer;
     }
 
     @Override

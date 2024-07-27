@@ -27,7 +27,7 @@ public class NCERFolderNode extends NitroCmpFolderNode<NCER> {
     public NCERFolderNode(String path, FolderNode parent, NCER ncer) throws NitroException {
         super(path, SELECT_NCER_FILE, parent, LayoutType.VERTICAL_1_COL, ncer);
         children.clear();
-        children.add(new PreviewNode(path + "/" + ncer.getFileName(), this,ncer));
+        children.add(new PreviewNode(path + "/" + PREVIEW_NODE, this,ncer));
         SliderNode cell = new SliderNode(path + "/" + CELL_NODE, this, 0.0f, 0.0f, ncer.getCellsCount()-1, true){
             @Override
             protected void onValueFloatChanged() {
