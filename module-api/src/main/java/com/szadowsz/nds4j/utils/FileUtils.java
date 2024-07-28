@@ -4,6 +4,9 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.FilenameFilter;
 
+/**
+ * Utility Class to aid with processing of Files
+ */
 public class FileUtils {
 
     /**
@@ -54,13 +57,15 @@ public class FileUtils {
             return description + extensions.toString();
         }
     }
-
+    /**
+     * An implementation of <code>FilenameFilter</code> which filters out files which do not have the specified file extensions
+     */
     public static class ExtensionNameFilter implements FilenameFilter {
         private final String[] extensions;
         private final String description;
 
         /**
-         * Creates a new <code>ExtensionFilter</code> which only shows files with the specified extensions
+         * Creates a new <code>ExtensionNameFilter</code> which only shows files with the specified extensions
          *
          * @param description a <code>String</code> containing the description to show for the allowed file types
          * @param extensions  a <code>String[]</code> containing the allowed file types (including the "dot")
@@ -133,5 +138,4 @@ public class FileUtils {
     public static final ExtensionNameFilter ncgrNameFilter = new ExtensionNameFilter("Nintendo .NCGR File", ncgrExtensions);
     public static final ExtensionNameFilter nclrNameFilter = new ExtensionNameFilter("Nintendo .NCLR File", nclrExtensions);
     public static final ExtensionNameFilter binNameFilter = new ExtensionNameFilter("Bin File", binExtensions);
-
 }

@@ -31,15 +31,76 @@ public class NFSFactory {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(NFSFactory.class);
 
+    /**
+     * Attempt to read the File Format from an expected Nitro File header
+     *
+     * @param data file byte data
+     * @return Expected Format
+     */
     private static NFSFormat parseFileFormat(byte[] data) {
         if (data != null && data.length > 4) {
             String magic = new String(Arrays.copyOfRange(data, 0, 4), Charset.forName("Shift_JIS"));
-            return NFSFormat.valueOfLabel(magic);
-        } else {
-            return NFSFormat.BINARY;
+            NFSFormat format = NFSFormat.valueOfLabel(magic);
+            if(format!=null){
+                return format;
+            }
+        }
+
+        return NFSFormat.BINARY; // We fall back to expect it in some sort of binary format
+    }
+
+    /**
+     * Convert raw data into a file obj
+     *
+     * @param path the file path, if not from a narc
+     * @param name the file name to use
+     * @param comp the detected compression format
+     * @param magic the detected file format
+     * @param compData the raw compressed data
+     * @param data the raw uncompressed data
+     * @return parsed file obj
+     * @throws NitroException if the conversion fails
+     */
+    private static BaseNFSFile convert(String path, String name, CompFormat comp, NFSFormat magic, byte[] compData, byte[] data) throws NitroException, NitroException {
+        switch (magic) {
+            case NCGR -> { // Nintendo Character Graphic Resource
+                return new NCGR(path, name, comp, compData, data);
+            }
+            case NCLR -> { // Nintendo CoLor Resource
+                return new NCLR(path, name, comp, compData, data);
+            }
+            case NSCR -> { // Nintendo SCreen Resource
+                return new NSCR(path, name, comp, compData, data);
+            }
+            case NCER -> { // Nintendo CEll Resource
+                return new NCER(path, name, comp, compData, data);
+            }
+            case NANR -> { // Nintendo ANimation Resource
+                return new NANR(path, name, comp, compData, data);
+            }
+            case BINARY -> { // Some Sort Of Data File
+                if (data != null && data.length > 4) {
+                    return new BinNFSFile(path, name, data);
+                } else {
+                    return new PlaceholderNFSFile(path, name);
+                }
+            }
+            default -> {
+                return new UnspecifiedNFSFile(magic, path, name, comp, compData, data);
+            }
         }
     }
 
+    /**
+     * Extract a file obj from a Narc File
+     *
+     * @param narcName name of the narc file
+     * @param index index of the file obj being extracted from the narc
+     * @param fileCount the total number of files in the narc
+     * @param compressedData the raw potentially compressed data
+     * @return parsed file obj
+     * @throws NitroException if file obj is unable to be parsed
+     */
     public static BaseNFSFile fromNarc(String narcName, int index, long fileCount, byte[] compressedData) throws NitroException {
         String fileNameNoExt = narcName + "_" + String.format("%0" + String.valueOf(fileCount).length() + "d", index);
         CompFormat compFormat = CompFormat.NONE;
@@ -56,7 +117,7 @@ public class NFSFactory {
             for (int i = 0; i < dataInt.length; i++) {
                 data[i] = (byte) dataInt[i];
             }
-        } catch (IOException e) {
+        } catch (ArrayIndexOutOfBoundsException | IOException e) {
             LOGGER.warn("Failed to decompress " + fileNameNoExt, e);
         }
         NFSFormat magic = parseFileFormat(data);
@@ -65,6 +126,13 @@ public class NFSFactory {
 
     }
 
+    /**
+     * Extract a file obj from a File
+     *
+     * @param file java file representation to parse
+     * @return parsed file obj
+     * @throws NitroException if file obj is unable to be parsed
+     */
     public static BaseNFSFile fromFile(File file) throws NitroException {
         String path = file.getAbsolutePath();
         String fileName = file.getName();
@@ -88,35 +156,5 @@ public class NFSFactory {
         }
         NFSFormat magic = parseFileFormat(data);
         return convert(path, fileName, compFormat, magic, compressedData, data);
-    }
-
-    private static BaseNFSFile convert(String path, String name, CompFormat comp, NFSFormat magic, byte[] compData, byte[] data) throws NitroException, NitroException {
-        switch (magic) {
-            case NCGR -> {
-                return new NCGR(path, name, comp, compData, data);
-            }
-            case NCLR -> {
-                return new NCLR(path, name, comp, compData, data);
-            }
-            case NSCR -> {
-                return new NSCR(path, name, comp, compData, data);
-            }
-            case NCER -> {
-                return new NCER(path, name, comp, compData, data);
-            }
-            case NANR -> {
-                return new NANR(path, name, comp, compData, data);
-            }
-            case BINARY -> {
-                if (data != null && data.length > 4) {
-                    return new BinNFSFile(path, name, data);
-                } else {
-                    return new PlaceholderNFSFile(path, name);
-                }
-            }
-            default -> {
-                return new UnspecifiedNFSFile(magic, path, name, comp, compData, data);
-            }
-        }
     }
 }

@@ -20,6 +20,7 @@
 package com.szadowsz.nds4j.file.nitro.narc;
 
 import com.szadowsz.nds4j.NFSFactory;
+import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.NFSFormat;
 import com.szadowsz.nds4j.file.nitro.narc.data.Fnt;
 import com.szadowsz.nds4j.file.BaseNFSFile;
@@ -58,7 +59,10 @@ public class NARC extends GenericNFSFile {
 
     /**
      * Read NARC data, and create a filename table and a list of files.
-     * @param data a <code>byte[]</code> representation of a <code>Narc</code>
+     *
+     * @param file file obj information
+     * @param data byte[] representation of a Narc
+     * @throws IOException if there are issues reading the data/file
      */
     public NARC(File file, byte[] data) throws IOException {
         super(NFSFormat.NARC, (file!=null)?file.getName():"",data);
@@ -68,6 +72,12 @@ public class NARC extends GenericNFSFile {
         readFile(reader);
     }
 
+    /**
+     * Parse the data of the file body
+     *
+     * @param reader the byte reader to access the file body data
+     */
+    @Override
     protected void readFile(MemBuf.MemBufReader reader){
         filenames = new Fnt.Folder();
         if (version != 1) {
@@ -124,11 +134,6 @@ public class NARC extends GenericNFSFile {
                files.add(NFSFactory.fromNarc(getFileNameWithoutExt(),i,numFiles,rawFiles.get(i)));
             } catch (Exception e) {
                 throw new RuntimeException(e);
-//                if (endOffset > startOffset) {
-//                    files.add(new BinNFSFile(getFileNameWithoutExt(), numFiles,i, rawFiles.get(i)));
-//                } else {
-//                    files.add(new PlaceholderNFSFile(getFileNameWithoutExt(),numFiles,i));
-//                }
             }
         }
 
@@ -139,8 +144,8 @@ public class NARC extends GenericNFSFile {
 
     /**
      * Load a NARC archive from a filesystem file
-     * @param file a <code>String</code> containing the path to a NARC file on disk
-     * @return a <code>Narc</code> object
+     * @param file a String containing the path to a NARC file on disk
+     * @return a Narc object
      */
     public static NARC fromFile(String file) throws IOException {
         return fromFile(new File(file));
@@ -148,104 +153,36 @@ public class NARC extends GenericNFSFile {
 
     /**
      * Load a NARC archive from a file on disk
-     * @param file a <code>File</code> object representing the path to a NARC file on disk
-     * @return a <code>Narc</code> object
+     * @param file a File object representing the path to a NARC file on disk
+     * @return a Narc object
      */
     public static NARC fromFile(File file) throws IOException {
         return new NARC(file, Buffer.readFile(file.getAbsolutePath()));
     }
 
-//    /**
-//     * Load an unpacked NARC from a directory on disk
-//     * @param dir a <code>String</code> object containing the path to an unpacked NARC directory on disk
-//     * @param removeFilenames whether the NARC should have a Fnt (ignored if there are subfolders within)
-//     * @param endiannessOfBeginning whether the NARC's beginning is encoded in Big Endian or Little Endian
-//     *                              - can be <code>Endianness.EndiannessType.BIG</code> or <code>Endianness.EndiannessType.LITTLE</code>
-//     * @return a <code>Narc</code> object
-//     */
-//    public static Narc fromUnpacked(String dir, boolean removeFilenames, Endianness.EndiannessType endiannessOfBeginning)
-//    {
-//        return fromUnpacked(new File(dir), removeFilenames, endiannessOfBeginning);
-//    }
-//
-//
-//    /**
-//     * Load an unpacked NARC from a directory on disk
-//     * @param dir a <code>File</code> object representing the path to an unpacked NARC directory on disk
-//     * @param removeFilenames whether the NARC should have a Fnt (ignored if there are subfolders within)
-//     * @return a <code>Narc</code> object
-//     * @param endiannessOfBeginning whether the NARC's beginning is encoded in Big Endian or Little Endian
-//     *                              - can be <code>Endianness.EndiannessType.BIG</code> or <code>Endianness.EndiannessType.LITTLE</code>
-//     * @exception RuntimeException if the specified path on disk does not exist or is not a directory
-//     */
-//    public static Narc fromUnpacked(File dir, boolean removeFilenames, Endianness.EndiannessType endiannessOfBeginning)
-//    {
-//        Fnt.Folder root;
-//        ArrayList<byte[]> files = new ArrayList<>();
-//
-//        int numFiles = Fnt.calculateNumFiles(dir);
-//        for (int i = 0; i < numFiles; i++)
-//        {
-//            files.add(null);
-//        }
-//
-//        root = Fnt.loadFromDisk(dir, files);
-//
-//        if (Objects.requireNonNull(dir.listFiles(File::isDirectory)).length == 0 && removeFilenames)
-//        {
-//            root = new Fnt.Folder("root");
-//        }
-//
-//        return fromContentsAndNames(files, root, endiannessOfBeginning);
-//    }
-//
-//
-//    /**
-//     * Create a NARC archive from a list of files and (optionally) a filename table.
-//     * @param files an <code>ArrayList</code> of <code>byte[]</code>'s representing all the subfiles in the NARC
-//     * @param filenames an (OPTIONAL) <code>Folder</code> representing the NARC's filesystem
-//     * @param endiannessOfBeginning whether the NARC's beginning is encoded in Big Endian or Little Endian
-//     *                              - can be <code>Endianness.EndiannessType.BIG</code> or <code>Endianness.EndiannessType.LITTLE</code>
-//     * @return a <code>Narc</code> representation of the provided parameters
-//     */
-//    public static Narc fromContentsAndNames(ArrayList<byte[]> files, Fnt.Folder filenames, Endianness.EndiannessType endiannessOfBeginning)
-//    {
-//        Narc narc = new Narc();
-//        if (endiannessOfBeginning != null)
-//            narc.endiannessOfBeginning = endiannessOfBeginning;
-//        else
-//            narc.endiannessOfBeginning = Endianness.EndiannessType.LITTLE;
-//
-//        if (files != null)
-//            narc.files = new ArrayList<>(files);
-//        else
-//            narc.files = new ArrayList<>();
-//
-//        if (filenames != null)
-//            narc.filenames = filenames;
-//        else
-//            narc.filenames = new Fnt.Folder();
-//        narc.filenames = filenames;
-//        return narc;
-//    }
-
     /**
-     * Unpacks this <code>Narc</code> to disk at the specified path
-     * @param dir a <code>String</code> containing the target directory to unpack the NARC to
-     * @exception RuntimeException if this <code>Narc</code> has an internal filesystem, the specified path
+     * Unpacks this Narc to disk at the specified path
+     * @param dir a String containing the target directory to unpack the NARC to
+     * @exception RuntimeException if this Narc has an internal filesystem, the specified path
      * already exists, a new directory at the specified path could not be created, or a failure to write the
      * subfiles occurred
      * @exception IOException if the parent directory of the output subfiles does not exist
      */
-    public void unpack(String dir) throws IOException
-    {
+    public void unpack(String dir) throws IOException {
         if (dir != null) {
             unpack(new File(dir));
         }
     }
 
-    public void unpackWithCompression(String dir) throws IOException
-    {
+    /**
+     * Unpacks this Narc to disk at the specified path
+     * @param dir a String containing the target directory to unpack the NARC to
+     * @exception RuntimeException if this Narc has an internal filesystem, the specified path
+     * already exists, a new directory at the specified path could not be created, or a failure to write the
+     * subfiles occurred
+     * @exception IOException if the parent directory of the output subfiles does not exist
+     */
+    public void unpackWithCompression(String dir) throws IOException {
         if (dir != null){
             unpackWithCompression(new File(dir));
         }
@@ -253,202 +190,100 @@ public class NARC extends GenericNFSFile {
 
 
     /**
-     * Unpacks this <code>Narc</code> to disk at the specified path
-     * @param dir a <code>File</code> containing the target directory to unpack the NARC to
-     * @exception RuntimeException if this <code>Narc</code> has an internal filesystem, the specified path
+     * Unpacks this Narc to disk at the specified path
+     * @param dir a File containing the target directory to unpack the NARC to
+     * @exception RuntimeException if this Narc has an internal filesystem, the specified path
      * already exists, a new directory at the specified path could not be created, or a failure to write the
      * subfiles occurred
      * @exception IOException if the parent directory of the output subfiles does not exist
      */
-    public void unpack(File dir) throws IOException
-    {
-        if (filenames.getFiles().size() > 0)
+    public void unpack(File dir) throws IOException {
+        if (!filenames.getFiles().isEmpty()) {
             throw new RuntimeException("Unpacking of NARCs with internal filesystems not yet supported");
+        }
 
-//        if (dir.exists())
-//            throw new RuntimeException("There is already a directory at the specified location");
-        if (!dir.exists() && !dir.mkdir())
+        if (!dir.exists() && !dir.mkdir()) {
             throw new RuntimeException("Failed to create output directory, check write permissions.");
+        }
 
-        for (int i = 0; i < files.size(); i++)
-        {
+        for (int i = 0; i < files.size(); i++) {
             System.out.println(StringFormatter.formatOutputString(i, files.size(), "", ""));
             BinaryWriter.writeFile(Paths.get(dir.getAbsolutePath(),files.get(i).getFileName()), files.get(i).getData());
         }
     }
 
-    public void unpackWithCompression(File dir) throws IOException
-    {
-        if (filenames.getFiles().size() > 0)
+    /**
+     * Unpacks this Narc to disk at the specified path
+     * @param dir a File containing the target directory to unpack the NARC to
+     * @exception RuntimeException if this Narc has an internal filesystem, the specified path
+     * already exists, a new directory at the specified path could not be created, or a failure to write the
+     * subfiles occurred
+     * @exception IOException if the parent directory of the output subfiles does not exist
+     */
+    public void unpackWithCompression(File dir) throws IOException {
+        if (!filenames.getFiles().isEmpty()) {
             throw new RuntimeException("Unpacking of NARCs with internal filesystems not yet supported");
+        }
 
-//        if (dir.exists())
-//            throw new RuntimeException("There is already a directory at the specified location");
-        if (!dir.exists() && !dir.mkdir())
+        if (!dir.exists() && !dir.mkdir()) {
             throw new RuntimeException("Failed to create output directory, check write permissions.");
+        }
 
-        for (int i = 0; i < files.size(); i++)
-        {
+        for (int i = 0; i < files.size(); i++) {
             System.out.println(StringFormatter.formatOutputString(i, files.size(), "", ""));
             BinaryWriter.writeFile(Paths.get(dir.getAbsolutePath(),files.get(i).getFileName())+".bin", files.get(i).getCompressedData());
         }
     }
 
-//    /**
-//     * Generate a <code>byte[]</code> representing this NARC.
-//     * @return a <code>byte[]</code>
-//     */
-//    public byte[] save()
-//    {
-//        // Prepare the filedata and file allocation table block
-//        MemBuf fimgBuf = MemBuf.create();
-//        MemBuf.MemBufWriter fimgWriter = fimgBuf.writer();
-//
-//
-//        MemBuf fatbBuf = MemBuf.create();
-//        MemBuf.MemBufWriter fatbWriter = fatbBuf.writer();
-//        fatbWriter.writeString("BTAF");
-//        fatbWriter.writeInt(FATB_HEADER_SIZE + 8 * files.size());
-//        fatbWriter.writeInt(files.size());
-//
-//        // Write data into the FIMG and FAT blocks
-//        long startOffset;
-//        long endOffset;
-//        for(byte[] data : files) {
-//            startOffset = fimgWriter.getPosition();
-//            fimgWriter.write(data);
-//            endOffset = fimgWriter.getPosition();
-//            fatbWriter.writeUInt32(startOffset).writeUInt32(endOffset);
-//            fimgWriter.align(4);
-//        }
-//
-//        byte[] fimg = fimgBuf.reader().getBuffer();
-//        fimgBuf = MemBuf.create();
-//        fimgWriter = fimgBuf.writer();
-//        fimgWriter.writeString("GMIF");
-//        fimgWriter.writeUInt32(fimg.length + FIMG_HEADER_SIZE);
-//        fimgWriter.write(fimg);
-//
-//        // Assemble the filename table block
-//        MemBuf nameTable = Fnt.save(filenames);
-//        nameTable.writer().align(4, (byte) 0xFF);
-//        MemBuf fntbBuf = MemBuf.create();
-//        fntbBuf.writer().writeString("BTNF");
-//        fntbBuf.writer().writeUInt32(nameTable.reader().getBuffer().length + FNTB_HEADER_SIZE);
-//        fntbBuf.writer().write(nameTable.reader().getBuffer());
-//
-//        // Put everything together and return.
-//        MemBuf narcBuf = MemBuf.create();
-//        MemBuf.MemBufWriter narcWriter = narcBuf.writer();
-//
-//        narcWriter.skip(NTR_HEADER_SIZE);
-//        narcWriter.write(fatbBuf.reader().getBuffer());
-//        narcWriter.write(fntbBuf.reader().getBuffer());
-//        narcWriter.write(fimgBuf.reader().getBuffer());
-//
-//        int narcLength = narcWriter.getPosition();
-//
-//        narcWriter.setPosition(0);
-//        writeGenericNtrHeader(narcWriter, narcLength, 3);
-//
-//        narcWriter.setPosition(narcLength);
-//        return narcBuf.reader().getBuffer();
-//    }
-
-
-//    /**
-//     * Generate a <code>byte[]</code> representing this NARC, and save it to a file on disk
-//     * @param path a <code>String</code> containing the path to the file on disk to save as
-//     * @throws IOException if the specified file's parent directory does not exist.
-//     */
-//    public void saveToFile(String path) throws IOException
-//    {
-//        saveToFile(new File(path));
-//    }
-//
-//    /**
-//     * Generate a <code>byte[]</code> representing this NARC, and save it to a file on disk
-//     * @param file a <code>File</code> representing the path to the file on disk to save as
-//     * @exception RuntimeException if the provided path leads to a directory
-//     * @throws IOException if the specified file's parent directory does not exist.
-//     */
-//    public void saveToFile(File file) throws IOException
-//    {
-//        if (file.exists() && file.isDirectory())
-//        {
-//            throw new RuntimeException("\"" + file.getAbsolutePath() + "\" is a directory. Save failed.");
-//        }
-//        BinaryWriter.writeFile(file, save());
-//    }
-
-    public int getNumFiles()
-{
-    return rawFiles.size();
-}
-    public ArrayList<byte[]> getRawFiles()
-    {
-        return rawFiles;
-    }
-
+    /**
+     * Get the current list of files contained within the Narc
+     *
+     * @return String List of the filenames
+     */
     public List<String> getFilenames() {
         return files.stream().map(BaseNFSFile::getFileName).toList();
     }
 
-    public byte[] getFile(int index){
-        return rawFiles.get(index);
-    }
-
     /**
      * Return the contents of the file with the given filename (path).
-     * @param filename a <code>String</code> containing the path to the requested NARC subfile
-     * @return a <code>byte[]</code> containing the contents of the requested NARC subfile
+     * @param filename a String containing the path to the requested NARC subfile
+     * @return a byte[] containing the contents of the requested NARC subfile
      * @exception RuntimeException if file with given name is not found
      */
-    public byte[] getFileByName(String filename)
-    {
+    public byte[] getRawFileByName(String filename) {
         int fid = filenames.getIdOf(filename);
-        if (fid == -1)
-        {
+        if (fid == -1) {
             throw new RuntimeException("Couldn't find file ID of \"" + filename + "\".");
         }
         return rawFiles.get(fid);
     }
 
-
-
     /**
      * Replace the contents of the NARC subfile with the given filename (path) with the given data.
-     * @param filename a <code>String</code> containing the path to the specified NARC subfile
-     * @param data a <code>byte[]</code> containing the contents to set for the specified NARC subfile
+     * @param filename a String containing the path to the specified NARC subfile
+     * @param data a byte[] containing the contents to set for the specified NARC subfile
      * @exception RuntimeException if file with given name is not found
      */
-    public void setFileByName(String filename, byte[] data)
-    {
+    public void setRawFileByName(String filename, byte[] data) {
         int fid = filenames.getIdOf(filename);
-        if (fid == -1)
-        {
+        if (fid == -1) {
             throw new RuntimeException("Couldn't find file ID of \"" + filename + "\".");
         }
         rawFiles.set(fid, data);
     }
 
-    public void setRawFiles(ArrayList<byte[]> rawFiles)
-    {
-        this.rawFiles = rawFiles;
-    }
-
-
-    public void setFile(int index, byte[] file)
-    {
-        rawFiles.set(index, file);
-    }
-
+    /**
+     * Rename all files in the Narc according to an .lst file
+     *
+     * @param lstPath the path to the .lst file
+     * @throws IOException failed to parse the .lst file
+     */
     public void applyLst(String lstPath) throws IOException {
         if (lstPath != null) {
             LstFile lstFile = new LstFile(lstPath);
             List<String> lst = lstFile.getFileNames();
             if (lst.size() != files.size()) {
-                throw new RuntimeException("LST DOES NOT MATCH NARC FILE LIST IN SIZE");
+                throw new NitroException("LST DOES NOT MATCH NARC FILE LIST IN SIZE");
             }
 
             for (int i = 0; i < lst.size(); i++) {
@@ -457,12 +292,18 @@ public class NARC extends GenericNFSFile {
         }
     }
 
+    /**
+     * Rename all files in the Narc according to an .h file
+     *
+     * @param defPath the path to the .h file
+     * @throws IOException failed to parse the .h file
+     */
     public void applyDef(String defPath) throws IOException {
         if (defPath != null) {
             DefHeaderFile defFile = new DefHeaderFile(defPath);
             List<String> def = defFile.getFileNames();
             if (def.size() != files.size()) {
-                throw new RuntimeException("DEF DOES NOT MATCH NARC FILE LIST IN SIZE");
+                throw new NitroException("DEF DOES NOT MATCH NARC FILE LIST IN SIZE");
             }
 
             for (int i = 0; i < def.size(); i++) {
@@ -471,12 +312,18 @@ public class NARC extends GenericNFSFile {
         }
     }
 
+    /**
+     * Rename all files in the Narc according to an .scr file
+     *
+     * @param scrPath the path to the .scr file
+     * @throws IOException failed to parse the .scr file
+     */
     public void applyScr(String scrPath) throws IOException {
         if (scrPath != null) {
             ScrFile scrFile = new ScrFile(scrPath);
             List<String> def = scrFile.getFileNames();
             if (def.size() != files.size()) {
-                throw new RuntimeException("SCR DOES NOT MATCH NARC FILE LIST IN SIZE");
+                throw new NitroException("SCR DOES NOT MATCH NARC FILE LIST IN SIZE");
             }
 
             for (int i = 0; i < def.size(); i++) {
@@ -485,6 +332,12 @@ public class NARC extends GenericNFSFile {
         }
     }
 
+    /**
+     * Rename all files in the Narc according to an .naix file
+     *
+     * @param naixPath the path to the .naix file
+     * @throws IOException failed to parse the .naix file
+     */
     public void applyNaix(String naixPath) throws IOException {
         if (naixPath != null) {
             NaixFile scrFile = new NaixFile(fileName,naixPath);
@@ -499,42 +352,36 @@ public class NARC extends GenericNFSFile {
         }
     }
 
+    /**
+     * Create a .lst file obj based ont eh current filenames
+     *
+     * @return .lst file
+     */
     public LstFile createLst() {
         return new LstFile(getFilenames());
     }
+
+    /**
+     * Rename all files in the Narc using a specified prefix value
+     *
+     * @param reindexValue prefix value
+     */
     public void reindex(String reindexValue) {
         for (int i = 0; i < files.size(); i++) {
             String name = reindexValue + "_" + String.format("%0" + String.valueOf(files.size()).length() + "d", i) + "." + files.get(i).getExt();
             files.get(i).setFileName(name);
         }
     }
-    public void addFile(byte[] file)
-    {
-        rawFiles.add(file);
-    }
 
-    public void removeFile(byte[] file)
-    {
-        rawFiles.remove(file);
-    }
-
-    public void removeFile(int index)
-    {
-        rawFiles.remove(index);
-    }
-
-
-
-    public String toString()
-    {
+    @Override
+    public String toString() {
         if (rawFiles != null)
             return String.format("(%s) NARC with %d files", endiannessOfBeginning.symbol, rawFiles.size());
         return String.format("(%s) NARC", endiannessOfBeginning.symbol);
     }
 
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
         if(this == o) {
             return true;
         }
@@ -544,28 +391,20 @@ public class NARC extends GenericNFSFile {
 
         NARC narc = (NARC) o;
 
-        if (rawFiles.size() == narc.rawFiles.size())
-        {
-            for (int i = 0; i < rawFiles.size(); i++)
-            {
-                if (!Arrays.equals(rawFiles.get(i), narc.rawFiles.get(i)))
-                {
+        if (rawFiles.size() == narc.rawFiles.size()) {
+            for (int i = 0; i < rawFiles.size(); i++) {
+                if (!Arrays.equals(rawFiles.get(i), narc.rawFiles.get(i))) {
                     return false;
                 }
             }
-        }
-        else
-        {
+        } else {
             return false;
         }
-
-
         return Objects.equals(filenames, narc.filenames) && endiannessOfBeginning == narc.endiannessOfBeginning;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(filenames, rawFiles, endiannessOfBeginning);
     }
 }

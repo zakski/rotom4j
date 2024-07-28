@@ -19,28 +19,32 @@
 
 package com.szadowsz.nds4j.utils;
 
-public class StringFormatter
-{
-    public static String formatOutputString(int i, int cnt, String prefix, String suffix)
-    {
+/**
+ * Utility Class to make sure Strings are Formatted Correctly
+ */
+public class StringFormatter {
+
+    /**
+     * Method to return the index as a formatted string with the appropriate amount of 0 padding
+     *
+     * @param i index
+     * @param cnt total count
+     * @param prefix desired prefix
+     * @param suffix desired suffix
+     * @return formatted string
+     */
+    public static String formatOutputString(int i, int cnt, String prefix, String suffix) {
         StringBuilder sb = new StringBuilder("" + i);
-        if (cnt < 10)
-        {
+        if (cnt < 10) {
             while (sb.length() < 2)
                 sb.insert(0, "0");
-        }
-        else if (cnt < 100)
-        {
+        } else if (cnt < 100) {
             while (sb.length() < 3)
                 sb.insert(0, "0");
-        }
-        else if (cnt < 1000)
-        {
+        } else if (cnt < 1000) {
             while (sb.length() < 4)
                 sb.insert(0, "0");
-        }
-        else if (cnt < 10000)
-        {
+        } else if (cnt < 10000) {
             while (sb.length() < 5)
                 sb.insert(0, "0");
         }

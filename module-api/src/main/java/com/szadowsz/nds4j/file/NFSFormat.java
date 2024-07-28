@@ -1,6 +1,7 @@
 package com.szadowsz.nds4j.file;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -97,7 +98,7 @@ public enum NFSFormat {
      */
     public int getExtIndex(String extension) {
         for (int i = 0; i < ext.length;i++){
-            if (ext[i].equals(extension)){
+            if (ext[i].equalsIgnoreCase(extension)){
                 return i;
             }
         }
@@ -121,6 +122,13 @@ public enum NFSFormat {
      * @return corresponding Nitro Format
      */
     public static NFSFormat valueOfExt(String ext) {
-        return BY_EXT.get(ext);
+        NFSFormat format = BY_EXT.get(ext);
+        if (format == null){
+            format = BY_EXT.get(ext.toLowerCase());
+        }
+        if (format == null){
+            format = BY_EXT.get(ext.toUpperCase());
+        }
+        return format;
     }
 }

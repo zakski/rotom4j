@@ -30,7 +30,7 @@ public class BaseNFSFile {
     public BaseNFSFile(String name) {
         if (name != null) {
             this.fileName = stripExtFromFileName(name);
-            String ext = extractExtFromFileName(fileName);
+            String ext = extractExtFromFileName(name);
             this.magic = NFSFormat.valueOfExt(ext);
             this.extIndex = this.magic.getExtIndex(ext);
         } else {
