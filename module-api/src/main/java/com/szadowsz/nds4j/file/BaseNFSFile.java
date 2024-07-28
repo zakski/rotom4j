@@ -1,7 +1,5 @@
 package com.szadowsz.nds4j.file;
 
-import com.szadowsz.nds4j.data.NFSFormat;
-
 /**
  * Base Object to represent Nitro/Nintendo Files
  */

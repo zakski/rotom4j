@@ -95,6 +95,7 @@ public class FileUtils {
     public static final String[] scrExtensions = {".scr"};
     public static final String[] naixExtensions = {".naix"};
 
+    public static final String[] nanrExtensions = {".NANR"};
     public static final String[] ncerExtensions = {".NCER"};
     public static final String[] nscrExtensions = {".NSCR"};
     public static final String[] ncgrExtensions = {".NCGR", ".NCBR"};
@@ -111,6 +112,7 @@ public class FileUtils {
     public static final ExtensionFilter scrFilter = new ExtensionFilter("Nintendo .scr File", scrExtensions);
     public static final ExtensionFilter naixFilter = new ExtensionFilter("Nintendo .naix File", naixExtensions);
 
+    public static final ExtensionFilter nanrFilter = new ExtensionFilter("Nintendo .NANR File", nanrExtensions);
     public static final ExtensionFilter ncerFilter = new ExtensionFilter("Nintendo .NCER File", ncerExtensions);
     public static final ExtensionFilter nscrFilter = new ExtensionFilter("Nintendo DS NSCR", nscrExtensions);
     public static final ExtensionFilter ncgrFilter = new ExtensionFilter("Nintendo DS NCGR", ncgrExtensions);
@@ -125,6 +127,7 @@ public class FileUtils {
     public static final ExtensionNameFilter scrNameFilter = new ExtensionNameFilter("Nintendo .scr File", scrExtensions);
     public static final ExtensionNameFilter naixNameFilter = new ExtensionNameFilter("Nintendo .naix File", naixExtensions);
 
+    public static final ExtensionNameFilter nanrNameFilter = new ExtensionNameFilter("Nintendo .NANR File", nanrExtensions);
     public static final ExtensionNameFilter ncerNameFilter = new ExtensionNameFilter("Nintendo .NCER File", ncerExtensions);
     public static final ExtensionNameFilter nscrNameFilter = new ExtensionNameFilter("Nintendo .NSCR File", nscrExtensions);
     public static final ExtensionNameFilter ncgrNameFilter = new ExtensionNameFilter("Nintendo .NCGR File", ncgrExtensions);

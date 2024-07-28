@@ -2,7 +2,7 @@ package com.szadowsz.nds4j.app.managers;
 
 
 import com.szadowsz.nds4j.app.NDSGuiImpl;
-import com.szadowsz.nds4j.file.bin.StatsNFSFile;
+import com.szadowsz.nds4j.file.bin.stats.StatsNFSFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StatsFileManager {
-    static Logger LOGGER = LoggerFactory.getLogger(NcgrManager.class);
+    static Logger LOGGER = LoggerFactory.getLogger(NitroFileManager.class);
 
     private static StatsFileManager singleton;
 

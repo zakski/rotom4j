@@ -1,12 +1,12 @@
 package com.szadowsz.nds4j.app.nodes.bin.grow;
 
-import com.szadowsz.nds4j.file.bin.GrowNFSFile;
+import com.szadowsz.nds4j.file.bin.stats.GrowNFSFile;
 import com.szadowsz.ui.node.LayoutType;
 import com.szadowsz.ui.node.impl.FolderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.szadowsz.nds4j.file.bin.GrowNFSFile.LEVELS;
+import static com.szadowsz.nds4j.file.bin.stats.GrowNFSFile.LEVELS;
 
 public class GrowthFolderNode extends FolderNode {
 

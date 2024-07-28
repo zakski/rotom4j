@@ -2,16 +2,17 @@ package com.szadowsz.nds4j;
 
 import com.szadowsz.nds4j.compression.CompFormat;
 import com.szadowsz.nds4j.compression.JavaDSDecmp;
-import com.szadowsz.nds4j.data.NFSFormat;
+import com.szadowsz.nds4j.file.NFSFormat;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.BaseNFSFile;
 import com.szadowsz.nds4j.file.bin.BinNFSFile;
 import com.szadowsz.nds4j.file.bin.PlaceholderNFSFile;
-import com.szadowsz.nds4j.file.nitro.NCER;
-import com.szadowsz.nds4j.file.nitro.NCGR;
-import com.szadowsz.nds4j.file.nitro.NCLR;
-import com.szadowsz.nds4j.file.nitro.NSCR;
-import com.szadowsz.nds4j.file.nitro.UnspecifiedNFSFile;
+import com.szadowsz.nds4j.file.nitro.*;
+import com.szadowsz.nds4j.file.nitro.nanr.NANR;
+import com.szadowsz.nds4j.file.nitro.ncer.NCER;
+import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
+import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
+import com.szadowsz.nds4j.file.nitro.nscr.NSCR;
 import com.szadowsz.nds4j.reader.Buffer;
 import com.szadowsz.nds4j.reader.HexInputStream;
 import org.slf4j.Logger;
@@ -102,6 +103,9 @@ public class NFSFactory {
             }
             case NCER -> {
                 return new NCER(path, name, comp, compData, data);
+            }
+            case NANR -> {
+                return new NANR(path, name, comp, compData, data);
             }
             case BINARY -> {
                 if (data != null && data.length > 4) {

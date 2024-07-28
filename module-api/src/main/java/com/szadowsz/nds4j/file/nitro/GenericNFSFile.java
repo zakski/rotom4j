@@ -2,8 +2,8 @@ package com.szadowsz.nds4j.file.nitro;
 
 import com.szadowsz.nds4j.compression.CompFormat;
 import com.szadowsz.nds4j.compression.JavaDSDecmp;
-import com.szadowsz.nds4j.data.NFSFormat;
-import com.szadowsz.nds4j.data.nfs.Endianness;
+import com.szadowsz.nds4j.file.NFSFormat;
+import com.szadowsz.nds4j.file.nitro.data.Endianness;
 import com.szadowsz.nds4j.exception.InvalidDataException;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.BaseNFSFile;
@@ -164,7 +164,7 @@ public abstract class GenericNFSFile extends BaseNFSFile {
         return decompressByte;
     }
 
-    public int NnsG2dGetSectionByMagic(MemBuf.MemBufReader reader, int sectionMagic) {
+    public int findSectionByMagic(MemBuf.MemBufReader reader, int sectionMagic) {
         int original = reader.getPosition();
         int offset = headerSize;
 
@@ -192,14 +192,14 @@ public abstract class GenericNFSFile extends BaseNFSFile {
         return -1;
     }
 
-    public int NnsG2dFindBlockBySignature(MemBuf.MemBufReader reader, String sig) {
+    public int findBlockBySignature(MemBuf.MemBufReader reader, String sig) {
         int sig32 = 0;
         for (int i = 0; i < 4; i++) {
             int shift = 8 * ((endiannessOfBeginning == Endianness.EndiannessType.LITTLE) ? (3 - i) : i);
             sig32 |= (sig.charAt(i) & 0xFF) << shift;
         }
 
-        return NnsG2dGetSectionByMagic(reader, sig32);
+        return findSectionByMagic(reader, sig32);
     }
 
     /**

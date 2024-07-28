@@ -1,14 +1,19 @@
 package com.szadowsz.nds4j.app;
 
 import com.szadowsz.nds4j.app.managers.*;
-import com.szadowsz.nds4j.app.nodes.util.NitroImgFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.NitroImgFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
-import com.szadowsz.nds4j.file.bin.GrowNFSFile;
-import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
-import com.szadowsz.nds4j.file.bin.StatsNFSFile;
-import com.szadowsz.nds4j.file.nitro.*;
+import com.szadowsz.nds4j.file.bin.evo.EvolutionNFSFile;
+import com.szadowsz.nds4j.file.bin.stats.GrowNFSFile;
+import com.szadowsz.nds4j.file.bin.learnset.LearnsetNFSFile;
+import com.szadowsz.nds4j.file.bin.stats.StatsNFSFile;
+import com.szadowsz.nds4j.file.nitro.nanr.NANR;
+import com.szadowsz.nds4j.file.nitro.narc.NARC;
+import com.szadowsz.nds4j.file.nitro.ncer.NCER;
+import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
+import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
+import com.szadowsz.nds4j.file.nitro.nscr.NSCR;
 import com.szadowsz.nds4j.utils.Configuration;
 import com.szadowsz.ui.NDSGuiSettings;
 import com.szadowsz.ui.input.ActivateByType;
@@ -40,6 +45,7 @@ public class Processing extends PApplet {
     protected NDSGuiSettings settings;
 
     final static String selectNarcFile = "Open Narc File";
+    final static String selectNANRFile = "Open NANR File";
     final static String selectNCERFile = "Open NCER File";
     final static String selectNSCRFile = "Open NSCR File";
     final static String selectNCGRFile = "Open NCGR File";
@@ -75,10 +81,25 @@ public class Processing extends PApplet {
             prefs.put("openNarcPath", new File(narcPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.info("Loading Narc File: " + narcPath);
-                NarcManager.getInstance().registerNarc(gui, Narc.fromFile(narcPath));
+                NarcManager.getInstance().registerNarc(gui, NARC.fromFile(narcPath));
                 LOGGER.info("Loaded Narc File: " + narcPath);
             } catch (IOException e) {
                 LOGGER.error("Narc Load Failed",e);
+            }
+        }
+    }
+
+    private void createNanrUI() {
+        String lastPath = prefs.get("openNarcPath", System.getProperty("user.dir"));
+        String nanrPath = FileChooser.selectNanrFile(gui.getGuiCanvas().parent, lastPath,selectNANRFile);
+        if (nanrPath != null) {
+            prefs.put("openNarcPath", new File(nanrPath).getParentFile().getAbsolutePath());
+            try {
+                LOGGER.info("Loading NANR File: " + nanrPath);
+                NitroFileManager.getInstance().registerNANR(gui, NANR.fromFile(nanrPath));
+                LOGGER.info("Loaded NANR File: " + nanrPath);
+            } catch (IOException e) {
+                LOGGER.error("NANR Load Failed",e);
             }
         }
     }
@@ -90,7 +111,7 @@ public class Processing extends PApplet {
             prefs.put("openNarcPath", new File(ncerPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.info("Loading NCER File: " + ncerPath);
-                NcerManager.getInstance().registerNCER(gui, NCER.fromFile(ncerPath));
+                NitroFileManager.getInstance().registerNCER(gui, NCER.fromFile(ncerPath));
                 LOGGER.info("Loaded NCER File: " + ncerPath);
             } catch (IOException e) {
                 LOGGER.error("NCER Load Failed",e);
@@ -105,7 +126,7 @@ public class Processing extends PApplet {
             prefs.put("openNarcPath", new File(nscrPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.info("Loading NSCR File: " + nscrPath);
-                NscrManager.getInstance().registerNSCR(gui, NSCR.fromFile(nscrPath));
+                NitroFileManager.getInstance().registerNSCR(gui, NSCR.fromFile(nscrPath));
                 LOGGER.info("Loaded NSCR File: " + nscrPath);
             } catch (IOException e) {
                 LOGGER.error("NSCR Load Failed",e);
@@ -120,7 +141,7 @@ public class Processing extends PApplet {
             prefs.put("openNarcPath", new File(ncgrPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.info("Loading NCGR File: " + ncgrPath);
-                NcgrManager.getInstance().registerNCGR(gui, NCGR.fromFile(ncgrPath));
+                NitroFileManager.getInstance().registerNCGR(gui, NCGR.fromFile(ncgrPath));
                 LOGGER.info("Loaded NCGR File: " + ncgrPath);
             } catch (IOException e) {
                 LOGGER.error("NCGR Load Failed",e);
@@ -135,7 +156,7 @@ public class Processing extends PApplet {
             prefs.put("openNarcPath", new File(nclrPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.info("Loading NCLR File: " + nclrPath);
-                NclrManager.getInstance().registerNCLR(gui, NCLR.fromFile(nclrPath));
+                NitroFileManager.getInstance().registerNCLR(gui, NCLR.fromFile(nclrPath));
                 LOGGER.info("Loaded NCLR File: " + nclrPath);
             } catch (IOException e) {
                 LOGGER.error("NCLR Load Failed",e);
@@ -210,6 +231,8 @@ public class Processing extends PApplet {
     private void register2DFileButtons() {
         // Tier 1a open
         gui.pushDropdown("Open 2D File");
+        ButtonNode selectNanr = gui.button(selectNANRFile);
+        selectNanr.registerAction(ActivateByType.RELEASE, this::createNanrUI);
         ButtonNode selectNcer = gui.button(selectNCERFile);
         selectNcer.registerAction(ActivateByType.RELEASE, this::createNcerUI);
         ButtonNode selectNscr = gui.button(selectNSCRFile);

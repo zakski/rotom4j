@@ -4,17 +4,23 @@ import com.szadowsz.nds4j.app.nodes.bin.evo.EvoFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.grow.GrowthFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.learn.LearnFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.stats.StatsFolderNode;
-import com.szadowsz.nds4j.app.nodes.ncer.NCERFolderNode;
-import com.szadowsz.nds4j.app.nodes.ncgr.NCGRFolderNode;
-import com.szadowsz.nds4j.app.nodes.nclr.NCLRFolderNode;
-import com.szadowsz.nds4j.app.nodes.nscr.NSCRFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.nanr.NANRFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.ncer.NCERFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.ncgr.NCGRFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.nclr.NCLRFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.nscr.NSCRFolderNode;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
-import com.szadowsz.nds4j.file.bin.GrowNFSFile;
-import com.szadowsz.nds4j.file.bin.LearnsetNFSFile;
-import com.szadowsz.nds4j.file.bin.StatsNFSFile;
-import com.szadowsz.nds4j.file.nitro.*;
+import com.szadowsz.nds4j.file.bin.evo.EvolutionNFSFile;
+import com.szadowsz.nds4j.file.bin.stats.GrowNFSFile;
+import com.szadowsz.nds4j.file.bin.learnset.LearnsetNFSFile;
+import com.szadowsz.nds4j.file.bin.stats.StatsNFSFile;
+import com.szadowsz.nds4j.file.nitro.nanr.NANR;
+import com.szadowsz.nds4j.file.nitro.narc.NARC;
+import com.szadowsz.nds4j.file.nitro.ncer.NCER;
+import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
+import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
+import com.szadowsz.nds4j.file.nitro.nscr.NSCR;
 import com.szadowsz.ui.NDSGui;
 import com.szadowsz.ui.NDSGuiSettings;
 import com.szadowsz.ui.input.ActivateByType;
@@ -45,9 +51,23 @@ public class NDSGuiImpl extends NDSGui {
         super(sketch, settings);
     }
 
+    public NANRFolderNode animeRes(String path, NANR nanr) throws NitroException {
+        String fullPath = getFolder() + path;
+        if(isPathTakenByUnexpectedType(fullPath, NANRFolderNode.class)){
+            return null;//defaultOption == null ? options[0] : defaultOption;
+        }
+        NANRFolderNode node = (NANRFolderNode) findNode(fullPath);
+        if (node == null) {
+            FolderNode parentFolder = NodeTree.findParentFolderLazyInitPath(fullPath);
+            node = new NANRFolderNode(fullPath, parentFolder, nanr);
+            insertNodeAtItsPath(node);
+        }
+        return node;
+    }
+
     public NCERFolderNode cellBank(String path, NCER ncer) throws NitroException {
         String fullPath = getFolder() + path;
-        if(isPathTakenByUnexpectedType(fullPath, NCGRFolderNode.class)){
+        if(isPathTakenByUnexpectedType(fullPath, NCERFolderNode.class)){
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
         NCERFolderNode node = (NCERFolderNode) findNode(fullPath);
@@ -61,7 +81,7 @@ public class NDSGuiImpl extends NDSGui {
 
     public NSCRFolderNode scrRes(String path, NSCR nscr) {
         String fullPath = getFolder() + path;
-        if(isPathTakenByUnexpectedType(fullPath, NCGRFolderNode.class)){
+        if(isPathTakenByUnexpectedType(fullPath, NSCRFolderNode.class)){
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
         NSCRFolderNode node = (NSCRFolderNode) findNode(fullPath);
@@ -157,7 +177,7 @@ public class NDSGuiImpl extends NDSGui {
         return node;
     }
 
-    private List<AbstractNode> registerNarcApplyNodes(Narc narc) {
+    private List<AbstractNode> registerNarcApplyNodes(NARC narc) {
         List<AbstractNode> results = new ArrayList<>();
         pushFolder("Apply")/*)*/;
         results.add(button("Apply .h"));
@@ -172,7 +192,7 @@ public class NDSGuiImpl extends NDSGui {
         return results;
     }
 
-    private List<AbstractNode> registerExtractionButtons(Narc narc) {
+    private List<AbstractNode> registerExtractionButtons(NARC narc) {
         List<AbstractNode> results = new ArrayList<>();
         pushFolder("Extract")/*)*/;
 
@@ -215,7 +235,7 @@ public class NDSGuiImpl extends NDSGui {
         return results;
     }
 
-    private void registerActions(Narc narc, List<AbstractNode> applyNodes,  List<AbstractNode> extractNodes) {
+    private void registerActions(NARC narc, List<AbstractNode> applyNodes, List<AbstractNode> extractNodes) {
         List<String> narcFilenames = narc.getFilenames();
         RadioFolderNode filesRadio = radio("files", narcFilenames);
         ((ButtonNode)applyNodes.get(0)).registerAction(ActivateByType.RELEASE, () -> {
@@ -272,7 +292,7 @@ public class NDSGuiImpl extends NDSGui {
         });
     }
 
-    public void registerNarcGUI(Narc narc) {
+    public void registerNarcGUI(NARC narc) {
         LOGGER.info("Creating GUI for Narc File: " + narc.getFileName());
         setFolder("View/Loaded Files");
         pushFolder(narc.getFileName())/*)*/;
@@ -285,6 +305,16 @@ public class NDSGuiImpl extends NDSGui {
         setFolder(null);
         LOGGER.info("Created GUI for Narc File: " + narc.getFileName());
     }
+
+    public NANRFolderNode registerNanrGUI(NANR nanr) throws NitroException {
+        LOGGER.info("Creating GUI for NANR File: " + nanr.getFileName());
+        setFolder("View/Loaded Files");
+        NANRFolderNode animeResFolderNode = animeRes(nanr.getFileName(), nanr);
+        LOGGER.info("Created GUI for NANR File: " + nanr.getFileName());
+        setFolder(null);
+        return animeResFolderNode;
+    }
+
     public NCERFolderNode registerNcerGUI(NCER ncer) throws NitroException {
         LOGGER.info("Creating GUI for NCER File: " + ncer.getFileName());
         setFolder("View/Loaded Files");
