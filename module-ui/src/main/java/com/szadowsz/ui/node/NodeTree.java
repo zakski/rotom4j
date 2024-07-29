@@ -176,6 +176,16 @@ public class NodeTree {
         }
     }
 
+    public static void setAllChildNodesMouseOverToFalse(FolderNode parentNode) {
+        List<AbstractNode> childNodes = parentNode.children;
+        for (AbstractNode node : childNodes) {
+            node.isMouseOverNode = false;
+            if (node instanceof FolderNode){
+                setAllChildNodesMouseOverToFalse((FolderNode) node);
+            }
+        }
+    }
+
     public static FolderNode findFirstOpenParentNodeRecursively(FolderNode node) {
         if (node == getRoot()) {
             return null;

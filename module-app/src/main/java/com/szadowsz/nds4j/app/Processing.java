@@ -367,7 +367,7 @@ public class Processing extends PApplet {
     @Override
     public void draw() {
         background(30,40,189);
-        System.out.println(frameRate);
+        //System.out.println(frameRate);
     }
 
 

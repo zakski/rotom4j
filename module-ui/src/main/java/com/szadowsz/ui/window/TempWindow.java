@@ -111,28 +111,31 @@ public class TempWindow extends Window {
 
     @Override
     protected void drawInlineFolderChildrenVertically(PGraphics pg) {
-        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained), PConstants.P2D);
-        float y = 0;
-        contentBuffer.beginDraw();
-        contentBuffer.textFont(FontStore.getMainFont());
-        contentBuffer.textAlign(LEFT, CENTER);
-        for (int i = 0; i < folder.children.size(); i++) {
-            AbstractNode node = folder.children.get(i);
-            if (!node.isInlineNodeVisible()) {
-                continue;
+        if (isBufferInvalid) {
+            contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained), PConstants.P2D);
+            float y = 0;
+            contentBuffer.beginDraw();
+            contentBuffer.textFont(FontStore.getMainFont());
+            contentBuffer.textAlign(LEFT, CENTER);
+            for (int i = 0; i < folder.children.size(); i++) {
+                AbstractNode node = folder.children.get(i);
+                if (!node.isInlineNodeVisible()) {
+                    continue;
+                }
+                float nodeHeight = cell * node.masterInlineNodeHeightInCells;
+                drawChildNodeVertically(node, 0, y, windowSizeXForContents, nodeHeight);
+                if (i > 0) {
+                    // separator
+                    contentBuffer.pushStyle();
+                    drawHorizontalSeparator(contentBuffer);
+                    contentBuffer.popStyle();
+                }
+                y += nodeHeight;
+                contentBuffer.translate(0, nodeHeight);
             }
-            float nodeHeight = cell * node.masterInlineNodeHeightInCells;
-            drawChildNodeVertically(node, 0,y, windowSizeXForContents,nodeHeight);
-            if (i > 0) {
-                // separator
-                contentBuffer.pushStyle();
-                drawHorizontalSeparator(contentBuffer);
-                contentBuffer.popStyle();
-            }
-            y += nodeHeight;
-            contentBuffer.translate(0, nodeHeight);
+            contentBuffer.endDraw();
+            isBufferInvalid = false;
         }
-        contentBuffer.endDraw();
 
         pg.pushMatrix();
         pg.translate(posX, posY);
@@ -163,17 +166,23 @@ public class TempWindow extends Window {
     @Override
     public void mouseMoved(GuiMouseEvent e) {
         if (isVisible && folder.isInlineNodeVisibleParentAware() && isPointInsideTitleBar(e.getX(), e.getY())) {
+            if (!isTitleHighlighted()) {
+                isBufferInvalid = true;
+            }
             e.setConsumed(true);
             folder.setIsMouseOverThisNodeOnly();
         } else if (isPointInsideContent(e.getX(), e.getY()) && !isPointInsideResizeBorder(e.getX(), e.getY())) {
             AbstractNode node = tryFindChildNodeAt(e.getX(), e.getY());
+            if (node != null && !node.isMouseOverNode) {
+                isBufferInvalid = true;
+            }
             if (node != null && node.isParentWindowVisible()) {
                 node.setIsMouseOverThisNodeOnly();
                 e.setConsumed(true);
             }
         } else {
             if (!isPointInRect(e.getX(),e.getY(),posX-5,posY-5,windowSizeX+10,windowSizeY+10)) {
-                NodeTree.setAllNodesMouseOverToFalse();
+                NodeTree.setAllChildNodesMouseOverToFalse(this.folder);
                 if (!isInParentWindow(e.getX(), e.getY()) && !isInChildWindow(e.getX(), e.getY())) {
                     close();
                 }

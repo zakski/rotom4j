@@ -38,6 +38,7 @@ public class Window implements UserInputSubscriber {
     private Optional<Scrollbar> vsb = Optional.empty();
 
     // Window Content Buffer
+    protected boolean isBufferInvalid = true;
     protected PGraphics contentBuffer = null;
 
     // Window Position Info
@@ -253,6 +254,7 @@ public class Window implements UserInputSubscriber {
         return null;
     }
 
+
     /**
      * Check if the point is inside the title bar of the Window
      *
@@ -353,8 +355,12 @@ public class Window implements UserInputSubscriber {
      *
      * @return true if the title is highlighted, false otherwise
      */
-    public boolean isTitleHighlighted() {
+    public synchronized boolean isTitleHighlighted() {
         return isTitleHighlighted;
+    }
+
+    public synchronized boolean isScrollbarHighlighted() {
+        return isScrollbarHighlighted;
     }
 
     /**
@@ -378,6 +384,14 @@ public class Window implements UserInputSubscriber {
 
     public boolean isBeingDragged() {
         return isBeingDragged;
+    }
+
+    protected synchronized void setTitleHighlighted(boolean v) {
+        isTitleHighlighted = v;
+    }
+
+    protected synchronized void setScrollbarHighlighted(boolean v) {
+        isScrollbarHighlighted = v;
     }
 
     /**
@@ -428,17 +442,17 @@ public class Window implements UserInputSubscriber {
             pg.pushMatrix();
             pg.pushStyle();
             pg.translate(posX, posY);
-            pg.fill(isTitleHighlighted ? ThemeStore.getColor(FOCUS_BACKGROUND) : ThemeStore.getColor(NORMAL_BACKGROUND));
+            pg.fill(isTitleHighlighted() ? ThemeStore.getColor(FOCUS_BACKGROUND) : ThemeStore.getColor(NORMAL_BACKGROUND));
             if (!GlobalReferences.app.focused && isRoot()) {
                 pg.fill(ThemeStore.getColor(FOCUS_BACKGROUND));
                 leftText = "not in focus";
-                isTitleHighlighted = true;
+                setTitleHighlighted(true);
             }
             float titleBarWidth = windowSizeX;
             pg.strokeWeight(1);
             pg.stroke(ThemeStore.getColor(WINDOW_BORDER));
             pg.rect(0, 0, titleBarWidth, cell);
-            pg.fill(isTitleHighlighted ? ThemeStore.getColor(FOCUS_FOREGROUND) : ThemeStore.getColor(NORMAL_FOREGROUND));
+            pg.fill(isTitleHighlighted() ? ThemeStore.getColor(FOCUS_FOREGROUND) : ThemeStore.getColor(NORMAL_FOREGROUND));
             pg.textAlign(LEFT, CENTER);
             pg.text(leftText, FontStore.textMarginX, cell - FontStore.textMarginY);
             pg.popStyle();
@@ -561,23 +575,26 @@ public class Window implements UserInputSubscriber {
      * @param pg Processing Graphics Context
      */
     private void drawInlineFolderChildrenHorizontally(PGraphics pg) {
-        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeX, (int) windowSizeY, PConstants.P2D);
-        contentBuffer.beginDraw();
-        contentBuffer.textFont(FontStore.getMainFont());
-        contentBuffer.textAlign(LEFT, CENTER);
-        float x = 0;
-        for (int i = 0; i < folder.children.size(); i++) {
-            AbstractNode node = folder.children.get(i);
-            if (!node.isInlineNodeVisible()) {
-                continue;
+        if (isBufferInvalid) {
+            contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeX, (int) windowSizeY, PConstants.P2D);
+            contentBuffer.beginDraw();
+            contentBuffer.textFont(FontStore.getMainFont());
+            contentBuffer.textAlign(LEFT, CENTER);
+            float x = 0;
+            for (int i = 0; i < folder.children.size(); i++) {
+                AbstractNode node = folder.children.get(i);
+                if (!node.isInlineNodeVisible()) {
+                    continue;
+                }
+                float nodeWidth = node.getRequiredWidthForHorizontalLayout();
+                drawChildNodeHorizontally(node, x, nodeWidth);
+                // TODO consider Vertical Separator
+                x += nodeWidth;
+                contentBuffer.translate(nodeWidth, 0);
             }
-            float nodeWidth = node.getRequiredWidthForHorizontalLayout();
-            drawChildNodeHorizontally(node, x, nodeWidth);
-            // TODO consider Vertical Separator
-            x += nodeWidth;
-            contentBuffer.translate(nodeWidth, 0);
+            contentBuffer.endDraw();
+            isBufferInvalid = false;
         }
-        contentBuffer.endDraw();
         pg.pushMatrix();
         pg.translate(posX, posY);
         pg.image(contentBuffer, 0, 0);
@@ -622,29 +639,38 @@ public class Window implements UserInputSubscriber {
      * @param pg Processing Graphics Context
      */
     protected void drawInlineFolderChildrenVertically(PGraphics pg) {
-        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained - cell), PConstants.P2D);
-        float y = cell;
-        contentBuffer.beginDraw();
-        contentBuffer.textFont(FontStore.getMainFont());
-        contentBuffer.textAlign(LEFT, CENTER);
-        for (int i = 0; i < folder.children.size(); i++) {
-            AbstractNode node = folder.children.get(i);
-            if (!node.isInlineNodeVisible()) {
-                continue;
+        if (isBufferInvalid) {
+            long time = 0;
+            if (folder.children.size()>400){
+                time = System.currentTimeMillis();
             }
-            float nodeHeight = cell * node.masterInlineNodeHeightInCells;
-            drawChildNodeVertically(node, 0, y, windowSizeXForContents, nodeHeight);
-            if (i > 0) {
-                // separator
-                contentBuffer.pushStyle();
-                drawHorizontalSeparator(contentBuffer);
-                contentBuffer.popStyle();
+            contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained - cell), PConstants.P2D);
+            float y = cell;
+            contentBuffer.beginDraw();
+            contentBuffer.textFont(FontStore.getMainFont());
+            contentBuffer.textAlign(LEFT, CENTER);
+             for (int i = 0; i < folder.children.size(); i++) {
+                AbstractNode node = folder.children.get(i);
+                if (!node.isInlineNodeVisible()) {
+                    continue;
+                }
+                float nodeHeight = cell * node.masterInlineNodeHeightInCells;
+                drawChildNodeVertically(node, 0, y, windowSizeXForContents, nodeHeight);
+                if (i > 0) {
+                    // separator
+                    contentBuffer.pushStyle();
+                    drawHorizontalSeparator(contentBuffer);
+                    contentBuffer.popStyle();
+                }
+                y += nodeHeight;
+                contentBuffer.translate(0, nodeHeight);
             }
-            y += nodeHeight;
-            contentBuffer.translate(0, nodeHeight);
+            contentBuffer.endDraw();
+            isBufferInvalid = false;
+            if (folder.children.size()>400){
+                System.out.println("Duration " + (System.currentTimeMillis()-time));
+            }
         }
-        contentBuffer.endDraw();
-
         pg.pushMatrix();
         pg.translate(posX, posY);
         pg.translate(0, cell);
@@ -663,51 +689,53 @@ public class Window implements UserInputSubscriber {
      * @param pg Processing Graphics Context
      */
     protected void drawInlineFolderChildrenVerticalCols(PGraphics pg) {
-        contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained - cell), PConstants.P2D);
+        if (isBufferInvalid) {
+            contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained - cell), PConstants.P2D);
 
-        float y = cell;
+            float y = cell;
 
-        int currentCol = 0;
-        List<AbstractNode> colChildren = folder.getColChildren(currentCol);
+            int currentCol = 0;
+            List<AbstractNode> colChildren = folder.getColChildren(currentCol);
 
-        contentBuffer.beginDraw();
-        contentBuffer.textFont(FontStore.getMainFont());
-        contentBuffer.textAlign(LEFT, CENTER);
-        float pos = 0.0f;
-        while (!colChildren.isEmpty()) {
-            float width = folder.getColWidth(currentCol);
-            contentBuffer.pushMatrix();
-            contentBuffer.translate(pos, 0);
-
-            for (int i = 0; i < colChildren.size(); i++) {
-                AbstractNode node = colChildren.get(i);
-                if (!node.isInlineNodeVisible()) {
-                    continue;
-                }
-                float nodeHeight = cell * node.masterInlineNodeHeightInCells;
-                drawChildNodeVertically(node, pos, y, width, nodeHeight);
-                if (i > 0) {
-                    // separator
-                    contentBuffer.pushStyle();
-                    drawHorizontalSeparator(contentBuffer);
-                    contentBuffer.popStyle();
-                }
-                y += nodeHeight;
-                contentBuffer.translate(0, nodeHeight);
-            }
-            contentBuffer.popMatrix();
-            if (currentCol > 0) {
+            contentBuffer.beginDraw();
+            contentBuffer.textFont(FontStore.getMainFont());
+            contentBuffer.textAlign(LEFT, CENTER);
+            float pos = 0.0f;
+            while (!colChildren.isEmpty()) {
+                float width = folder.getColWidth(currentCol);
                 contentBuffer.pushMatrix();
                 contentBuffer.translate(pos, 0);
-                drawVerticalSeparator(contentBuffer);
-                contentBuffer.popMatrix();
-            }
-            colChildren = folder.getColChildren(++currentCol);
-            y = cell;
-            pos = pos + width;
-        }
-        contentBuffer.endDraw();
 
+                for (int i = 0; i < colChildren.size(); i++) {
+                    AbstractNode node = colChildren.get(i);
+                    if (!node.isInlineNodeVisible()) {
+                        continue;
+                    }
+                    float nodeHeight = cell * node.masterInlineNodeHeightInCells;
+                    drawChildNodeVertically(node, pos, y, width, nodeHeight);
+                    if (i > 0) {
+                        // separator
+                        contentBuffer.pushStyle();
+                        drawHorizontalSeparator(contentBuffer);
+                        contentBuffer.popStyle();
+                    }
+                    y += nodeHeight;
+                    contentBuffer.translate(0, nodeHeight);
+                }
+                contentBuffer.popMatrix();
+                if (currentCol > 0) {
+                    contentBuffer.pushMatrix();
+                    contentBuffer.translate(pos, 0);
+                    drawVerticalSeparator(contentBuffer);
+                    contentBuffer.popMatrix();
+                }
+                colChildren = folder.getColChildren(++currentCol);
+                y = cell;
+                pos = pos + width;
+            }
+            contentBuffer.endDraw();
+            isBufferInvalid = false;
+        }
         pg.pushMatrix();
         pg.translate(posX, posY);
         pg.translate(0, cell);
@@ -763,8 +791,8 @@ public class Window implements UserInputSubscriber {
      */
     void drawWindow(PGraphics pg) {
         pg.textFont(FontStore.getMainFont());
-        isTitleHighlighted = isVisible && (isPointInsideTitleBar(GlobalReferences.app.mouseX, GlobalReferences.app.mouseY) && isBeingDragged) || folder.isMouseOverNode;
-        isScrollbarHighlighted = isVisible && (isPointInsideScrollbar(GlobalReferences.app.mouseX, GlobalReferences.app.mouseY) && !isBeingDragged) || folder.isMouseOverNode;
+        setTitleHighlighted(isVisible && (isPointInsideTitleBar(GlobalReferences.app.mouseX, GlobalReferences.app.mouseY) && isBeingDragged) || folder.isMouseOverNode);
+        setScrollbarHighlighted(isVisible && (isPointInsideScrollbar(GlobalReferences.app.mouseX, GlobalReferences.app.mouseY) && !isBeingDragged) || folder.isMouseOverNode);
         if (!isVisible || !folder.isInlineNodeVisibleParentAware()) {
             return;
         }
@@ -941,21 +969,30 @@ public class Window implements UserInputSubscriber {
     @Override
     public void mouseMoved(GuiMouseEvent e) {
         if (isVisible && folder.isInlineNodeVisibleParentAware() && isPointInsideTitleBar(e.getX(), e.getY())) {
+            if (!isTitleHighlighted()) {
+                isBufferInvalid = true;
+            }
             e.setConsumed(true);
             folder.setIsMouseOverThisNodeOnly();
         } else if (isVisible && folder.isInlineNodeVisibleParentAware() && isPointInsideScrollbar(e.getX(), e.getY())) {
+            if (!isScrollbarHighlighted()) {
+                isBufferInvalid = true;
+            }
             e.setConsumed(true);
             vsb.ifPresent(s -> s.mouseMoved(e));
             folder.setIsMouseOverThisNodeOnly();
         } else if (isPointInsideContent(e.getX(), e.getY()) && !isPointInsideResizeBorder(e.getX(), e.getY())) {
             float yDiff = windowSizeYUnconstrained - windowSizeY;
             AbstractNode node = tryFindChildNodeAt(e.getX(), e.getY() + yDiff * vsb.map(s -> s.value).orElse(0.0f));
+            if (node != null && !node.isMouseOverNode) {
+                isBufferInvalid = true;
+            }
             if (node != null && node.isParentWindowVisible()) {
                 node.setIsMouseOverThisNodeOnly();
                 e.setConsumed(true);
             }
         } else {
-            NodeTree.setAllNodesMouseOverToFalse();
+            NodeTree.setAllChildNodesMouseOverToFalse(this.folder);
         }
     }
 
