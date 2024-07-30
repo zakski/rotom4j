@@ -53,8 +53,7 @@ public class NCERFolderNode extends NitroCmpFolderNode<NCER> {
         PImage pImage = resizeImage(imageable.getImage((int) cellNode.valueFloat));
         ((PreviewNode) findChildByName(imageable.getFileName())).loadImage(pImage);
 
-        this.window.windowSizeX = autosuggestWindowWidthForContents();
-        this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
+        this.window.resizeForContents();
     }
 
     @Override

@@ -121,7 +121,7 @@ public class NodeTree {
         lazyInitFolderPath(folderPath);
         FolderNode folder = (FolderNode) findNode(folderPath);
         assert folder != null;
-        folder.children.add(node);
+        folder.insertChild(node);
     }
 
     public static List<AbstractNode> getAllNodesAsList() {
@@ -190,7 +190,7 @@ public class NodeTree {
         if (node == getRoot()) {
             return null;
         }
-        if (node.isParentWindowOpen() && node.isInlineNodeVisible()) {
+        if (node.isParentWindowOpen() && node.isVisible()) {
             return node;
         }
         return findFirstOpenParentNodeRecursively(node.parent);
@@ -239,7 +239,7 @@ public class NodeTree {
     }
 
     public static boolean areAllParentsInlineVisible(AbstractNode node) {
-        if (!node.isInlineNodeVisible()) {
+        if (!node.isVisible()) {
             return false;
         }
         if (node.equals(getRoot())) {

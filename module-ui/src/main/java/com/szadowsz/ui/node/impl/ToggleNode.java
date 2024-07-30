@@ -31,7 +31,11 @@ public class ToggleNode extends AbstractNode {
 
 
     public ToggleNode(String path, FolderNode folder, boolean defaultValue) {
-        super(NodeType.VALUE, path, folder);
+        this(NodeType.VALUE, path, folder,defaultValue);
+    }
+
+    protected ToggleNode(NodeType type, String path, FolderNode folder, boolean defaultValue) {
+        super(type, path, folder);
         valueBoolean = defaultValue;
         isInlineNodeDraggable = false;
         JsonSaveStore.overwriteWithLoadedStateIfAny(this);

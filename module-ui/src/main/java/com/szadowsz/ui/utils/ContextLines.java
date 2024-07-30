@@ -51,7 +51,7 @@ public class ContextLines {
                 continue;
             }
             FolderNode folderNode = (FolderNode) node;
-            if (folderNode.window == null || !folderNode.window.isVisible() || !folderNode.isInlineNodeVisible()) {
+            if (folderNode.window == null || !folderNode.window.isVisible() || !folderNode.isVisible()) {
                 continue;
             }
             boolean shouldShowLineFromTitleTowardsInlineNode = showContextLinesMode == SHOW_CONTEXT_LINES_ALWAYS ||

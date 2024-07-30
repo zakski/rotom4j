@@ -110,8 +110,7 @@ public class NCGRFolderNode extends NitroImgFolderNode<NCGR> {
         ((PreviewNode) findChildByName(imageable.getFileName())).loadImage(pImage);
 
         if (this.window!=null) {
-            this.window.windowSizeX = autosuggestWindowWidthForContents();
-            this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
+            this.window.resizeForContents();
         }
         if (cmpFolder != null) {
             cmpFolder.recolorImage();

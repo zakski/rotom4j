@@ -27,28 +27,30 @@ import static processing.core.PConstants.*;
  *  - a directly adjustable value that is returned to the user
  */
 public abstract class AbstractNode implements MouseInteractable {
+
     @Expose
     public final String className = this.getClass().getSimpleName();
-     @Expose
-    public
-    String path;
+
     @Expose
-    public
-    NodeType type;
+    public final String path;
+
+    @Expose
+    public final NodeType type;
 
     protected int col;
+    protected float heightInCells = 1;
+
 
     protected final String name;
     public final FolderNode parent;
     public final PVector pos = new PVector();
     public final PVector size = new PVector();
 
-    public float masterInlineNodeHeightInCells = 1;
-    public boolean isInlineNodeDragged = false;
+     public boolean isInlineNodeDragged = false;
     public boolean isInlineNodeDraggable = true;
     public boolean isMouseOverNode = false;
 
-    private boolean isInlineNodeVisible = true;
+    private boolean isVisible = true;
 
 
     /**
@@ -314,7 +316,7 @@ public abstract class AbstractNode implements MouseInteractable {
      * @param loadedNode Json state of loaded node
      */
     public void overwriteState(JsonElement loadedNode){
-
+        // NOOP
     }
 
     /**
@@ -346,14 +348,14 @@ public abstract class AbstractNode implements MouseInteractable {
         if(this.equals(NodeTree.getRoot())){
             return;
         }
-        isInlineNodeVisible = false;
+        isVisible = false;
     }
 
     /**
      * Method to set the node to visible
       */
     public void showInlineNode() {
-        isInlineNodeVisible = true;
+        isVisible = true;
     }
 
     public String getName(){
@@ -375,12 +377,21 @@ public abstract class AbstractNode implements MouseInteractable {
     }
 
     /**
+     * Method to calculate the height
+     *
+     * @return the height of the node
+     */
+    public float getHeight(){
+       return heightInCells * cell;
+    }
+
+    /**
      * Method to check if this node is visible
      *
      * @return true if visible, false otherwise
      */
-    public boolean isInlineNodeVisible(){
-        return isInlineNodeVisible;
+    public boolean isVisible(){
+        return isVisible;
     }
 
     /**
@@ -388,8 +399,8 @@ public abstract class AbstractNode implements MouseInteractable {
      *
      * @return true if visible, false otherwise
      */
-    public boolean isInlineNodeVisibleParentAware(){
-        return NodeTree.areAllParentsInlineVisible(this) && isInlineNodeVisible;
+    public boolean isVisibleParentAware(){
+        return NodeTree.areAllParentsInlineVisible(this) && isVisible();
     }
 
     /**
@@ -401,7 +412,7 @@ public abstract class AbstractNode implements MouseInteractable {
         if(parent == null || parent.window == null){
             return !LayoutStore.isGuiHidden();
         }
-        return parent.window.isVisible();
+        return parent.isWindowVisible();
     }
 
     /**
@@ -413,7 +424,7 @@ public abstract class AbstractNode implements MouseInteractable {
         if(parent == null || parent.window == null){
             return false;
         }
-        return parent.window.isVisible();
+        return parent.isWindowVisible();
     }
 
     public void setColumn(int col){

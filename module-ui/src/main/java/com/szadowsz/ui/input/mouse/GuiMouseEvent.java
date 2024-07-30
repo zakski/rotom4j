@@ -1,6 +1,7 @@
 package com.szadowsz.ui.input.mouse;
 
 import com.szadowsz.ui.constants.GlobalReferences;
+import processing.core.PConstants;
 
 import static processing.core.PConstants.CENTER;
 
@@ -30,6 +31,14 @@ public class GuiMouseEvent {
 
     public boolean isConsumed() {
         return consumed;
+    }
+
+    public boolean isLeft(){
+        return button == PConstants.LEFT;
+    }
+
+    public boolean isRight(){
+        return button == PConstants.LEFT;
     }
 
     public float getX() {

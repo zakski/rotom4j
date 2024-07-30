@@ -6,7 +6,6 @@ import com.szadowsz.nds4j.utils.Configuration;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.NodeType;
 import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.store.FontStore;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
@@ -22,7 +21,7 @@ public class PreviewNode extends AbstractNode {
     public PreviewNode(String path, FolderNode folder, Imageable imageable) {
         super(NodeType.TRANSIENT, path, folder);
         this.imageable = imageable;
-        masterInlineNodeHeightInCells = imageable.getHeight() / cell + ((imageable.getHeight() % cell != 0) ? 1 : 0);
+        heightInCells = imageable.getHeight() / cell + ((imageable.getHeight() % cell != 0) ? 1 : 0);
         size.x = imageable.getWidth();
         size.y = imageable.getHeight();
         loadImage(ImageUtils.convertToPImage((imageable.getImage())));
@@ -156,7 +155,7 @@ public class PreviewNode extends AbstractNode {
 
     public void loadImage(PImage pImage) {
         this.image = pImage;
-        masterInlineNodeHeightInCells = image.height / cell + ((image.height % cell != 0) ? 1 : 0);
+        heightInCells = image.height / cell + ((image.height % cell != 0) ? 1 : 0);
         size.x = image.width;
         size.y = image.height;
         createBG();

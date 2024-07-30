@@ -41,8 +41,7 @@ public class NANRFolderNode extends NitroCmpFolderNode<NANR> {
         PImage pImage = resizeImage(imageable.getImage());
         ((PreviewNode) findChildByName(PREVIEW_NODE)).loadImage(pImage);
 
-        this.window.windowSizeX = autosuggestWindowWidthForContents();
-        this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
+        this.window.resizeForContents();
     }
 
     @Override

@@ -27,7 +27,7 @@ public class DropdownMenuNode extends FolderNode {
             if (parent != null && parent.getLayout() == LayoutType.HORIZONAL) {
                 WindowManager.uncoverOrCreateTempWindow(this, true, pos.x, pos.y + cell, null);
             } else {
-                WindowManager.uncoverOrCreateTempWindow(this, true, parent.window.posX + parent.window.windowSizeX, pos.y, null);
+                WindowManager.uncoverOrCreateTempWindow(this, true, pos.x + size.x/*parent.window.posX + parent.window.windowSizeX*/, pos.y, null);
             }
         } else {
             window.close();

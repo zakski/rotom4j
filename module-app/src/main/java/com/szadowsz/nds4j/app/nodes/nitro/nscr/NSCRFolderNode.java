@@ -35,8 +35,7 @@ public class NSCRFolderNode extends NitroCmpFolderNode<NSCR> {
         PImage pImage = resizeImage(imageable.getImage());
         ((PreviewNode) findChildByName(imageable.getFileName())).loadImage(pImage);
 
-        this.window.windowSizeX = autosuggestWindowWidthForContents();
-        this.window.windowSizeXForContents = autosuggestWindowWidthForContents();
+        this.window.resizeForContents();
     }
 
     @Override

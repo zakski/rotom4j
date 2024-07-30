@@ -1,6 +1,5 @@
 package com.szadowsz.ui.window;
 
-import com.szadowsz.ui.constants.GlobalReferences;
 import com.szadowsz.ui.input.mouse.GuiMouseEvent;
 import com.szadowsz.ui.node.AbstractNode;
 import com.szadowsz.ui.node.LayoutType;
@@ -8,14 +7,10 @@ import com.szadowsz.ui.node.NodeTree;
 import com.szadowsz.ui.node.impl.FolderNode;
 import com.szadowsz.ui.store.FontStore;
 import com.szadowsz.ui.store.LayoutStore;
-import processing.core.PApplet;
-import processing.core.PConstants;
 import processing.core.PGraphics;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
 import static com.szadowsz.ui.utils.Coordinates.isPointInRect;
-import static processing.core.PConstants.CENTER;
-import static processing.core.PConstants.LEFT;
 
 /**
  * Gui Temporary Window Node Organisation and Drawing
@@ -38,13 +33,13 @@ public class TempWindow extends Window {
             int index = 0;
             while (index < folder.children.size()) {
                 AbstractNode child = folder.children.get(index);
-                if (!child.isInlineNodeVisible()) {
+                if (!child.isVisible()) {
                     continue;
                 }
-                if (posY + sum + child.masterInlineNodeHeightInCells * cell > pg.height * 0.9) {
+                if (posY + sum + child.getHeight() > pg.height * 0.9) {
                   break;
                 }
-                sum += child.masterInlineNodeHeightInCells * cell;
+                sum += child.getHeight();
                 index++;
             }
             if (windowSizeXForContents == windowSizeX && !isBeingResized) {
@@ -58,7 +53,7 @@ public class TempWindow extends Window {
     @Override
     protected AbstractNode tryFindChildNodeAt(float x, float y) {
         for (AbstractNode node : folder.children) {
-            if (!node.isInlineNodeVisible()) {
+            if (!node.isVisible()) {
                 continue;
             }
             if (isPointInRect(x, y, node.pos.x, node.pos.y, node.size.x, node.size.y)) {
@@ -111,50 +106,19 @@ public class TempWindow extends Window {
 
     @Override
     protected void drawInlineFolderChildrenVertically(PGraphics pg) {
-        if (isBufferInvalid) {
-            contentBuffer = GlobalReferences.app.createGraphics((int) windowSizeXForContents, (int) (windowSizeYUnconstrained), PConstants.P2D);
-            float y = 0;
-            contentBuffer.beginDraw();
-            contentBuffer.textFont(FontStore.getMainFont());
-            contentBuffer.textAlign(LEFT, CENTER);
-            for (int i = 0; i < folder.children.size(); i++) {
-                AbstractNode node = folder.children.get(i);
-                if (!node.isInlineNodeVisible()) {
-                    continue;
-                }
-                float nodeHeight = cell * node.masterInlineNodeHeightInCells;
-                drawChildNodeVertically(node, 0, y, windowSizeXForContents, nodeHeight);
-                if (i > 0) {
-                    // separator
-                    contentBuffer.pushStyle();
-                    drawHorizontalSeparator(contentBuffer);
-                    contentBuffer.popStyle();
-                }
-                y += nodeHeight;
-                contentBuffer.translate(0, nodeHeight);
-            }
-            contentBuffer.endDraw();
-            isBufferInvalid = false;
-        }
-
         pg.pushMatrix();
         pg.translate(posX, posY);
-        pg.image(contentBuffer, 0, 0);
+        pg.image(contentBuffer.draw(), 0, 0);
         pg.popMatrix();
     }
 
     @Override
     void drawWindow(PGraphics pg) {
         pg.textFont(FontStore.getMainFont());
-        if (!isVisible || !folder.isInlineNodeVisibleParentAware()) {
+        if (!isVisible || !folder.isVisibleParentAware()) {
             return;
         }
-        constrainPosition(pg);
-        if (folder.getLayout() == LayoutType.VERTICAL_1_COL) {
-            constrainHeight(pg);
-        } else if (folder.getLayout() == LayoutType.HORIZONAL) {
-            constrainWidth(pg);
-        }
+        constrainBounds(pg);
         pg.pushMatrix();
         drawBackgroundWithWindowBorder(pg, true);
         drawContent(pg);
@@ -165,16 +129,16 @@ public class TempWindow extends Window {
 
     @Override
     public void mouseMoved(GuiMouseEvent e) {
-        if (isVisible && folder.isInlineNodeVisibleParentAware() && isPointInsideTitleBar(e.getX(), e.getY())) {
-            if (!isTitleHighlighted()) {
-                isBufferInvalid = true;
+        if (isMouseInsideTitlebar(e)) {
+            if (folder.children.stream().anyMatch(c -> c.isMouseOverNode)){
+                contentBuffer.invalidateBuffer();
             }
             e.setConsumed(true);
             folder.setIsMouseOverThisNodeOnly();
-        } else if (isPointInsideContent(e.getX(), e.getY()) && !isPointInsideResizeBorder(e.getX(), e.getY())) {
+        } else if (isMouseInsideContent(e)) {
             AbstractNode node = tryFindChildNodeAt(e.getX(), e.getY());
             if (node != null && !node.isMouseOverNode) {
-                isBufferInvalid = true;
+                contentBuffer.invalidateBuffer();
             }
             if (node != null && node.isParentWindowVisible()) {
                 node.setIsMouseOverThisNodeOnly();
@@ -188,5 +152,10 @@ public class TempWindow extends Window {
                 }
             }
         }
+    }
+
+    @Override
+    public float contentHeight(){
+        return (folder.getLayout()==LayoutType.HORIZONAL)?windowSizeY:(windowSizeYUnconstrained);
     }
 }

@@ -1,5 +1,6 @@
 package com.szadowsz.ui.input.mouse;
 
+import com.szadowsz.ui.node.NodeTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PVector;
@@ -106,6 +107,9 @@ public class Mouse {
          if (event.getAction() == MouseEvent.MOVE) {
              GuiMouseEvent e = new GuiMouseEvent(current.x, current.y, previous.x, previous.y, event.getButton());
              handlers.forEach(l -> l.mouseMovedEvent(e));
+             if (!e.isConsumed()){
+                 NodeTree.setAllNodesMouseOverToFalse();
+             }
          } else if (event.getAction() == MouseEvent.DRAG){
              GuiMouseEvent e = new GuiMouseEvent(current.x, current.y, previous.x, previous.y, event.getButton());
              handlers.forEach(l -> l.mouseDraggedEvent(e));

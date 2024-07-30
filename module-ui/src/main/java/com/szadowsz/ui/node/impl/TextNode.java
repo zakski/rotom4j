@@ -60,7 +60,7 @@ public class TextNode extends AbstractNode {
             drawLeftText(pg, name);
             lineCount += 1;
         }
-        masterInlineNodeHeightInCells = lineCount;
+        heightInCells = lineCount;
         String contentToDraw = toDisplay.isEmpty() ? "..." : toDisplay;
         fillForegroundBasedOnMouseOver(pg);
         drawContent(pg, contentToDraw);

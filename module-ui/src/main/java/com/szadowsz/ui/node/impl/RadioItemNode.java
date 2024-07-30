@@ -8,8 +8,7 @@ class RadioItemNode extends ToggleNode {
     final String valueString;
 
     RadioItemNode(String path, FolderNode folder, boolean valueBoolean, String valueString) {
-        super(path, folder, valueBoolean);
-        this.type = NodeType.TRANSIENT;
+        super(NodeType.TRANSIENT,path, folder, valueBoolean);
         this.valueString = valueString;
     }
 

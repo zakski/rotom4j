@@ -39,123 +39,123 @@ public class LayoutStore {
 //        gui.popFolder();
 //    }
 
-    public static void setCellSize(float inputCellSize) {
-        cell = inputCellSize;
-    }
-
-    public static void setShouldKeepWindowsInBounds(boolean valueToSet) {
-        shouldKeepWindowsInBounds = valueToSet;
-    }
-
-    public static boolean getShouldKeepWindowsInBounds() {
-        return shouldKeepWindowsInBounds;
-    }
-
-    public static void setWindowResizeEnabled(boolean valueToSet) {
-        isWindowResizeEnabled = valueToSet;
-    }
-
-    public static boolean getWindowResizeEnabled() {
-        return isWindowResizeEnabled;
-    }
-
-    public static boolean getShouldDrawResizeIndicator() {
-        return shouldDrawResizeIndicator;
-    }
-
-    public static void setShouldDrawResizeIndicator(boolean valueToSet) {
-        shouldDrawResizeIndicator = valueToSet;
-    }
-
-    public static float getResizeRectangleSize() {
-        return resizeRectangleSize;
-    }
-
-    public static void setResizeRectangleSize(float valueToSet) {
-        resizeRectangleSize = valueToSet;
-    }
-
-    public static boolean isShowHorizontalSeparators() {
-        return showHorizontalSeparators;
-    }
-
-    public static void setShowHorizontalSeparators(boolean showHorizontalSeparators) {
-        LayoutStore.showHorizontalSeparators = showHorizontalSeparators;
+    public static boolean getAutosuggestWindowWidth() {
+        return autosuggestWindowWidth;
     }
 
     public static float getHorizontalSeparatorStrokeWeight() {
         return horizontalSeparatorStrokeWeight;
     }
 
-    public static void setHorizontalSeparatorStrokeWeight(float horizontalSeparatorStrokeWeight) {
-        LayoutStore.horizontalSeparatorStrokeWeight = horizontalSeparatorStrokeWeight;
+    public static float getResizeRectangleSize() {
+        return resizeRectangleSize;
+    }
+
+    public static boolean getShouldKeepWindowsInBounds() {
+        return shouldKeepWindowsInBounds;
+    }
+
+    public static boolean getShouldDrawResizeIndicator() {
+        return shouldDrawResizeIndicator;
     }
 
     public static boolean getShowPathTooltips() {
         return showPathTooltips;
     }
 
-    public static void setShowPathTooltips(boolean showPathTooltips) {
-        LayoutStore.showPathTooltips = showPathTooltips;
+    public static int getSmoothingValue() {
+        return smoothingValue;
     }
 
-    public static void setIsGuiHidden(boolean shouldGuiBeHidden){
-        isGuiHidden = shouldGuiBeHidden;
+    public static boolean getWindowResizeEnabled() {
+        return isWindowResizeEnabled;
     }
 
     public static boolean isGuiHidden() {
         return isGuiHidden;
     }
 
-    public static void hideGuiToggle(){
-        isGuiHidden = !isGuiHidden;
-    }
-
-    public static boolean getAutosuggestWindowWidth() {
-        return autosuggestWindowWidth;
-    }
-
-    public static void setAutosuggestWindowWidth(boolean autosuggestWindowWidth) {
-        LayoutStore.autosuggestWindowWidth = autosuggestWindowWidth;
+    public static boolean isShowHorizontalSeparators() {
+        return showHorizontalSeparators;
     }
 
     public static String getOverridingSketchName() {
         return overridingSketchName;
     }
 
-    public static void setOverridingSketchName(String overridingSketchName) {
-        LayoutStore.overridingSketchName = overridingSketchName;
-    }
-
     public static boolean doesFolderRowClickCloseWindowIfOpen() {
         return shouldFolderRowClickCloseWindowIfOpen;
-    }
-
-    public static void setFolderRowClickClosesWindowIfOpen(boolean folderClickTogglesWindow) {
-        LayoutStore.shouldFolderRowClickCloseWindowIfOpen = folderClickTogglesWindow;
-    }
-
-    public static int getSmoothingValue() {
-        return smoothingValue;
-    }
-
-    public static void setSmoothingValue(int smoothingValue) {
-        LayoutStore.smoothingValue = smoothingValue;
-    }
-
-    public static void setHideRadioValue(boolean hideRadioValue) {
-        LayoutStore.hideRadioValue = hideRadioValue;
     }
 
     public static boolean shouldHideRadioValue() {
         return hideRadioValue;
     }
 
+    public static boolean shouldDisplaySquigglyEquals() {
+        return displaySquigglyEquals;
+    }
+
+    public static void setAutosuggestWindowWidth(boolean autosuggestWindowWidth) {
+        LayoutStore.autosuggestWindowWidth = autosuggestWindowWidth;
+    }
+
+    public static void setCellSize(float inputCellSize) {
+        cell = inputCellSize;
+    }
+
     public static void setDisplaySquigglyEquals(boolean displaySquigglyEquals) {
         LayoutStore.displaySquigglyEquals = displaySquigglyEquals;
     }
 
-    public static boolean shouldDisplaySquigglyEquals() {
-        return displaySquigglyEquals;
+    public static void setFolderRowClickClosesWindowIfOpen(boolean folderClickTogglesWindow) {
+        LayoutStore.shouldFolderRowClickCloseWindowIfOpen = folderClickTogglesWindow;
+    }
+
+    public static void setHideRadioValue(boolean hideRadioValue) {
+        LayoutStore.hideRadioValue = hideRadioValue;
+    }
+
+    public static void setHorizontalSeparatorStrokeWeight(float horizontalSeparatorStrokeWeight) {
+        LayoutStore.horizontalSeparatorStrokeWeight = horizontalSeparatorStrokeWeight;
+    }
+
+    public static void setIsGuiHidden(boolean shouldGuiBeHidden){
+        isGuiHidden = shouldGuiBeHidden;
+    }
+
+    public static void setOverridingSketchName(String overridingSketchName) {
+        LayoutStore.overridingSketchName = overridingSketchName;
+    }
+
+    public static void setResizeRectangleSize(float valueToSet) {
+        resizeRectangleSize = valueToSet;
+    }
+
+    public static void setShouldDrawResizeIndicator(boolean valueToSet) {
+        shouldDrawResizeIndicator = valueToSet;
+    }
+
+    public static void setShouldKeepWindowsInBounds(boolean valueToSet) {
+        shouldKeepWindowsInBounds = valueToSet;
+    }
+
+    public static void setShowHorizontalSeparators(boolean showHorizontalSeparators) {
+        LayoutStore.showHorizontalSeparators = showHorizontalSeparators;
+    }
+
+    public static void setShowPathTooltips(boolean showPathTooltips) {
+        LayoutStore.showPathTooltips = showPathTooltips;
+    }
+
+    public static void setSmoothingValue(int smoothingValue) {
+        LayoutStore.smoothingValue = smoothingValue;
+    }
+
+    public static void setWindowResizeEnabled(boolean valueToSet) {
+        isWindowResizeEnabled = valueToSet;
+    }
+
+    public static void toggleGUI(){
+        isGuiHidden = !isGuiHidden;
     }
 }

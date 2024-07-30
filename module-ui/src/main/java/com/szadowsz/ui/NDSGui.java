@@ -258,7 +258,7 @@ public class NDSGui {
         lastFrameCountGuiWasShown = app.frameCount;
         if(app.frameCount == 1){
             FolderNode root = NodeTree.getRoot();
-            root.window.windowSizeX = root.autosuggestWindowWidthForContents();
+            root.window.resizeForContents();
         }
         createGuiCanvasIfNecessary();
         updateAllNodeValues();

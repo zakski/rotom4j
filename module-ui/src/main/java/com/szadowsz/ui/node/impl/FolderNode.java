@@ -15,6 +15,7 @@ import com.szadowsz.ui.window.WindowManager;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,25 +94,6 @@ public class FolderNode extends AbstractNode {
     }
 
     /**
-     * Find a node by a partial name
-     *
-     * @param nameStartsWith what the name of the node starts with
-     * @return the node, if found
-     */
-    private AbstractNode findChildByNameStartsWith(String nameStartsWith) {
-        if (name.startsWith("/")) {
-            nameStartsWith = name.substring(1);
-        }
-        for (AbstractNode node : children) {
-            if (node.getName().startsWith(nameStartsWith)) {
-                return node;
-            }
-        }
-        return null;
-    }
-
-
-    /**
      * @return
      */
     private boolean isFolderActiveJudgingByContents() {
@@ -135,27 +117,6 @@ public class FolderNode extends AbstractNode {
         pg.rect(0, 0, previewRectSize, miniCell); // handle
         pg.popStyle();
         pg.rect(previewRectSize - miniCell, 0, miniCell, miniCell); // close button
-    }
-
-    @Override
-    protected void drawNodeBackground(PGraphics pg) {
-
-    }
-
-    @Override
-    protected void drawNodeForeground(PGraphics pg, String name) {
-        String displayName = getInlineDisplayNameOverridableByContents(name);
-        drawLeftText(pg, displayName);
-        drawRightBackdrop(pg, cell);
-        drawMiniatureWindowIcon(pg);
-    }
-
-    @Override
-    public void mousePressedEvent(GuiMouseEvent e) {
-        super.mousePressedEvent(e);
-        WindowManager.setFocus(parent.window);
-        WindowManager.uncoverOrCreateWindow(this);
-        this.isInlineNodeDragged = false;
     }
 
     private float autosuggestWindowWidthFor1Col() {
@@ -213,6 +174,49 @@ public class FolderNode extends AbstractNode {
         return PApplet.constrain(width, minimumSpaceTotal, maximumSpaceTotal);
     }
 
+    @Override
+    protected void drawNodeBackground(PGraphics pg) {
+        // NOOP
+    }
+
+    /**
+     * Sets the color used to fill the foreground of the node
+     *
+     * @param pg graphics reference to use
+     */
+    protected void fillForegroundBasedOnMouseOver(PGraphics pg) {
+        if(isMouseOverNode){
+            System.out.println("FOCUS " + name);
+            pg.fill(ThemeStore.getColor(ThemeColorType.FOCUS_FOREGROUND));
+        } else {
+            pg.fill(ThemeStore.getColor(ThemeColorType.NORMAL_FOREGROUND));
+        }
+    }
+
+    @Override
+    protected void drawNodeForeground(PGraphics pg, String name) {
+        String displayName = getInlineDisplayNameOverridableByContents(name);
+        drawLeftText(pg, displayName);
+        drawRightBackdrop(pg, cell);
+        drawMiniatureWindowIcon(pg);
+    }
+
+    public void insertChild(AbstractNode child){
+        if (window != null) {
+            window.reinitialiseBuffer();
+        }
+        children.add(child);
+    }
+
+    @Override
+    public void mousePressedEvent(GuiMouseEvent e) {
+        super.mousePressedEvent(e);
+        WindowManager.setFocus(parent.window);
+        WindowManager.uncoverOrCreateWindow(this);
+        this.isInlineNodeDragged = false;
+    }
+
+
     public float autosuggestWindowWidthForContents() {
         return switch (layout) {
             case VERTICAL_X_COL -> autosuggestWindowWidthForXCol();
@@ -240,8 +244,13 @@ public class FolderNode extends AbstractNode {
         return autosuggestWindowWidthForContents();
     }
 
-    public List<AbstractNode> getColChildren(int col){
-        return children.stream().filter(c -> c.getColumn()== col).toList();
+    public Map<Integer,List<AbstractNode>> getColChildren(){
+        Map<Integer,List<AbstractNode>> result = new HashMap<>();
+        for (AbstractNode child : children){
+            int column = child.getColumn();
+            result.computeIfAbsent(column,k -> new ArrayList<>()).add(child);
+        }
+        return result;
     }
 
     public float getColWidth(int col){
@@ -261,5 +270,9 @@ public class FolderNode extends AbstractNode {
         }
 
         return  spaceForName + spaceForValue;
+    }
+
+    public boolean isWindowVisible() {
+        return window.isVisible();
     }
 }
