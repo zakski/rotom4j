@@ -887,6 +887,7 @@ public class Window implements UserInputSubscriber {
         } else if (isPointInsideContent(e.getX(), e.getY())) {
             AbstractNode node = tryFindChildNodeAt(e.getX(), e.getY());
             if (node != null && node.isParentWindowVisible()) {
+                contentBuffer.invalidateBuffer();
                 node.mousePressedEvent(e);
             }
         }
@@ -925,6 +926,7 @@ public class Window implements UserInputSubscriber {
         if (isPointInsideContent(e.getX(), e.getY())) {
             AbstractNode clickedNode = tryFindChildNodeAt(e.getX(), e.getY());
             if (clickedNode != null && clickedNode.isParentWindowVisible() && clickedNode.isVisible()) {
+                contentBuffer.invalidateBuffer();
                 clickedNode.mouseReleasedOverNodeEvent(e);
                 e.setConsumed(true);
             }
@@ -947,9 +949,11 @@ public class Window implements UserInputSubscriber {
             vsb.ifPresent(s -> s.mouseMoved(e));
             folder.setIsMouseOverThisNodeOnly();
         } else if (isMouseInsideContent(e)) {
+            LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), posX, posY, windowSizeX, windowSizeY);
             float yDiff = windowSizeYUnconstrained - windowSizeY;
             AbstractNode node = tryFindChildNodeAt(e.getX(), e.getY() + yDiff * vsb.map(s -> s.value).orElse(0.0f));
             if (node != null && !node.isMouseOverNode) {
+                LOGGER.debug("{} Inside NX {} NY {} Width {} Height {}", node.getName(), node.pos.x, node.pos.y, node.size.x, node.getHeight());
                 contentBuffer.invalidateBuffer();
             }
             if (node != null && node.isParentWindowVisible()) {

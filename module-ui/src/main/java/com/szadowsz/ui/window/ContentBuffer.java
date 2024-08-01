@@ -135,7 +135,7 @@ public class ContentBuffer {
     }
 
     private void drawNodesVertically(List<AbstractNode> colChildren, float x, float width) {
-        float y = cell; // Account for titlebar
+        float y = (win.folder.shouldDrawTitle())?cell:0; // Account for titlebar
         int index = 0;
         for (AbstractNode node : colChildren) {
             if (!node.isVisible()) {
@@ -256,7 +256,7 @@ public class ContentBuffer {
                 default -> drawContentVertically(folder);
             }
         }
-        LOGGER.info("Content Buffer Draw Duration {}", System.currentTimeMillis() - time);
+        LOGGER.debug("Content Buffer Draw Duration {}", System.currentTimeMillis() - time);
     }
 
     private synchronized void redrawIfNecessary(){

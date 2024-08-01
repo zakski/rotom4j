@@ -7,6 +7,8 @@ import com.szadowsz.ui.node.NodeTree;
 import com.szadowsz.ui.node.impl.FolderNode;
 import com.szadowsz.ui.store.FontStore;
 import com.szadowsz.ui.store.LayoutStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 
 import static com.szadowsz.ui.store.LayoutStore.cell;
@@ -16,6 +18,7 @@ import static com.szadowsz.ui.utils.Coordinates.isPointInRect;
  * Gui Temporary Window Node Organisation and Drawing
  */
 public class TempWindow extends Window {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TempWindow.class);
 
     public TempWindow(FolderNode folder, float posX, float posY, Float nullableSizeX) {
         super(folder, posX, posY, nullableSizeX);
@@ -61,6 +64,17 @@ public class TempWindow extends Window {
             }
         }
         return null;
+    }
+
+    /**
+     * Check if the mouse is inside the content of the Window
+     *
+     * @param e mouse event
+     * @return true if the mouse is inside the content, false otherwise
+     */
+    @Override
+    protected boolean isMouseInsideContent(GuiMouseEvent e) {
+        return isPointInsideWindow(e.getX(), e.getY()) && !isPointInsideResizeBorder(e.getX(), e.getY());
     }
 
     @Override
@@ -129,15 +143,11 @@ public class TempWindow extends Window {
 
     @Override
     public void mouseMoved(GuiMouseEvent e) {
-        if (isMouseInsideTitlebar(e)) {
-            if (folder.children.stream().anyMatch(c -> c.isMouseOverNode)){
-                contentBuffer.invalidateBuffer();
-            }
-            e.setConsumed(true);
-            folder.setIsMouseOverThisNodeOnly();
-        } else if (isMouseInsideContent(e)) {
+        if (isMouseInsideContent(e)) {
+            LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), posX, posY, windowSizeX, windowSizeY);
             AbstractNode node = tryFindChildNodeAt(e.getX(), e.getY());
             if (node != null && !node.isMouseOverNode) {
+                LOGGER.debug("{} Inside NX {} NY {} Width {} Height {}", node.getName(), node.pos.x, node.pos.y, node.size.x, node.getHeight());
                 contentBuffer.invalidateBuffer();
             }
             if (node != null && node.isParentWindowVisible()) {
@@ -152,6 +162,11 @@ public class TempWindow extends Window {
                 }
             }
         }
+    }
+
+    @Override
+    public void mouseReleased(GuiMouseEvent e) {
+        super.mouseReleased(e);
     }
 
     @Override

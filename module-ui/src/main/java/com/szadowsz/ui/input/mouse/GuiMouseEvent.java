@@ -38,7 +38,7 @@ public class GuiMouseEvent {
     }
 
     public boolean isRight(){
-        return button == PConstants.LEFT;
+        return button == PConstants.RIGHT;
     }
 
     public float getX() {
