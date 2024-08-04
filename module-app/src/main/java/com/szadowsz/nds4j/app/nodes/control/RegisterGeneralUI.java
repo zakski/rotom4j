@@ -15,10 +15,10 @@ import com.szadowsz.ui.window.WindowManager;
 import static com.szadowsz.nds4j.app.nodes.control.ControlConstants.*;
 import static com.szadowsz.ui.store.LayoutStore.cell;
 
-public class RegisterUI {
+public class RegisterGeneralUI {
 
 
-    private RegisterUI(){}
+    private RegisterGeneralUI(){}
 
     private static void recolorImages() {
         var nodes = NodeTree.getAllNodesAsList(NitroImgFolderNode.class);

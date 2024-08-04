@@ -245,6 +245,15 @@ public class NARC extends GenericNFSFile {
     }
 
     /**
+     * Get the current list of files contained within the Narc
+     *
+     * @return String List of the files
+     */
+    public List<BaseNFSFile> getFiles() {
+        return files;
+    }
+
+    /**
      * Return the contents of the file with the given filename (path).
      * @param filename a String containing the path to the requested NARC subfile
      * @return a byte[] containing the contents of the requested NARC subfile

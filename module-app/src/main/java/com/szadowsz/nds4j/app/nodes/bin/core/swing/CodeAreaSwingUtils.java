@@ -1,0 +1,274 @@
+/*
+ * Copyright (C) ExBin Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.szadowsz.nds4j.app.nodes.bin.core.swing;
+
+import java.awt.Color;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import javax.swing.ScrollPaneConstants;
+
+import com.szadowsz.nds4j.app.nodes.bin.core.*;
+import com.szadowsz.nds4j.file.bin.core.BinaryData;
+
+/**
+ * Binary editor component swing utilities.
+ *
+ * @author ExBin Project (https://exbin.org)
+ */
+public class CodeAreaSwingUtils {
+
+    public static final int MIN_MONOSPACE_CODE_POINT = 0x1F;
+    public static final int MAX_MONOSPACE_CODE_POINT = 0x1C3;
+    public static final int INV_SPACE_CODE_POINT = 0x7f;
+    public static final int EXCEPTION1_CODE_POINT = 0x8e;
+    public static final int EXCEPTION2_CODE_POINT = 0x9e;
+
+    public static int MAX_COLOR_COMPONENT_VALUE = 255;
+    public static final String DEFAULT_ENCODING = CharsetStreamTranslator.DEFAULT_ENCODING;
+
+    public static final String FALLBACK_CLIPBOARD = "clipboard";
+    private static Clipboard clipboard = null;
+
+    private CodeAreaSwingUtils() {
+    }
+
+    public static boolean areSameColors(Color color, Color comparedColor) {
+        return (color == null && comparedColor == null) || (color != null && color.equals(comparedColor));
+    }
+
+    public static Color createOddColor(Color color) {
+        return new Color(
+                computeOddColorComponent(color.getRed()),
+                computeOddColorComponent(color.getGreen()),
+                computeOddColorComponent(color.getBlue()));
+    }
+
+    public static int computeOddColorComponent(int colorComponent) {
+        return colorComponent + (colorComponent > 64 ? - 16 : 16);
+    }
+
+    public static Color createNegativeColor(Color color) {
+        return new Color(
+                MAX_COLOR_COMPONENT_VALUE - color.getRed(),
+                MAX_COLOR_COMPONENT_VALUE - color.getGreen(),
+                MAX_COLOR_COMPONENT_VALUE - color.getBlue());
+    }
+
+    public static Color computeGrayColor(Color color) {
+        int grayLevel = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
+        return new Color(grayLevel, grayLevel, grayLevel);
+    }
+
+    public static int getVerticalScrollBarPolicy(ScrollBarVisibility scrollBarVisibility) {
+        switch (scrollBarVisibility) {
+            case NEVER:
+                return ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
+            case ALWAYS:
+                return ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
+            case IF_NEEDED:
+                return ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED;
+            default:
+                throw CodeAreaUtils.getInvalidTypeException(scrollBarVisibility);
+        }
+    }
+
+    public static int getHorizontalScrollBarPolicy(ScrollBarVisibility scrollBarVisibility) {
+        switch (scrollBarVisibility) {
+            case NEVER:
+                return ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
+            case ALWAYS:
+                return ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS;
+            case IF_NEEDED:
+                return ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED;
+            default:
+                throw CodeAreaUtils.getInvalidTypeException(scrollBarVisibility);
+        }
+    }
+
+    public static boolean canPaste(Clipboard clipboard, DataFlavor binaryDataFlavor) {
+        try {
+            return clipboard.isDataFlavorAvailable(binaryDataFlavor) || clipboard.isDataFlavorAvailable(DataFlavor.stringFlavor);
+        } catch (IllegalStateException ex) {
+            return false;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    public static int getMetaMaskDown() {
+        // TODO: Replace with getMenuShortcutKeyMaskEx when switching to java 10 or later
+        try {
+            return switch (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) {
+                case InputEvent.META_MASK -> KeyEvent.META_DOWN_MASK;
+                case InputEvent.SHIFT_MASK -> KeyEvent.SHIFT_DOWN_MASK;
+                case InputEvent.ALT_MASK -> KeyEvent.ALT_DOWN_MASK;
+                default -> KeyEvent.CTRL_DOWN_MASK;
+            };
+        } catch (java.awt.HeadlessException ex) {
+            return KeyEvent.CTRL_DOWN_MASK;
+        }
+    }
+
+    /**
+     * A shared {@code Clipboard}.
+     *
+     * @return clipboard clipboard instance
+     */
+    public static Clipboard getClipboard() {
+        if (clipboard == null) {
+            try {
+                clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            } catch (SecurityException e) {
+                clipboard = new Clipboard(FALLBACK_CLIPBOARD);
+            }
+        }
+
+        return clipboard;
+    }
+
+    public static class BinaryDataClipboardData implements ClipboardData {
+
+        private final BinaryData data;
+        private final DataFlavor binedDataFlavor;
+        private final DataFlavor binaryDataFlavor;
+        private final Charset charset;
+
+        public BinaryDataClipboardData(BinaryData data, DataFlavor binedDataFlavor, Charset charset) {
+            this.data = data;
+            this.binedDataFlavor = binedDataFlavor;
+            this.binaryDataFlavor = null;
+            this.charset = charset;
+        }
+
+        public BinaryDataClipboardData(BinaryData data, DataFlavor binedDataFlavor, DataFlavor binaryDataFlavor, Charset charset) {
+            this.data = data;
+            this.binedDataFlavor = binedDataFlavor;
+            this.binaryDataFlavor = binaryDataFlavor;
+            this.charset = charset;
+        }
+
+        public BinaryDataClipboardData(BinaryData data, DataFlavor binedDataFlavor) {
+            this(data, binedDataFlavor, null);
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return binaryDataFlavor != null ? new DataFlavor[]{binedDataFlavor, binaryDataFlavor, DataFlavor.stringFlavor} : new DataFlavor[]{binedDataFlavor, DataFlavor.stringFlavor};
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor.equals(binedDataFlavor) || flavor.equals(binaryDataFlavor) || flavor.equals(DataFlavor.stringFlavor);
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (flavor.equals(binedDataFlavor)) {
+                return data;
+            } else if (flavor.equals(binaryDataFlavor)) {
+                return data.getDataInputStream();
+            } else if (flavor.equals(DataFlavor.stringFlavor)) {
+                Object result;
+                try (ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream()) {
+                    data.saveToStream(byteArrayStream);
+                    result = charset == null ? byteArrayStream.toString(DEFAULT_ENCODING) : byteArrayStream.toString(charset.name());
+                }
+                return result;
+            }
+
+            throw new UnsupportedFlavorException(flavor);
+        }
+
+        @Override
+        public void lostOwnership(Clipboard clipboard, Transferable contents) {
+            // do nothing
+        }
+
+        @Override
+        public void dispose() {
+            data.dispose();
+        }
+    }
+
+    public static class CodeDataClipboardData implements ClipboardData {
+
+        private final BinaryData data;
+        private final DataFlavor binaryDataFlavor;
+        private final CodeType codeType;
+        private final CodeCharactersCase charactersCase;
+
+        public CodeDataClipboardData(BinaryData data, DataFlavor binaryDataFlavor, CodeType codeType, CodeCharactersCase charactersCase) {
+            this.data = data;
+            this.binaryDataFlavor = binaryDataFlavor;
+            this.codeType = codeType;
+            this.charactersCase = charactersCase;
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{binaryDataFlavor, DataFlavor.stringFlavor};
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor.equals(binaryDataFlavor) || flavor.equals(DataFlavor.stringFlavor);
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (flavor.equals(binaryDataFlavor)) {
+                return data;
+            } else {
+                int charsPerByte = codeType.getMaxDigitsForByte() + 1;
+                int textLength = (int) (data.getDataSize() * charsPerByte);
+                if (textLength > 0) {
+                    textLength--;
+                }
+
+                char[] targetData = new char[textLength];
+                Arrays.fill(targetData, ' ');
+                for (int i = 0; i < data.getDataSize(); i++) {
+                    CodeAreaUtils.byteToCharsCode(data.getByte(i), codeType, targetData, i * charsPerByte, charactersCase);
+                }
+                return new String(targetData);
+            }
+        }
+
+        @Override
+        public void lostOwnership(Clipboard clipboard, Transferable contents) {
+            // do nothing
+        }
+
+        @Override
+        public void dispose() {
+            data.dispose();
+        }
+    }
+
+    public interface ClipboardData extends Transferable, ClipboardOwner {
+
+        void dispose();
+    }
+}

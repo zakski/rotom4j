@@ -44,8 +44,6 @@ import static com.szadowsz.ui.node.NodeTree.*;
 public class NDSGuiImpl extends NDSGui {
     final static Logger LOGGER = LoggerFactory.getLogger(NDSGuiImpl.class);
     final static String selectNarcFile = "Select Narc File";
-    final static String selectLstFile = "Select lst File";
-    final static String selectHeaderFile = "Select .h File";
 
     public NDSGuiImpl(PApplet sketch, NDSGuiSettings settings) {
         super(sketch, settings);
@@ -243,20 +241,20 @@ public class NDSGuiImpl extends NDSGui {
             String defPath = FileChooser.selectDefFile(getGuiCanvas().parent, lastPath, selectHeaderFile);
             try {
                 narc.applyDef(defPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().get(0));
+                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
             } catch (IOException e) {
-                LOGGER.error("Failed to Apply .h file " + defPath,e);
+                LOGGER.error("Failed to Apply .h file {}", defPath, e);
             }
-            WindowManager.uncoverOrCreateWindow(applyNodes.get(0).parent);
+            WindowManager.uncoverOrCreateWindow(applyNodes.getFirst().parent);
         });
         ((ButtonNode)applyNodes.get(1)).registerAction(ActivateByType.RELEASE, () -> {
             String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
             String lstPath = FileChooser.selectLstFile(getGuiCanvas().parent, lastPath, selectLstFile);
             try {
                 narc.applyLst(lstPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().get(0));
+                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
             } catch (IOException e) {
-                LOGGER.error("Failed to Apply .lst file " + lstPath,e);
+                LOGGER.error("Failed to Apply .lst file {}", lstPath, e);
             }
             WindowManager.uncoverOrCreateWindow(applyNodes.get(1).parent);
         });
@@ -265,9 +263,9 @@ public class NDSGuiImpl extends NDSGui {
             String naixPath = FileChooser.selectNaixFile(getGuiCanvas().parent, lastPath, selectHeaderFile);
             try {
                 narc.applyNaix(naixPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().get(0));
+                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
             } catch (IOException e) {
-                LOGGER.error("Failed to Apply .naix file " + naixPath,e);
+                LOGGER.error("Failed to Apply .naix file {}", naixPath, e);
             }
             WindowManager.uncoverOrCreateWindow(applyNodes.get(2).parent);
         });
@@ -276,9 +274,9 @@ public class NDSGuiImpl extends NDSGui {
             String scrPath = FileChooser.selectScrFile(getGuiCanvas().parent, lastPath, selectHeaderFile);
             try {
                 narc.applyScr(scrPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().get(0));
+                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
             } catch (IOException e) {
-                LOGGER.error("Failed to Apply .scr file " + scrPath,e);
+                LOGGER.error("Failed to Apply .scr file {}", scrPath, e);
             }
             WindowManager.uncoverOrCreateWindow(applyNodes.get(3).parent);
         });
@@ -288,103 +286,97 @@ public class NDSGuiImpl extends NDSGui {
             text.setStringValue("");
             narc.reindex(reindexValue);
             WindowManager.uncoverOrCreateWindow(text.parent);
-            filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().get(0));
+            filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
         });
     }
 
     public void registerNarcGUI(NARC narc) {
-        LOGGER.info("Creating GUI for Narc File: " + narc.getFileName());
+        LOGGER.info("Creating GUI for Narc File: {}", narc.getFileName());
         setFolder("View/Loaded Files");
-        pushFolder(narc.getFileName())/*)*/;
+        narc(narc.getFileName(),narc);
+        setFolder(null);
+        LOGGER.info("Created GUI for Narc File: {}", narc.getFileName());
+    }
 
+    private void narc(String path, NARC narc) {
+        pushFolder(narc.getFileName());
         List<AbstractNode> applyNodes = registerNarcApplyNodes(narc);
         List<AbstractNode> extractNodes = registerExtractionButtons(narc);
 
         registerActions(narc, applyNodes,extractNodes);
         popFolder();
-        setFolder(null);
-        LOGGER.info("Created GUI for Narc File: " + narc.getFileName());
     }
 
-    public NANRFolderNode registerNanrGUI(NANR nanr) throws NitroException {
-        LOGGER.info("Creating GUI for NANR File: " + nanr.getFileName());
+    public void registerNanrGUI(NANR nanr) throws NitroException {
+        LOGGER.info("Creating GUI for NANR File: {}", nanr.getFileName());
         setFolder("View/Loaded Files");
-        NANRFolderNode animeResFolderNode = animeRes(nanr.getFileName(), nanr);
-        LOGGER.info("Created GUI for NANR File: " + nanr.getFileName());
+        animeRes(nanr.getFileName(), nanr);
+        LOGGER.info("Created GUI for NANR File: {}", nanr.getFileName());
         setFolder(null);
-        return animeResFolderNode;
     }
 
-    public NCERFolderNode registerNcerGUI(NCER ncer) throws NitroException {
-        LOGGER.info("Creating GUI for NCER File: " + ncer.getFileName());
+    public void registerNcerGUI(NCER ncer) throws NitroException {
+        LOGGER.info("Creating GUI for NCER File: {}", ncer.getFileName());
         setFolder("View/Loaded Files");
-        NCERFolderNode cellBankFolderNode = cellBank(ncer.getFileName(), ncer);
-        LOGGER.info("Created GUI for NCER File: " + ncer.getFileName());
+        cellBank(ncer.getFileName(), ncer);
+        LOGGER.info("Created GUI for NCER File: {}", ncer.getFileName());
         setFolder(null);
-        return cellBankFolderNode;
     }
 
-    public NSCRFolderNode registerNscrGUI(NSCR nscr) {
-        LOGGER.info("Creating GUI for NSCR File: " + nscr.getFileName());
+    public void registerNscrGUI(NSCR nscr) {
+        LOGGER.info("Creating GUI for NSCR File: {}", nscr.getFileName());
         setFolder("View/Loaded Files");
-        NSCRFolderNode scrFolderNode = scrRes(nscr.getFileName(), nscr);
-        LOGGER.info("Created GUI for NSCR File: " + nscr.getFileName());
+        scrRes(nscr.getFileName(), nscr);
+        LOGGER.info("Created GUI for NSCR File: {}", nscr.getFileName());
         setFolder(null);
-        return scrFolderNode;
     }
 
-    public NCGRFolderNode registerNcgrGUI(NCGR ncgr) {
-        LOGGER.info("Creating GUI for NCGR File: " + ncgr.getFileName());
+    public void registerNcgrGUI(NCGR ncgr) {
+        LOGGER.info("Creating GUI for NCGR File: {}", ncgr.getFileName());
         setFolder("View/Loaded Files");
-        NCGRFolderNode imageFolderNode = image(ncgr.getFileName(), ncgr);
+        image(ncgr.getFileName(), ncgr);
         setFolder(null);
-        LOGGER.info("Created GUI for NCGR File: " + ncgr.getFileName());
-        return imageFolderNode;
+        LOGGER.info("Created GUI for NCGR File: {}", ncgr.getFileName());
     }
 
-    public NCLRFolderNode registerNclrGUI(NCLR nclr) {
-        LOGGER.info("Creating GUI for NCLR File: " + nclr.getFileName());
+    public void registerNclrGUI(NCLR nclr) {
+        LOGGER.info("Creating GUI for NCLR File: {}", nclr.getFileName());
         setFolder("View/Loaded Files");
-        NCLRFolderNode paletteFolderNode = palette(nclr);
+        palette(nclr);
         setFolder(null);
-        LOGGER.info("Created GUI for NCLR File: " + nclr.getFileName());
-        return paletteFolderNode;
+        LOGGER.info("Created GUI for NCLR File: {}", nclr.getFileName());
     }
 
-    public EvoFolderNode registerEvoGUI(EvolutionNFSFile evo) {
-        LOGGER.info("Creating GUI for Evolution Bin File: " + evo.getFileName());
+    public void registerEvoGUI(EvolutionNFSFile evo) {
+        LOGGER.info("Creating GUI for Evolution Bin File: {}", evo.getFileName());
         setFolder("View/Loaded Files");
-        EvoFolderNode evoFolderNode = evolution(evo);
+        evolution(evo);
         setFolder(null);
-        LOGGER.info("Created GUI for Evolution Bin File: " + evo.getFileName());
-        return evoFolderNode;
+        LOGGER.info("Created GUI for Evolution Bin File: {}", evo.getFileName());
     }
 
-    public GrowthFolderNode registerGrowthGUI(GrowNFSFile grow) {
-        LOGGER.info("Creating GUI for Growth Bin File: " + grow.getFileName());
+    public void registerGrowthGUI(GrowNFSFile grow) {
+        LOGGER.info("Creating GUI for Growth Bin File: {}", grow.getFileName());
         setFolder("View/Loaded Files");
-        GrowthFolderNode growthFolderNode = growth(grow);
+        growth(grow);
         setFolder(null);
-        LOGGER.info("Created GUI for Growth Bin File: " + grow.getFileName());
-        return growthFolderNode;
+        LOGGER.info("Created GUI for Growth Bin File: {}", grow.getFileName());
     }
 
 
-    public StatsFolderNode registerStatsGUI(StatsNFSFile stats) {
-        LOGGER.info("Creating GUI for Personal Bin File: " + stats.getFileName());
+    public void registerStatsGUI(StatsNFSFile stats) {
+        LOGGER.info("Creating GUI for Personal Bin File: {}", stats.getFileName());
         setFolder("View/Loaded Files");
-        StatsFolderNode statsFolderNode = personal(stats);
+        personal(stats);
         setFolder(null);
-        LOGGER.info("Created GUI for Personal Bin File: " + stats.getFileName());
-        return statsFolderNode;
+        LOGGER.info("Created GUI for Personal Bin File: {}", stats.getFileName());
     }
 
-    public LearnFolderNode registerLearnGUI(LearnsetNFSFile learn) {
-        LOGGER.info("Creating GUI for Learnset Bin File: " + learn.getFileName());
+    public void registerLearnGUI(LearnsetNFSFile learn) {
+        LOGGER.info("Creating GUI for Learnset Bin File: {}", learn.getFileName());
         setFolder("View/Loaded Files");
-        LearnFolderNode learnFolderNode = learnset(learn);
+        learnset(learn);
         setFolder(null);
-        LOGGER.info("Created GUI for Learnset Bin File: " + learn.getFileName());
-        return learnFolderNode;
+        LOGGER.info("Created GUI for Learnset Bin File: {}", learn.getFileName());
     }
 }

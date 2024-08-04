@@ -1,6 +1,6 @@
 package com.szadowsz.nds4j.app;
 
-import com.szadowsz.nds4j.app.nodes.control.RegisterUI;
+import com.szadowsz.nds4j.app.nodes.control.RegisterGeneralUI;
 import com.szadowsz.ui.NDSGuiSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +39,9 @@ public class Processing extends PApplet {
         surface.setResizable(true);
         surface.setLocation(100,100);
         gui = new NDSGuiImpl(this,settings);
-        RegisterUI.buildFileDropdown(gui);
-        RegisterUI.buildViewDropdown(gui);
-        RegisterUI.buildOptionsDropdown(gui);
+        RegisterGeneralUI.buildFileDropdown(gui);
+        RegisterGeneralUI.buildViewDropdown(gui);
+        RegisterGeneralUI.buildOptionsDropdown(gui);
     }
 
     @Override
