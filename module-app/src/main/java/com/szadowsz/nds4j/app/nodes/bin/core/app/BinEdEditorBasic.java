@@ -64,7 +64,7 @@ public class BinEdEditorBasic extends javax.swing.JFrame {
     private static final String APPLICATION_NAME = "BinEd";
     private static final String APPLICATION_DEFAULT_TITLE = APPLICATION_NAME + " Basic Editor";
 
-    private static final String ICONS_DIRECTORY = "/org/exbin/bined/editor/basic/resources/icons/";
+    private static final String ICONS_DIRECTORY = "/icons/";
     private static final String ICON_APP = "icon.png";
     private static final String ICON_FILE_NEW = "document-new.png";
     private static final String ICON_FILE_OPEN = "document-open.png";

@@ -46,7 +46,7 @@ public class NarcApplyFolderNode extends FolderNode {
             String defPath = FileChooser.selectDefFile(GlobalReferences.app, lastPath, selectHeaderFile);
             try {
                 narc.applyDef(defPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
+                //filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
             } catch (IOException e) {
                 LOGGER.error("Failed to Apply .h file {}", defPath, e);
             }
@@ -60,7 +60,7 @@ public class NarcApplyFolderNode extends FolderNode {
             String lstPath = FileChooser.selectLstFile(GlobalReferences.app, lastPath, selectLstFile);
             try {
                 narc.applyLst(lstPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
+                //filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
             } catch (IOException e) {
                 LOGGER.error("Failed to Apply .lst file {}", lstPath, e);
             }
@@ -74,7 +74,7 @@ public class NarcApplyFolderNode extends FolderNode {
             String naixPath = FileChooser.selectNaixFile(GlobalReferences.app, lastPath, selectHeaderFile);
             try {
                 narc.applyNaix(naixPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
+                //filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
             } catch (IOException e) {
                 LOGGER.error("Failed to Apply .naix file {}", naixPath, e);
             }
@@ -88,7 +88,7 @@ public class NarcApplyFolderNode extends FolderNode {
             String scrPath = FileChooser.selectScrFile(GlobalReferences.app, lastPath, selectHeaderFile);
             try {
                 narc.applyScr(scrPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
+                //filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
             } catch (IOException e) {
                 LOGGER.error("Failed to Apply .scr file {}", scrPath, e);
             }

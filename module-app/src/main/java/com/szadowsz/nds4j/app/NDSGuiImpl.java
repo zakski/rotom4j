@@ -5,6 +5,7 @@ import com.szadowsz.nds4j.app.nodes.bin.grow.GrowthFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.learn.LearnFolderNode;
 import com.szadowsz.nds4j.app.nodes.bin.stats.StatsFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.nanr.NANRFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.narc.NarcFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.ncer.NCERFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.nclr.NCLRFolderNode;
@@ -175,121 +176,6 @@ public class NDSGuiImpl extends NDSGui {
         return node;
     }
 
-    private List<AbstractNode> registerNarcApplyNodes(NARC narc) {
-        List<AbstractNode> results = new ArrayList<>();
-        pushFolder("Apply")/*)*/;
-        results.add(button("Apply .h"));
-        results.add(button("Apply .lst"));
-        results.add(button("Apply .naix"));
-        results.add(button("Apply .scr"));
-        popFolder();
-        pushFolder("Reindex");
-        results.add(text("name"));
-        results.add(button("Reindex"));
-        popFolder();
-        return results;
-    }
-
-    private List<AbstractNode> registerExtractionButtons(NARC narc) {
-        List<AbstractNode> results = new ArrayList<>();
-        pushFolder("Extract")/*)*/;
-
-        ButtonNode extract = button("Extract");
-        extract.registerAction(ActivateByType.RELEASE, () -> {
-            String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
-            String folderPath = FileChooser.selectFolder(getGuiCanvas().parent, lastPath, selectNarcFile);
-            try {
-                narc.unpack(folderPath);
-            } catch (IOException e) {
-                LOGGER.error("Failed to Extract",e);
-            }
-            WindowManager.uncoverOrCreateWindow(extract.parent);
-        });
-        results.add(extract);
-
-        ButtonNode extractCompression = button("Extract with compression");
-        extractCompression.registerAction(ActivateByType.RELEASE, () -> {
-            String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
-            String folderPath = FileChooser.selectFolder(getGuiCanvas().parent, lastPath, selectNarcFile);
-            try {
-                narc.unpackWithCompression(folderPath);
-            } catch (IOException e) {
-                LOGGER.error("Failed to Extract With Compression",e);
-            }
-            WindowManager.uncoverOrCreateWindow(extractCompression.parent);
-        });
-        results.add(extractCompression);
-
-        ButtonNode createLst = button("Create .lst");
-        createLst.registerAction(ActivateByType.RELEASE, () -> {
-            String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
-            String lstPath = FileChooser.saveLstFile(getGuiCanvas().parent, lastPath, selectLstFile, narc.createLst());
-            WindowManager.uncoverOrCreateWindow(createLst.parent);
-        });
-        results.add(createLst);
-
-        popFolder();
-
-        return results;
-    }
-
-    private void registerActions(NARC narc, List<AbstractNode> applyNodes, List<AbstractNode> extractNodes) {
-        List<String> narcFilenames = narc.getFilenames();
-        RadioFolderNode filesRadio = radio("files", narcFilenames);
-        ((ButtonNode)applyNodes.get(0)).registerAction(ActivateByType.RELEASE, () -> {
-            String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
-            String defPath = FileChooser.selectDefFile(getGuiCanvas().parent, lastPath, selectHeaderFile);
-            try {
-                narc.applyDef(defPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
-            } catch (IOException e) {
-                LOGGER.error("Failed to Apply .h file {}", defPath, e);
-            }
-            WindowManager.uncoverOrCreateWindow(applyNodes.getFirst().parent);
-        });
-        ((ButtonNode)applyNodes.get(1)).registerAction(ActivateByType.RELEASE, () -> {
-            String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
-            String lstPath = FileChooser.selectLstFile(getGuiCanvas().parent, lastPath, selectLstFile);
-            try {
-                narc.applyLst(lstPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
-            } catch (IOException e) {
-                LOGGER.error("Failed to Apply .lst file {}", lstPath, e);
-            }
-            WindowManager.uncoverOrCreateWindow(applyNodes.get(1).parent);
-        });
-        ((ButtonNode)applyNodes.get(2)).registerAction(ActivateByType.RELEASE, () -> {
-            String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
-            String naixPath = FileChooser.selectNaixFile(getGuiCanvas().parent, lastPath, selectHeaderFile);
-            try {
-                narc.applyNaix(naixPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
-            } catch (IOException e) {
-                LOGGER.error("Failed to Apply .naix file {}", naixPath, e);
-            }
-            WindowManager.uncoverOrCreateWindow(applyNodes.get(2).parent);
-        });
-        ((ButtonNode)applyNodes.get(3)).registerAction(ActivateByType.RELEASE, () -> {
-            String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
-            String scrPath = FileChooser.selectScrFile(getGuiCanvas().parent, lastPath, selectHeaderFile);
-            try {
-                narc.applyScr(scrPath);
-                filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
-            } catch (IOException e) {
-                LOGGER.error("Failed to Apply .scr file {}", scrPath, e);
-            }
-            WindowManager.uncoverOrCreateWindow(applyNodes.get(3).parent);
-        });
-        ((ButtonNode)applyNodes.get(5)).registerAction(ActivateByType.RELEASE, () -> {
-            TextNode text = ((TextNode)applyNodes.get(4));
-            String reindexValue = text.getValueAsString();
-            text.setStringValue("");
-            narc.reindex(reindexValue);
-            WindowManager.uncoverOrCreateWindow(text.parent);
-            filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
-        });
-    }
-
     public void registerNarcGUI(NARC narc) {
         LOGGER.info("Creating GUI for Narc File: {}", narc.getFileName());
         setFolder("View/Loaded Files");
@@ -298,13 +184,18 @@ public class NDSGuiImpl extends NDSGui {
         LOGGER.info("Created GUI for Narc File: {}", narc.getFileName());
     }
 
-    private void narc(String path, NARC narc) {
-        pushFolder(narc.getFileName());
-        List<AbstractNode> applyNodes = registerNarcApplyNodes(narc);
-        List<AbstractNode> extractNodes = registerExtractionButtons(narc);
-
-        registerActions(narc, applyNodes,extractNodes);
-        popFolder();
+    private NarcFolderNode narc(String path, NARC narc) {
+         String fullPath = getFolder() + path;
+        if(isPathTakenByUnexpectedType(fullPath, NANRFolderNode.class)){
+            return null;//defaultOption == null ? options[0] : defaultOption;
+        }
+        NarcFolderNode node = (NarcFolderNode) findNode(fullPath);
+        if (node == null) {
+            FolderNode parentFolder = NodeTree.findParentFolderLazyInitPath(fullPath);
+            node = new NarcFolderNode(fullPath, parentFolder, narc);
+            insertNodeAtItsPath(node);
+        }
+        return node;
     }
 
     public void registerNanrGUI(NANR nanr) throws NitroException {

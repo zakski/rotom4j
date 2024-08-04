@@ -53,7 +53,7 @@ public class NarcFilesFolderNode extends FolderNode {
                         case NSCR nscr -> new NSCRFolderNode(path + "/" + nscr.getFileName(), this, nscr);
                         case NCGR ncgr -> new NCGRFolderNode(path + "/" + ncgr.getFileName(), this, ncgr);
                         case NCLR nclr -> new NCLRFolderNode(path + "/" + nclr.getFileName(), this, nclr);
-                        default -> new BinFolderNode(path + "/" + file.getFileName(), this, file);
+                        default -> new ButtonNode(path + "/" + file.getFileName(), this);// new BinFolderNode(path + "/" + file.getFileName(), this, file);
                     }
             );
         }

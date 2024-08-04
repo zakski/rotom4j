@@ -34,7 +34,7 @@ public class NarcReindexFolderNode extends FolderNode {
             text.setStringValue("");
             narc.reindex(reindexValue);
             WindowManager.uncoverOrCreateWindow(text.parent);
-            filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
+//            filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
         });
         children.add(reindex);
     }
