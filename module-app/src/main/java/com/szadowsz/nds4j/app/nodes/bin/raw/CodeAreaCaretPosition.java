@@ -15,8 +15,6 @@
  */
 package com.szadowsz.nds4j.app.nodes.bin.raw;
 
-import com.szadowsz.nds4j.app.nodes.bin.core.CodeAreaSection;
-
 import java.util.Objects;
 import java.util.Optional;
 
@@ -85,7 +83,7 @@ public class CodeAreaCaretPosition {
      *
      * @param position source position
      */
-    public void setPosition(com.szadowsz.nds4j.app.nodes.bin.core.CodeAreaCaretPosition position) {
+    public void setPosition(CodeAreaCaretPosition position) {
         dataPosition = position.getDataPosition();
         codeOffset = position.getCodeOffset();
         section = position.getSection().orElse(null);
