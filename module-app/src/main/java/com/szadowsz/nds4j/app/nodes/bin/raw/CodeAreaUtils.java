@@ -1,93 +1,20 @@
-/*
- * Copyright (C) ExBin Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package com.szadowsz.nds4j.app.nodes.bin.core;
+package com.szadowsz.nds4j.app.nodes.bin.raw;
+
 
 import com.szadowsz.nds4j.file.bin.core.EditableBinaryData;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.Objects;
-/**
- * Binary editor component utilities.
- *
- * @author ExBin Project (https://exbin.org)
- */
 public class CodeAreaUtils {
 
-    public static final char[] UPPER_HEX_CODES = "0123456789ABCDEF".toCharArray();
-    public static final char[] LOWER_HEX_CODES = "0123456789abcdef".toCharArray();
+    private CodeAreaUtils(){}
+
+    private static final char[] UPPER_HEX_CODES = "0123456789ABCDEF".toCharArray();
+    private static final char[] LOWER_HEX_CODES = "0123456789abcdef".toCharArray();
     private static final int CODE_BUFFER_LENGTH = 16;
 
     public static final String MIME_CLIPBOARD_BINARY = "application/octet-stream";
-    public static final String CONTENT_DATA_ERROR = "Content data is null";
-    public static final String NULL_FIELD_ERROR = "Field cannot be null";
 
-    private CodeAreaUtils() {
-    }
-
-    /**
-     * Converts byte value to sequence of hexadecimal characters.
-     *
-     * @param value byte value
-     * @return sequence of two hexadecimal chars with upper case
-     */
-    public static char[] byteToHexChars(byte value) {
-        char[] result = new char[2];
-        byteToHexChars(result, value);
-        return result;
-    }
-
-    /**
-     * Converts byte value to sequence of two hexadecimal characters.
-     *
-     * @param target target char array (output parameter)
-     * @param value byte value
-     */
-    public static void byteToHexChars(char[] target, byte value) {
-        target[0] = UPPER_HEX_CODES[(value >> 4) & 0xf];
-        target[1] = UPPER_HEX_CODES[value & 0xf];
-    }
-
-    /**
-     * Converts long value to sequence of hexadecimal character. No range
-     * checking.
-     *
-     * @param value long value
-     * @param length length of the target sequence
-     * @return hexadecimal characters
-     */
-    public static char[] longToHexChars(long value, int length) {
-        char[] result = new char[length];
-        longToHexChars(result, value, length);
-        return result;
-    }
-
-    /**
-     * Converts long value to sequence of hexadecimal character. No range
-     * checking.
-     *
-     * @param target target char array (output parameter)
-     * @param value long value
-     * @param length length of the target sequence
-     */
-    public static void longToHexChars(char[] target, long value, int length) {
-        for (int i = length - 1; i >= 0; i--) {
-            target[i] = UPPER_HEX_CODES[(int) (value & 0xf)];
-            value = value >> 4;
-        }
+    public static IllegalStateException getInvalidTypeException(Enum<?> enumObject) {
+        return new IllegalStateException("Unexpected " + enumObject.getDeclaringClass().getName() + " value " + enumObject.name());
     }
 
     /**
@@ -144,9 +71,36 @@ public class CodeAreaUtils {
     }
 
     /**
+     * Converts long value to code of given base and length limit.
+     * <p>
+     * Optionally fills rest of the value with zeros.
+     *
+     * @param target target characters array (output parameter)
+     * @param targetOffset offset position in target array
+     * @param value value value
+     * @param base target numerical base, supported values are 1 to 16
+     * @param lengthLimit length limit
+     * @param fillZeros flag if rest of the value should be filled with zeros
+     * @param characterCase upper case for values greater than 9
+     * @return offset of characters position
+     */
+    public static int longToBaseCode(char[] target, int targetOffset, long value, int base, int lengthLimit, boolean fillZeros, CodeCharactersCase characterCase) {
+        char[] codes = characterCase == CodeCharactersCase.UPPER ? UPPER_HEX_CODES : LOWER_HEX_CODES;
+        for (int i = lengthLimit - 1; i >= 0; i--) {
+            target[targetOffset + i] = codes[(int) (value % base)];
+            value = value / base;
+            if (!fillZeros && value == 0) {
+                return i;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
      * Converts string of characters to byte value.
      *
-     * @param code     source text string
+     * @param code source text string
      * @param codeType code type
      * @return byte value
      * @throws IllegalArgumentException if code is invalid
@@ -238,46 +192,6 @@ public class CodeAreaUtils {
         return result;
     }
 
-    /**
-     * Converts long value to code of given base and length limit.
-     * <p>
-     * Optionally fills rest of the value with zeros.
-     *
-     * @param target target characters array (output parameter)
-     * @param targetOffset offset position in target array
-     * @param value value value
-     * @param base target numerical base, supported values are 1 to 16
-     * @param lengthLimit length limit
-     * @param fillZeros flag if rest of the value should be filled with zeros
-     * @param characterCase upper case for values greater than 9
-     * @return offset of characters position
-     */
-    public static int longToBaseCode(char[] target, int targetOffset, long value, int base, int lengthLimit, boolean fillZeros, CodeCharactersCase characterCase) {
-        char[] codes = characterCase == CodeCharactersCase.UPPER ? UPPER_HEX_CODES : LOWER_HEX_CODES;
-        for (int i = lengthLimit - 1; i >= 0; i--) {
-            target[targetOffset + i] = codes[(int) (value % base)];
-            value = value / base;
-            if (!fillZeros && value == 0) {
-                return i;
-            }
-        }
-
-        return 0;
-    }
-
-    /**
-     * Converts provided character into byte array for given charset.
-     *
-     * @param value character value
-     * @param charset charset
-     * @return byte array
-     */
-    public static byte[] characterToBytes(char value, Charset charset) {
-        ByteBuffer buffer = charset.encode(Character.toString(value));
-        byte[] bytes = new byte[buffer.remaining()];
-        buffer.get(bytes, 0, bytes.length);
-        return bytes;
-    }
 
     /**
      * Inserts text encoded data of given code type into given binary data.
@@ -324,7 +238,6 @@ public class CodeAreaUtils {
             data.insert(data.getDataSize(), buffer, 0, bufferUsage);
         }
     }
-
     /**
      * Returns true if provided character is valid for given code type and
      * position.
@@ -442,31 +355,5 @@ public class CodeAreaUtils {
         }
 
         return byteValue;
-    }
-
-    public static <T> T requireNonNull(T object) {
-        return Objects.requireNonNull(object, NULL_FIELD_ERROR);
-    }
-
-    public static <T> T requireNonNull(T object, String message) {
-        return Objects.requireNonNull(object, message);
-    }
-
-    public static void requireNonNull(Object... objects) {
-        for (Object object : objects) {
-            Objects.requireNonNull(object, NULL_FIELD_ERROR);
-        }
-    }
-
-    public static <T> T requireNonNullContentData(T object) {
-        return Objects.requireNonNull(object, CONTENT_DATA_ERROR);
-    }
-
-    public static void throwInvalidTypeException(Enum<?> enumObject) {
-        throw getInvalidTypeException(enumObject);
-    }
-
-    public static IllegalStateException getInvalidTypeException(Enum<?> enumObject) {
-        return new IllegalStateException("Unexpected " + enumObject.getDeclaringClass().getName() + " value " + enumObject.name());
     }
 }
