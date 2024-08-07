@@ -12,7 +12,7 @@ public class Configuration {
 
     private static boolean renderWithBackground;
 
-    private static RomFormat romFormat;
+    private static RomFormat romFormat = RomFormat.FINAL;
 
     private Configuration(){}
 
