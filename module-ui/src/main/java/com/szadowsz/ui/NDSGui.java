@@ -158,7 +158,7 @@ public class NDSGui {
         inputHandler = InputWatcherBackend.getInstance();
         app.registerMethod("keyEvent", this);
         app.registerMethod("mouseEvent",this);
-        app.registerMethod("post", this);
+    //    app.registerMethod("post", this);
     }
 
     private void resetPerspective() {
@@ -217,13 +217,6 @@ public class NDSGui {
      */
     public void mouseEvent(MouseEvent event) {
         inputHandler.mouseEvent(event);
-    }
-
-    /**
-     *
-     */
-    public void post() {
-        inputHandler.post();
     }
 
     /**
