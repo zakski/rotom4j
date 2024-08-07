@@ -15,9 +15,6 @@
  */
 package com.szadowsz.nds4j.app.nodes.bin.raw.swing;
 
-import com.szadowsz.nds4j.app.nodes.bin.raw.CodeAreaCommandHandler;
-import com.szadowsz.nds4j.app.nodes.bin.raw.CodeAreaCore;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;

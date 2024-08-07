@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.nds4j.app.nodes.bin.raw;
+package com.szadowsz.nds4j.app.nodes.bin.raw.swing;
 
-import com.szadowsz.nds4j.app.nodes.bin.raw.swing.CodeAreaSwingUtils;
+import com.szadowsz.nds4j.app.nodes.bin.raw.*;
 import com.szadowsz.nds4j.file.bin.core.BinaryData;
 import com.szadowsz.nds4j.file.bin.core.ByteArrayData;
 import com.szadowsz.nds4j.file.bin.core.ByteArrayEditableData;
@@ -48,7 +48,7 @@ public class CodeAreaCommandHandler  {
 
     private final int metaMask = CodeAreaSwingUtils.getMetaMaskDown();
 
-    private final CodeAreaCore codeArea;
+    private final CodeAreaSwing codeArea;
     private EnterKeyHandlingMode enterKeyHandlingMode = EnterKeyHandlingMode.PLATFORM_SPECIFIC;
     private TabKeyHandlingMode tabKeyHandlingMode = TabKeyHandlingMode.PLATFORM_SPECIFIC;
     private final boolean codeTypeSupported;
@@ -60,7 +60,7 @@ public class CodeAreaCommandHandler  {
     private DataFlavor binedDataFlavor;
     private DataFlavor binaryDataFlavor;
 
-    public CodeAreaCommandHandler(CodeAreaControl codeArea) {
+    public CodeAreaCommandHandler(CodeAreaSwing codeArea) {
         this.codeArea = codeArea;
         codeTypeSupported = true;
         viewModeSupported = true;
@@ -82,10 +82,6 @@ public class CodeAreaCommandHandler  {
         } catch (java.awt.HeadlessException ex) {
             Logger.getLogger(CodeAreaCommandHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public static CodeAreaCommandHandlerFactory createDefaultCodeAreaCommandHandlerFactory() {
-        return CodeAreaCommandHandler::new;
     }
 
     /**
@@ -856,7 +852,7 @@ public class CodeAreaCommandHandler  {
         CodeAreaScrollPosition scrollPosition = codeArea.computeScrolling(sourcePosition, direction);
         if (!sourcePosition.equals(scrollPosition)) {
             codeArea.setScrollPosition(scrollPosition);
-            codeArea.resetPainter();
+            codeArea.reset();
         }
     }
 
@@ -934,6 +930,10 @@ public class CodeAreaCommandHandler  {
     }
 
     public interface CodeAreaCommandHandlerFactory {
-        CodeAreaCommandHandler createCommandHandler(CodeAreaCore codeArea);
+        CodeAreaCommandHandler createCommandHandler(CodeAreaSwing codeArea);
+    }
+
+    public static CodeAreaCommandHandlerFactory createDefaultCodeAreaCommandHandlerFactory() {
+        return CodeAreaCommandHandler::new;
     }
 }

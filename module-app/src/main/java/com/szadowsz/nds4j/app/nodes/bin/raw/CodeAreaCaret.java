@@ -73,7 +73,7 @@ public class CodeAreaCaret  {
         }
     }
 
-    private void notifyCaredChanged() {
+    public void notifyCaretChanged() {
         changeListener.notifyCaretChanged();
     }
 
@@ -172,7 +172,7 @@ public class CodeAreaCaret  {
 
     public void setRenderingMode(CursorRenderingMode renderingMode) {
         this.renderingMode = renderingMode;
-        notifyCaredChanged();
+        notifyCaretChanged();
     }
 
     private void privateSetBlinkRate(int blinkRate) {
@@ -186,7 +186,7 @@ public class CodeAreaCaret  {
                 blinkTimer.stop();
                 blinkTimer = null;
                 cursorVisible = true;
-                notifyCaredChanged();
+                notifyCaretChanged();
             } else {
                 blinkTimer.setDelay(blinkRate);
                 blinkTimer.setInitialDelay(blinkRate);
@@ -203,7 +203,7 @@ public class CodeAreaCaret  {
         @Override
         public void actionPerformed(ActionEvent e) {
             cursorVisible = !cursorVisible;
-            notifyCaredChanged();
+            notifyCaretChanged();
         }
     }
 

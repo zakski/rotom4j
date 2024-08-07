@@ -17,6 +17,9 @@ package com.szadowsz.nds4j.app.nodes.bin.raw.app;
 
 import com.szadowsz.nds4j.app.nodes.bin.raw.*;
 import com.szadowsz.nds4j.app.nodes.bin.raw.operation.CodeAreaUndoRedo;
+import com.szadowsz.nds4j.app.nodes.bin.raw.operation.undo.BinaryDataUndoRedoChangeListener;
+import com.szadowsz.nds4j.app.nodes.bin.raw.swing.CodeAreaCommandHandler;
+import com.szadowsz.nds4j.app.nodes.bin.raw.swing.CodeAreaOperationCommandHandler;
 import com.szadowsz.nds4j.app.nodes.bin.raw.swing.CodeAreaSwing;
 import com.szadowsz.nds4j.app.nodes.bin.raw.swing.CodeAreaSwingUtils;
 import com.szadowsz.nds4j.file.bin.core.ByteArrayEditableData;
