@@ -18,8 +18,8 @@
  */
 package com.szadowsz.peasy;
 
-import com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation;
-import com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
 public class InterpolationUtil {
 

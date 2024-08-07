@@ -20,15 +20,15 @@ package com.szadowsz.peasy;
 
 import java.io.Serializable;
 
-import com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation;
-import com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 
 public class CameraState implements Serializable {
 	private static final long serialVersionUID = 1L;
-	final com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation rotation;
-	final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D center;
+	final Rotation rotation;
+	final Vector3D center;
 	final double distance;
 
 	public CameraState(final Rotation rotation, final Vector3D center,

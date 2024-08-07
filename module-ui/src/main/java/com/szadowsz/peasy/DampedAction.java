@@ -27,11 +27,11 @@ package com.szadowsz.peasy;
  * 
  */
 abstract public class DampedAction {
-	private final com.szadowsz.peasy.PeasyCam p;
+	private final PeasyCam p;
 	private double velocity;
 	private final double damping;
 
-	public DampedAction(final com.szadowsz.peasy.PeasyCam p) {
+	public DampedAction(final PeasyCam p) {
 		this(p, 0.16);
 	}
 

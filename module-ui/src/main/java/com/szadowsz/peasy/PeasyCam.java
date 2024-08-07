@@ -18,10 +18,10 @@
  */
 package com.szadowsz.peasy;
 
-import com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation;
-import com.szadowsz.peasy.org.apache.commons.math.geometry.RotationOrder;
-import com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D;
-import com.szadowsz.peasy.org.apache.commons.math.geometry.CardanEulerSingularityException;
+import org.apache.commons.math3.geometry.euclidean.threed.CardanEulerSingularityException;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -39,8 +39,8 @@ public class PeasyCam {
 	
 	public final String VERSION = "301";
 	
-	private static final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D LOOK = com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D.plusK;
-	private static final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D UP = com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D.plusJ;
+	private static final Vector3D LOOK = Vector3D.PLUS_K;
+	private static final Vector3D UP = Vector3D.PLUS_J;
 	private static final double SMALLEST_MINIMUM_DISTANCE = 0.01;
 
 	private static enum Constraint {
@@ -51,7 +51,7 @@ public class PeasyCam {
 	private final PApplet p;
 
 	private final double startDistance;
-	private final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D startCenter;
+	private final Vector3D startCenter;
 
 	private boolean resetOnDoubleClick = true;
 	private double minimumDistance = 1;
@@ -61,8 +61,8 @@ public class PeasyCam {
 			dampedPanY;
 
 	private double distance;
-	private com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D center;
-	private com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation rotation;
+	private Vector3D center;
+	private Rotation rotation;
 
 	// viewport for the mouse-pointer [x,y,w,h]
 	private int[] viewport = new int[4];
@@ -126,10 +126,10 @@ public class PeasyCam {
 			final double lookAtY, final double lookAtZ, final double distance) {
 		this.p = parent;
 		this.g = pg;
-		this.startCenter = this.center = new com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D(lookAtX, lookAtY, lookAtZ);
+		this.startCenter = this.center = new Vector3D(lookAtX, lookAtY, lookAtZ);
 		this.startDistance = this.distance = Math.max(distance,
 				SMALLEST_MINIMUM_DISTANCE);
-		this.rotation = new com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation();
+		this.rotation = new Rotation(1.0, 0.0, 0.0, 0.0, false);
 
 		viewport[0] = 0;
 		viewport[1] = 0;
@@ -141,21 +141,21 @@ public class PeasyCam {
 		rotateX = new DampedAction(this) {
 			@Override
 			protected void behave(final double velocity) {
-				rotation = rotation.applyTo(new com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation(com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D.plusI, velocity));
+				rotation = rotation.applyTo(new Rotation(Vector3D.PLUS_I, velocity));
 			}
 		};
 
 		rotateY = new DampedAction(this) {
 			@Override
 			protected void behave(final double velocity) {
-				rotation = rotation.applyTo(new com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation(com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D.plusJ, velocity));
+				rotation = rotation.applyTo(new Rotation(Vector3D.PLUS_J, velocity));
 			}
 		};
 
 		rotateZ = new DampedAction(this) {
 			@Override
 			protected void behave(final double velocity) {
-				rotation = rotation.applyTo(new com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation(com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D.plusK, velocity));
+				rotation = rotation.applyTo(new Rotation(Vector3D.PLUS_K, velocity));
 			}
 		};
 
@@ -437,7 +437,7 @@ public class PeasyCam {
 	}
 
 	public void lookAt(final double x, final double y, final double z) {
-		centerInterps.startInterpolation(new CenterInterp(new com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D(x, y, z), 300));
+		centerInterps.startInterpolation(new CenterInterp(new Vector3D(x, y, z), 300));
 	}
 
 	public void lookAt(final double x, final double y, final double z,
@@ -453,7 +453,7 @@ public class PeasyCam {
 
 	public void lookAt(final double x, final double y, final double z,
 			final double distance, final long animationTimeMillis) {
-		setState(new com.szadowsz.peasy.CameraState(rotation, new com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D(x, y, z), distance),
+		setState(new CameraState(rotation, new Vector3D(x, y, z), distance),
 				animationTimeMillis);
 	}
 
@@ -463,17 +463,17 @@ public class PeasyCam {
 	}
 
 	public void feed() {
-		final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D pos = rotation.applyTo(LOOK).scalarMultiply(distance).add(center);
-		final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D rup = rotation.applyTo(UP);
+		final Vector3D pos = rotation.applyTo(LOOK).scalarMultiply(distance).add(center);
+		final Vector3D rup = rotation.applyTo(UP);
 		g.camera((float)pos.getX(), (float)pos.getY(), (float)pos.getZ(), //
 				(float)center.getX(), (float)center.getY(), (float)center.getZ(), //
 				(float)rup.getX(), (float)rup.getY(), (float)rup.getZ());
 	}
 
-	static void apply(final PGraphics g, final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D center, final com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation rotation,
+	static void apply(final PGraphics g, final Vector3D center, final Rotation rotation,
                       final double distance) {
-		final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D pos = rotation.applyTo(LOOK).scalarMultiply(distance).add(center);
-		final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D rup = rotation.applyTo(UP);
+		final Vector3D pos = rotation.applyTo(LOOK).scalarMultiply(distance).add(center);
+		final Vector3D rup = rotation.applyTo(UP);
 		g.camera((float)pos.getX(), (float)pos.getY(), (float)pos.getZ(), //
 				(float)center.getX(), (float)center.getY(), (float)center.getZ(), //
 				(float)rup.getX(), (float)rup.getY(), (float)rup.getZ());
@@ -485,7 +485,7 @@ public class PeasyCam {
 	 * @return float[]{x,y,z}
 	 */
 	public float[] getPosition() {
-		final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D pos = rotation.applyTo(LOOK).scalarMultiply(distance).add(center);
+		final Vector3D pos = rotation.applyTo(LOOK).scalarMultiply(distance).add(center);
 		return new float[] { (float)pos.getX(), (float)pos.getY(), (float)pos.getZ() };
 	}
 
@@ -494,27 +494,27 @@ public class PeasyCam {
 	}
 
 	public void reset(final long animationTimeInMillis) {
-		setState(new com.szadowsz.peasy.CameraState(new com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation(), startCenter, startDistance),
-				animationTimeInMillis);
+		setState(new CameraState(new Rotation(1.0, 0.0, 0.0, 0.0, false), startCenter, startDistance)
+				, animationTimeInMillis);
 	}
 
 	public void pan(final double dx, final double dy) {
-		center = center.add(rotation.applyTo(new com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D(dx, dy, 0)));
+		center = center.add(rotation.applyTo(new Vector3D(dx, dy, 0)));
 		feed();
 	}
 
 	public void rotateX(final double angle) {
-		rotation = rotation.applyTo(new com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation(com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D.plusI, angle));
+		rotation = rotation.applyTo(new Rotation(Vector3D.PLUS_I, angle));
 		feed();
 	}
 
 	public void rotateY(final double angle) {
-		rotation = rotation.applyTo(new com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation(com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D.plusJ, angle));
+		rotation = rotation.applyTo(new Rotation(Vector3D.PLUS_J, angle));
 		feed();
 	}
 
 	public void rotateZ(final double angle) {
-		rotation = rotation.applyTo(new com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation(com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D.plusK, angle));
+		rotation = rotation.applyTo(new Rotation(Vector3D.PLUS_K, angle));
 		feed();
 	}
 
@@ -522,8 +522,8 @@ public class PeasyCam {
 		return p;
 	}
 
-	public com.szadowsz.peasy.CameraState getState() {
-		return new com.szadowsz.peasy.CameraState(rotation, center, distance);
+	public CameraState getState() {
+		return new CameraState(rotation, center, distance);
 	}
 
 	/**
@@ -575,7 +575,7 @@ public class PeasyCam {
 		this.resetOnDoubleClick = resetOnDoubleClick;
 	}
 
-	public void setState(final com.szadowsz.peasy.CameraState state) {
+	public void setState(final CameraState state) {
 		setState(state, 300);
 	}
 
@@ -597,7 +597,7 @@ public class PeasyCam {
 
 	public void setRotations(final double pitch, final double yaw, final double roll) {
 		rotationInterps.cancelInterpolation();
-		this.rotation = new com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation(com.szadowsz.peasy.org.apache.commons.math.geometry.RotationOrder.XYZ, pitch, yaw, roll);
+		this.rotation = new Rotation(RotationOrder.XYZ, pitch, yaw, roll);
 		feed();
 	}
 
@@ -615,12 +615,12 @@ public class PeasyCam {
 	 */
 	public float[] getRotations() {
 		try {
-			final double[] angles = rotation.getAngles(com.szadowsz.peasy.org.apache.commons.math.geometry.RotationOrder.XYZ);
+			final double[] angles = rotation.getAngles(RotationOrder.XYZ);
 			return new float[] { (float)angles[0], (float)angles[1], (float)angles[2] };
 		} catch (final CardanEulerSingularityException e) {
 		}
 		try {
-			final double[] angles = rotation.getAngles(com.szadowsz.peasy.org.apache.commons.math.geometry.RotationOrder.YXZ);
+			final double[] angles = rotation.getAngles(RotationOrder.YXZ);
 			return new float[] { (float)angles[1], (float)angles[0], (float)angles[2] };
 		} catch (final CardanEulerSingularityException e) {
 		}
@@ -730,8 +730,8 @@ public class PeasyCam {
 	}
 
 	class CenterInterp extends AbstractInterp {
-		private final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D startCenter = center;
-		private final com.szadowsz.peasy.org.apache.commons.math.geometry.Vector3D endCenter;
+		private final Vector3D startCenter = center;
+		private final Vector3D endCenter;
 
 		public CenterInterp(final Vector3D endCenter, final long timeInMillis) {
 			super(timeInMillis);
@@ -750,8 +750,8 @@ public class PeasyCam {
 	}
 
 	class RotationInterp extends AbstractInterp {
-		final com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation startRotation = rotation;
-		final com.szadowsz.peasy.org.apache.commons.math.geometry.Rotation endRotation;
+		final Rotation startRotation = rotation;
+		final Rotation endRotation;
 
 		public RotationInterp(final Rotation endRotation, final long timeInMillis) {
 			super(timeInMillis);
