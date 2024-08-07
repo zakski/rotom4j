@@ -17,6 +17,7 @@ package com.szadowsz.nds4j.app.nodes.bin.raw.operation;
 
 import com.szadowsz.nds4j.app.nodes.bin.raw.CodeAreaCore;
 import com.szadowsz.nds4j.app.nodes.bin.raw.operation.undo.*;
+import com.szadowsz.nds4j.app.nodes.bin.raw.swing.CodeAreaSwing;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ public class CodeAreaUndoRedo implements BinaryDataUndoRedo, BinaryDataAppendabl
     private int commandPosition;
     private int syncPosition = -1;
     private final List<BinaryDataCommand> commands = new ArrayList<>();
-    private final CodeAreaCore codeArea;
+    private final CodeAreaSwing codeArea;
     private final List<BinaryDataUndoRedoChangeListener> listeners = new ArrayList<>();
 
     /**
@@ -44,7 +45,7 @@ public class CodeAreaUndoRedo implements BinaryDataUndoRedo, BinaryDataAppendabl
      *
      * @param codeArea code area component
      */
-    public CodeAreaUndoRedo(CodeAreaCore codeArea) {
+    public CodeAreaUndoRedo(CodeAreaSwing codeArea) {
         this.codeArea = codeArea;
         undoMaximumCount = 1024;
         undoMaximumSize = 65535;

@@ -45,7 +45,7 @@ public class CodeAreaSelection {
         CodeAreaSelection.this.setEnd(end);
     }
 
-    public CodeAreaSelection(com.szadowsz.nds4j.app.nodes.bin.core.SelectionRange selectionRange) {
+    public CodeAreaSelection(SelectionRange selectionRange) {
         if (selectionRange == null) {
             start = end = 0;
         } else {
@@ -113,8 +113,8 @@ public class CodeAreaSelection {
      *
      * @return selection range
      */
-    public com.szadowsz.nds4j.app.nodes.bin.core.SelectionRange getRange() {
-        return new com.szadowsz.nds4j.app.nodes.bin.core.SelectionRange(start, end);
+    public SelectionRange getRange() {
+        return new SelectionRange(start, end);
     }
 
     public void setStart(long start) {
@@ -133,7 +133,7 @@ public class CodeAreaSelection {
         this.end = end;
     }
 
-    public void setSelection(com.szadowsz.nds4j.app.nodes.bin.core.SelectionRange selectionRange) {
+    public void setSelection(SelectionRange selectionRange) {
         if (selectionRange == null) {
             start = end = 0;
         } else {

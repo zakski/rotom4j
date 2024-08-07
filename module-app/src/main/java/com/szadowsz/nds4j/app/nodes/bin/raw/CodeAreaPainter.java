@@ -15,7 +15,6 @@
  */
 package com.szadowsz.nds4j.app.nodes.bin.raw;
 
-import com.szadowsz.nds4j.app.nodes.bin.raw.swing.AntialiasingMode;
 import com.szadowsz.nds4j.file.bin.core.BinaryData;
 
 import java.awt.Color;
