@@ -144,32 +144,32 @@ public interface GConstants {
 	// Attribute:- font weight   Value Type:- Float in range (0.5 to 2.75)
 	TextAttribute WEIGHT = TextAttribute.WEIGHT;
 	// Predefined constants for font weight
-	Float WEIGHT_EXTRA_LIGHT 	= new Float(0.5f);
-	Float WEIGHT_LIGHT 			= new Float(0.75f);
-	Float WEIGHT_DEMILIGHT 		= new Float(0.875f);
-	Float WEIGHT_REGULAR 		= new Float(1.0f);
-	Float WEIGHT_SEMIBOLD 		= new Float(1.25f);
-	Float WEIGHT_MEDIUM 		= new Float(1.5f);
-	Float WEIGHT_DEMIBOLD 		= new Float(1.75f);
-	Float WEIGHT_BOLD 			= new Float(2.0f);
-	Float WEIGHT_HEAVY 			= new Float(2.25f);
-	Float WEIGHT_EXTRABOLD 		= new Float(2.5f);
-	Float WEIGHT_ULTRABOLD 		= new Float(2.75f);
+	Float WEIGHT_EXTRA_LIGHT 	= 0.5f;
+	Float WEIGHT_LIGHT 			= 0.75f;
+	Float WEIGHT_DEMILIGHT 		= 0.875f;
+	Float WEIGHT_REGULAR 		= 1.0f;
+	Float WEIGHT_SEMIBOLD 		= 1.25f;
+	Float WEIGHT_MEDIUM 		= 1.5f;
+	Float WEIGHT_DEMIBOLD 		= 1.75f;
+	Float WEIGHT_BOLD 			= 2.0f;
+	Float WEIGHT_HEAVY 			= 2.25f;
+	Float WEIGHT_EXTRABOLD 		= 2.5f;
+	Float WEIGHT_ULTRABOLD 		= 2.75f;
 
 	// Attribute:- font width   Value Type:- Float in range (0.75 to 1.5)
 	TextAttribute WIDTH 		= TextAttribute.WIDTH;
 	// Predefined constants for font width
-	Float WIDTH_CONDENSED 		= new Float(0.75f);
-	Float WIDTH_SEMI_CONDENSED 	= new Float(0.875f);
-	Float WIDTH_REGULAR 		= new Float(1.0f);
-	Float WIDTH_SEMI_EXTENDED 	= new Float(1.25f);
-	Float WIDTH_EXTENDED 		= new Float(1.5f);
+	Float WIDTH_CONDENSED 		= 0.75f;
+	Float WIDTH_SEMI_CONDENSED 	= 0.875f;
+	Float WIDTH_REGULAR 		= 1.0f;
+	Float WIDTH_SEMI_EXTENDED 	= 1.25f;
+	Float WIDTH_EXTENDED 		= 1.5f;
 
 	// Attribute:- font posture   Value Type:- Float in range (0.0 to 0.20)
 	TextAttribute POSTURE 		= TextAttribute.POSTURE;
 	// Predefined constants for font posture (plain or italic)
-	Float POSTURE_REGULAR 		= new Float(0.0f);
-	Float POSTURE_OBLIQUE 		= new Float(0.20f);
+	Float POSTURE_REGULAR 		= 0.0f;
+	Float POSTURE_OBLIQUE 		= 0.20f;
 
 	// Attribute:- font size   Value Type:- Float
 	TextAttribute SIZE 			= TextAttribute.SIZE;
@@ -177,9 +177,9 @@ public interface GConstants {
 	// Attribute:- font superscript   Value Type:- Integer (1 : super or -1 subscript)
 	TextAttribute SUPERSCRIPT 	= TextAttribute.SUPERSCRIPT;
 	// Predefined constants for font super/subscript
-	Integer SUPERSCRIPT_SUPER 	= new Integer(1);
-	Integer SUPERSCRIPT_SUB 	= new Integer(-1);
-	Integer SUPERSCRIPT_OFF 	= new Integer(0);
+	Integer SUPERSCRIPT_SUPER 	= 1;
+	Integer SUPERSCRIPT_SUB 	= -1;
+	Integer SUPERSCRIPT_OFF 	= 0;
 
 	// Attribute:- font foreground and background colour   Value Type:- Color
 	TextAttribute FOREGROUND 	= TextAttribute.FOREGROUND;
@@ -188,11 +188,11 @@ public interface GConstants {
 	// Attribute:- font strike through   Value:- Boolean
 	TextAttribute STRIKETHROUGH = TextAttribute.STRIKETHROUGH;
 	// Predefined constants for font strike through on/off
-	Boolean STRIKETHROUGH_ON 	= new Boolean(true);
-	Boolean STRIKETHROUGH_OFF 	= new Boolean(false);
+	Boolean STRIKETHROUGH_ON 	= true;
+	Boolean STRIKETHROUGH_OFF 	= false;
 
 	//	TextAttribute JUSTIFICATION = TextAttribute.JUSTIFICATION;
-	//	Float JUSTIFICATION_FULL = new Float(1.0f);
-	//	Float JUSTIFICATION_NONE = new Float(0.0f);
+	//	Float JUSTIFICATION_FULL = 1.0f;
+	//	Float JUSTIFICATION_NONE = 0.0f;
 	//  int EAST = 123;
 }

@@ -37,8 +37,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 
-import sun.security.util.SecurityConstants;
-
 /*
  * I wanted to implement copying and pasting to the clipboard using static
  * methods to simplify the sharing of a single clipboard over all classes.
@@ -112,21 +110,11 @@ public class GClip implements ClipboardOwner {
 	 * application clipboard.
 	 */
 	private void makeClipboardObject() {
-		SecurityManager security = System.getSecurityManager();
-		if (security != null) {
 			try {
-				security.checkPermission(SecurityConstants.ALL_PERMISSION);
 				clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 			} catch (SecurityException e) {
 				clipboard = new Clipboard("Application Clipboard");
 			}
-		} else {
-			try {
-				clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			} catch (Exception e) {
-				// THIS IS DUMB - true but is there another way - I think not
-			}
-		}
 	}
 
 	/**

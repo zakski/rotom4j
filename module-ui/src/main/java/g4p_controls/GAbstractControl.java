@@ -1464,9 +1464,9 @@ public abstract class GAbstractControl implements PConstants, GConstants, GConst
 
 		public int compare(GAbstractControl c1, GAbstractControl c2) {
 			if (c1.z != c2.z)
-				return new Integer(c1.z).compareTo(new Integer(c2.z));
+				return Integer.compare(c1.z, c2.z);
 			else
-				return new Integer((int) -c1.y).compareTo(new Integer((int) -c2.y));
+				return Integer.compare((int) -c1.y, (int) -c2.y);
 		}
 
 	} // end of comparator class
