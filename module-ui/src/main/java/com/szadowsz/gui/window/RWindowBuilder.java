@@ -1,10 +1,11 @@
 package com.szadowsz.gui.window;
 
-import com.szadowsz.gui.RotomReferences;
+import com.szadowsz.gui.RotomGuiManager;
+import com.szadowsz.gui.RotomGuiSettings;
 import com.szadowsz.gui.exception.RWindowException;
 import com.szadowsz.gui.window.external.RWindowAWT;
 import com.szadowsz.gui.window.external.RWindowExt;
-import com.szadowsz.gui.window.external.RWindowNEWT;
+import com.szadowsz.gui.window.external.RWindowJOGL;
 import com.szadowsz.gui.window.internal.RWindowInt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +18,10 @@ import processing.core.PConstants;
 public class RWindowBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(RWindowBuilder.class);
 
-    private PApplet applet = RotomReferences.getApplet(); // By Default, we use the Main Window Processing Applet
+    private PApplet applet = null;
 
     // window display name
-    private String title = (applet!=null)?applet.toString():"main";
+    private String title = "main";
 
     // window coordinates
     private int xPos;
@@ -32,6 +33,9 @@ public class RWindowBuilder {
 
     // window renderer
     private String renderer=null;
+
+    // window GUI settings
+    private RotomGuiSettings settings = null;
 
     /**
      * Default Constructor For Builder
@@ -88,6 +92,15 @@ public class RWindowBuilder {
     }
 
     /**
+     * Configure the Renderer
+     *
+     * @param s user defined GUI Settings
+     */
+    public void setGuiSettings(RotomGuiSettings s){
+        settings = s;
+    }
+
+    /**
      * Construct and register The Window
      *
      * @return newly Created Window
@@ -106,16 +119,16 @@ public class RWindowBuilder {
         } else {
             LOGGER.debug("Constructing External Window {}", title);
             RWindowExt external = switch (renderer) {
-                case PConstants.JAVA2D -> new RWindowAWT(title, xPos, yPos, width, height);
-                case PConstants.P2D ->  new RWindowNEWT(title, xPos, yPos, width, height, false);
-                case PConstants.P3D ->  new RWindowNEWT(title, xPos, yPos, width, height, true);
+                case PConstants.JAVA2D -> new RWindowAWT(title, xPos, yPos, width, height, settings);
+                case PConstants.P2D ->  new RWindowJOGL(title, xPos, yPos, width, height, settings, false);
+                case PConstants.P3D ->  new RWindowJOGL(title, xPos, yPos, width, height, settings, true);
                 default -> throw new RWindowException("Unexpected Renderer value: " + renderer);
             };
-            String path = "--sketch-path=" + RotomReferences.getApplet().sketchPath();
+            String path = "--sketch-path=" + external.sketchPath();
             String loc = "--location=" + xPos + "," + yPos;
             String className = external.getClass().getName();
             String[] args = { path, loc, className };
-            RotomReferences.getGui().registerWindow(external);
+            RotomGuiManager.registerWindow(external);
 
             LOGGER.debug("Running External Window {}", title);
             PApplet.runSketch(args, external);

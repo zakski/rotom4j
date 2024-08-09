@@ -154,8 +154,9 @@ public class NDSGui {
      * Register draw/input Methods with Processing
      */
     private void registerListeners() {
-        app.registerMethod("draw", this);
         inputHandler = InputWatcherBackend.getInstance();
+
+        app.registerMethod("draw", this);
         app.registerMethod("keyEvent", this);
         app.registerMethod("mouseEvent",this);
     //    app.registerMethod("post", this);

@@ -1,10 +1,14 @@
 package com.szadowsz.gui.window.external;
 
+import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.RotomGuiSettings;
 import com.szadowsz.gui.window.RWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PVector;
+import processing.event.KeyEvent;
+import processing.event.MouseEvent;
 
 /**
  * Base Class for External Windows
@@ -28,17 +32,19 @@ public abstract class RWindowExt extends PApplet implements RWindow {
     // Renderer Type can be either PConstants.JAVA2D, PConstants.P2D or PConstants.P3D
     protected String renderer;
 
+    protected RotomGui gui;
+
     /**
      * Constructor for External Window
      *
-     * @param title title to give the window
-     * @param xPos initial X display location on Screen
-     * @param yPos initial Y display location on Screen
-     * @param width initial window width
+     * @param title  title to give the window
+     * @param xPos   initial X display location on Screen
+     * @param yPos   initial Y display location on Screen
+     * @param width  initial window width
      * @param height initial window height
      */
-    public RWindowExt(String title, int xPos, int yPos, int width, int height) {
-        this(title, new PVector(xPos, yPos), width,height);
+    public RWindowExt(String title, int xPos, int yPos, int width, int height, RotomGuiSettings s) {
+        this(title, new PVector(xPos, yPos), width, height, s);
 
     }
 
@@ -46,11 +52,11 @@ public abstract class RWindowExt extends PApplet implements RWindow {
      * Constructor for External Window
      *
      * @param title title to give the window
-     * @param pos PVector for initial display location
-     * @param w initial window width
-     * @param h initial window height
+     * @param pos   PVector for initial display location
+     * @param w     initial window width
+     * @param h     initial window height
      */
-    public RWindowExt(String title, PVector pos, int w, int h) {
+    public RWindowExt(String title, PVector pos, int w, int h, RotomGuiSettings s) {
         super();
 
         this.title = title;
@@ -59,6 +65,8 @@ public abstract class RWindowExt extends PApplet implements RWindow {
 
         this.defaultWidth = w;
         this.defaultHeight = h;
+
+
 
         registerMethods();
     }
@@ -74,6 +82,47 @@ public abstract class RWindowExt extends PApplet implements RWindow {
         registerMethod("keyEvent", this);
         LOGGER.debug("Registered All methods with {}", title);
     }
+
+    /**
+     * Execute any draw handler for this window.
+     */
+    public void draw() {
+        // NOOP
+    }
+
+    /**
+     * Execute any pre-draw handling associated with this window and its components
+     */
+    public void pre() {
+        // NOOP
+    }
+
+    /**
+     * Execute any post-draw handling associated with this window and its controls.
+     */
+    public void post() {
+        // NOOP
+    }
+
+
+    /**
+     * Execute any mouse event handler associated with this window and its controls
+     *
+     * @param event the mouse event to process
+     */
+    public void mouseEvent(MouseEvent event) {
+        // NOOP
+    }
+
+    /**
+     * Execute any key event handler associated with this window and its controls
+     *
+     * @param event the key event to process
+     */
+    public void keyEvent(KeyEvent event) {
+        // NOOP
+    }
+
 
     @Override
     public void settings() {
@@ -97,6 +146,15 @@ public abstract class RWindowExt extends PApplet implements RWindow {
         return this;
     }
 
+    /**
+     * Getter for Window's embedded GUI
+     *
+     * @return this Window's GUI Instance
+     */
+    public RotomGui getGui() {
+        return gui;
+    }
+
     @Override
     public String getTitle() {
         return title;
@@ -114,7 +172,7 @@ public abstract class RWindowExt extends PApplet implements RWindow {
 
     @Override
     public PVector getPos() {
-        return new PVector(pos.x,pos.y); // TODO, no way to retrieve window location relative to Screen
+        return new PVector(pos.x, pos.y); // TODO, no way to retrieve window location relative to Screen
     }
 
     @Override

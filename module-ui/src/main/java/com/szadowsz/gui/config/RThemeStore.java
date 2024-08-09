@@ -9,4 +9,10 @@ import org.slf4j.LoggerFactory;
 public class RThemeStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(RThemeStore.class);
 
+    private RThemeStore() {
+
+    }
+
+    public static void init() {
+    }
 }
