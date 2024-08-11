@@ -56,7 +56,7 @@ public class RKeyEvent {
 
 
     /**
-     * Mark Event as Consumed
+     * Is Event Consumed
      */
     public boolean isConsumed() {
         return consumed;
@@ -84,7 +84,7 @@ public class RKeyEvent {
 
 
     /**
-     *
+     * Mark the Event As Consumed
      */
     public void consume() {
         consumed = true;

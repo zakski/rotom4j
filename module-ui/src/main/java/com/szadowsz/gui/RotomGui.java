@@ -1,5 +1,6 @@
 package com.szadowsz.gui;
 
+import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.RInputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,5 +44,14 @@ public class RotomGui {
         app.registerMethod("draw", this);
         app.registerMethod("keyEvent", this);
         app.registerMethod("mouseEvent",this);
+    }
+
+    /**
+     * Get the PApplet the GUi is displayed in
+     *
+     * @return the PApplet that the GUI is bound to
+     */
+    public PApplet getSketch(){
+        return app;
     }
 }

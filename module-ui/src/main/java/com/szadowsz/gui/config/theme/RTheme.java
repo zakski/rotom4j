@@ -1,4 +1,4 @@
-package com.szadowsz.gui.config;
+package com.szadowsz.gui.config.theme;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
