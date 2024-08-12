@@ -376,6 +376,8 @@ public abstract class RComponent implements PConstants, RInputListener {
         return heightInCells * RLayoutStore.getCell();
     }
 
+
+
     public String getName(){ // TODO LazyGui
         return name;
     }
@@ -388,6 +390,15 @@ public abstract class RComponent implements PConstants, RInputListener {
     public RFolder getParent() { // TODO LazyGui & G4P
         return parent;
     }
+
+    public PVector getPosition() {
+        return new PVector(pos.x,pos.y);
+    }
+
+    public PVector getPreferredSize(){
+        return new PVector(getRequiredWidthForHorizontalLayout(),getHeight());
+    }
+
 
     public abstract float getRequiredWidthForHorizontalLayout();
 
