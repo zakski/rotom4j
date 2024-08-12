@@ -108,11 +108,11 @@ public class ButtonNode extends AbstractNode implements ActionInteractable {
 
     @Override
     public void executePressActions() {
-        pressActions.forEach(a -> a.doAction());
+        pressActions.forEach(MouseAction::doAction);
     }
 
     @Override
     public void executeReleaseActions() {
-        releaseActions.forEach(a -> a.doAction());
+        releaseActions.forEach(MouseAction::doAction);
     }
 }

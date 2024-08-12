@@ -4,6 +4,7 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.config.theme.RTheme;
 import com.szadowsz.gui.config.theme.RThemeColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.RInputListener;
@@ -20,46 +21,48 @@ import processing.core.PVector;
  */
 public abstract class RComponent implements PConstants, RInputListener {
 
-    // TODO LazyGui
-    private boolean isVisible = true; // TODO protected?
+    // Reference to the RotomGui instance that owns this component
+    protected final RotomGui gui;
 
+    // Link to the parent folder (if null then it is a root component) // TODO root handling
+    protected final RFolder parent; // TODO LazyGui & G4P
+
+    // TODO LazyGui
+    public final String path;  // TODO protected?
     // TODO LazyGui
     protected final String name;
 
-    protected final RotomGui gui;
-
+    // Top left position of component in pixels (absolute)
+    protected final PVector pos = new PVector(); // TODO LazyGui & G4P
+    // Width and height of component in pixels
+    protected final PVector size = new PVector(); // TODO LazyGui & G4P
     // TODO LazyGui
     protected float heightInCells = 1;
+// protected int col; TODO push this sort of config to layout
 
-    // protected int col; TODO push this sort of config to layout
+    protected int localTheme = RThemeStore.getGlobalSchemeNum(); // TODO G4P
+    protected RTheme palette = null;
+
+    // TODO LazyGui
+    protected boolean isDraggable = true;
+    // Set to true when mouse is dragging, set to false on mouse released
+    protected boolean isDragged = false; // TODO LazyGui & G4P
+    // TODO LazyGui
+    protected boolean isMouseOver = false;
+    // Is the component visible? (Not Parent Aware)
+    protected boolean isVisible = true; // TODO LazyGui & G4P
+    // TODO Difference between mouse over and has focus
 
     // TODO LazyGui
     public final String className = this.getClass().getSimpleName();
 
     // TODO LazyGui
-    public final String path;
-
-    // TODO LazyGui
-    public final RFolder parent;
-
-    // TODO LazyGui
-    public final PVector pos = new PVector(); // TODO protected?
-
-    // TODO LazyGui
-    public final PVector size = new PVector(); // TODO protected?
-
-    // TODO LazyGui
     // public final NodeType type; TODO Unneeded?
-
-
-    // TODO LazyGui
-    public boolean isDragged = false; // TODO protected?
-    public boolean isDraggable = true; // TODO protected?
-    public boolean isMouseOver = false; // TODO protected?
-
 
     /**
      * Default Constructor
+     * <p>
+     * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
      *
      * @param gui the gui for the window that the component is drawn under
      * @param path the path in the component tree
@@ -67,9 +70,12 @@ public abstract class RComponent implements PConstants, RInputListener {
      */
     protected RComponent(RotomGui gui, String path, RFolder parentFolder) {
         this.gui = gui;
+        this.parent = parentFolder;
+
         this.path = path;
         this.name = extractNameFromPath(path);
-        this.parent = parentFolder;
+
+        this.palette = RThemeStore.getTheme(localTheme);
     }
 
     private String extractNameFromPath(String path) {
@@ -120,9 +126,9 @@ public abstract class RComponent implements PConstants, RInputListener {
      */
     protected void fillBackground(PGraphics pg) { // TODO LazyGui
         if(isMouseOver){
-            pg.fill(RThemeStore.getColor(RThemeColorType.FOCUS_BACKGROUND));
+            pg.fill(RThemeStore.getRGBA(RThemeColorType.FOCUS_BACKGROUND));
         } else {
-            pg.fill(RThemeStore.getColor(RThemeColorType.NORMAL_BACKGROUND));
+            pg.fill(RThemeStore.getRGBA(RThemeColorType.NORMAL_BACKGROUND));
         }
     }
 
@@ -133,9 +139,9 @@ public abstract class RComponent implements PConstants, RInputListener {
      */
     protected void fillForeground(PGraphics pg) { // TODO LazyGui
         if(isMouseOver){
-            pg.fill(RThemeStore.getColor(RThemeColorType.FOCUS_FOREGROUND));
+            pg.fill(RThemeStore.getRGBA(RThemeColorType.FOCUS_FOREGROUND));
         } else {
-            pg.fill(RThemeStore.getColor(RThemeColorType.NORMAL_FOREGROUND));
+            pg.fill(RThemeStore.getRGBA(RThemeColorType.NORMAL_FOREGROUND));
         }
     }
 
@@ -146,7 +152,7 @@ public abstract class RComponent implements PConstants, RInputListener {
      */
     protected void highlightBackground(PGraphics pg) { // TODO LazyGui
         pg.noStroke();
-        pg.fill(RThemeStore.getColor(RThemeColorType.FOCUS_BACKGROUND));
+        pg.fill(RThemeStore.getRGBA(RThemeColorType.FOCUS_BACKGROUND));
         pg.rect(0,0,size.x,size.y);
     }
 
@@ -157,9 +163,9 @@ public abstract class RComponent implements PConstants, RInputListener {
      */
     protected void strokeForeground(PGraphics pg) { // TODO LazyGui
         if (isMouseOver) {
-            pg.stroke(RThemeStore.getColor(RThemeColorType.FOCUS_FOREGROUND));
+            pg.stroke(RThemeStore.getRGBA(RThemeColorType.FOCUS_FOREGROUND));
         } else {
-            pg.stroke(RThemeStore.getColor(RThemeColorType.NORMAL_FOREGROUND));
+            pg.stroke(RThemeStore.getRGBA(RThemeColorType.NORMAL_FOREGROUND));
         }
     }
 
@@ -187,7 +193,7 @@ public abstract class RComponent implements PConstants, RInputListener {
         if(fillBackground){
             float backdropBuffer = RLayoutStore.getCell() * 0.5f;
             float w = pg.textWidth(text) + RFontStore.getMarginX() + backdropBuffer;
-            drawRightBackdrop(pg, w);
+            drawBackdropRight(pg, w);
         }
         pg.textAlign(RIGHT, CENTER);
         pg.text(text,size.x - RFontStore.getMarginX(),size.y - RFontStore.getMarginY());
@@ -208,7 +214,7 @@ public abstract class RComponent implements PConstants, RInputListener {
         String trimmedRightText = RFontStore.substringToFit(pg, leftText, size.x - leftOffset,true);
         if(fillBackground){
             float w = pg.textWidth(trimmedRightText) + RFontStore.getMarginX() * 2;
-            drawRightBackdrop(pg, w);
+            drawBackdropRight(pg, w);
         }
         pg.text(trimmedRightText,size.x - RFontStore.getMarginX(), size.y - RFontStore.getMarginY());
     }
@@ -219,7 +225,7 @@ public abstract class RComponent implements PConstants, RInputListener {
      * @param pg graphics reference to use
      * @param backdropSize size of the background
      */
-    protected void drawRightBackdrop(PGraphics pg, float backdropSize) { // TODO LazyGui
+    protected void drawBackdropRight(PGraphics pg, float backdropSize) { // TODO LazyGui
         pg.pushStyle();
         fillBackground(pg);
         pg.noStroke();
@@ -267,10 +273,10 @@ public abstract class RComponent implements PConstants, RInputListener {
         pg.popMatrix();
     }
 
-    protected void onValueChange() { // TODO LazyGui
+    protected void onValueChangeEnd() { // TODO LazyGui
         if(parent != null){
             // go up the parent chain recursively and keep notifying of a change until the root is reached
-            parent.onValueChange();
+            parent.onValueChangeEnd();
         }
     }
 
@@ -281,8 +287,9 @@ public abstract class RComponent implements PConstants, RInputListener {
      * @param x x position
      * @param y y position
      */
-    public void keyPressedOverNode(RKeyEvent e, float x, float y) { // TODO LazyGui
+    public void keyPressedOverComponent(RKeyEvent e, float x, float y) { // TODO LazyGui
         // TODO Needed?
+        // TODO Difference between has focus and just mouse over
     }
 
     /**
@@ -310,6 +317,15 @@ public abstract class RComponent implements PConstants, RInputListener {
             e.consume();
         }
         isDragged = false;
+    }
+
+    /**
+     * Method to handle the component's reaction to the mouse being released over it
+     *
+     * @param e the change made by the mouse
+     */
+    public void mouseReleasedOverComponent(RMouseEvent e) { // TODO LazyGui
+        // NOOP
     }
 
     /**
@@ -351,12 +367,26 @@ public abstract class RComponent implements PConstants, RInputListener {
         isVisible = true;
     }
 
+    /**
+     * Method to calculate the height
+     *
+     * @return the height of the node
+     */
+    public float getHeight(){ // TODO LazyGui
+        return heightInCells * RLayoutStore.getCell();
+    }
+
     public String getName(){ // TODO LazyGui
         return name;
     }
 
-    public String getVisibleName(){ // TODO LazyGui
-        return name;
+    /**
+     * Get the parent component. If null then this is a top-level component
+     *
+     * @return return parent, null if top level
+     */
+    public RFolder getParent() { // TODO LazyGui & G4P
+        return parent;
     }
 
     public abstract float getRequiredWidthForHorizontalLayout();
@@ -365,13 +395,8 @@ public abstract class RComponent implements PConstants, RInputListener {
         return "";
     }
 
-    /**
-     * Method to calculate the height
-     *
-     * @return the height of the node
-     */
-    public float getHeight(){ // TODO LazyGui
-        return heightInCells * RLayoutStore.getCell();
+    public String getVisibleName(){ // TODO LazyGui
+        return name;
     }
 
     /**

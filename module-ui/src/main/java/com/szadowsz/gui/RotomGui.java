@@ -32,7 +32,7 @@ public class RotomGui {
         registerListeners();
         settings.applyEarlyStartupSettings();
         RThemeStore.init();
-        RFontStore.init();
+        RFontStore.init(sketch);
 //        WindowManager.addRootWindow(settings.getUseToolbarAsRoot());
         settings.applyLateStartupSettings();
     }
