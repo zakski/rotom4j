@@ -1,19 +1,19 @@
 package com.szadowsz.gui.component.input.slider;
 
+import com.jogamp.newt.event.KeyEvent;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.config.RDelayStore;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.RShaderStore;
 import com.szadowsz.gui.config.theme.RThemeColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
+import com.szadowsz.gui.input.RClipboard;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.utils.RArrayListBuilder;
-import com.szadowsz.ui.store.DelayStore;
-import com.szadowsz.ui.utils.ClipboardUtils;
-import com.szadowsz.ui.utils.KeyCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
@@ -143,12 +143,12 @@ public class RSlider extends RComponent {
 
     protected boolean isNumpadInputActive() { // TODO LazyGui
         return numpadInputAppendLastMillis != -1 &&
-                gui.getSketch().millis() <= numpadInputAppendLastMillis + DelayStore.getKeyboardBufferDelayMillis();
+                gui.getSketch().millis() <= numpadInputAppendLastMillis + RDelayStore.getKeyboardBufferDelayMillis();
     }
 
     protected boolean isNumpadInReplaceMode() {
         return numpadInputAppendLastMillis == -1 ||
-                gui.getSketch().millis() - numpadInputAppendLastMillis > DelayStore.getKeyboardBufferDelayMillis();
+                gui.getSketch().millis() - numpadInputAppendLastMillis > RDelayStore.getKeyboardBufferDelayMillis();
     }
 
     protected void setNumpadInputActiveStarted() { // TODO LazyGui
@@ -245,6 +245,10 @@ public class RSlider extends RComponent {
 
     protected void onValueChange() { // TODO LazyGui
         constrainValue();
+    }
+
+    protected void initSliderBackgroundShader() {
+        RShaderStore.getOrLoadShader(shaderPathDefault);
     }
 
     protected void updateBackgroundShader(PGraphics pg) { // TODO LazyGui
@@ -354,16 +358,16 @@ public class RSlider extends RComponent {
             e.consume();
         }
         readNumpadInput(e);
-        if (e.isControlDown() && e.getKeyCode() == KeyCodes.C) {
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) { // TODO LazyGui better Key handling
             String value = getDisplayValue().replaceAll(SQUIGGLY_EQUALS, "");
             if (value.endsWith(".")) {
                 value += "0";
             }
-            ClipboardUtils.setClipboardString(value);
+            RClipboard.copy(value);
             e.consume();
         }
-        if (e.isControlDown() && e.getKeyCode() == KeyCodes.V) {
-            String clipboardString = ClipboardUtils.getClipboardString();
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) { // TODO LazyGui better Key handling
+            String clipboardString = RClipboard.paste();
 
             try {
                 float clipboardValue = Float.parseFloat(clipboardString);

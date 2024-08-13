@@ -1,5 +1,6 @@
 package com.szadowsz.gui.window.internal;
 
+import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.window.RWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,8 @@ public class RWindowInt implements RWindow {
 
     // PApplet to draw in
     private final PApplet app;
+
+    private final RotomGui gui;
 
     // Window Title
     private final String title;
@@ -35,8 +38,8 @@ public class RWindowInt implements RWindow {
      * @param width initial window width
      * @param height initial window height
      */
-    public RWindowInt(PApplet app, String title, int xPos, int yPos, int width, int height) {
-        this(app,title, new PVector(xPos, yPos), new PVector(width, height));
+    public RWindowInt(PApplet app, RotomGui gui, String title, int xPos, int yPos, int width, int height) {
+        this(app,gui,title, new PVector(xPos, yPos), new PVector(width, height));
     }
 
     /**
@@ -47,8 +50,9 @@ public class RWindowInt implements RWindow {
      * @param pos initial display location in PApplet
      * @param size initial window dimensions
      */
-    public RWindowInt(PApplet app, String title, PVector pos, PVector size) {
+    public RWindowInt(PApplet app, RotomGui gui, String title, PVector pos, PVector size) {
         this.app = app;
+        this.gui = gui;
         this.title = title;
         this.pos = pos;
         this.size = size;
@@ -92,5 +96,12 @@ public class RWindowInt implements RWindow {
     @Override
     public PVector getSize() {
         return new PVector(size.x,size.y);
+    }
+
+    public boolean isVisible() {
+        return false;
+    }
+
+    public void reinitialiseBuffer() {
     }
 }

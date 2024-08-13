@@ -164,6 +164,11 @@ public class RLinearLayout extends RLayoutBase {
         }
     }
 
+    @Override
+    public RLayoutConfig getLayoutConfig() {
+        return null;
+    }
+
     /**
      * Sets the amount of empty space to put in between components. For horizontal layouts, this is number of columns
      * (by default 1) and for vertical layouts this is number of rows (by default 0).
@@ -190,7 +195,7 @@ public class RLinearLayout extends RLayoutBase {
 //        return changed;
 //    }
 
-    @Override
+    //@Override
     public void doLayout(PVector area, List<RComponent> components) { // TODO Lanterna
         // Filter out invisible components
         components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
@@ -264,7 +269,10 @@ public class RLinearLayout extends RLayoutBase {
             boolean resizedOneComponent = false;
             while (availableVerticalSpace > totalRequiredVerticalSpace) {
                 for(RComponent component: components) {
-                    final LinearLayoutData layoutData = (LinearLayoutData)component.getLayoutData();
+                    LinearLayoutData layoutData = null;
+                    if (component instanceof RGroup) {
+                        layoutData = (LinearLayoutData) ((RGroup) component).getLayoutConfig();
+                    }
                     final PVector currentSize = fittingMap.get(component);
                     if (layoutData != null && layoutData.growPolicy == GrowPolicy.CAN_GROW) {
                         fittingMap.put(component, currentSize.add(0,1));
@@ -373,7 +381,10 @@ public class RLinearLayout extends RLayoutBase {
             boolean resizedOneComponent = false;
             while (availableHorizontalSpace > totalRequiredHorizontalSpace) {
                 for(RComponent component: components) {
-                    final LinearLayoutData layoutData = (LinearLayoutData)component.getLayoutData();
+                    LinearLayoutData layoutData = null;
+                    if (component instanceof RGroup) {
+                        layoutData = (LinearLayoutData) ((RGroup) component).getLayoutConfig();
+                    }
                     final PVector currentSize = fittingMap.get(component);
                     if (layoutData != null && layoutData.growPolicy == GrowPolicy.CAN_GROW) {
                         fittingMap.put(component, currentSize.add(1,0));

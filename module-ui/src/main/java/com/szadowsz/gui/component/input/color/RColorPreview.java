@@ -3,13 +3,19 @@ package com.szadowsz.gui.component.input.color;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.group.RColorPicker;
 import processing.core.PGraphics;
+
+import java.awt.*;
 
 /**
  * Node to give a graphical preview of a given Color
  */
 public class RColorPreview extends RComponent {
     // TODO Component Stub : WIP
+
+    private final RColorPicker group;
+    private Color currentValue;
 
     /**
      * Default Constructor
@@ -20,8 +26,10 @@ public class RColorPreview extends RComponent {
      * @param path         the path in the component tree
      * @param parentFolder the parent component folder reference // TODO consider if needed
      */
-    protected RColorPreview(RotomGui gui, String path, RFolder parentFolder) {
+    public RColorPreview(RotomGui gui, String path, RFolder parentFolder, RColorPicker group, Color currentValue) {
         super(gui, path, parentFolder);
+        this.group = group;
+        this.currentValue = currentValue;
     }
 
     @Override

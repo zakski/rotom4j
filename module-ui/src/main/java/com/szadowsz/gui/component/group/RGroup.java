@@ -7,11 +7,14 @@ import com.szadowsz.gui.component.layout.RLayoutConfig;
 import processing.core.PVector;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Base class for complex pre-defined groupings of components
  */
 public abstract class RGroup extends RComponent {
+
+    protected final CopyOnWriteArrayList<RComponent> children = new CopyOnWriteArrayList<>();
 
     /**
      * Default Constructor
@@ -25,7 +28,6 @@ public abstract class RGroup extends RComponent {
     protected RGroup(RotomGui gui, String path, RFolder parentFolder) {
         super(gui, path, parentFolder);
     }
-    // TODO Component Stub : WIP
 
     protected abstract PVector calcPreferredSize(List<RComponent> components);
 

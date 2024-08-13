@@ -1,7 +1,9 @@
 package com.szadowsz.gui;
 
+import com.jogamp.newt.opengl.GLWindow;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.RInputHandler;
+import com.szadowsz.gui.window.RWindowManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -14,7 +16,10 @@ public class RotomGui {
     private static final Logger LOGGER = LoggerFactory.getLogger(RotomGui.class);
 
     protected final PApplet app;
+    protected final GLWindow appWindow;
+
     protected final RInputHandler inputHandler;
+    protected final RWindowManager winManager;
 
     /**
      * Constructor for the RotomGui object which acts as a central hub for all GUI related methods within its' sketch.
@@ -28,12 +33,18 @@ public class RotomGui {
      */
     RotomGui(PApplet sketch, RotomGuiSettings settings) {
         app = sketch;
+        appWindow = (GLWindow) app.getSurface().getNative();
+
         inputHandler = new RInputHandler(app);
         registerListeners();
+
         settings.applyEarlyStartupSettings();
+
         RThemeStore.init();
         RFontStore.init(sketch);
-//        WindowManager.addRootWindow(settings.getUseToolbarAsRoot());
+        winManager= new RWindowManager(this);
+//        winManager.addRootWindow(settings.getUseToolbarAsRoot());
+
         settings.applyLateStartupSettings();
     }
 
@@ -53,5 +64,18 @@ public class RotomGui {
      */
     public PApplet getSketch(){
         return app;
+    }
+
+    /**
+     * Get the PApplet the GUi is displayed in
+     *
+     * @return the PApplet that the GUI is bound to
+     */
+    public GLWindow getGLWindow(){
+        return appWindow;
+    }
+
+    public RWindowManager getWinManager() {
+        return winManager;
     }
 }
