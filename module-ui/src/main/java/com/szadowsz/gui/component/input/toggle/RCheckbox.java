@@ -14,11 +14,12 @@ public class RCheckbox extends RToggleBase {
      * <p>
      * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
      *
-     * @param gui          the gui for the window that the component is drawn under
-     * @param path         the path in the component tree
-     * @param parentFolder the parent component folder reference // TODO consider if needed
+     * @param gui           the gui for the window that the component is drawn under
+     * @param path          the path in the component tree
+     * @param parentFolder  the parent component folder reference // TODO consider if needed
+     * @param startingValue
      */
-    protected RCheckbox(RotomGui gui, String path, RFolder parentFolder) {
+    public RCheckbox(RotomGui gui, String path, RFolder parentFolder, boolean startingValue) {
         super(gui, path, parentFolder);
     }
 }

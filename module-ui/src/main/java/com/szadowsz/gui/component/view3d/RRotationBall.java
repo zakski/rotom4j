@@ -35,7 +35,7 @@ public class RRotationBall extends RComponent {
     }
 
     @Override
-    public float getRequiredWidthForHorizontalLayout() {
+    public float suggestWidth() {
         return 0;
     }
 }

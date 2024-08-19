@@ -35,7 +35,7 @@ public class RKnob extends RComponent {
     }
 
     @Override
-    public float getRequiredWidthForHorizontalLayout() {
+    public float suggestWidth() {
         return 0;
     }
 }

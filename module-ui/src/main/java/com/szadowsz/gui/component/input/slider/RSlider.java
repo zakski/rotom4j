@@ -4,6 +4,7 @@ import com.jogamp.newt.event.KeyEvent;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RDelayStore;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
@@ -81,8 +82,8 @@ public class RSlider extends RComponent {
     // true by default locally to be overridden by the global setting LayoutStore.shouldDisplaySquigglyEquals() that is false by default
     protected boolean displaySquigglyEquals = true; // TODO LazyGui
 
-    public RSlider(RotomGui gui, String path, RFolder parentFolder, float defaultValue, float min, float max, boolean constrained) {  // TODO LazyGui
-        super(gui, path, parentFolder);
+    public RSlider(RotomGui gui, String path, RGroup parent, float defaultValue, float min, float max, boolean constrained) {  // TODO LazyGui
+        super(gui, path, parent);
         valueDefault = defaultValue;
         if (!Float.isNaN(defaultValue)) {
             value = defaultValue;
@@ -93,16 +94,16 @@ public class RSlider extends RComponent {
         setSensiblePrecision(nf(value, 0, 0));
     }
 
-    public RSlider(RotomGui gui, String path, RFolder parentFolder, float defaultValue, float min, float max, float precision, boolean constrained) {  // TODO LazyGui
-        this(gui, path, parentFolder,defaultValue,min,max,constrained);
+    public RSlider(RotomGui gui, String path, RGroup parent, float defaultValue, float min, float max, float precision, boolean constrained) {  // TODO LazyGui
+        this(gui, path, parent,defaultValue,min,max,constrained);
         int index = precisionRange.indexOf(precision);
         if (index>=0){
             precisionIndex = index;
         }
     }
 
-    public RSlider(RotomGui gui, String path, RFolder parentFolder, float defaultValue, float min, float max, boolean constrained, boolean displaySquigglyEquals){  // TODO LazyGui
-        this(gui, path, parentFolder, defaultValue, min, max, constrained);
+    public RSlider(RotomGui gui, String path, RGroup parent, float defaultValue, float min, float max, boolean constrained, boolean displaySquigglyEquals){  // TODO LazyGui
+        this(gui, path, parent, defaultValue, min, max, constrained);
         this.displaySquigglyEquals = displaySquigglyEquals;
     }
 
@@ -336,7 +337,7 @@ public class RSlider extends RComponent {
     }
 
     @Override
-    public float getRequiredWidthForHorizontalLayout() {
+    public float suggestWidth() {
         return RFontStore.calcMainTextWidth(name,RLayoutStore.getCell()) +
                 Math.max(RLayoutStore.getCell() * 2, RFontStore.calcMainTextWidth(getValueAsString(),RLayoutStore.getCell()));
     }

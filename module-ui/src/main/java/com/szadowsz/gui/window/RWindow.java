@@ -13,7 +13,7 @@ public interface RWindow {
      *
      * @return the app the Window is drawn in / represents
      */
-    PApplet getApp();
+    PApplet getSketch();
 
     /**
      * Getter for Window's Title

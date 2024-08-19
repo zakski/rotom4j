@@ -144,4 +144,8 @@ public class RFontStore {
     public static float getMarginY() {
         return textMarginY;
     }
+
+    public static PFont getMainFont() {
+        return mainFont;
+    }
 }

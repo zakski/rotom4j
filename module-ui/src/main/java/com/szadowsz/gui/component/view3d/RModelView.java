@@ -35,7 +35,7 @@ public class RModelView extends RComponent {
     }
 
     @Override
-    public float getRequiredWidthForHorizontalLayout() {
+    public float suggestWidth() {
         return 0;
     }
  }

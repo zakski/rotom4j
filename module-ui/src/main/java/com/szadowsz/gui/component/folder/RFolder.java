@@ -2,14 +2,19 @@ package com.szadowsz.gui.component.folder;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.group.RGroup;
+import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RThemeColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.window.internal.RWindowInt;
 import processing.core.PApplet;
 import processing.core.PGraphics;
+import processing.core.PVector;
 
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 
@@ -18,15 +23,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * 
  * It opens the window with child components when clicked.
  */
-public class RFolder extends RComponent {
- 
-    /**
-     * CopyOnWriteArrayList is needed to avoid concurrent modification
-     * because the children get drawn by one thread and user input changes the list from another thread
-     */
-    protected final CopyOnWriteArrayList<RComponent> children = new CopyOnWriteArrayList<>(); // TODO LazyGui
+public class RFolder extends RGroup { // TODO do we want this as RGroup
 
     protected RWindowInt window; // TODO LazyGui
+
 
     /**
      * Construct a RFolder with a Specified Layout
@@ -34,13 +34,8 @@ public class RFolder extends RComponent {
      * @param path   folder path
      * @param parent parent folder
      */
-    public RFolder(RotomGui gui, String path, RFolder parent) { // TODO LazyGui
+    public RFolder(RotomGui gui, String path, RGroup parent) { // TODO LazyGui
         super(gui,path, parent);
-    }
-
-    private String getInlineDisplayNameOverridableByContents(String name) { // TODO LazyGui
-        String overridableName = name;
-        return overridableName;
     }
 
     /**
@@ -61,7 +56,16 @@ public class RFolder extends RComponent {
         return null;
     }
 
-    private void drawMiniatureWindowIcon(PGraphics pg) { // TODO LazyGui
+    protected String getInlineDisplayNameOverridableByContents(String name) { // TODO LazyGui
+        return name;
+    }
+
+    @Override
+    protected PVector calcPreferredSize() {
+        return null;
+    }
+
+    protected void drawMiniatureWindowIcon(PGraphics pg) { // TODO LazyGui
         strokeForeground(pg);
         fillBackground(pg);
         float previewRectSize = RLayoutStore.getCell() * 0.6f;
@@ -80,7 +84,7 @@ public class RFolder extends RComponent {
         pg.rect(previewRectSize - miniCell, 0, miniCell, miniCell); // close button
     }
 
-    private float autosuggestWindowWidthFor1Col() { // TODO LazyGui
+    protected float autosuggestWindowWidthFor1Col() { // TODO LazyGui
         float maximumSpaceTotal = gui.getGLWindow().getWidth();//cell * LayoutStore.defaultWindowWidthInCells;
         float spaceForName = RLayoutStore.getCell() * 2;
         float spaceForValue = RLayoutStore.getCell() * 2;
@@ -124,6 +128,11 @@ public class RFolder extends RComponent {
         drawMiniatureWindowIcon(pg);
     }
 
+
+    public RWindowInt getWindow() {
+        return window;
+    }
+
     public void insertChild(RComponent child){
         if (window != null) {
             window.reinitialiseBuffer();
@@ -135,7 +144,7 @@ public class RFolder extends RComponent {
     public void mousePressed(RMouseEvent e) {
         super.mousePressed(e);
         gui.getWinManager().uncoverOrCreateWindow(this);
-        gui.getWinManager().setFocus(parent.window);
+        gui.getWinManager().setFocus(window);
         this.isDragged = false;
     }
 
@@ -154,11 +163,29 @@ public class RFolder extends RComponent {
     }
 
     @Override
-    public float getRequiredWidthForHorizontalLayout() {
+    public float suggestWidth() {
         return autosuggestWindowWidthForContents();
     }
 
+
+    public RLayoutBase getLayout(){
+        return layout;
+    }
+
+
     public boolean isWindowVisible() {
         return window.isVisible();
+    }
+
+    public void setWindow(RWindowInt win) {
+        window = win;
+    }
+
+    public void addChild(RComponent n) {
+        children.add(n);
+    }
+
+    public float suggestWindowWidthInCells() {
+        return 0;
     }
 }

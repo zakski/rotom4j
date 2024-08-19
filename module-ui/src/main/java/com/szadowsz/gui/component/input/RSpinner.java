@@ -37,7 +37,7 @@ public class RSpinner extends RComponent { // TODO Determine Exact Relationship
     }
 
     @Override
-    public float getRequiredWidthForHorizontalLayout() {
+    public float suggestWidth() {
         return 0;
     }
 }

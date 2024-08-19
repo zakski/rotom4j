@@ -35,7 +35,7 @@ public class RCombobox extends RComponent {
     }
 
     @Override
-    public float getRequiredWidthForHorizontalLayout() {
+    public float suggestWidth() {
         return 0;
     } // TODO Determine Exact Relationship
 }

@@ -16,14 +16,14 @@
  * 
  * Copyright (C) 2010-2020 Martin Berglund
  */
-package com.szadowsz.gui.component.layout;
+package com.szadowsz.gui.layout;
 
 /**
  * Enum for distinguishing between horizontal and vertical directions. Used in {@code LinearLayout} and
  * {@code Separator}.
  * @author Martin
 */
-public enum Direction {
+public enum RDirection {
     /**
      * Horizontal direction, meaning something is moving along the x-axis (or column-axis)
      */

@@ -96,7 +96,7 @@ public class RButton extends RComponent {
     }
 
     @Override
-    public float getRequiredWidthForHorizontalLayout() {
+    public float suggestWidth() {
         return RFontStore.calcMainTextWidth(name,RLayoutStore.getCell()) + RLayoutStore.getCell() * 2;
     }
 }

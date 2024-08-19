@@ -1,65 +1,654 @@
 package com.szadowsz.gui.window.internal;
 
 import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RPaths;
+import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.group.RRoot;
+import com.szadowsz.gui.config.RFontStore;
+import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.config.theme.RThemeStore;
+import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.layout.RDirection;
+import com.szadowsz.gui.layout.RLayoutBase;
+import com.szadowsz.gui.layout.RLinearLayout;
+import com.szadowsz.gui.input.RInputListener;
+import com.szadowsz.gui.utils.RCoordinates;
 import com.szadowsz.gui.window.RWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PVector;
+
+import java.util.Arrays;
+import java.util.Optional;
+
+import static com.szadowsz.gui.config.theme.RThemeColorType.*;
+import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
+import static processing.core.PApplet.*;
+import static processing.core.PApplet.dist;
+import static processing.core.PConstants.CENTER;
 
 /**
  * Base Class for Internal Windows
  */
-public class RWindowInt implements RWindow {
+public class RWindowInt implements RWindow, RInputListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RWindowInt.class);
 
     // PApplet to draw in
-    private final PApplet app;
+    protected final PApplet app;
 
-    private final RotomGui gui;
+    protected final RotomGui gui;
+
+    protected final RFolder folder;
 
     // Window Title
-    private final String title;
+    protected final String title;
 
-    // current position
-    private final PVector pos;
+    // Window Content Buffer
+    protected final RContentBuffer contentBuffer;
 
-    // current dimensions
-    private final PVector size;
+    // Vertical Scrollbar
+    protected Optional<RScrollbar> vsb = Optional.empty();
+
+    // Window Position Info
+    protected final PVector pos;
+
+    // Window Dimensions
+    protected final PVector size;
+    protected final PVector sizeUnconstrained;
+    protected final PVector contentSize;
+
+    // Window Status Info
+    protected boolean isTitleHighlighted; // if the window title is visible, should it be highlighted
+    protected boolean isScrollbarHighlighted;  // if the vertical scrollbar is visible, should it be highlighted
+    protected boolean isBeingResized; // if the window shape is changing
+    protected boolean isBeingDragged; // if the window is being moved
+    protected boolean isVisible = true; // if the window is visible
+    protected boolean isResizeWidth; // if the window is visible
+
+    // Window Transition Status Info
+    protected boolean isCloseInProgress; // if close button press in progress
 
     /**
      * Constructor for Internal Window
      *
-     * @param app PApplet to render window inside
+     * @param app   PApplet to render window inside
      * @param title title to give the window
-     * @param xPos initial X display location in PApplet
-     * @param yPos initial Y display location in PApplet
-     * @param width initial window width
-     * @param height initial window height
+     * @param pos   initial display location in PApplet
+     * @param size  initial window dimensions
      */
-    public RWindowInt(PApplet app, RotomGui gui, String title, int xPos, int yPos, int width, int height) {
-        this(app,gui,title, new PVector(xPos, yPos), new PVector(width, height));
+    public RWindowInt(PApplet app, RotomGui gui, RFolder folder, String title, PVector pos, PVector size) {
+        this.app = app;
+        this.gui = gui;
+
+        // Listen to input events
+        gui.subscribe(this);
+
+        // Link this window and its folder together
+        this.folder = folder;
+        folder.setWindow(this);
+        this.title = title;
+
+        this.pos = pos;
+        this.size = size;
+        this.sizeUnconstrained = new PVector(size.x, size.y);
+        this.contentSize = new PVector(size.x, size.y);
+        contentBuffer = new RContentBuffer(this);
+
+        initWindowWidth(size.x);
+        initScrollbar();
     }
 
     /**
      * Constructor for Internal Window
      *
-     * @param app PApplet to render window inside
-     * @param title title to give the window
-     * @param pos initial display location in PApplet
-     * @param size initial window dimensions
+     * @param app    PApplet to render window inside
+     * @param title  title to give the window
+     * @param xPos   initial X display location in PApplet
+     * @param yPos   initial Y display location in PApplet
+     * @param width  initial window width
+     * @param height initial window height
      */
-    public RWindowInt(PApplet app, RotomGui gui, String title, PVector pos, PVector size) {
-        this.app = app;
-        this.gui = gui;
-        this.title = title;
-        this.pos = pos;
-        this.size = size;
+    public RWindowInt(PApplet app, RotomGui gui, RFolder folder, String title, float xPos, float yPos, float width, float height) {
+        this(app, gui, folder, title, new PVector(xPos, yPos), new PVector(width, height));
+    }
+
+    /**
+     * Constructor for Internal Window
+     *
+     * @param app    PApplet to render window inside
+     * @param title  title to give the window
+     * @param xPos   initial X display location in PApplet
+     * @param yPos   initial Y display location in PApplet
+     * @param width  initial window width
+     * @param height initial window height
+     */
+    public RWindowInt(PApplet app, RotomGui gui, RFolder folder, float xPos, float yPos, float width, float height) {
+        this(app, gui, folder, folder.getName(), xPos, yPos, width, height);
+    }
+
+    /**
+     * Calculate the width of the Window
+     *
+     * @param width 0 if no expected width, otherwise a value
+     */
+    protected void initWindowWidth(float width) {
+        if (width == 0) {
+            if (RLayoutStore.shouldSuggestWindowWidth() && folder.suggestWindowWidthInCells() == RLayoutStore.getWindowWidthInCells()) {
+                size.x = folder.autosuggestWindowWidthForContents();
+            } else {
+                size.x = RLayoutStore.getCell() * folder.suggestWindowWidthInCells();
+            }
+        } else {
+            size.x = width;
+        }
+        contentSize.x = size.x;
+    }
+
+    /**
+     * Initialise Scrollbar for Vertical Layouts
+     */
+    protected void initScrollbar() {
+        RLayoutBase layout = folder.getLayout();
+        if (layout instanceof RLinearLayout){
+            if(((RLinearLayout) layout).getDirection() == RDirection.VERTICAL){
+                vsb = Optional.of(new RScrollbar(this,pos.x + contentSize.x, pos.y, RLayoutStore.getCell(), size.y, sizeUnconstrained.y, 16));
+            }
+        }
+    }
+
+    /**
+     * Check if the point is inside the Window
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return true if the point is inside the window, false otherwise
+     */
+    protected boolean isPointInsideWindow(float x, float y) {
+        return RCoordinates.isPointInRect(x, y, pos.x, pos.y, size.x, size.y);
+    }
+
+
+    /**
+     * Check if the point is inside the close button of the Window
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return true if the point is inside the close button, false otherwise
+     */
+    protected boolean isPointInsideCloseButton(float x, float y) {
+        return isPointInRect(x, y, pos.x + size.x - RLayoutStore.getCell() - 1, pos.y, RLayoutStore.getCell() + 1, RLayoutStore.getCell() - 1);
+    }
+
+    /**
+     * Check if the point is inside the content of the Window
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return true if the point is inside the child nodes, false otherwise
+     */
+    protected boolean isPointInsideContent(float x, float y) {
+        if (folder.shouldDrawTitle()) {
+            return isPointInRect(x, y,
+                    pos.x, pos.y + RLayoutStore.getCell(),
+                    contentSize.x, size.y - RLayoutStore.getCell());
+        } else {
+            return isPointInsideWindow(x, y);
+        }
+    }
+
+    /**
+     * Check if the mouse is inside the content of the Window
+     *
+     * @param e mouse event
+     * @return true if the mouse is inside the content, false otherwise
+     */
+
+    protected boolean isMouseInsideContent(RMouseEvent e) {
+        return isPointInsideContent(e.getX(), e.getY()) && !isPointInsideResizeBorder(e.getX(), e.getY());
+    }
+
+    /**
+     * Check if the point is inside the border resizer of the Window
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return true if the point is inside the border resizer, false otherwise
+     */
+    protected boolean isPointInsideResizeBorder(float x, float y) {
+        if (!RLayoutStore.isWindowResizeEnabled()) {
+            return false;
+        }
+        float w = RLayoutStore.getResizeRectangleSize();
+        return isPointInRect(x, y, pos.x + size.x - w / 2f, pos.y, w, size.y);
+    }
+
+    /**
+     * Check if the point is inside the scroll bar of the Window
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return true if the point is inside the scroll bar, false otherwise
+     */
+    protected boolean isPointInsideScrollbar(float x, float y) {
+        if (vsb.isEmpty() || !vsb.get().visible) {
+            return false;
+        }
+        return isPointInRect(x, y, pos.x + contentSize.x, pos.y + RLayoutStore.getCell(), RLayoutStore.getCell(), size.y - RLayoutStore.getCell());
+    }
+
+
+    /**
+     * Check if the mouse is inside the scroll bar of the Window
+     *
+     * @param e mouse event
+     * @return true if the mouse is inside the scroll bar, false otherwise
+     */
+    protected boolean isMouseInsideScrollbar(RMouseEvent e) {
+        return isVisible && folder.isVisibleParentAware() && isPointInsideScrollbar(e.getX(), e.getY());
+    }
+
+    /**
+     * Check if the point is inside the title bar of the Window
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return true if the point is inside the title bar, false otherwise
+     */
+    protected boolean isPointInsideTitleBar(float x, float y) {
+        if (folder.shouldDrawTitle()) {
+            return isPointInRect(x, y, pos.x, pos.y, size.x - RLayoutStore.getCell(), RLayoutStore.getCell());
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Check if the mouse is inside the title bar of the Window
+     *
+     * @param e mouse event
+     * @return true if the mouse is inside the title bar, false otherwise
+     */
+    protected boolean isMouseInsideTitlebar(RMouseEvent e) {
+        return isVisible && folder.isVisibleParentAware() && isPointInsideTitleBar(e.getX(), e.getY());
+    }
+
+    protected synchronized boolean isResizeWidth(){
+        return isResizeWidth;
+    }
+
+    /**
+     * Check if this window is the root window
+     *
+     * @return true if root, false otherwise
+     */
+    protected boolean isRoot() {
+        return folder.getParent() instanceof RRoot;
+    }
+
+    /**
+     * Set Focus to this Window
+     */
+    protected void setFocusOnThis() { // TODO LazyGui
+        gui.setFocus(this);
+    }
+
+    protected void setTitleHighlighted(boolean v) {
+        isTitleHighlighted = v;
+    }
+
+    protected void setScrollbarHighlighted(boolean v) {
+        isScrollbarHighlighted = v;
+    }
+
+    /**
+     * Keep the window in bounds, by altering its position
+     *
+     * @param pg Processing Graphics Context
+     */
+    protected void constrainPosition(PGraphics pg) {
+        if (!RLayoutStore.shouldKeepWindowsInBounds()) {
+            return;
+        }
+        float rightEdge = pg.width - size.x - 1;
+        float bottomEdge = pg.height - size.y - 1;
+        float lerpAmt = 0.3f;
+        if (pos.x < 0) {
+            pos.x = lerp(pos.x, 0, lerpAmt);
+        }
+        if (pos.y < 0) {
+            pos.y = lerp(pos.y, 0, lerpAmt);
+        }
+        if (pos.x > rightEdge) {
+            pos.x = lerp(pos.x, rightEdge, lerpAmt);
+        }
+        if (pos.y > bottomEdge) {
+            pos.y = lerp(pos.y, bottomEdge, lerpAmt);
+        }
+    }
+
+    /**
+     * Constrain the Windows width/height when the layout is horizontal
+     *
+     * @param pg Processing Graphics Context
+     * @param preferredWidth what it isa calculated to need
+     */
+    protected void constrainWidth(PGraphics pg, float preferredWidth) {
+        if (isResizeWidth()) {
+            size.x = contentSize.x = preferredWidth; // folder.autosuggestWindowWidthForContents();
+            resizeForContents(false);
+        }
+        // TODO window bounds constraint
+    }
+
+    /**
+     * Constrain the Windows width/height when the layout is vertical
+     *
+     * @param pg Processing Graphics Context
+     * @param preferredHeight what it isa calculated to need
+     */
+    protected void constrainHeight(PGraphics pg, float preferredHeight) {
+        if (!RLayoutStore.shouldKeepWindowsInBounds()) {
+            return;
+        }
+        size.y = preferredHeight;
+        sizeUnconstrained.y = size.y;
+        if (folder.shouldDrawTitle()) {
+            if (pos.y + preferredHeight + RLayoutStore.getCell() > pg.height) {
+                size.y = pg.height - pos.y;
+                contentSize.y = sizeUnconstrained.y - RLayoutStore.getCell();
+                vsb.ifPresent(s -> s.setVisible(true));
+            }
+        } else  {
+            if (pos.y + preferredHeight > pg.height) {
+                size.y = pg.height - pos.y;
+                contentSize.y = sizeUnconstrained.y;
+                vsb.ifPresent(s -> s.setVisible(true));
+            }
+        }
+    }
+
+    protected void constrainBounds(PGraphics pg) {
+        float oldWindowSizeX = size.x;
+        float oldWindowSizeXForContents = contentSize.x;
+        float oldWindowSizeXUnconstrained = sizeUnconstrained.x;
+
+        float oldWindowSizeY = size.y;
+        float oldWindowSizeYForContents = contentSize.y;
+        float oldWindowSizeYUnconstrained = sizeUnconstrained.y;
+
+        constrainPosition(pg);
+        PVector preferredSize = folder.getLayout().calcPreferredSize(folder.getChildren());
+        constrainHeight(pg, preferredSize.y);
+        constrainWidth(pg, preferredSize.x);
+        if (oldWindowSizeX != size.x || oldWindowSizeY != size.y ||
+                oldWindowSizeXForContents != contentSize.x || oldWindowSizeYForContents != contentSize.y ||
+                oldWindowSizeXUnconstrained != sizeUnconstrained.x || oldWindowSizeYUnconstrained != sizeUnconstrained.y){
+                contentBuffer.resetBuffer();
+        }
+    }
+
+    /**
+     * Draw The Window Title Bar
+     *
+     * @param pg         Processing Graphics Context
+     * @param shouldDraw if the title bar should be drawn
+     */
+    private void drawTitleBar(PGraphics pg, boolean shouldDraw) {
+        if (shouldDraw) {
+            float availableWidthForText = size.x - RFontStore.getMarginX() + (isRoot() ? 0 : -RLayoutStore.getCell());
+            String leftText = RFontStore.substringToFit(pg, folder.getName(), availableWidthForText);
+            pg.pushMatrix();
+            pg.pushStyle();
+            pg.translate(pos.x, pos.y);
+            pg.fill(isTitleHighlighted() ? RThemeStore.getRGBA(FOCUS_BACKGROUND) : RThemeStore.getRGBA(NORMAL_BACKGROUND));
+            if (!app.focused && isRoot()) {
+                pg.fill(RThemeStore.getRGBA(FOCUS_BACKGROUND));
+                leftText = "not in focus";
+                setTitleHighlighted(true);
+            }
+            float titleBarWidth = size.x;
+            pg.strokeWeight(1);
+            pg.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
+            pg.rect(0, 0, titleBarWidth, RLayoutStore.getCell());
+            pg.fill(isTitleHighlighted() ? RThemeStore.getRGBA(FOCUS_FOREGROUND) : RThemeStore.getRGBA(NORMAL_FOREGROUND));
+            pg.textAlign(LEFT, CENTER);
+            pg.text(leftText, RFontStore.getMarginX(), RLayoutStore.getCell() - RFontStore.getMarginY());
+            pg.popStyle();
+            pg.popMatrix();
+        }
+    }
+
+    /**
+     * Draw The Window close button
+     *
+     * @param pg Processing Graphics Context
+     */
+    private void drawCloseButton(PGraphics pg) {
+        pg.pushMatrix();
+        pg.translate(pos.x, pos.y);
+        pg.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
+        pg.strokeWeight(1);
+        pg.line(size.x - RLayoutStore.getCell(), 0, size.x - RLayoutStore.getCell(), RLayoutStore.getCell() - 1);
+        if (isPointInsideCloseButton(app.mouseX, app.mouseY) || isCloseInProgress) {
+            pg.fill(RThemeStore.getRGBA(FOCUS_BACKGROUND));
+            pg.noStroke();
+            pg.rectMode(CORNER);
+            pg.rect(size.x - RLayoutStore.getCell() + 0.5f, 1, RLayoutStore.getCell() - 1, RLayoutStore.getCell() - 1);
+            pg.stroke(RThemeStore.getRGBA(FOCUS_FOREGROUND));
+            pg.strokeWeight(1.99f);
+            pg.pushMatrix();
+            pg.translate(size.x - RLayoutStore.getCell() * 0.5f + 0.5f, RLayoutStore.getCell() * 0.5f);
+            float n = RLayoutStore.getCell() * 0.2f;
+            pg.line(-n, -n, n, n);
+            pg.line(-n, n, n, -n);
+            pg.popMatrix();
+        }
+        pg.popMatrix();
+    }
+
+    /**
+     * Draw The Window resize indicator
+     *
+     * @param pg Processing Graphics Context
+     */
+    private void drawResizeIndicator(PGraphics pg) {
+        if (isPointInsideResizeBorder(app.mouseX, app.mouseY) && RLayoutStore.shouldDrawResizeIndicator()) {
+            float w = RLayoutStore.getResizeRectangleSize();
+            pg.pushMatrix();
+            pg.translate(pos.x, pos.y);
+            pg.noStroke();
+            pg.fill(RThemeStore.getRGBA(WINDOW_BORDER));
+            pg.rect(size.x - w / 2f, 0, w, size.y);
+            pg.popMatrix();
+        }
+    }
+
+    /**
+     * Draw The Window tooltip
+     *
+     * @param pg Processing Graphics Context
+     */
+    private void drawPathTooltipOnHighlight(PGraphics pg) { // TODO make use of this
+        if (!isPointInsideTitleBar(app.mouseX, app.mouseY) || !RLayoutStore.shouldShowPathTooltips()) {
+            return;
+        }
+        pg.pushMatrix();
+        pg.pushStyle();
+        pg.translate(pos.x, pos.y);
+        String[] pathSplit = RPaths.splitFullPathWithoutEndAndRoot(folder.path);
+        int lineCount = pathSplit.length;
+        float tooltipXOffset = RLayoutStore.getCell() * 0.5f;
+        float tooltipWidthMinimum = size.x - tooltipXOffset - RLayoutStore.getCell();
+        pg.noStroke();
+        pg.rectMode(CORNER);
+        pg.textAlign(LEFT, CENTER);
+        for (int i = 0; i < lineCount; i++) {
+            String line = pathSplit[lineCount - 1 - i];
+            float tooltipWidth = max(tooltipWidthMinimum, pg.textWidth(line) + RFontStore.getMarginX() * 2);
+            pg.fill(RThemeStore.getRGBA(NORMAL_BACKGROUND));
+            pg.rect(tooltipXOffset, -i * RLayoutStore.getCell() - RLayoutStore.getCell(), tooltipWidth, RLayoutStore.getCell());
+            pg.fill(RThemeStore.getRGBA(NORMAL_FOREGROUND));
+            pg.text(line, RFontStore.getMarginX() + tooltipXOffset, -i * RLayoutStore.getCell() - RFontStore.getMarginY());
+        }
+        pg.popMatrix();
+        pg.popStyle();
+    }
+
+
+    /**
+     * Draw The Window background
+     *
+     * @param pg                 Processing Graphics Context
+     * @param drawBackgroundOnly true if drawing the background, false if drawing the background's outline
+     */
+    protected void drawBackgroundWithWindowBorder(PGraphics pg, boolean drawBackgroundOnly) {
+        pg.pushMatrix();
+        pg.translate(pos.x, pos.y);
+        pg.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
+        pg.strokeWeight(1);
+        pg.fill(RThemeStore.getRGBA(NORMAL_BACKGROUND));
+        if (drawBackgroundOnly) {
+            pg.noStroke();
+        } else {
+            pg.noFill();
+        }
+        pg.rect(0, 0, size.x, size.y);
+        pg.popMatrix();
+    }
+
+    /**
+     * Draw The Content of The Window
+     *
+     * @param pg Processing Graphics Context
+     */
+    protected void drawContent(PGraphics pg) {
+        if (!folder.getChildren().isEmpty()) {
+            pg.pushMatrix();
+            pg.translate(pos.x, pos.y);
+            pg.translate(0, RLayoutStore.getCell());
+            if (vsb.isPresent() && vsb.get().visible) {
+                int yDiff = round((sizeUnconstrained.y - size.y) * vsb.map(s -> s.value).orElse(0.0f));
+                pg.image(contentBuffer.draw().get(0, yDiff, (int) contentSize.x, (int) (size.y - RLayoutStore.getCell())), 0, 0);
+            } else {
+                pg.image(contentBuffer.draw(), 0, 0);
+            }
+            pg.popMatrix();
+        }
+    }
+
+    /**
+     * Draw The Window
+     *
+     * @param pg Processing Graphics Context
+     */
+    public void drawWindow(PGraphics pg) {
+        pg.textFont(RFontStore.getMainFont());
+        setTitleHighlighted(isVisible && (isPointInsideTitleBar(app.mouseX, app.mouseY) && isBeingDragged) || folder.isMouseOver());
+        setScrollbarHighlighted(isVisible && (isPointInsideScrollbar(app.mouseX, app.mouseY) && !isBeingDragged) || folder.isMouseOver());
+        if (!isVisible || !folder.isVisibleParentAware()) {
+            return;
+        }
+        constrainBounds(pg);
+        pg.pushMatrix();
+        drawBackgroundWithWindowBorder(pg, true);
+        drawPathTooltipOnHighlight(pg);
+        vsb.ifPresent(s ->
+                s.draw(
+                        pg,
+                        pos.x,
+                        pos.y + RLayoutStore.getCell(),
+                        contentSize.x,
+                        size.y - RLayoutStore.getCell(),
+                        sizeUnconstrained.y - RLayoutStore.getCell()
+                )
+        );
+        drawContent(pg);
+        drawBackgroundWithWindowBorder(pg, false);
+        drawTitleBar(pg, folder.shouldDrawTitle());
+        if (!isRoot()) {
+            drawCloseButton(pg);
+        }
+        drawResizeIndicator(pg);
+        pg.popMatrix();
+    }
+
+
+    public void drawContextLineFromTitleBarToInlineNode(PGraphics pg, float endRectSize, boolean pickShortestLine) {
+        RComponent firstOpenParent = gui.getComponentTree().findFirstOpenParentNodeRecursively(folder);
+        if (firstOpenParent == null || !firstOpenParent.isParentWindowVisible()) {
+            return;
+        }
+        float xOffset = RLayoutStore.getCell() / 2f;
+        float y0 = pos.y + RLayoutStore.getCell() / 2f;
+        float y1 = firstOpenParent.getPosY() + firstOpenParent.getHeight() / 2f;
+        float x0a = pos.x - xOffset;
+        float x0b = pos.x + size.x + xOffset;
+        float x1a = firstOpenParent.getPosX() - xOffset;
+        float x1b = firstOpenParent.getPosX() + firstOpenParent.getWidth() + xOffset;
+        float x0 = x0a;
+        float x1 = x1b;
+        if (pickShortestLine) {
+            class PointDist {
+                final float x0, x1, d;
+
+                public PointDist(float x0, float x1, float d) {
+                    this.x0 = x0;
+                    this.x1 = x1;
+                    this.d = d;
+                }
+            }
+            PointDist[] pointsWithDistances = new PointDist[]{
+                    new PointDist(x0a, x1a, dist(x0a, y0, x1a, y1)),
+                    new PointDist(x0a, x1b, dist(x0a, y0, x1b, y1)),
+                    new PointDist(x0b, x1b, dist(x0b, y0, x1b, y1)),
+                    new PointDist(x0b, x1a, dist(x0b, y0, x1a, y1)),
+            };
+            Arrays.sort(pointsWithDistances, (p1, p2) -> Float.compare(p1.d, p2.d));
+            x0 = pointsWithDistances[0].x0;
+            x1 = pointsWithDistances[0].x1;
+        }
+        pg.line(x0, y0, x1, y1);
+        pg.rectMode(CENTER);
+        pg.rect(x0, y0, endRectSize, endRectSize);
+        pg.rect(x1, y1, endRectSize, endRectSize);
+    }
+
+    public RFolder getFolder() {
+        return folder;
     }
 
     @Override
-    public PApplet getApp() {
+    public int getHeight() {
+        return (int) size.y;
+    }
+
+    @Override
+    public PVector getPos() {
+        return new PVector(pos.x, pos.y);
+    }
+
+    @Override
+    public float getPosX() {
+        return pos.x;
+    }
+
+    @Override
+    public float getPosY() {
+        return pos.y;
+    }
+
+
+    @Override
+    public PVector getSize() {
+        return new PVector(size.x, size.y);
+    }
+
+    @Override
+    public PApplet getSketch() {
         return app;
     }
 
@@ -69,39 +658,94 @@ public class RWindowInt implements RWindow {
     }
 
     @Override
-    public float getPosX(){
-        return pos.x;
-    }
-
-    @Override
-    public float getPosY(){
-        return pos.y;
-    }
-
-    @Override
-    public PVector getPos() {
-        return new PVector(pos.x,pos.y);
-    }
-
-    @Override
-    public int getWidth(){
+    public int getWidth() {
         return (int) size.x;
     }
 
-    @Override
-    public int getHeight(){
-        return (int) size.y;
+    public int getContentWidth() {
+        switch (folder.getLayout()) {
+            case RLinearLayout linear -> {
+                if (linear.getDirection() == RDirection.VERTICAL) {
+                    if (vsb.isPresent()){
+                        return (int) (size.x - RLayoutStore.getCell());
+                    } else {
+                        return (int) size.x;
+                    }
+                } else {
+                    return (int) size.x;
+                }
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
+        }
     }
 
-    @Override
-    public PVector getSize() {
-        return new PVector(size.x,size.y);
+    public float getContentHeight() {
+        switch (folder.getLayout()) {
+            case RLinearLayout linear -> {
+                if (linear.getDirection() == RDirection.VERTICAL) {
+                    if (folder.shouldDrawTitle()){
+                        return (int) (size.y - RLayoutStore.getCell());
+                    } else {
+                        return (int) size.y;
+                    }
+                } else {
+                    return (int) size.y;
+                }
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
+        }
     }
 
     public boolean isVisible() {
+        return isVisible;
+    }
+
+    public boolean isDragged() {
         return false;
     }
 
-    public void reinitialiseBuffer() {
+    /**
+     * Check if the title bar is highlighted
+     *
+     * @return true if the title is highlighted, false otherwise
+     */
+    public boolean isTitleHighlighted() { // TODO LazyGui
+        return isTitleHighlighted;
+    }
+
+    public void setCoordinates(float x, float y) {
+        pos.x = x;
+        pos.y = y;
+    }
+
+    public void reinitialiseBuffer() { // TODO LazyGui
+        contentBuffer.resetBuffer();
+    }
+
+    /**
+     * Method to open the Window
+     *
+     * @param startDragging true if being dragged, false otherwise
+     */
+    public void open(boolean startDragging) { // TODO LazyGui
+        isVisible = true;
+        if (startDragging) {
+            isBeingDragged = true;
+            setFocusOnThis();
+        }
+        contentBuffer.resetBuffer();
+    }
+
+    public void close() { // TODO LazyGui
+        isVisible = false;
+        isBeingDragged = false;
+    }
+
+    public synchronized void resizeForContents(boolean shouldResize){
+        isResizeWidth=shouldResize;
+    }
+
+    public void setWidth(Float nullableSizeX) {
+        size.x = nullableSizeX;
     }
 }

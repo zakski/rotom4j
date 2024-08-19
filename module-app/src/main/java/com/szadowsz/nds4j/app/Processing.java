@@ -16,8 +16,8 @@ public class Processing extends PApplet {
 
     public final static Preferences prefs = Preferences.userNodeForPackage(Processing.class);
 
-    protected NDSGuiImpl gui;
-    protected NDSGuiSettings settings;
+  //  protected NDSGuiImpl gui;
+  //  protected NDSGuiSettings settings;
 
 
     private void setLookAndFeel() {
@@ -38,10 +38,11 @@ public class Processing extends PApplet {
         surface.setTitle("NDS4J");
         surface.setResizable(true);
         surface.setLocation(100,100);
-        gui = new NDSGuiImpl(this,settings);
-        RegisterGeneralUI.buildFileDropdown(gui);
-        RegisterGeneralUI.buildViewDropdown(gui);
-        RegisterGeneralUI.buildOptionsDropdown(gui);
+
+//        gui = new NDSGuiImpl(this,settings);
+//        RegisterGeneralUI.buildFileDropdown(gui);
+//        RegisterGeneralUI.buildViewDropdown(gui);
+//        RegisterGeneralUI.buildOptionsDropdown(gui);
     }
 
     @Override

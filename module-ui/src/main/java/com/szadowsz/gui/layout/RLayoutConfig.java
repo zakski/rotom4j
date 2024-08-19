@@ -16,7 +16,7 @@
  *
  * Copyright (C) 2010-2020 Martin Berglund
  */
-package com.szadowsz.gui.component.layout;
+package com.szadowsz.gui.layout;
 
 /**
  * Empty interface to use for values that can be used as a layout meta-data on components.

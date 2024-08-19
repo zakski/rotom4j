@@ -26,8 +26,8 @@ public class RColorPreview extends RComponent {
      * @param path         the path in the component tree
      * @param parentFolder the parent component folder reference // TODO consider if needed
      */
-    public RColorPreview(RotomGui gui, String path, RFolder parentFolder, RColorPicker group, Color currentValue) {
-        super(gui, path, parentFolder);
+    public RColorPreview(RotomGui gui, String path, RColorPicker group, Color currentValue) {
+        super(gui, path, group);
         this.group = group;
         this.currentValue = currentValue;
     }
@@ -43,7 +43,7 @@ public class RColorPreview extends RComponent {
     }
 
     @Override
-    public float getRequiredWidthForHorizontalLayout() {
+    public float suggestWidth() {
         return 0;
     }
 }

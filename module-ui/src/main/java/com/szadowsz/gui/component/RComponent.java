@@ -2,6 +2,7 @@ package com.szadowsz.gui.component;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RTheme;
@@ -25,7 +26,7 @@ public abstract class RComponent implements PConstants, RInputListener {
     protected final RotomGui gui;
 
     // Link to the parent folder (if null then it is a root component) // TODO root handling
-    protected final RFolder parent; // TODO LazyGui & G4P
+    protected final RGroup parent; // TODO LazyGui & G4P
 
     // TODO LazyGui
     public final String path;  // TODO protected?
@@ -66,11 +67,11 @@ public abstract class RComponent implements PConstants, RInputListener {
      *
      * @param gui the gui for the window that the component is drawn under
      * @param path the path in the component tree
-     * @param parentFolder the parent component folder reference // TODO consider if needed
+     * @param parent the parent component reference
      */
-    protected RComponent(RotomGui gui, String path, RFolder parentFolder) {
+    protected RComponent(RotomGui gui, String path, RGroup parent) {
         this.gui = gui;
-        this.parent = parentFolder;
+        this.parent = parent;
 
         this.path = path;
         this.name = extractNameFromPath(path);
@@ -79,7 +80,7 @@ public abstract class RComponent implements PConstants, RInputListener {
     }
 
     private String extractNameFromPath(String path) {
-        if ("".equals(path)) { // this is the root node
+        if ("".equals(path)) { // this is the root component
             return gui.getSketch().getClass().getSimpleName(); // not using lowercase separated class name after all because it breaks what users expect to see
         }
         String[] split = RPaths.splitByUnescapesSlashesWithoutRemovingThem(path);
@@ -235,27 +236,27 @@ public abstract class RComponent implements PConstants, RInputListener {
     }
 
     /**
-     * Method to draw the background of the node
+     * Method to draw the background of the component
      *
      * @param pg graphics reference to use
      */
     protected abstract void drawBackground(PGraphics pg); // TODO LazyGui
 
     /**
-     * Method to draw the foreground of the node
+     * Method to draw the foreground of the component
      *
      * @param pg graphics reference to use
-     * @param name name of the node
+     * @param name name of the component
      */
     protected abstract void drawForeground(PGraphics pg, String name); // TODO LazyGui
 
     /**
-     * Main update function, only called when the parent window containing this node is open.
+     * Main update function, only called when the parent window containing this component is open.
      * @see RComponent#drawBackground(PGraphics)
      * @param pg main PGraphics of the gui of the same size as the main PApplet canvas to draw on
      */
     public final void draw(PGraphics pg) { // TODO LazyGui
-        // the node knows its absolute position but here the current matrix is already translated to it
+        // the component knows its absolute position but here the current matrix is already translated to it
         if(isMouseOver){
             highlightBackground(pg);
         }
@@ -281,7 +282,7 @@ public abstract class RComponent implements PConstants, RInputListener {
     }
 
     /**
-     * Handle a pressed key while over the node
+     * Handle a pressed key while over the component
      *
      * @param e the pressed key
      * @param x x position
@@ -351,32 +352,38 @@ public abstract class RComponent implements PConstants, RInputListener {
     }
 
     /**
-     * Method to set hide the node if not root
+     * Method to set hide the component if not root
      */
     public void hide() { // TODO LazyGui
-//        if(this.equals(NodeTree.getRoot())){ // TODO Root Node Concept?
+//        if(this.equals(NodeTree.getRoot())){ // TODO Root component Concept?
 //            return;
 //        }
         isVisible = false;
     }
 
     /**
-     * Method to set the node to visible
+     * Method to set the component to visible
      */
     public void show() {
         isVisible = true;
     }
 
     /**
+     * Method to suggest the width
+     *
+     * @return the width of the component
+     */
+    public abstract float suggestWidth();
+
+    /**
      * Method to calculate the height
      *
-     * @return the height of the node
+     * @return the height of the component
      */
     public float getHeight(){ // TODO LazyGui
-        return heightInCells * RLayoutStore.getCell();
+        //return heightInCells * RLayoutStore.getCell();
+        return size.y;
     }
-
-
 
     public String getName(){ // TODO LazyGui
         return name;
@@ -387,8 +394,29 @@ public abstract class RComponent implements PConstants, RInputListener {
      *
      * @return return parent, null if top level
      */
-    public RFolder getParent() { // TODO LazyGui & G4P
+    public RGroup getParent() { // TODO LazyGui & G4P
         return parent;
+    }
+
+    /**
+     * Get the parent component. If null then this is a top-level component
+     *
+     * @return return parent, null if top level
+     */
+    public RFolder getParentFolder() { // TODO LazyGui & G4P
+        RGroup p = parent;
+        while(p != null || !(p instanceof RFolder)){
+            p = p.getParent();
+        }
+        return (RFolder) p;
+    }
+
+    public float getPosX() {
+        return pos.x;
+    }
+
+    public float getPosY() {
+        return pos.y;
     }
 
     public PVector getPosition() {
@@ -396,11 +424,10 @@ public abstract class RComponent implements PConstants, RInputListener {
     }
 
     public PVector getPreferredSize(){
-        return new PVector(getRequiredWidthForHorizontalLayout(),getHeight());
+        return new PVector(suggestWidth(),getHeight());
     }
 
 
-    public abstract float getRequiredWidthForHorizontalLayout();
 
     public String getValueAsString(){
         return "";
@@ -411,7 +438,22 @@ public abstract class RComponent implements PConstants, RInputListener {
     }
 
     /**
-     * Method to check if this node is visible
+     * Method to calculate the width
+     *
+     * @return the width of the component
+     */
+    public float getWidth(){ // TODO LazyGui
+        //return heightInCells * RLayoutStore.getCell();
+        return size.x;
+    }
+
+
+    public boolean isMouseOver() {
+        return isMouseOver;
+    }
+
+    /**
+     * Method to check if this component is visible
      *
      * @return true if visible, false otherwise
      */
@@ -420,7 +462,7 @@ public abstract class RComponent implements PConstants, RInputListener {
     }
 
     /**
-     * Method to check if this window of this node is visible, and if all parent nodes are visible
+     * Method to check if this window of this component is visible, and if all parent nodes are visible
      *
      * @return true if visible, false otherwise
      */
@@ -432,41 +474,44 @@ public abstract class RComponent implements PConstants, RInputListener {
         return visible;
     }
 
+    public void setMouseOver(boolean mouseOver) {
+        isMouseOver = mouseOver;
+    }
+
     /**
-     * Method to check if the parent window of this node is visible
+     * Method to check if the parent window of this component is visible
      *
      * @return true if visible, false otherwise
      */
-//    public boolean isParentWindowVisible(){ // TODO LazyGui TODO Needed?
-//        if(parent == null || parent.window == null){
-//            return !LayoutStore.isGuiHidden();
-//        }
-//        return parent.isWindowVisible();
-//    }
+    public boolean isParentWindowVisible(){ // TODO LazyGui TODO Needed?
+        RFolder pFolder = getParentFolder();
+        if(pFolder == null || pFolder.getWindow() == null){
+            return !RLayoutStore.isGuiHidden();
+        }
+        return pFolder.isWindowVisible();
+    }
 
     /**
-     * Method to check if the parent window of this node is open
+     * Method to check if the parent window of this component is open
      *
      * @return true if open, false otherwise
      */
-//    public boolean isParentWindowOpen(){ // TODO LazyGui TODO Needed?
-//        if(parent == null || parent.window == null){
-//            return false;
-//        }
-//        return parent.isWindowVisible();
-//    }
+    public boolean isParentWindowOpen(){ // TODO LazyGui TODO Needed?
+        if(parent == null || !(parent instanceof RFolder) || ((RFolder) parent).getWindow() == null){
+            return false;
+        }
+        return ((RFolder) parent).isWindowVisible();
+    }
 
-    public void setIsMouseOverThisNodeOnly(){ // TODO LazyGui
+    public void setIsMouseOverThisNodeOnly() { // TODO LazyGui
         isMouseOver = true;
 //        NodeTree.setAllOtherNodesMouseOverToFalse(this);
     }
 
-
-
     /**
      * Used by value nodes to load state from json
      *
-     * @param loadedNode Json state of loaded node
+     * @param loadedNode Json state of loaded component
      */
 //    public void overwriteState(JsonElement loadedNode){ // TODO Jackson
 //        // NOOP

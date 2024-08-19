@@ -142,7 +142,7 @@ public abstract class RWindowExt extends PApplet implements RWindow {
      * @return this Window
      */
     @Override
-    public PApplet getApp() {
+    public PApplet getSketch() {
         return this;
     }
 

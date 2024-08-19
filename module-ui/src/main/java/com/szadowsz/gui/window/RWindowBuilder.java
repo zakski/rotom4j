@@ -1,7 +1,9 @@
 package com.szadowsz.gui.window;
 
+import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.RotomGuiManager;
 import com.szadowsz.gui.RotomGuiSettings;
+import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.exception.RWindowException;
 import com.szadowsz.gui.window.external.RWindowAWT;
 import com.szadowsz.gui.window.external.RWindowExt;
@@ -34,8 +36,12 @@ public class RWindowBuilder {
     // window renderer
     private String renderer=null;
 
+    // parent window GUI
+    private RotomGui gui;
+
     // window GUI settings
     private RotomGuiSettings settings = null;
+    private RFolder folder;
 
     /**
      * Default Constructor For Builder
@@ -49,6 +55,24 @@ public class RWindowBuilder {
      */
     public void setPApplet(PApplet p) {
         this.applet = p;
+    }
+
+    /**
+     * Configure the RotomGui the Window is drawn under
+     *
+     * @param g RotomGui to use if an internal window
+     */
+    public void setGui(RotomGui g) {
+        this.gui = g;
+    }
+
+    /**
+     * Configure the Folder the Window belongs to
+     *
+     * @param f Folder internal window belongs to
+     */
+    public void setFolder(RFolder f) {
+        this.folder = f;
     }
 
     /**
@@ -115,7 +139,13 @@ public class RWindowBuilder {
             if (applet == null){
                 throw new RWindowException("PApplet supplied cannot be null");
             }
-            return new RWindowInt(applet, title, xPos, yPos, width, height);
+            if (gui == null){
+                throw new RWindowException("RotomGui supplied cannot be null");
+            }
+            if (folder == null){
+                throw new RWindowException("RFolder supplied cannot be null");
+            }
+            return new RWindowInt(applet, gui, folder, title, xPos, yPos, width, height);
         } else {
             LOGGER.debug("Constructing External Window {}", title);
             RWindowExt external = switch (renderer) {

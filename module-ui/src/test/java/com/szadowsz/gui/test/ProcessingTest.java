@@ -41,6 +41,7 @@ public class ProcessingTest extends PApplet {
         surface.setLocation(100,100);
 
         gui = RotomGuiManager.embedGui(this,settings);
+
 //        RegisterGeneralUI.buildFileDropdown(gui);
 //        RegisterGeneralUI.buildViewDropdown(gui);
 //        RegisterGeneralUI.buildOptionsDropdown(gui);

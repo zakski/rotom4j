@@ -20,8 +20,8 @@ public class RColorSlider extends RSliderInt { // TODO create other config optio
     protected final RColorPicker parentColorPicker;
     protected final String colorShaderPath = "backgroundRGB.glsl";
 
-    public RColorSlider(RotomGui gui, String path, RFolder parentFolder, RColorPicker group, float currentValue) {
-        super(gui, path, parentFolder, currentValue, 0, 255, true);
+    public RColorSlider(RotomGui gui, String path, RColorPicker group, float currentValue) {
+        super(gui, path, group, currentValue, 0, 255, true);
         this.parentColorPicker = group;
         initSliderBackgroundShader();
         RShaderStore.getOrLoadShader(colorShaderPath);
@@ -71,5 +71,9 @@ public class RColorSlider extends RSliderInt { // TODO create other config optio
     public void mouseReleasedOverComponent(RMouseEvent e) {
         super.mouseReleasedOverComponent(e);
         updateColorInParentFolder();
+    }
+
+    public void setValueFromParent(float floatToSet) {
+        value = floatToSet;
     }
 }

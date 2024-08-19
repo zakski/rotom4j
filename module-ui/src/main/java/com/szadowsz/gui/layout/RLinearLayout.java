@@ -1,4 +1,4 @@
-package com.szadowsz.gui.component.layout;
+package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
@@ -94,7 +94,7 @@ public class RLinearLayout extends RLayoutBase {
         return new LinearLayoutData(alignment, growPolicy);
     }
 
-    private final Direction direction;
+    private final RDirection direction;
     private int spacing;
     private boolean changed;
 
@@ -102,13 +102,9 @@ public class RLinearLayout extends RLayoutBase {
      * Default Constructor, creates a vertical {@code RLinearLayout}
      * <p>
      * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
-     *
-     * @param gui          the gui for the window that the component is drawn under
-     * @param path         the path in the component tree
-     * @param parentFolder the parent component folder reference // TODO consider if needed
      */
-    public RLinearLayout(RotomGui gui, String path, RFolder parentFolder) {
-        this(gui, path, parentFolder, Direction.VERTICAL);
+    public RLinearLayout() {
+        this(RDirection.VERTICAL);
     }
 
     /**
@@ -116,10 +112,9 @@ public class RLinearLayout extends RLayoutBase {
 
      * @param direction Direction for this {@code Direction}
      */
-    public RLinearLayout(RotomGui gui, String path, RFolder parentFolder, Direction direction) { // TODO Lanterna
-        super(gui, path, parentFolder);
+    public RLinearLayout(RDirection direction) { // TODO Lanterna
         this.direction = direction;
-        this.spacing = direction == Direction.HORIZONTAL ? 1 : 0;
+        this.spacing = direction == RDirection.HORIZONTAL ? 1 : 0;
         this.changed = true;
     }
 
@@ -152,11 +147,11 @@ public class RLinearLayout extends RLayoutBase {
     }
 
     @Override
-    protected PVector calcPreferredSize(List<RComponent> components) { // TODO Lanterna
+    public PVector calcPreferredSize(List<RComponent> components) { // TODO Lanterna
         // Filter out invisible components
         components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
 
-        if(direction == Direction.VERTICAL) {
+        if(direction == RDirection.VERTICAL) {
             return calcPreferredSizeVertically(components);
         }
         else {
@@ -190,6 +185,10 @@ public class RLinearLayout extends RLayoutBase {
         return spacing;
     }
 
+    public RDirection getDirection() {
+        return direction;
+    }
+
 //    @Override
 //    public boolean hasChanged() {
 //        return changed;
@@ -200,7 +199,7 @@ public class RLinearLayout extends RLayoutBase {
         // Filter out invisible components
         components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
 
-        if(direction == Direction.VERTICAL) { // TODO Lanterna
+        if(direction == RDirection.VERTICAL) { // TODO Lanterna
             doFlexibleVerticalLayout(area, components);
         } else {
             doFlexibleHorizontalLayout(area, components);

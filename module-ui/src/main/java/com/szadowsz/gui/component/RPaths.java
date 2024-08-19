@@ -1,5 +1,6 @@
 package com.szadowsz.gui.component;
 
+import java.util.Arrays;
 
 @SuppressWarnings("RegExpRedundantEscape")
 public class RPaths { // TODO LazyGui
@@ -37,6 +38,11 @@ public class RPaths { // TODO LazyGui
             return path.substring(0, path.length() - 1);
         }
         return path;
+    }
+
+    public static String[] splitFullPathWithoutEndAndRoot(String fullPath) {
+        String[] pathWithEnd = splitByUnescapedSlashes(fullPath);
+        return Arrays.copyOf(pathWithEnd, pathWithEnd.length - 1);
     }
 }
 

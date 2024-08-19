@@ -1,4 +1,4 @@
-package com.szadowsz.gui.component.layout;
+package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
@@ -22,12 +22,12 @@ public class RGridLayout extends RLayoutBase {
      * @param path         the path in the component tree
      * @param parentFolder the parent component folder reference // TODO consider if needed
      */
-    protected RGridLayout(RotomGui gui, String path, RFolder parentFolder) {
-        super(gui, path, parentFolder);
+    protected RGridLayout() {
+        super();
     }
 
     @Override
-    protected PVector calcPreferredSize(List<RComponent> components) {
+    public PVector calcPreferredSize(List<RComponent> components) {
         return null;
     }
 

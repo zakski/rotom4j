@@ -1,13 +1,10 @@
 package com.szadowsz.gui.component.group;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.folder.RFolder;
-import com.szadowsz.gui.component.layout.RLayoutConfig;
+import com.szadowsz.gui.layout.RLayoutConfig;
 import processing.core.PGraphics;
 import processing.core.PVector;
-
-import java.util.List;
 
 /**
  * Component to group Checkboxes, or Toggles, only one of which can be active at a time
@@ -29,7 +26,7 @@ public class RRadioGroup extends RGroup{
     }
 
     @Override
-    protected PVector calcPreferredSize(List<RComponent> components) {
+    protected PVector calcPreferredSize() {
         return null;
     }
 
@@ -49,7 +46,7 @@ public class RRadioGroup extends RGroup{
     }
 
     @Override
-    public float getRequiredWidthForHorizontalLayout() {
+    public float suggestWidth() {
         return 0;
     }
 }
