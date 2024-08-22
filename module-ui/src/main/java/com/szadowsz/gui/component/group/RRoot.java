@@ -3,6 +3,7 @@ package com.szadowsz.gui.component.group;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,17 @@ public final class RRoot extends RGroup {
     public RRoot(RotomGui gui) {
         super(gui, "",null);
         isDraggable = false;
+    }
+
+
+    @Override
+    public void setLayout(RLayoutBase layout) {
+        this.layout = layout;
+        for(RComponent child : children){
+            if (child instanceof RFolder folder){
+                folder.getWindow().reinitialiseBuffer();
+            }
+        }
     }
 
     @Override

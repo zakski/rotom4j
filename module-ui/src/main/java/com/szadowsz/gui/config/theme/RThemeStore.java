@@ -20,6 +20,12 @@ public class RThemeStore {
     }
 
     public static void init() {
+        RThemeType[] allTypes = RThemeType.values();
+        for (RThemeType type : allTypes) {
+            if(!paletteMap.containsKey(type)){
+                paletteMap.put(type, RThemeType.getPalette(type));
+            }
+        }
     }
 
     // TODO LazyGui

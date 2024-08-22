@@ -35,4 +35,9 @@ public class RGridLayout extends RLayoutBase {
     public RLayoutConfig getLayoutConfig() {
         return null;
     }
+
+    @Override
+    public void setLayout(PVector area, List<RComponent> components) {
+
+    }
 }

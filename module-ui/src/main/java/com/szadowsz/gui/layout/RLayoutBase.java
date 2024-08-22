@@ -23,4 +23,16 @@ public abstract class RLayoutBase {
 
 
     public abstract RLayoutConfig getLayoutConfig();
+
+    /**
+     * Given a size constraint, update the location and size of each component in the component list by laying them out
+     * in the available area.
+     * <p>
+     * This method will call {@code setPosition(..)} and {@code setSize(..)} on the Components.
+     *
+     * @param area Size available to this layout manager to lay out the components on
+     * @param components List of components to lay out
+     */
+    public abstract void setLayout(PVector area, List<RComponent> components); // TODO Lanterna
+
 }

@@ -1,8 +1,6 @@
 package com.szadowsz.gui.layout;
 
-import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.component.group.RGroup;
 import processing.core.PVector;
 
@@ -194,8 +192,8 @@ public class RLinearLayout extends RLayoutBase {
 //        return changed;
 //    }
 
-    //@Override
-    public void doLayout(PVector area, List<RComponent> components) { // TODO Lanterna
+    @Override
+    public void setLayout(PVector area, List<RComponent> components) { // TODO Lanterna
         // Filter out invisible components
         components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
 

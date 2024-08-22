@@ -8,6 +8,7 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.prefs.Preferences;
 
 
@@ -30,7 +31,12 @@ public class Processing extends PApplet {
     @Override
     public void settings() {
         setLookAndFeel();
-        size(1920, 1080, PConstants.P2D);
+
+        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        int width = (int) Math.floor(gd.getDisplayMode().getWidth() * 0.8);
+        int height = (int) Math.floor(gd.getDisplayMode().getHeight() * 0.8);
+
+        size(width, height, PConstants.P2D);
     }
 
     @Override

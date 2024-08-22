@@ -11,6 +11,7 @@ import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.RInputListener;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.layout.RLayoutConfig;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PVector;
@@ -385,6 +386,11 @@ public abstract class RComponent implements PConstants, RInputListener {
         return size.y;
     }
 
+    public RLayoutConfig getLayoutConfig() {
+        return new RLayoutConfig() {
+        };
+    }
+
     public String getName(){ // TODO LazyGui
         return name;
     }
@@ -405,7 +411,7 @@ public abstract class RComponent implements PConstants, RInputListener {
      */
     public RFolder getParentFolder() { // TODO LazyGui & G4P
         RGroup p = parent;
-        while(p != null || !(p instanceof RFolder)){
+        while(p != null && !(p instanceof RFolder)){
             p = p.getParent();
         }
         return (RFolder) p;
@@ -506,6 +512,9 @@ public abstract class RComponent implements PConstants, RInputListener {
     public void setIsMouseOverThisNodeOnly() { // TODO LazyGui
         isMouseOver = true;
 //        NodeTree.setAllOtherNodesMouseOverToFalse(this);
+    }
+
+    public void setLayoutConfig(RLayoutConfig config) {
     }
 
     /**

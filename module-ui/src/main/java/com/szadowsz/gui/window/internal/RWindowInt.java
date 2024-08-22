@@ -120,7 +120,6 @@ public class RWindowInt implements RWindow, RInputListener {
      * Constructor for Internal Window
      *
      * @param app    PApplet to render window inside
-     * @param title  title to give the window
      * @param xPos   initial X display location in PApplet
      * @param yPos   initial Y display location in PApplet
      * @param width  initial window width

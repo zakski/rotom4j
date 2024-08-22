@@ -5,6 +5,7 @@ import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.component.input.color.RColorHex;
 import com.szadowsz.gui.component.input.color.RColorPreview;
 import com.szadowsz.gui.component.input.color.RColorSlider;
+import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,16 @@ public class RColorPicker extends RGroup {
     @Override
     public RLayoutConfig getLayoutConfig() {
         return null;
+    }
+
+    @Override
+    public boolean canChangeLayout(){
+        return false;
+    }
+
+    @Override
+    public void setLayout(RLayoutBase layout) {
+        LOGGER.warn("Cannot change layout for RColorPicker at Path: {}",path);
     }
 
     @Override

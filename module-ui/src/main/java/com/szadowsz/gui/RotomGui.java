@@ -4,13 +4,19 @@ import com.jogamp.newt.opengl.GLWindow;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.RComponentTree;
 import com.szadowsz.gui.component.action.RButton;
+import com.szadowsz.gui.component.folder.RDropdownMenu;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.folder.RToolbar;
+import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
 import com.szadowsz.gui.component.input.toggle.RCheckbox;
 import com.szadowsz.gui.component.input.toggle.RToggle;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.RInputHandler;
 import com.szadowsz.gui.input.RInputListener;
+import com.szadowsz.gui.layout.RBorderLayout;
+import com.szadowsz.gui.layout.RLayoutBase;
+import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.utils.RContextLines;
 import com.szadowsz.gui.utils.RSnapToGrid;
 import com.szadowsz.gui.window.RWindowManager;
@@ -20,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import com.szadowsz.gui.config.*;
 import processing.core.PGraphics;
+import processing.event.KeyEvent;
+import processing.event.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +40,9 @@ import static processing.core.PConstants.*;
  */
 public class RotomGui {
     private static final Logger LOGGER = LoggerFactory.getLogger(RotomGui.class);
+
+    // Folder Stack Constants
+    private static final int stackSizeWarningLevel = 64;
 
     protected final PApplet app;
     protected final GLWindow appWindow;
@@ -46,6 +57,10 @@ public class RotomGui {
     protected final RComponentTree tree;
 
     protected final ArrayList<String> pathPrefix = new ArrayList<>(); // TODO LazyGui
+
+    // Folder Stack Warnings
+    private boolean printedPushWarningAlready = false;
+    private boolean printedPopWarningAlready = false;
 
     /**
      * Constructor for the RotomGui object which acts as a central hub for all GUI related methods within its' sketch.
@@ -68,10 +83,9 @@ public class RotomGui {
 
         RThemeStore.init();
         RFontStore.init(sketch);
-        winManager= new RWindowManager(this);
+         winManager= new RWindowManager(this);
         tree = new RComponentTree(this);
         settings.applyLateStartupSettings();
-        //        winManager.addRootWindow(settings.getUseToolbarAsRoot());
     }
 
     /**
@@ -155,13 +169,20 @@ public class RotomGui {
         }
     }
 
+    private void tryLogStackWarning(String method) {
+        if(pathPrefix.size() >= stackSizeWarningLevel && !printedPushWarningAlready){
+            LOGGER.warn("Too many calls to {} - stack size reached the warning limit of " + stackSizeWarningLevel +
+                    ", possibly due to runaway recursion",method);
+            printedPushWarningAlready = true;
+        }
+    }
     /**
      * Gets the current path prefix stack, inserting a forward slash after each folder name in the stack.
      * Mostly used internally by LazyGui, but it can also be useful for debugging.
      *
      * @return entire path prefix stack concatenated to one string
      */
-    protected String getCurrentFolder(){ // TODO LazyGui
+    protected String getCurrentPath(){ // TODO LazyGui
         if(pathPrefix.isEmpty()){
             return "";
         }
@@ -189,11 +210,16 @@ public class RotomGui {
     /**
      * Updates and draws the GUI on the specified parameter canvas, assuming its size is identical to the main sketch size.
      * Gets called automatically at the end of draw().
-     * NDSGui will enforce itself being drawn only once per frame internally, which can be useful for including the gui in a recording.
-     * If it does get called manually, it will get drawn when requested and then skip its automatic execution for that frame.
+     * <p>
+     * RotomGui will enforce itself being drawn only once per frame internally, which can be useful for including the gui
+     * in a recording.
+     * <p>
+     * If it does get called manually, it will get drawn when requested and then skip its automatic execution for that
+     * frame.
      * <p>
      *  Resets any potential hint(DISABLE_DEPTH_TEST) to the default hint(ENABLE_DEPTH_TEST) when done,
-     *  because it needs the DISABLE_DEPTH_TEST to draw the GUI over 3D scenes and has currently no way to save or query the original hint state.
+     *  because it needs the DISABLE_DEPTH_TEST to draw the GUI over 3D scenes and has currently no way to save or query
+     *  the original hint state.
      *
      * @param targetCanvas canvas to draw the GUI on
      */
@@ -215,7 +241,7 @@ public class RotomGui {
         clearStack();
         updateOptions();
         if (!RLayoutStore.isGuiHidden()) {
-            RSnapToGrid.displayGuideAndApplyFilter(guiCanvas, getWindowBeingDraggedIfAny());
+            RSnapToGrid.displayGuideAndApplyFilter(this,guiCanvas, getWindowBeingDraggedIfAny());
             RContextLines.drawLines(guiCanvas,tree);
             winManager.updateAndDrawWindows(guiCanvas);
         }
@@ -229,18 +255,150 @@ public class RotomGui {
         targetCanvas.hint(ENABLE_DEPTH_TEST);
     }
 
-   /**
+    /**
+     * Updates and draws the GUI on the main processing canvas.
+     * <p>
+     * Gets called automatically at the end of draw() by default, but can also be called manually to display the GUI at
+     * a better time during the frame.
+     * <p>
+     * The GUI will not draw itself multiple times per one frame, so the automatic execution is skipped when this is
+     * called manually.
+     * <p>
+     * Must stay public because otherwise this registering won't work: app.registerMethod("draw", this);
+     * <p>
+     * Calls {@link RotomGui#draw(PGraphics) draw(PGraphics)} internally with the default sketch PGraphics.
+     * @see RotomGui#draw(PGraphics)
+     */
+    public final void draw() {
+        draw(app.g);
+    }
+
+    /**
+     * Keyboard Event Processing
+     *
+     * @param event key event
+     */
+    public void keyEvent(KeyEvent event) {
+        inputHandler.keyEvent(event);
+    }
+
+    /**
+     * Mouse Event Processing
+     *
+     * @param event mouse event
+     */
+    public void mouseEvent(MouseEvent event) {
+        inputHandler.mouseEvent(event);
+    }
+
+    protected StringBuilder pushPathToStack(String folderName) {
+        String slashSafeFolderName = folderName;
+        if(slashSafeFolderName.startsWith("/")){
+            // remove leading slash
+            slashSafeFolderName = slashSafeFolderName.substring(1);
+        }
+        if(slashSafeFolderName.endsWith("/") && !slashSafeFolderName.endsWith("\\/")){
+            // remove trailing slash if un-escaped
+            slashSafeFolderName = slashSafeFolderName.substring(0, slashSafeFolderName.length()-1);
+        }
+        pathPrefix.addFirst(slashSafeFolderName);
+        StringBuilder builder = new StringBuilder();
+        for (int i = pathPrefix.size()-1; i >= 0; i--){
+            builder.append(pathPrefix.get(i));
+            if (i > 0)
+                builder.append("/");
+        }
+        return builder;
+    }
+
+    public RDropdownMenu pushDropdown(String barName) {
+        tryLogStackWarning("pushToolbar(String)");
+        StringBuilder builder = pushPathToStack(barName);
+        tree.initDropdowForPath(builder.toString());
+        return (RDropdownMenu) tree.find(builder.toString());
+    }
+
+    /**
+     * Pushes a folder name to the global path prefix stack.
+     * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
+     * Removes leading and trailing slashes to enforce consistency, but allows slashes to appear either escaped or anywhere else inside the string.
+     * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
+     * This is useful for not repeating the whole path string every time you want to call a control element.
+     *
+     * @param folderName one folder's name to push to the stack
+     * @return folder
+     */
+    public RFolder pushFolder(String folderName){
+        tryLogStackWarning("pushFolder(String)");
+        StringBuilder builder = pushPathToStack(folderName);
+        tree.initFolderForPath(builder.toString());
+        RFolder folder = (RFolder) tree.find(builder.toString());
+        if (folder.getParent() instanceof RRoot){
+            this.getWinManager().uncoverOrCreateWindow(folder);
+        }
+        return folder;
+    }
+
+    public RFolder pushPane(String paneName) {
+        tryLogStackWarning("pushPane(String)");
+        StringBuilder builder = pushPathToStack(paneName);
+        tree.initFolderForPath(builder.toString());
+        RFolder pane = (RFolder) tree.find(builder.toString());
+        if (pane.getParent() instanceof RRoot){
+            this.getWinManager().uncoverOrCreateWindow(pane);
+        }
+        return pane;
+    }
+
+    public RFolder pushPane(String paneName, RLayoutConfig config) {
+        tryLogStackWarning("pushPane(String,RLayoutConfig)");
+        StringBuilder builder = pushPathToStack(paneName);
+        tree.initFolderForPath(builder.toString());
+        RFolder pane = (RFolder) tree.find(builder.toString());
+        pane.setLayoutConfig(config);
+        if (pane.getParent() instanceof RRoot){
+            this.getWinManager().uncoverOrCreateWindow(pane);
+        }
+        return pane;
+    }
+
+    public RToolbar pushToolbar(String barName) {
+        tryLogStackWarning("pushToolbar(String)");
+        StringBuilder builder = pushPathToStack(barName);
+        tree.initToolbarForPath(builder.toString());
+        RToolbar toolbar = (RToolbar) tree.find(builder.toString());
+        if (toolbar.getParent() instanceof RRoot){
+            this.getWinManager().uncoverOrCreateWindow(toolbar);
+        }
+        return toolbar;
+    }
+
+    public RToolbar pushToolbar(String barName, RLayoutConfig config) {
+        tryLogStackWarning("pushToolbar(String,RLayoutConfig)");
+        StringBuilder builder = pushPathToStack(barName);
+        tree.initToolbarForPath(builder.toString());
+        RToolbar toolbar = (RToolbar) tree.find(builder.toString());
+        toolbar.setLayoutConfig(config);
+        if (toolbar.getParent() instanceof RRoot){
+            this.getWinManager().uncoverOrCreateWindow(toolbar);
+        }
+        return toolbar;
+    }
+
+
+
+    /**
      * Gets a button component at the specified location. Initializes the button if needed.
      *
      * @param path forward slash separated unique path to the control element
      * @return button
      */
     public RButton button(String path) {  // TODO LazyGui
-        String fullPath = getCurrentFolder() + path;
+        String fullPath = getCurrentPath() + path;
         if(tree.isPathTakenByUnexpectedType(fullPath, RButton.class)){
             return null;
         }
-        RButton node = (RButton) tree.findNode(fullPath);
+        RButton node = (RButton) tree.find(fullPath);
         if (node == null) {
             RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
             node = new RButton(this,fullPath, folder);
@@ -258,11 +416,11 @@ public class RotomGui {
      * @return the checkbox
      */
     public RCheckbox checkbox(String path, boolean startingValue) {  // TODO LazyGui
-        String fullPath = getCurrentFolder() + path;
+        String fullPath = getCurrentPath() + path;
         if(tree.isPathTakenByUnexpectedType(fullPath, RCheckbox.class)){
             return null;
         }
-        RCheckbox node = (RCheckbox) tree.findNode(fullPath);
+        RCheckbox node = (RCheckbox) tree.find(fullPath);
         if (node == null) {
             RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
             node = new RCheckbox(this,fullPath, folder, startingValue);
@@ -280,17 +438,34 @@ public class RotomGui {
      * @return the toggle
      */
     public RToggle toggle(String path, boolean startingValue) {  // TODO LazyGui
-        String fullPath = getCurrentFolder() + path;
+        String fullPath = getCurrentPath() + path;
         if(tree.isPathTakenByUnexpectedType(fullPath, RToggle.class)){
             return null;
         }
-        RToggle node = (RToggle) tree.findNode(fullPath);
+        RToggle node = (RToggle) tree.find(fullPath);
         if (node == null) {
             RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
             node = new RToggle(this,fullPath, folder, startingValue);
             tree.insertNodeAtItsPath(node);
         }
         return node;
+    }
+
+    /**
+     * Pops the last pushed folder name from the global path prefix stack.
+     * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
+     * Warns once when the stack is empty and popFolder() is attempted.
+     * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
+     * This is useful for not repeating the whole path string every time you want to call a control element.
+     */
+    public void popWindow(){
+        if(pathPrefix.isEmpty() && printedPopWarningAlready){
+            LOGGER.warn("Too many calls to popFolder() - there is nothing to pop");
+            printedPopWarningAlready = true;
+        }
+        if(!pathPrefix.isEmpty()){
+            pathPrefix.remove(0);
+        }
     }
 
     /**
@@ -321,6 +496,21 @@ public class RotomGui {
     public void setFocus(RWindowInt window) { // TODO LazyGui
         winManager.setFocus(window);
         inputHandler.setFocus(window);
+    }
+
+    public void setLayout(RLayoutBase layout) {
+        String path = getCurrentPath();
+        RGroup group = (RGroup) tree.find(path);
+
+        if (group == null) {
+            LOGGER.warn("Path For Layout Does Not Currently Exist: {}", path);
+        } else if (group instanceof RRoot root){
+            root.setLayout(layout);
+        } else if (!group.canChangeLayout() || layout instanceof RBorderLayout) {
+            LOGGER.warn("Layout Cannot Be Set For Path: {}", path);
+        } else {
+            group.setLayout(layout);
+        }
     }
 
     public void setAllMouseOverToFalse(RFolder folder) { // TODO LazyGui

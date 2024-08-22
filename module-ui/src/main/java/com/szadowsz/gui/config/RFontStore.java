@@ -1,6 +1,5 @@
 package com.szadowsz.gui.config;
 
-import com.krab.lazy.stores.GlobalReferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -55,7 +54,7 @@ public class RFontStore {
             lastMainFontPath = mainFontPathDefault; // TODO provide way to set this
             lastMainFontSize = mainFontSizeDefault; // TODO provide way to set this
             try {
-                    mainFont = GlobalReferences.app.createFont(lastMainFontPath, lastMainFontSize);
+                    mainFont = sketch.createFont(lastMainFontPath, lastMainFontSize);
                 } catch (RuntimeException ex) {
                     if (ex.getMessage().contains("createFont() can only be used inside setup() or after setup() has been called")) {
                         throw new RuntimeException("the new Gui(this) constructor can only be used inside setup() or after setup() has been called");
@@ -64,7 +63,7 @@ public class RFontStore {
             lastSideFontPath = sideFontPathDefault; // TODO provide way to set this
             lastSideFontSize = sideFontSizeDefault; // TODO provide way to set this
              try {
-                 sideFont = GlobalReferences.app.createFont(lastSideFontPath, lastSideFontSize);
+                 sideFont = sketch.createFont(lastSideFontPath, lastSideFontSize);
              } catch (RuntimeException ex) {
                  if (ex.getMessage().contains("createFont() can only be used inside setup() or after setup() has been called")) {
                      throw new RuntimeException("the new Gui(this) constructor can only be used inside setup() or after setup() has been called");

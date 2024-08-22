@@ -2,6 +2,7 @@ package com.szadowsz.gui.component.group;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import processing.core.PGraphics;
 import processing.core.PVector;
@@ -31,17 +32,22 @@ public class RCarousel extends RGroup {
     }
 
     @Override
-    public RLayoutConfig getLayoutConfig() {
-        return null;
-    }
-
-    @Override
     protected void drawBackground(PGraphics pg) {
 
     }
 
     @Override
     protected void drawForeground(PGraphics pg, String name) {
+
+    }
+
+    @Override
+    public RLayoutConfig getLayoutConfig() {
+        return null;
+    }
+
+    @Override
+    public void setLayout(RLayoutBase layout) {
 
     }
 

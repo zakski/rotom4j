@@ -172,9 +172,14 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
         return layout;
     }
 
-
     public boolean isWindowVisible() {
         return window.isVisible();
+    }
+
+    @Override
+    public void setLayout(RLayoutBase layout) {
+        this.layout = layout;
+        window.reinitialiseBuffer();
     }
 
     public void setWindow(RWindowInt win) {

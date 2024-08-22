@@ -1,5 +1,6 @@
 package com.szadowsz.gui.utils;
 
+import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.RShaderStore;
 import com.szadowsz.gui.window.internal.RWindowInt;
@@ -149,9 +150,9 @@ public class RSnapToGrid {
      * @param pg Processing Graphics Context
      * @param draggedWindow a window being dragged
      */
-    public static void displayGuideAndApplyFilter(PGraphics pg, RWindowInt draggedWindow){
+    public static void displayGuideAndApplyFilter(RotomGui gui, PGraphics pg, RWindowInt draggedWindow){
         if(pointShader == null){
-            pointShader = RShaderStore.getOrLoadShader(pointShaderPath);
+            pointShader = RShaderStore.getOrLoadShader(gui,pointShaderPath);
         }
         if(selectedVisibilityModeIndex == VISIBILITY_ON_DRAG){
             updateAlpha(draggedWindow);

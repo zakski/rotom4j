@@ -249,11 +249,11 @@ public class RSlider extends RComponent {
     }
 
     protected void initSliderBackgroundShader() {
-        RShaderStore.getOrLoadShader(shaderPathDefault);
+        RShaderStore.getOrLoadShader(gui,shaderPathDefault);
     }
 
     protected void updateBackgroundShader(PGraphics pg) { // TODO LazyGui
-        PShader shader = RShaderStore.getOrLoadShader(shaderPathDefault);
+        PShader shader = RShaderStore.getOrLoadShader(gui,shaderPathDefault);
         shader.set("scrollX", backgroundScrollX);
         Color bgColor = RThemeStore.getColor(RThemeColorType.NORMAL_BACKGROUND);
         Color fgColor = RThemeStore.getColor(RThemeColorType.FOCUS_BACKGROUND);

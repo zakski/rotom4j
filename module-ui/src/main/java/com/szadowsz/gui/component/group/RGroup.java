@@ -69,15 +69,22 @@ public abstract class RGroup extends RComponent {
         return null;
     }
 
+    public List<RComponent> getChildren() {
+        return children;
+    }
+
     public RLayoutConfig getLayoutConfig() {
         return layout.getLayoutConfig();
     }
 
-    public void insertChild(RComponent child){
-        children.add(child);
+    public boolean canChangeLayout() {
+        return true;
     }
 
-    public List<RComponent> getChildren() {
-        return children;
+    public abstract void setLayout(RLayoutBase layout);
+
+
+    public void insertChild(RComponent child){
+        children.add(child);
     }
 }

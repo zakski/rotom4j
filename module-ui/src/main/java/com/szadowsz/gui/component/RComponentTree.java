@@ -3,6 +3,7 @@ package com.szadowsz.gui.component;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.folder.RDropdownMenu;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.folder.RToolbar;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
 
@@ -32,17 +33,17 @@ public class RComponentTree {
 
     public RFolder findParentFolderLazyInitPath(String nodePath) {
         String folderPath = RPaths.getPathWithoutName(nodePath);
-        lazyInitFolderPath(folderPath);
-        RComponent pathParent = findNode(folderPath);
+        initFolderForPath(folderPath);
+        RComponent pathParent = find(folderPath);
         return (RFolder) pathParent;
     }
 
-    public RComponent findNode(String path) {
+    public RComponent find(String path) {
         if (nodesByPath.containsKey(path)) {
             return nodesByPath.get(path);
         }
         Queue<RComponent> queue = new LinkedList<>();
-        queue.offer(root);
+        queue.offer(getRoot());
         while (!queue.isEmpty()) {
             RComponent node = queue.poll();
             if (node.path.equals(path)) {
@@ -63,13 +64,36 @@ public class RComponentTree {
         }
         return null;
     }
-
-    public void lazyInitFolderPath(String path) {
+    public void initDropdowForPath(String path) {
         String[] split = RPaths.splitByUnescapedSlashes(path);
         String runningPath = split[0];
         RGroup parent = null;
         for (int i = 0; i < split.length; i++) {
-            RComponent n = findNode(runningPath);
+            RComponent n = find(runningPath);
+            if (n == null) {
+                if (parent == null) {
+                    parent = root;
+                }
+                n = new RDropdownMenu(gui, path, parent);
+                parent.insertChild(n);
+                parent = (RGroup) n;
+            } else if (n instanceof RFolder) {
+                parent = (RFolder) n;
+            } else {
+                println("Expected to find or to be able to create a dropdown at path \"" + runningPath + "\" but found an existing " + n.className + ". You cannot put any control elements there.");
+            }
+            if (i < split.length - 1) {
+                runningPath += "/" + split[i + 1];
+            }
+        }
+    }
+
+    public void initFolderForPath(String path) {
+        String[] split = RPaths.splitByUnescapedSlashes(path);
+        String runningPath = split[0];
+        RGroup parent = null;
+        for (int i = 0; i < split.length; i++) {
+            RComponent n = find(runningPath);
             if (n == null) {
                 if (parent == null) {
                     parent = root;
@@ -88,23 +112,23 @@ public class RComponentTree {
         }
     }
 
-    public void lazyInitDropdownPath(String path) {
+    public void initToolbarForPath(String path) {
         String[] split = RPaths.splitByUnescapedSlashes(path);
         String runningPath = split[0];
         RGroup parent = null;
         for (int i = 0; i < split.length; i++) {
-            RComponent n = findNode(runningPath);
+            RComponent n = find(runningPath);
             if (n == null) {
                 if (parent == null) {
                     parent = root;
                 }
-                n = new RDropdownMenu(gui, path, parent);
-                parent.insertChild(n);
+                n = new RToolbar(gui,runningPath, parent);
+                parent.getChildren().add(n);
                 parent = (RGroup) n;
             } else if (n instanceof RFolder) {
                 parent = (RFolder) n;
             } else {
-                println("Expected to find or to be able to create a folder at path \"" + runningPath + "\" but found an existing " + n.className + ". You cannot put any control elements there.");
+                println("Expected to find or to be able to create a toolbar at path \"" + runningPath + "\" but found an existing " + n.className + ". You cannot put any control elements there.");
             }
             if (i < split.length - 1) {
                 runningPath += "/" + split[i + 1];
@@ -113,12 +137,12 @@ public class RComponentTree {
     }
 
     public void insertNodeAtItsPath(RComponent node) {
-        if (findNode(node.path) != null) {
+        if (find(node.path) != null) {
             return;
         }
         String folderPath = RPaths.getPathWithoutName(node.path);
-        lazyInitFolderPath(folderPath);
-        RFolder folder = (RFolder) findNode(folderPath);
+        initFolderForPath(folderPath);
+        RFolder folder = (RFolder) find(folderPath);
         assert folder != null;
         folder.insertChild(node);
     }
@@ -196,7 +220,7 @@ public class RComponentTree {
     }
 
     public <T extends RComponent> boolean isPathTakenByUnexpectedType(String path, Class<T> expectedType) {
-        RComponent foundNode = findNode(path);
+        RComponent foundNode = find(path);
         if (foundNode == null) {
             return false;
         }
@@ -222,7 +246,7 @@ public class RComponentTree {
     }
 
     public void hideAtFullPath(String path) {
-        RComponent node = findNode(path);
+        RComponent node = find(path);
         if (node == null || node.equals(getRoot())) {
             return;
         }
@@ -230,7 +254,7 @@ public class RComponentTree {
     }
 
     public void showAtFullPath(String path) {
-        RComponent node = findNode(path);
+        RComponent node = find(path);
         if (node == null || node.equals(getRoot())) {
             return;
         }

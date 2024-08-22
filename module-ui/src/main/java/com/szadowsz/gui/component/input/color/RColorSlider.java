@@ -24,7 +24,7 @@ public class RColorSlider extends RSliderInt { // TODO create other config optio
         super(gui, path, group, currentValue, 0, 255, true);
         this.parentColorPicker = group;
         initSliderBackgroundShader();
-        RShaderStore.getOrLoadShader(colorShaderPath);
+        RShaderStore.getOrLoadShader(gui,colorShaderPath);
     }
 
     protected void updateColorInParentFolder() {

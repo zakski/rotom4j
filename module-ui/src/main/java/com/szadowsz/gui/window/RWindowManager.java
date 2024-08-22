@@ -85,7 +85,7 @@ public final class RWindowManager {
         }
         boolean windowFound = findWindow(folder, setFocus, pos);
         if (!windowFound) {
-            RWindowInt window = new RWindowInt(gui.getSketch(),gui,folder, pos.x, pos.y, nullableSizeX,0);
+            RWindowInt window = new RWindowInt(gui.getSketch(),gui,folder, pos.x, pos.y, 0,0);
             windows.add(window);
             window.open(setFocus);
         }

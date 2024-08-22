@@ -1,6 +1,6 @@
 package com.szadowsz.gui.config;
 
-import com.szadowsz.ui.constants.GlobalReferences;
+import com.szadowsz.gui.RotomGui;
 import processing.opengl.PShader;
 
 import java.util.HashMap;
@@ -21,10 +21,10 @@ public class RShaderStore {
      * @param path location of the shader
      * @return the retrieved shader
      */
-    public static PShader getOrLoadShader(String path) { // TODO LazyGui
+    public static PShader getOrLoadShader(RotomGui gui, String path) { // TODO LazyGui
         String fullPath = shaderFolder + path;
         if(!shaders.containsKey(fullPath)) {
-            shaders.put(fullPath, GlobalReferences.app.loadShader(fullPath));
+            shaders.put(fullPath, gui.getSketch().loadShader(fullPath));
         }
         return shaders.get(fullPath);
     }
