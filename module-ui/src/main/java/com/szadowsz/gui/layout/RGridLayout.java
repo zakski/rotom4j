@@ -3,6 +3,7 @@ package com.szadowsz.gui.layout;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.window.internal.RWindowInt;
 import processing.core.PVector;
 
 import java.util.List;
@@ -37,7 +38,12 @@ public class RGridLayout extends RLayoutBase {
     }
 
     @Override
-    public void setLayout(PVector area, List<RComponent> components) {
+    public void setCompLayout(PVector area, List<RComponent> components) {
+
+    }
+
+    @Override
+    public void setWinLayout(PVector area, List<RWindowInt> windows) {
 
     }
 }

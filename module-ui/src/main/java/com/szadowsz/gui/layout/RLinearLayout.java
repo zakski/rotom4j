@@ -2,6 +2,7 @@ package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
+import com.szadowsz.gui.window.internal.RWindowInt;
 import processing.core.PVector;
 
 import java.util.*;
@@ -193,7 +194,7 @@ public class RLinearLayout extends RLayoutBase {
 //    }
 
     @Override
-    public void setLayout(PVector area, List<RComponent> components) { // TODO Lanterna
+    public void setCompLayout(PVector area, List<RComponent> components) { // TODO Lanterna
         // Filter out invisible components
         components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
 
@@ -201,6 +202,19 @@ public class RLinearLayout extends RLayoutBase {
             doFlexibleVerticalLayout(area, components);
         } else {
             doFlexibleHorizontalLayout(area, components);
+        }
+        this.changed = false;
+    }
+
+    @Override
+    public void setWinLayout(PVector area, List<RWindowInt> windows) { // TODO Lanterna
+        // Filter out invisible windows
+        windows = windows.stream().filter(RWindowInt::isVisible).collect(Collectors.toList());
+
+        if(direction == RDirection.VERTICAL) { // TODO Lanterna
+            doFlexibleWinVerticalLayout(area, windows);
+        } else {
+            doFlexibleWinHorizontalLayout(area, windows);
         }
         this.changed = false;
     }
@@ -317,6 +331,111 @@ public class RLinearLayout extends RLayoutBase {
         }
     }
 
+    private void doFlexibleWinVerticalLayout(PVector area, List<RWindowInt> windows) { // TODO Lanterna
+        float availableVerticalSpace = area.y;
+        float availableHorizontalSpace = area.x;
+        final Map<RWindowInt, PVector> fittingMap = new IdentityHashMap<>();
+        float totalRequiredVerticalSpace = 0;
+
+        for (RWindowInt window: windows) {
+            Alignment alignment = Alignment.BEGINNING;
+            RLayoutConfig layoutData = window.getLayoutConfig();
+            if (layoutData instanceof LinearLayoutData) {
+                alignment = ((LinearLayoutData) layoutData).alignment;
+            }
+
+            PVector preferredSize = window.getSize();
+            PVector fittingSize = new PVector(
+                    Math.min(availableHorizontalSpace, preferredSize.x),
+                    preferredSize.y);
+            if(alignment == Alignment.FILL) {
+                fittingSize.x = (availableHorizontalSpace);
+            }
+
+            fittingMap.put(window, fittingSize);
+            totalRequiredVerticalSpace += fittingSize.y + spacing;
+        }
+        if (!windows.isEmpty()) {
+            // Remove the last spacing
+            totalRequiredVerticalSpace -= spacing;
+        }
+
+        // If we can't fit everything, trim the down the size of the largest windows until it fits
+        if (availableVerticalSpace < totalRequiredVerticalSpace) {
+            List<RWindowInt> copyOfWindows = new ArrayList<>(windows);
+            Collections.reverse(copyOfWindows);
+            copyOfWindows.sort((o1, o2) -> {
+                // Reverse sort
+                return -Float.compare(fittingMap.get(o1).y, fittingMap.get(o2).y);
+            });
+
+            while (availableVerticalSpace < totalRequiredVerticalSpace) {
+                float largestSize = fittingMap.get(copyOfWindows.get(0)).y;
+                for (RWindowInt largeWindow: copyOfWindows) {
+                    PVector currentSize = fittingMap.get(largeWindow);
+                    if (largestSize > currentSize.y) {
+                        break;
+                    }
+                    fittingMap.put(largeWindow, currentSize.add(0,-1));
+                    totalRequiredVerticalSpace--;
+                    if (availableHorizontalSpace >= totalRequiredVerticalSpace) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // If we have more space available than we need, grow windows to fill
+        if (availableVerticalSpace > totalRequiredVerticalSpace) {
+            boolean resizedOneWindow = false;
+            while (availableVerticalSpace > totalRequiredVerticalSpace) {
+                for(RWindowInt window: windows) {
+                    LinearLayoutData layoutData = (LinearLayoutData) window.getLayoutConfig();
+                    final PVector currentSize = fittingMap.get(window);
+                    if (layoutData != null && layoutData.growPolicy == GrowPolicy.CAN_GROW) {
+                        fittingMap.put(window, currentSize.add(0,1));
+                        availableVerticalSpace--;
+                        resizedOneWindow = true;
+                    }
+                    if (availableVerticalSpace <= totalRequiredVerticalSpace) {
+                        break;
+                    }
+                }
+                if (!resizedOneWindow) {
+                    break;
+                }
+            }
+        }
+
+        // Assign the sizes and positions
+        float topPosition = 0;
+        for(RWindowInt window: windows) {
+            Alignment alignment = Alignment.BEGINNING;
+            RLayoutConfig layoutData = window.getLayoutConfig();
+            if (layoutData instanceof LinearLayoutData) {
+                alignment = ((LinearLayoutData) layoutData).alignment;
+            }
+
+            PVector decidedSize = fittingMap.get(window);
+            PVector position = window.getPos();
+            position.y = topPosition;
+            switch(alignment) {
+                case END:
+                    position.x = (availableHorizontalSpace - decidedSize.x);
+                    break;
+                case CENTER:
+                    position.x = ((availableHorizontalSpace - decidedSize.x) / 2);
+                    break;
+                case BEGINNING:
+                default:
+                    position.x = 0;
+                    break;
+            }
+            window.setBounds(position.x,position.y,decidedSize.x,decidedSize.y);
+            topPosition += decidedSize.y + spacing;
+        }
+    }
+
     private void doFlexibleHorizontalLayout(PVector area, List<RComponent> components) { // TODO Lanterna
         float availableVerticalSpace = area.y;
         float availableHorizontalSpace = area.x;
@@ -326,7 +445,7 @@ public class RLinearLayout extends RLayoutBase {
         for (RComponent component: components) {
             Alignment alignment = Alignment.BEGINNING;
             if (component instanceof RGroup) {
-                RLayoutConfig layoutData = ((RGroup) component).getLayoutConfig();
+                RLayoutConfig layoutData = component.getLayoutConfig();
                 if (layoutData instanceof LinearLayoutData) {
                     alignment = ((LinearLayoutData) layoutData).alignment;
                 }
@@ -425,6 +544,111 @@ public class RLinearLayout extends RLayoutBase {
                     break;
             }
             component.updateCoordinates(position.x,position.y,decidedSize.x,decidedSize.y);
+            leftPosition += decidedSize.x + spacing;
+        }
+    }
+
+    private void doFlexibleWinHorizontalLayout(PVector area, List<RWindowInt> windows) { // TODO Lanterna
+        float availableVerticalSpace = area.y;
+        float availableHorizontalSpace = area.x;
+        final Map<RWindowInt, PVector> fittingMap = new IdentityHashMap<>();
+        int totalRequiredHorizontalSpace = 0;
+
+        for (RWindowInt window: windows) {
+            Alignment alignment = Alignment.BEGINNING;
+            RLayoutConfig layoutData = window.getLayoutConfig();
+            if (layoutData instanceof LinearLayoutData) {
+                alignment = ((LinearLayoutData) layoutData).alignment;
+            }
+
+            PVector preferredSize = window.getSize();
+            PVector fittingSize = new PVector(
+                    preferredSize.x,
+                    Math.min(availableVerticalSpace, preferredSize.y));
+            if(alignment == Alignment.FILL) {
+                fittingSize.y = (availableVerticalSpace);
+            }
+
+            fittingMap.put(window, fittingSize);
+            totalRequiredHorizontalSpace += fittingSize.x + spacing;
+        }
+        if (!windows.isEmpty()) {
+            // Remove the last spacing
+            totalRequiredHorizontalSpace -= spacing;
+        }
+
+        // If we can't fit everything, trim the down the size of the largest windows until it fits
+        if (availableHorizontalSpace < totalRequiredHorizontalSpace) {
+            List<RWindowInt> copyOfWindows = new ArrayList<>(windows);
+            Collections.reverse(copyOfWindows);
+            copyOfWindows.sort((o1, o2) -> {
+                // Reverse sort
+                return -Float.compare(fittingMap.get(o1).x, fittingMap.get(o2).x);
+            });
+
+            while (availableHorizontalSpace < totalRequiredHorizontalSpace) {
+                float largestSize = fittingMap.get(copyOfWindows.get(0)).x;
+                for (RWindowInt largeWindow: copyOfWindows) {
+                    PVector currentSize = fittingMap.get(largeWindow);
+                    if (largestSize > currentSize.x) {
+                        break;
+                    }
+                    fittingMap.put(largeWindow, currentSize.add(-1,0));
+                    totalRequiredHorizontalSpace--;
+                    if (availableHorizontalSpace >= totalRequiredHorizontalSpace) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // If we have more space available than we need, grow windows to fill
+        if (availableHorizontalSpace > totalRequiredHorizontalSpace) {
+            boolean resizedOneWindow = false;
+            while (availableHorizontalSpace > totalRequiredHorizontalSpace) {
+                for(RWindowInt window: windows) {
+                    LinearLayoutData layoutData =  (LinearLayoutData) window.getLayoutConfig();
+                    final PVector currentSize = fittingMap.get(window);
+                    if (layoutData != null && layoutData.growPolicy == GrowPolicy.CAN_GROW) {
+                        fittingMap.put(window, currentSize.add(1,0));
+                        availableHorizontalSpace--;
+                        resizedOneWindow = true;
+                    }
+                    if (availableHorizontalSpace <= totalRequiredHorizontalSpace) {
+                        break;
+                    }
+                }
+                if (!resizedOneWindow) {
+                    break;
+                }
+            }
+        }
+
+        // Assign the sizes and positions
+        float leftPosition = 0;
+        for(RWindowInt window: windows) {
+            Alignment alignment = Alignment.BEGINNING;
+            RLayoutConfig layoutData = window.getLayoutConfig();
+            if (layoutData instanceof LinearLayoutData) {
+                alignment = ((LinearLayoutData) layoutData).alignment;
+            }
+
+            PVector decidedSize = fittingMap.get(window);
+            PVector position = window.getPos();
+            position.x = (leftPosition);
+            switch(alignment) {
+                case END:
+                    position.y = (availableVerticalSpace - decidedSize.y);
+                    break;
+                case CENTER:
+                    position.y = ((availableVerticalSpace - decidedSize.y) / 2);
+                    break;
+                case BEGINNING:
+                default:
+                    position.y = 0;
+                    break;
+            }
+            window.setBounds(position.x,position.y,decidedSize.x,decidedSize.y);
             leftPosition += decidedSize.x + spacing;
         }
     }

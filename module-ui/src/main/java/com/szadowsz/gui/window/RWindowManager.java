@@ -2,9 +2,12 @@ package com.szadowsz.gui.window;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.folder.RToolbar;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.window.internal.RWindowInt;
 import com.szadowsz.gui.window.internal.RWindowTemp;
+import com.szadowsz.gui.window.internal.RWindowToolbar;
+import com.szadowsz.ui.window.Window;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
@@ -46,6 +49,15 @@ public final class RWindowManager {
         return windowFound;
     }
 
+    /**
+     * Check if the window is focused upon
+     *
+     * @param window the window to check
+     * @return true if the window is focused upon, false otherwise
+     */
+    public boolean isFocused(RWindowInt window) {
+        return windows.getLast().equals(window);
+    }
 
     /**
      * Set the App's focus on a particular window
@@ -133,6 +145,40 @@ public final class RWindowManager {
         }
         folder.getWindow().open(setFocus);
     }
+
+    /**
+     * Create or make visible a temporary window for the passed in folder
+     *
+     * @param folder    the corresponding folder node
+     * @param setFocus      true if the window is in focus, false otherwise
+     * @param nullablePosY  nullable windows y-coordinate
+     */
+    public void uncoverOrCreateToolbar(RToolbar folder, boolean setFocus, Float nullablePosY) {
+        PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
+        if (folder.getParentFolder() != null) {
+            RWindowInt parentWindow = folder.getParentFolder().getWindow();
+            if (parentWindow != null) {
+                pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
+            }
+        }
+       if (nullablePosY != null) {
+            pos.y = nullablePosY;
+        }
+        boolean windowFound = findWindow(folder, setFocus, pos);
+        if (!windowFound) {
+            RWindowInt window = new RWindowToolbar(gui.getSketch(),gui, folder, folder.getName(), pos.y);
+            windows.add(window);
+        }
+        if (windowFound && folder.getParentFolder() == null) {
+            folder.getWindow().setCoordinates(pos.x,pos.y);
+        }
+        folder.getWindow().open(setFocus);
+    }
+
+    public void uncoverOrCreateToolbar(RToolbar folder) { // TODO LazyGui
+        uncoverOrCreateToolbar(folder, true, null);
+    }
+
 
     public void updateAndDrawWindows(PGraphics guiCanvas) { // TODO LazyGui
         if (!windowsToSetFocusOn.isEmpty()) {

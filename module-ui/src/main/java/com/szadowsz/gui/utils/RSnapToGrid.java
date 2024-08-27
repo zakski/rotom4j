@@ -22,24 +22,24 @@ public class RSnapToGrid {
     private static final int VISIBILITY_ALWAYS = 0;
     private static final int VISIBILITY_ON_DRAG = 1;
     private static final int VISIBILITY_NEVER = 2;
-
-    static final List<String> availableVisibilityModes = new RArrayListBuilder<String>().add("always", "on drag", "never").build();
+    private static final int defaultVisibilityModeIndex = VISIBILITY_ON_DRAG;
+    private static final float dragAlphaDelta = 0.05f;
 
     private static PShader pointShader;
     private static float pointColorRed, pointColorGreen, pointColorBlue;
 
-    public static boolean snapToGridEnabled = true;
-
-    private static final int defaultVisibilityModeIndex = VISIBILITY_ON_DRAG;
-    private static int selectedVisibilityModeIndex = defaultVisibilityModeIndex;
+   private static int selectedVisibilityModeIndex = defaultVisibilityModeIndex;
     private static float dragAlpha = 0;
-    private static final float dragAlphaDelta = 0.05f;
     private static Color pointGridColor = Color.getHSBColor(1,1,0.5f);
     private static float pointWeight = 3f;
     private static float sdfCropDistance = 100;
     private static boolean shouldCenterPoints = true;
-    static float cellSizeLastFrame = -1;
     private static int pointColorPrev = -1;
+
+    static float cellSizeLastFrame = -1;
+    static final List<String> availableVisibilityModes = new RArrayListBuilder<String>().add("always", "on drag", "never").build();
+
+    public static boolean snapToGridEnabled = true;
 
     private RSnapToGrid(){
         // NOOP

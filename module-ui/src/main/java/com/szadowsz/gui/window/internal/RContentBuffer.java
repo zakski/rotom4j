@@ -10,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.szadowsz.gui.config.theme.RThemeColorType.WINDOW_BORDER;
 import static processing.core.PConstants.*;
@@ -37,6 +35,8 @@ public class RContentBuffer {
 
     private void createBuffer(int sizeX, int sizeY) {
         buffer = win.getSketch().createGraphics(sizeX, sizeY, PConstants.P2D);
+        buffer.beginDraw();
+        buffer.endDraw();
     }
 
 //    private float calcColWidth(List<RComponent> children, int col) {
@@ -58,31 +58,11 @@ public class RContentBuffer {
 //    }
 
     /**
-     * Draw Child Node
-     *
-     * @param node      child node
-     * @param x         relative content x position
-     * @param nodeWidth already processed width of the node
-     */
-    private void drawChildNodeHorizontally(RComponent node, float x, float nodeWidth) {
-        float nodeHeight = node.getHeight();
-        node.updateCoordinates(win.getPosX() + x, win.getPosY(), nodeWidth, nodeHeight);
-        buffer.pushMatrix();
-        buffer.pushStyle();
-        node.draw(buffer);
-        buffer.popStyle();
-        buffer.popMatrix();
-    }
-
-    /**
-     * Draw Child Node
+     * Draw Child Component
      *
      * @param node       child node
-     * @param y          relative content y position
-     * @param nodeHeight already processed height of the node
-     */
-    private void drawChildNodeVertically(RComponent node, float x, float y, float nodeWidth, float nodeHeight) {
-        node.updateCoordinates(win.getPosX() + x, win.getPosY() + y, nodeWidth, nodeHeight);
+       */
+    private void drawChildComponent(RComponent node) {
         buffer.pushMatrix();
         buffer.pushStyle();
         node.draw(buffer);
@@ -132,7 +112,7 @@ public class RContentBuffer {
         // }
     }
 
-    private void drawNodesVertically(List<RComponent> colChildren, float x, float width) {
+    private void drawChildren(List<RComponent> colChildren, float x, float width) {
         float y = (win.getFolder().shouldDrawTitle())?RLayoutStore.getCell():0; // Account for titlebar
         int index = 0;
         for (RComponent node : colChildren) {
@@ -141,7 +121,7 @@ public class RContentBuffer {
                 continue;
             }
             float nodeHeight = node.getHeight();
-            drawChildNodeVertically(node, x, y, width, nodeHeight);
+            drawChildComponent(node);
             if (index > 0) {
                 // separator
                 buffer.pushStyle();
@@ -167,8 +147,8 @@ public class RContentBuffer {
 
             buffer.textFont(RFontStore.getMainFont());
             buffer.textAlign(LEFT, CENTER);
-
-            drawNodesVertically(folder.getChildren(), 0, buffer.width);
+            folder.getLayout().setCompLayout(folder.getWindow().contentSize, folder.getChildren());
+            drawChildren(folder.getChildren(), 0, buffer.width);
 
             buffer.endDraw();
         }

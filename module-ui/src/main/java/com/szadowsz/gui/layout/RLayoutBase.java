@@ -1,10 +1,7 @@
 package com.szadowsz.gui.layout;
 
-import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.folder.RFolder;
-import com.szadowsz.gui.component.group.RGroup;
-import processing.core.PGraphics;
+import com.szadowsz.gui.window.internal.RWindowInt;
 import processing.core.PVector;
 
 import java.util.List;
@@ -21,7 +18,6 @@ public abstract class RLayoutBase {
      */
     public abstract PVector calcPreferredSize(List<RComponent> components);
 
-
     public abstract RLayoutConfig getLayoutConfig();
 
     /**
@@ -33,6 +29,17 @@ public abstract class RLayoutBase {
      * @param area Size available to this layout manager to lay out the components on
      * @param components List of components to lay out
      */
-    public abstract void setLayout(PVector area, List<RComponent> components); // TODO Lanterna
+    public abstract void setCompLayout(PVector area, List<RComponent> components); // TODO Lanterna
+
+    /**
+     * Given a size constraint, update the location and size of each component in the component list by laying them out
+     * in the available area.
+     * <p>
+     * This method will call {@code setPosition(..)} and {@code setSize(..)} on the Components.
+     *
+     * @param area Size available to this layout manager to lay out the components on
+     * @param components List of components to lay out
+     */
+    public abstract void setWinLayout(PVector area, List<RWindowInt> windows); // TODO Lanterna
 
 }

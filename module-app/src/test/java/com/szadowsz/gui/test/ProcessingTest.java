@@ -52,11 +52,11 @@ public class ProcessingTest extends PApplet {
 
         gui = RotomGuiManager.embedGui(this,settings);
         gui.setLayout(new RBorderLayout());
-        gui.pushPane("File Pane", RBorderLayout.RLocation.LEFT);
-        gui.checkbox("test1",true);
-        gui.checkbox("test2",false);
-        gui.popWindow();
-
+//        gui.pushPane("File Pane", RBorderLayout.RLocation.LEFT);
+//        gui.checkbox("test1",true);
+//        gui.checkbox("test2",false);
+//        gui.popWindow();
+//
         gui.pushToolbar("Titlebar", RBorderLayout.RLocation.TOP);
         RButton test3 = gui.button("test3");
         test3.registerAction(RActivateByType.RELEASE, new RMouseAction() {
@@ -65,19 +65,19 @@ public class ProcessingTest extends PApplet {
                 System.out.println("TEST3"); // MAT DAMON
             }
         });
-
-        RDropdownMenu options = gui.pushDropdown("Options");
-        RButton test4 = gui.button("test4");
-        test3.registerAction(RActivateByType.RELEASE, new RMouseAction() {
-            @Override
-            public void execute() {
-                System.out.println("TEST4"); // MAT DAMON
-                options.hide();
-            }
-        });
+//
+//        RDropdownMenu options = gui.pushDropdown("Options");
+//        RButton test4 = gui.button("test4");
+//        test3.registerAction(RActivateByType.RELEASE, new RMouseAction() {
+//            @Override
+//            public void execute() {
+//                System.out.println("TEST4"); // MAT DAMON
+//                options.hide();
+//            }
+//        });
         gui.popWindow();
-
-        gui.popWindow();
+//
+//        gui.popWindow();
 
 //        RegisterGeneralUI.buildFileDropdown(gui);
 //        RegisterGeneralUI.buildViewDropdown(gui);

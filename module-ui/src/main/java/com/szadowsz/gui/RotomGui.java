@@ -333,8 +333,9 @@ public class RotomGui {
         StringBuilder builder = pushPathToStack(folderName);
         tree.initFolderForPath(builder.toString());
         RFolder folder = (RFolder) tree.find(builder.toString());
-        if (folder.getParent() instanceof RRoot){
-            this.getWinManager().uncoverOrCreateWindow(folder);
+        if (folder.getParent() instanceof RRoot root){
+             this.getWinManager().uncoverOrCreateWindow(folder);
+             root.resizeForContents();
         }
         return folder;
     }
@@ -344,8 +345,9 @@ public class RotomGui {
         StringBuilder builder = pushPathToStack(paneName);
         tree.initFolderForPath(builder.toString());
         RFolder pane = (RFolder) tree.find(builder.toString());
-        if (pane.getParent() instanceof RRoot){
+        if (pane.getParent() instanceof RRoot root){
             this.getWinManager().uncoverOrCreateWindow(pane);
+            root.resizeForContents();
         }
         return pane;
     }
@@ -356,8 +358,9 @@ public class RotomGui {
         tree.initFolderForPath(builder.toString());
         RFolder pane = (RFolder) tree.find(builder.toString());
         pane.setLayoutConfig(config);
-        if (pane.getParent() instanceof RRoot){
+        if (pane.getParent() instanceof RRoot root){
             this.getWinManager().uncoverOrCreateWindow(pane);
+            root.resizeForContents();
         }
         return pane;
     }
@@ -367,8 +370,9 @@ public class RotomGui {
         StringBuilder builder = pushPathToStack(barName);
         tree.initToolbarForPath(builder.toString());
         RToolbar toolbar = (RToolbar) tree.find(builder.toString());
-        if (toolbar.getParent() instanceof RRoot){
-            this.getWinManager().uncoverOrCreateWindow(toolbar);
+        if (toolbar.getParent() instanceof RRoot root){
+            this.getWinManager().uncoverOrCreateToolbar(toolbar);
+            root.resizeForContents();
         }
         return toolbar;
     }
@@ -379,8 +383,9 @@ public class RotomGui {
         tree.initToolbarForPath(builder.toString());
         RToolbar toolbar = (RToolbar) tree.find(builder.toString());
         toolbar.setLayoutConfig(config);
-        if (toolbar.getParent() instanceof RRoot){
-            this.getWinManager().uncoverOrCreateWindow(toolbar);
+        if (toolbar.getParent() instanceof RRoot root){
+            this.getWinManager().uncoverOrCreateToolbar(toolbar);
+            root.resizeForContents();
         }
         return toolbar;
     }

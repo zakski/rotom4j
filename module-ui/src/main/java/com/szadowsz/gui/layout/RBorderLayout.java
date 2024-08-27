@@ -19,6 +19,7 @@
 package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.window.internal.RWindowInt;
 import processing.core.PVector;
 
 import java.util.*;
@@ -78,7 +79,7 @@ public class RBorderLayout extends RLayoutBase {
 
     @Override
     public PVector calcPreferredSize(List<RComponent> components) {
-        EnumMap<RLocation, RComponent> layout = makeLookupMap(components);
+        EnumMap<RLocation, RComponent> layout = makeCompLookupMap(components);
         float preferredHeight =
                 (layout.containsKey(RLocation.TOP) ? layout.get(RLocation.TOP).getPreferredSize().y : 0)
                 +
@@ -108,8 +109,8 @@ public class RBorderLayout extends RLayoutBase {
     }
 
     @Override
-    public void setLayout(PVector area, List<RComponent> components) {
-        EnumMap<RLocation, RComponent> layout = makeLookupMap(components);
+    public void setCompLayout(PVector area, List<RComponent> components) {
+        EnumMap<RLocation, RComponent> layout = makeCompLookupMap(components);
         float availableHorizontalSpace = area.x;
         float availableVerticalSpace = area.y;
         
@@ -158,8 +159,60 @@ public class RBorderLayout extends RLayoutBase {
             }
         }
     }
-    
-    private EnumMap<RLocation, RComponent> makeLookupMap(List<RComponent> components) {
+
+    @Override
+    public void setWinLayout(PVector area, List<RWindowInt> windows) {
+        EnumMap<RLocation, RWindowInt> layout = makeWinLookupMap(windows);
+        float availableHorizontalSpace = area.x;
+        float availableVerticalSpace = area.y;
+
+        //We'll need this later on
+        float topWindowHeight = 0;
+        float leftWindowWidth = 0;
+
+        //First allocate the top
+        if(layout.containsKey(RLocation.TOP)) {
+            RWindowInt topWindow = layout.get(RLocation.TOP);
+            topWindowHeight = Math.min(topWindow.getSize().y, availableVerticalSpace);
+            topWindow.setBounds(0,0,availableHorizontalSpace, topWindowHeight);
+            availableVerticalSpace -= topWindowHeight;
+        }
+
+        //Next allocate the bottom
+        if(layout.containsKey(RLocation.BOTTOM)) {
+            RWindowInt bottomWindow = layout.get(RLocation.BOTTOM);
+            float bottomWindowHeight = Math.min(bottomWindow.getSize().y, availableVerticalSpace);
+            bottomWindow.setBounds(0, area.y - bottomWindowHeight,availableHorizontalSpace, bottomWindowHeight);
+            availableVerticalSpace -= bottomWindowHeight;
+        }
+
+        //Now divide the remaining space between LEFT, CENTER and RIGHT
+        if(layout.containsKey(RLocation.LEFT)) {
+            RWindowInt leftWindow = layout.get(RLocation.LEFT);
+            leftWindowWidth = Math.min(leftWindow.getSize().x, availableHorizontalSpace);
+            leftWindow.setBounds(0, topWindowHeight,leftWindowWidth, availableVerticalSpace);
+            availableHorizontalSpace -= leftWindowWidth;
+        }
+        if(layout.containsKey(RLocation.RIGHT)) {
+            RWindowInt rightWindow = layout.get(RLocation.RIGHT);
+            float rightWindowWidth = Math.min(rightWindow.getSize().x, availableHorizontalSpace);
+            rightWindow.setBounds(area.x - rightWindowWidth, topWindowHeight, rightWindowWidth, availableVerticalSpace);
+            availableHorizontalSpace -= rightWindowWidth;
+        }
+        if(layout.containsKey(RLocation.CENTER)) {
+            RWindowInt centerWindow = layout.get(RLocation.CENTER);
+            centerWindow.setBounds(leftWindowWidth, topWindowHeight,availableHorizontalSpace, availableVerticalSpace);
+        }
+
+        //Set the remaining components to 0x0
+        for(RWindowInt component: windows) {
+            if(component.isVisible() && !layout.containsValue(component)) {
+                component.setBounds(0,0,0,0);
+            }
+        }
+    }
+
+    private EnumMap<RLocation, RComponent> makeCompLookupMap(List<RComponent> components) {
         EnumMap<RLocation, RComponent> map = new EnumMap<>(RLocation.class);
         List<RComponent> unassignedComponents = new ArrayList<>();
         for(RComponent component: components) {
@@ -178,6 +231,32 @@ public class RBorderLayout extends RLayoutBase {
             for(RLocation location: AUTO_ASSIGN_ORDER) {
                 if(!map.containsKey(location)) {
                     map.put(location, component);
+                    break;
+                }
+            }
+        }
+        return map;
+    }
+
+    private EnumMap<RLocation, RWindowInt> makeWinLookupMap(List<RWindowInt> windows) {
+        EnumMap<RLocation, RWindowInt> map = new EnumMap<>(RLocation.class);
+        List<RWindowInt> unassignedWindows = new ArrayList<>();
+        for(RWindowInt window: windows) {
+            if (!window.isVisible()) {
+                continue;
+            }
+            if(window.getFolder().getLayoutConfig() instanceof RLocation) {
+                map.put((RLocation)window.getFolder().getLayoutConfig(), window);
+            }
+            else {
+                unassignedWindows.add(window);
+            }
+        }
+        //Try to assign windows to available locations
+        for(RWindowInt window: unassignedWindows) {
+            for(RLocation location: AUTO_ASSIGN_ORDER) {
+                if(!map.containsKey(location)) {
+                    map.put(location, window);
                     break;
                 }
             }

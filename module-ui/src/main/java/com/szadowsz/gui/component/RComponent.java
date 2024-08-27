@@ -78,6 +78,7 @@ public abstract class RComponent implements PConstants, RInputListener {
         this.name = extractNameFromPath(path);
 
         this.palette = RThemeStore.getTheme(localTheme);
+        size.y = heightInCells*RLayoutStore.getCell();
     }
 
     private String extractNameFromPath(String path) {
@@ -213,7 +214,7 @@ public abstract class RComponent implements PConstants, RInputListener {
         pg.textAlign(RIGHT, CENTER);
         String trimmedTextLeft = RFontStore.substringToFit(pg, leftText, size.x,true);
         float leftOffset = pg.textWidth(trimmedTextLeft)+(RFontStore.getMarginX()*2);
-        String trimmedRightText = RFontStore.substringToFit(pg, leftText, size.x - leftOffset,true);
+        String trimmedRightText = RFontStore.substringToFit(pg, rightText, size.x - leftOffset,true);
         if(fillBackground){
             float w = pg.textWidth(trimmedRightText) + RFontStore.getMarginX() * 2;
             drawBackdropRight(pg, w);
@@ -457,6 +458,15 @@ public abstract class RComponent implements PConstants, RInputListener {
     public boolean isMouseOver() {
         return isMouseOver;
     }
+
+    public boolean isDraggable(){
+        return isDraggable;
+    }
+
+    public boolean isDragged(){
+        return isDragged;
+    }
+
 
     /**
      * Method to check if this component is visible

@@ -5,8 +5,6 @@ import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
-import com.szadowsz.gui.config.RLayoutStore;
-import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLinearLayout;
 import com.szadowsz.ui.store.LayoutStore;
 import org.slf4j.Logger;
@@ -15,9 +13,7 @@ import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
-import static com.szadowsz.ui.store.LayoutStore.cell;
 import static com.szadowsz.ui.utils.Coordinates.isPointInRect;
-import static processing.core.PApplet.round;
 
 /**
  * Gui Temporary Window Node Organisation and Drawing
@@ -41,7 +37,7 @@ public class RWindowTemp extends RWindowInt {
         }
     }
 
-    protected RComponent tryFindChildNodeAt(float x, float y) {
+    protected RComponent findComponentAt(float x, float y) {
         for (RComponent node : folder.getChildren()) {
             if (!node.isVisible()) {
                 continue;
@@ -123,7 +119,9 @@ public class RWindowTemp extends RWindowInt {
         constrainBounds(pg);
         pg.pushMatrix();
         drawBackgroundWithWindowBorder(pg, true);
-        drawContent(pg);
+        if (!folder.getChildren().isEmpty()) {
+            drawContent(pg);
+        }
         drawBackgroundWithWindowBorder(pg, false);
         pg.popMatrix();
     }
@@ -133,7 +131,7 @@ public class RWindowTemp extends RWindowInt {
     public void mouseMoved(RMouseEvent e) {
         if (isMouseInsideContent(e)) {
             LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), pos.x, pos.y, size.x, size.y);
-            RComponent node = tryFindChildNodeAt(e.getX(), e.getY());
+            RComponent node = findComponentAt(e.getX(), e.getY());
             if (node != null && !node.isMouseOver()) {
                 LOGGER.debug("{} Inside NX {} NY {} Width {} Height {}", node.getName(), node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
                 contentBuffer.invalidateBuffer();

@@ -134,10 +134,10 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
     }
 
     public void insertChild(RComponent child){
+        super.insertChild(child);
         if (window != null) {
             window.reinitialiseBuffer();
         }
-        children.add(child);
     }
 
     @Override
@@ -186,11 +186,7 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
         window = win;
     }
 
-    public void addChild(RComponent n) {
-        children.add(n);
-    }
-
     public float suggestWindowWidthInCells() {
-        return 0;
+        return RLayoutStore.getWindowWidthInCells();
     }
 }
