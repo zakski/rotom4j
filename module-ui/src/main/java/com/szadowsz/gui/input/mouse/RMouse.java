@@ -1,7 +1,6 @@
 package com.szadowsz.gui.input.mouse;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.input.RInputListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PVector;
@@ -56,13 +55,25 @@ public final class RMouse {
     }
 
     private void mouseClicked(RMouseEvent e) {
+        for (RMouseListener listener : handlers) {
+            listener.mouseClicked(e);
+            if (e.isConsumed()) {
+                break;
+            }
+        }
     }
 
     private void mouseDragged(RMouseEvent e) {
-        handlers.forEach(l -> l.mouseDragged(e));
+        for (RMouseListener listener : handlers) {
+            listener.mouseDragged(e);
+            if (e.isConsumed()) {
+                break;
+            }
+        }
     }
 
     private void mouseEntered(RMouseEvent e) {
+        gui.resetInput();
     }
 
     private void mouseExited(RMouseEvent e) {
@@ -70,22 +81,39 @@ public final class RMouse {
     }
 
     private void mouseMoved(RMouseEvent e) {
-        handlers.forEach(l -> l.mouseMoved(e));
-        if (!e.isConsumed()){
-            gui.setAllMouseOverToFalse();
+        for (RMouseListener listener : handlers) {
+            listener.mouseMoved(e);
+            if (e.isConsumed()) {
+                break;
+            }
         }
     }
 
     private void mousePressed(RMouseEvent e) {
-        handlers.forEach(l -> l.mousePressed(e));
+        for (RMouseListener listener : handlers) {
+            listener.mousePressed(e);
+            if (e.isConsumed()) {
+                break;
+            }
+        }
     }
 
     private void mouseReleased(RMouseEvent e) {
-        handlers.forEach(l -> l.mouseReleased(e));
+        for (RMouseListener listener : handlers) {
+            listener.mouseReleased(e);
+            if (e.isConsumed()) {
+                break;
+            }
+        }
     }
 
     private void mouseWheel(RMouseEvent e) {
-        handlers.forEach(l -> l.mouseWheel(e));
+        for (RMouseListener listener : handlers) {
+            listener.mouseWheel(e);
+            if (e.isConsumed()) {
+                break;
+            }
+        }
     }
 
     public void mouseEvent(MouseEvent event) {

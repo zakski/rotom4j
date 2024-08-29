@@ -7,7 +7,6 @@ import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.window.internal.RWindowInt;
 import com.szadowsz.gui.window.internal.RWindowTemp;
 import com.szadowsz.gui.window.internal.RWindowToolbar;
-import com.szadowsz.ui.window.Window;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
@@ -134,7 +133,7 @@ public final class RWindowManager {
         }
         boolean windowFound = findWindow(folder, setFocus, pos);
         if (!windowFound) {
-            RWindowInt window = new RWindowTemp(gui.getSketch(),gui, folder, pos.x, pos.y, nullableSizeX);
+            RWindowInt window = new RWindowTemp(gui.getSketch(),gui, folder, pos.x, pos.y, folder.suggestWidth(),0);
             windows.add(window);
         }
         if (windowFound && folder.getParentFolder() == null) {

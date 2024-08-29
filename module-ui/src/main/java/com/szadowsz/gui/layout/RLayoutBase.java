@@ -29,7 +29,7 @@ public abstract class RLayoutBase {
      * @param area Size available to this layout manager to lay out the components on
      * @param components List of components to lay out
      */
-    public abstract void setCompLayout(PVector area, List<RComponent> components); // TODO Lanterna
+    public abstract void setCompLayout(PVector start, PVector area, List<RComponent> components); // TODO Lanterna
 
     /**
      * Given a size constraint, update the location and size of each component in the component list by laying them out

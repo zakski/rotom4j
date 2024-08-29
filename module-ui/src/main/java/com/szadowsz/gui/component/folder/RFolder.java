@@ -8,14 +8,12 @@ import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RThemeColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
-import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.window.internal.RWindowInt;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import static com.szadowsz.ui.store.LayoutStore.cell;
 
 
 /**
@@ -84,22 +82,6 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
         pg.rect(previewRectSize - miniCell, 0, miniCell, miniCell); // close button
     }
 
-    protected float autosuggestWindowWidthFor1Col() { // TODO LazyGui
-        float maximumSpaceTotal = gui.getGLWindow().getWidth();//cell * LayoutStore.defaultWindowWidthInCells;
-        float spaceForName = RLayoutStore.getCell() * 2;
-        float spaceForValue = RLayoutStore.getCell() * 2;
-        float minimumSpaceTotal = spaceForName + spaceForValue;
-        float titleTextWidth = calcNameTextWidth();
-        spaceForName = PApplet.max(spaceForName, titleTextWidth);
-        for (RComponent child : children) {
-            float nameTextWidth = child.calcNameTextWidth();
-            spaceForName = PApplet.max(spaceForName, nameTextWidth);
-            float valueTextWidth = child.findValueTextWidthRoundedUpToWholeCells();
-            spaceForValue = PApplet.max(spaceForValue, valueTextWidth);
-        }
-        return PApplet.constrain(spaceForName + spaceForValue, minimumSpaceTotal, maximumSpaceTotal);
-    }
-
     @Override
     protected void drawBackground(PGraphics pg) {
         // NOOP
@@ -113,7 +95,6 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
     @Override
     protected void fillForeground(PGraphics pg) {
         if(isMouseOver){
-            System.out.println("FOCUS " + name);
             pg.fill(RThemeStore.getRGBA(RThemeColorType.FOCUS_FOREGROUND));
         } else {
             pg.fill(RThemeStore.getRGBA(RThemeColorType.NORMAL_FOREGROUND));
@@ -150,7 +131,22 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
 
 
     public float autosuggestWindowWidthForContents() {
-       return autosuggestWindowWidthFor1Col();
+        if (!RLayoutStore.shouldSuggestWindowWidth()) {
+            return cell * RLayoutStore.getWindowWidthInCells();
+        }
+        float maximumSpaceTotal = gui.getGLWindow().getWidth();//cell * LayoutStore.defaultWindowWidthInCells;
+
+        float spaceForName = RLayoutStore.getCell() * 2;
+        float spaceForValue = RLayoutStore.getCell() * 2;
+        float spaceTotal = spaceForName + spaceForValue;
+
+        float minimumSpaceTotal = spaceForName + spaceForValue;
+
+        float titleTextWidth = calcNameTextWidth();
+        spaceForName = PApplet.max(spaceForName, titleTextWidth);
+        PVector preferredSize = layout.calcPreferredSize(children);
+        spaceTotal = PApplet.max(spaceTotal, preferredSize.x);
+        return PApplet.constrain(spaceTotal, minimumSpaceTotal, maximumSpaceTotal);
     }
 
     /**

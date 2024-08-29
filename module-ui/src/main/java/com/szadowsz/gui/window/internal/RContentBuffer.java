@@ -5,6 +5,7 @@ import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.layout.RLayoutBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PConstants;
@@ -15,7 +16,7 @@ import java.util.List;
 import static com.szadowsz.gui.config.theme.RThemeColorType.WINDOW_BORDER;
 import static processing.core.PConstants.*;
 
-public class RContentBuffer {
+public final class RContentBuffer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RContentBuffer.class);
 
     private final RWindowInt win;
@@ -24,6 +25,9 @@ public class RContentBuffer {
 
     private boolean isBufferInvalid = true;
     private boolean isReInitRequired = true;
+
+    private int sizeX;
+    private int sizeY;
 
     public RContentBuffer(RWindowInt win) {
         this.win = win;
@@ -34,6 +38,9 @@ public class RContentBuffer {
     }
 
     private void createBuffer(int sizeX, int sizeY) {
+        LOGGER.debug("Content Buffer Init - Old Size: [{},{}], New Size: [{},{}]",this.sizeX,this.sizeY,sizeX,sizeY);
+        this.sizeX = sizeX;
+        this.sizeY = sizeY;
         buffer = win.getSketch().createGraphics(sizeX, sizeY, PConstants.P2D);
         buffer.beginDraw();
         buffer.endDraw();
@@ -60,12 +67,12 @@ public class RContentBuffer {
     /**
      * Draw Child Component
      *
-     * @param node       child node
+     * @param child
        */
-    private void drawChildComponent(RComponent node) {
+    private void drawChildComponent(RComponent child) {
         buffer.pushMatrix();
         buffer.pushStyle();
-        node.draw(buffer);
+        child.draw(buffer);
         buffer.popStyle();
         buffer.popMatrix();
     }
@@ -112,25 +119,27 @@ public class RContentBuffer {
         // }
     }
 
-    private void drawChildren(List<RComponent> colChildren, float x, float width) {
-        float y = (win.getFolder().shouldDrawTitle())?RLayoutStore.getCell():0; // Account for titlebar
+    private void drawChildren(RFolder folder, float x, float width) {
+        List<RComponent> children = folder.getChildren();
+        RLayoutBase layout = folder.getLayout();
+
         int index = 0;
-        for (RComponent node : colChildren) {
-            if (!node.isVisible()) {
+        for (RComponent component : children) {
+            if (!component.isVisible()) {
                 index++;
                 continue;
             }
-            float nodeHeight = node.getHeight();
-            drawChildComponent(node);
-            if (index > 0) {
+            buffer.pushMatrix();
+            buffer.translate(component.getRelPosX(), component.getRelPosY());
+            drawChildComponent(component);
+            if (index > 0) { // TODO if as to kind of separator to draw
                 // separator
                 buffer.pushStyle();
                 drawHorizontalSeparator(buffer, (int) width);
                 buffer.popStyle();
             }
-            y += nodeHeight;
-            buffer.translate(0, nodeHeight);
             index++;
+            buffer.popMatrix();
         }
     }
 
@@ -147,12 +156,12 @@ public class RContentBuffer {
 
             buffer.textFont(RFontStore.getMainFont());
             buffer.textAlign(LEFT, CENTER);
-            folder.getLayout().setCompLayout(folder.getWindow().contentSize, folder.getChildren());
-            drawChildren(folder.getChildren(), 0, buffer.width);
+            folder.getLayout().setCompLayout(folder.getWindow().pos,folder.getWindow().contentSize, folder.getChildren());
+            drawChildren(folder, 0, buffer.width);
 
             buffer.endDraw();
         }
-        LOGGER.debug("Content Buffer Draw Duration {}", System.currentTimeMillis() - time);
+        LOGGER.debug("Content Buffer [{},{}] Draw Duration {}", buffer.width,buffer.height,System.currentTimeMillis() - time);
     }
 
     private synchronized void redrawIfNecessary(){

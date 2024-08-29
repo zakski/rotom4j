@@ -96,14 +96,11 @@ public class RWindowInt implements RWindow, RInputListener {
         folder.setWindow(this);
         this.title = title;
 
-        this.pos = pos;
-        this.size = size;
+        this.pos = new PVector(pos.x, pos.y);
+        this.size = new PVector(size.x, size.y);
         this.sizeUnconstrained = new PVector(size.x, size.y);
         this.contentSize = new PVector(size.x, size.y);
-
-        initWindowWidth(size.x);
-        initScrollbar();
-
+        initDimensions();
         contentBuffer = new RContentBuffer(this);
     }
 
@@ -135,31 +132,68 @@ public class RWindowInt implements RWindow, RInputListener {
     }
 
     /**
-     * Calculate the width of the Window
-     *
-     * @param width 0 if no expected width, otherwise a value
+     * Initialise the dimensions of the Window
      */
-    protected void initWindowWidth(float width) {
-        if (width == 0) {
-            if (RLayoutStore.shouldSuggestWindowWidth() && folder.suggestWindowWidthInCells() == RLayoutStore.getWindowWidthInCells()) {
-                size.x = folder.autosuggestWindowWidthForContents();
-            } else {
-                size.x = RLayoutStore.getCell() * folder.suggestWindowWidthInCells();
+    protected void initDimensions() {
+        if (folder.getChildren().isEmpty()) {
+            // We only have what's provided to go on as at this stage, as we would have no child components
+            if (size.x == 0 || size.y == 0) {
+                if (size.x == 0) {
+                    if (RLayoutStore.shouldSuggestWindowWidth() && folder.suggestWindowWidthInCells() == RLayoutStore.getWindowWidthInCells()) {
+                        size.x = folder.autosuggestWindowWidthForContents();
+                    } else {
+                        size.x = RLayoutStore.getCell() * folder.suggestWindowWidthInCells();
+                    }
+                    contentSize.x = size.x;
+                    sizeUnconstrained.x = size.x;
+                }
+                if (size.y == 0) {
+                    contentSize.y = RLayoutStore.getCell();
+                    sizeUnconstrained.y = contentSize.y;
+                    if (folder.shouldDrawTitle()) {
+                        size.y = contentSize.y + RLayoutStore.getCell();
+                    } else {
+                        size.y = contentSize.y;
+                    }
+                }
             }
         } else {
-            size.x = width;
+            if (size.x == 0 || size.y == 0) {
+                RLayoutBase layout = folder.getLayout();
+                PVector preferredSize = layout.calcPreferredSize(folder.getChildren());
+                if (size.y == 0) {
+                    contentSize.y = preferredSize.y;
+                    sizeUnconstrained.y = preferredSize.y;
+                    if (folder.shouldDrawTitle()) {
+                        size.y = preferredSize.y + RLayoutStore.getCell();
+                    } else {
+                        size.y = preferredSize.y;
+                    }
+                }
+                if (size.x == 0) {
+                    contentSize.x = preferredSize.x;
+                    sizeUnconstrained.x = preferredSize.x;
+                    if (vsb.isPresent()) {
+                        size.x = preferredSize.x + RLayoutStore.getCell();
+                    } else {
+                        size.x = preferredSize.x;
+                    }
+                }
+
+            }
         }
-        contentSize.x = size.x;
     }
 
     /**
      * Initialise Scrollbar for Vertical Layouts
      */
     protected void initScrollbar() {
-        RLayoutBase layout = folder.getLayout();
-        if (layout instanceof RLinearLayout){
-            if(((RLinearLayout) layout).getDirection() == RDirection.VERTICAL){
-                vsb = Optional.of(new RScrollbar(this,pos.x + contentSize.x, pos.y, RLayoutStore.getCell(), size.y, sizeUnconstrained.y, 16));
+        if (vsb.isEmpty()) {
+            RLayoutBase layout = folder.getLayout();
+            if (layout instanceof RLinearLayout) {
+                if (((RLinearLayout) layout).getDirection() == RDirection.VERTICAL) {
+                    vsb = Optional.of(new RScrollbar(this, pos.x + contentSize.x, pos.y, RLayoutStore.getCell(), size.y, sizeUnconstrained.y, 16));
+                }
             }
         }
     }
@@ -210,7 +244,7 @@ public class RWindowInt implements RWindow, RInputListener {
         if (folder.shouldDrawTitle()) {
             return isPointInRect(x, y,
                     pos.x, pos.y + RLayoutStore.getCell(),
-                    contentSize.x, size.y - RLayoutStore.getCell());
+                    contentSize.x, contentSize.y);
         } else {
             return isPointInsideWindow(x, y);
         }
@@ -253,7 +287,9 @@ public class RWindowInt implements RWindow, RInputListener {
         if (vsb.isEmpty() || !vsb.get().visible) {
             return false;
         }
-        return isPointInRect(x, y, pos.x + contentSize.x, pos.y + RLayoutStore.getCell(), RLayoutStore.getCell(), size.y - RLayoutStore.getCell());
+        return isPointInRect(x, y,
+                pos.x + contentSize.x, pos.y + ((folder.shouldDrawTitle())?RLayoutStore.getCell():0),
+                RLayoutStore.getCell(), contentSize.y);
     }
 
 
@@ -261,7 +297,7 @@ public class RWindowInt implements RWindow, RInputListener {
      * Check if the mouse is inside the scroll bar of the Window
      *
      * @param e mouse event
-     * @return true if the mouse is inside the scroll bar, false otherwise
+     * @return true if the mouse is inside the scroll bar, false otherwisec
      */
     protected boolean isMouseInsideScrollbar(RMouseEvent e) {
         return isVisible && folder.isVisibleParentAware() && isPointInsideScrollbar(e.getX(), e.getY());
@@ -292,7 +328,7 @@ public class RWindowInt implements RWindow, RInputListener {
         return isVisible && folder.isVisibleParentAware() && isPointInsideTitleBar(e.getX(), e.getY());
     }
 
-    protected synchronized boolean isResizeWidth(){
+    protected synchronized boolean isResizeWidth() {
         return isResizeWidth;
     }
 
@@ -349,7 +385,7 @@ public class RWindowInt implements RWindow, RInputListener {
     /**
      * Constrain the Windows width/height when the layout is horizontal
      *
-     * @param pg Processing Graphics Context
+     * @param pg             Processing Graphics Context
      * @param preferredWidth what it isa calculated to need
      */
     protected void constrainWidth(PGraphics pg, float preferredWidth) {
@@ -363,7 +399,7 @@ public class RWindowInt implements RWindow, RInputListener {
     /**
      * Constrain the Windows width/height when the layout is vertical
      *
-     * @param pg Processing Graphics Context
+     * @param pg              Processing Graphics Context
      * @param preferredHeight what it isa calculated to need
      */
     protected void constrainHeight(PGraphics pg, float preferredHeight) {
@@ -373,15 +409,17 @@ public class RWindowInt implements RWindow, RInputListener {
         size.y = preferredHeight;
         sizeUnconstrained.y = size.y;
         if (folder.shouldDrawTitle()) {
+            contentSize.y = sizeUnconstrained.y - RLayoutStore.getCell();
             if (pos.y + preferredHeight + RLayoutStore.getCell() > pg.height) {
                 size.y = pg.height - pos.y;
-                contentSize.y = sizeUnconstrained.y - RLayoutStore.getCell();
+                initScrollbar();
                 vsb.ifPresent(s -> s.setVisible(true));
             }
-        } else  {
+        } else {
+            contentSize.y = sizeUnconstrained.y;
             if (pos.y + preferredHeight > pg.height) {
                 size.y = pg.height - pos.y;
-                contentSize.y = sizeUnconstrained.y;
+                initScrollbar();
                 vsb.ifPresent(s -> s.setVisible(true));
             }
         }
@@ -398,12 +436,12 @@ public class RWindowInt implements RWindow, RInputListener {
 
         constrainPosition(pg);
         PVector preferredSize = folder.getLayout().calcPreferredSize(folder.getChildren());
-        constrainHeight(pg, preferredSize.y);
+        constrainHeight(pg, preferredSize.y + ((folder.shouldDrawTitle() ? RLayoutStore.getCell() : 0)));
         constrainWidth(pg, preferredSize.x);
         if (oldWindowSizeX != size.x || oldWindowSizeY != size.y ||
                 oldWindowSizeXForContents != contentSize.x || oldWindowSizeYForContents != contentSize.y ||
-                oldWindowSizeXUnconstrained != sizeUnconstrained.x || oldWindowSizeYUnconstrained != sizeUnconstrained.y){
-                contentBuffer.resetBuffer();
+                oldWindowSizeXUnconstrained != sizeUnconstrained.x || oldWindowSizeYUnconstrained != sizeUnconstrained.y) {
+            reinitialiseBuffer();
         }
     }
 
@@ -421,7 +459,7 @@ public class RWindowInt implements RWindow, RInputListener {
         }
         vsb.ifPresent(RScrollbar::invalidateBuffer);
         e.consume();
-        contentBuffer.resetBuffer();
+        reinitialiseBuffer();
         LOGGER.debug("oldX: " + e.getPrevX() + ", new:X " + e.getX());
         LOGGER.debug("old: " + oldWindowSizeX + ", new: " + size.x);
     }
@@ -601,10 +639,10 @@ public class RWindowInt implements RWindow, RInputListener {
                 s.draw(
                         pg,
                         pos.x,
-                        pos.y + RLayoutStore.getCell(),
+                        pos.y + ((folder.shouldDrawTitle())?RLayoutStore.getCell():0),
                         contentSize.x,
-                        size.y - RLayoutStore.getCell(),
-                        sizeUnconstrained.y - RLayoutStore.getCell()
+                        contentSize.y,
+                        sizeUnconstrained.y - ((folder.shouldDrawTitle())?RLayoutStore.getCell():0)
                 )
         );
         if (!folder.getChildren().isEmpty()) {
@@ -660,11 +698,11 @@ public class RWindowInt implements RWindow, RInputListener {
         pg.rect(x1, y1, endRectSize, endRectSize);
     }
 
-    public int getContentWidth() {
+    public int getContentWidth() { // TODO Use Right Values
         switch (folder.getLayout()) {
             case RLinearLayout linear -> {
                 if (linear.getDirection() == RDirection.VERTICAL) {
-                    if (vsb.isPresent()){
+                    if (vsb.isPresent()) {
                         return (int) (size.x - RLayoutStore.getCell());
                     } else {
                         return (int) size.x;
@@ -677,11 +715,11 @@ public class RWindowInt implements RWindow, RInputListener {
         }
     }
 
-    public float getContentHeight() {
+    public float getContentHeight() { // TODO Use Right Values
         switch (folder.getLayout()) {
             case RLinearLayout linear -> {
                 if (linear.getDirection() == RDirection.VERTICAL) {
-                    if (folder.shouldDrawTitle()){
+                    if (folder.shouldDrawTitle()) {
                         return (int) (size.y - RLayoutStore.getCell());
                     } else {
                         return (int) size.y;
@@ -774,27 +812,40 @@ public class RWindowInt implements RWindow, RInputListener {
     public void setCoordinates(float x, float y) {
         pos.x = x;
         pos.y = y;
-        folder.getLayout().setCompLayout(size,folder.getChildren());
     }
 
     public void setBounds(float x, float y, float sizeX, float sizeY) {
         pos.x = x;
         pos.y = y;
-        size.x = sizeX;
-        size.y = sizeY;
-        contentBuffer.resetBuffer();
-        folder.getLayout().setCompLayout(size,folder.getChildren());
+
+         contentSize.y = sizeY;
+        sizeUnconstrained.y = contentSize.y;
+        if (folder.shouldDrawTitle()) {
+            size.y = contentSize.y + RLayoutStore.getCell();
+        } else {
+            size.y = contentSize.y;
+        }
+        contentSize.x = sizeX;
+        sizeUnconstrained.x = sizeX;
+        if (vsb.isPresent()) {
+            size.x = sizeX + RLayoutStore.getCell();
+        } else {
+            size.x = sizeX;
+        }
+        reinitialiseBuffer();
+        folder.getLayout().setCompLayout(pos, contentSize, folder.getChildren());
     }
 
     public void setDimensions(float x, float y) {
-        size.x = x;
-        size.y = y;
-        contentBuffer.resetBuffer();
-        folder.getLayout().setCompLayout(size,folder.getChildren());
+        setBounds(pos.x, pos.y, x, y);
     }
 
     public void setWidth(Float nullableSizeX) {
         size.x = nullableSizeX;
+    }
+
+    public void redrawBuffer() { // TODO LazyGui
+        contentBuffer.invalidateBuffer();
     }
 
     public void reinitialiseBuffer() { // TODO LazyGui
@@ -812,7 +863,7 @@ public class RWindowInt implements RWindow, RInputListener {
             isBeingDragged = true;
             setFocusOnThis();
         }
-        contentBuffer.resetBuffer();
+        reinitialiseBuffer();
     }
 
     public void close() { // TODO LazyGui
@@ -820,8 +871,12 @@ public class RWindowInt implements RWindow, RInputListener {
         isBeingDragged = false;
     }
 
-    public synchronized void resizeForContents(boolean shouldResize){
-        isResizeWidth=shouldResize;
+    public synchronized void resizeForContents(boolean shouldResize) {
+        isResizeWidth = shouldResize;
+    }
+
+    public void resizeForContents(){
+        resizeForContents(true);
     }
 
     @Override
@@ -899,7 +954,8 @@ public class RWindowInt implements RWindow, RInputListener {
         } else if (isBeingResized && RSnapToGrid.snapToGridEnabled) {
             size.x = RSnapToGrid.trySnapToGrid(size.x, 0).x;
             contentSize.x = size.x;
-            contentBuffer.resetBuffer();
+            sizeUnconstrained.x = size.x;
+            reinitialiseBuffer();
             e.consume();
         }
         isCloseInProgress = false;
@@ -925,20 +981,20 @@ public class RWindowInt implements RWindow, RInputListener {
     @Override
     public void mouseMoved(RMouseEvent e) {
         if (isMouseInsideTitlebar(e)) {
-            if (folder.getChildren().stream().anyMatch(RComponent::isMouseOver)){
+            if (folder.getChildren().stream().anyMatch(RComponent::isMouseOver)) {
                 contentBuffer.invalidateBuffer();
             }
             e.consume();
-            folder.setIsMouseOverThisNodeOnly();
+            folder.setIsMouseOverThisNodeOnly(gui.getComponentTree());
         } else if (isMouseInsideScrollbar(e)) {
-            if (folder.getChildren().stream().anyMatch(RComponent::isMouseOver)){
+            if (folder.getChildren().stream().anyMatch(RComponent::isMouseOver)) {
                 contentBuffer.invalidateBuffer();
             }
             e.consume();
             vsb.ifPresent(s -> s.mouseMoved(e));
-            folder.setIsMouseOverThisNodeOnly();
+            folder.setIsMouseOverThisNodeOnly(gui.getComponentTree());
         } else if (isMouseInsideContent(e)) {
-            LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), pos.x, pos.y, size.x, size.y);
+            //       LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), pos.x, pos.y, size.x, size.y);
             float yDiff = sizeUnconstrained.y - size.y;
             RComponent node = findComponentAt(e.getX(), e.getY() + yDiff * vsb.map(s -> s.value).orElse(0.0f));
             if (node != null && !node.isMouseOver()) {
@@ -946,14 +1002,14 @@ public class RWindowInt implements RWindow, RInputListener {
                 contentBuffer.invalidateBuffer();
             }
             if (node != null && node.isParentWindowVisible()) {
-                node.setIsMouseOverThisNodeOnly();
+                node.setIsMouseOverThisNodeOnly(gui.getComponentTree());
                 e.consume();
             }
         } else {
-            if (folder.getChildren().stream().anyMatch(RComponent::isMouseOver)){
+            if (folder.getChildren().stream().anyMatch(RComponent::isMouseOver)) {
                 contentBuffer.invalidateBuffer();
             }
-            gui.getComponentTree().setAllMouseOverToFalse(this.folder);
+            gui.setAllMouseOverToFalse(this.folder);
         }
     }
 

@@ -10,6 +10,9 @@ import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.mouse.RActivateByType;
 import com.szadowsz.gui.input.mouse.RMouseAction;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.window.internal.RWindowTemp;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 
 import java.util.List;
@@ -19,6 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Bog-standard Button Component
  */
 public class RButton extends RComponent {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RButton.class);
 
     protected boolean value = false; // TODO LazyGui
 
@@ -29,11 +33,13 @@ public class RButton extends RComponent {
 
     public RButton(RotomGui gui, String path, RFolder folder) {
         super(gui, path, folder);
+        size.x = suggestWidth();
         isDraggable = false;
     }
 
     protected void drawButtonRight(PGraphics pg) { // TODO LazyGui
         pg.noFill();
+        pg.pushMatrix();
         pg.translate(size.x - RLayoutStore.getCell() * 0.5f, RLayoutStore.getCell() * 0.5f);
         fillBackground(pg);
         pg.stroke(RThemeStore.getRGBA(RThemeColorType.NORMAL_FOREGROUND));
@@ -43,6 +49,7 @@ public class RButton extends RComponent {
         pg.stroke(RThemeStore.getRGBA(isDragged ? RThemeColorType.FOCUS_FOREGROUND : RThemeColorType.NORMAL_FOREGROUND));
         if (isMouseOver) {
             if (isDragged) {
+                LOGGER.debug("Doing Button Focus Fill {} Component",  getName());
                 pg.fill(RThemeStore.getRGBA(RThemeColorType.FOCUS_FOREGROUND));
             } else {
                 pg.stroke(RThemeStore.getRGBA(RThemeColorType.NORMAL_FOREGROUND));
@@ -50,6 +57,7 @@ public class RButton extends RComponent {
         }
         float innerButtonSize = RLayoutStore.getCell() * 0.35f;
         pg.rect(0, 0, innerButtonSize, innerButtonSize);
+        pg.popMatrix();
     }
 
     @Override

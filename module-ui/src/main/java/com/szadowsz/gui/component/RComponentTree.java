@@ -6,13 +6,15 @@ import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.component.folder.RToolbar;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.util.*;
 
-import static processing.core.PApplet.println;
-
 public class RComponentTree {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RComponentTree.class);
+
     private final RotomGui gui;
 
     private final Map<String, RComponent> nodesByPath = new HashMap<>();
@@ -80,7 +82,7 @@ public class RComponentTree {
             } else if (n instanceof RFolder) {
                 parent = (RFolder) n;
             } else {
-                println("Expected to find or to be able to create a dropdown at path \"" + runningPath + "\" but found an existing " + n.className + ". You cannot put any control elements there.");
+                LOGGER.warn("Expected to find or to be able to create a dropdown at path \"{}\" but found an existing {}. You cannot put any control elements there.", runningPath, n.className);
             }
             if (i < split.length - 1) {
                 runningPath += "/" + split[i + 1];
@@ -104,7 +106,7 @@ public class RComponentTree {
             } else if (n instanceof RFolder) {
                 parent = (RFolder) n;
             } else {
-                println("Expected to find or to be able to create a folder at path \"" + runningPath + "\" but found an existing " + n.className + ". You cannot put any control elements there.");
+                LOGGER.warn("Expected to find or to be able to create a folder at path \"{}\" but found an existing {}. You cannot put any control elements there.", runningPath, n.className);
             }
             if (i < split.length - 1) {
                 runningPath += "/" + split[i + 1];
@@ -128,7 +130,7 @@ public class RComponentTree {
             } else if (n instanceof RFolder) {
                 parent = (RFolder) n;
             } else {
-                println("Expected to find or to be able to create a toolbar at path \"" + runningPath + "\" but found an existing " + n.className + ". You cannot put any control elements there.");
+                LOGGER.warn("Expected to find or to be able to create a toolbar at path \"{}\" but found an existing {}. You cannot put any control elements there.", runningPath, n.className);
             }
             if (i < split.length - 1) {
                 runningPath += "/" + split[i + 1];
@@ -136,7 +138,7 @@ public class RComponentTree {
         }
     }
 
-    public void insertNodeAtItsPath(RComponent node) {
+    public void insertAtPath(RComponent node) {
         if (find(node.path) != null) {
             return;
         }
@@ -145,6 +147,7 @@ public class RComponentTree {
         RFolder folder = (RFolder) find(folderPath);
         assert folder != null;
         folder.insertChild(node);
+        root.resizeForContents();
     }
 
     public List<RComponent> getAllNodesAsList() {
@@ -154,8 +157,8 @@ public class RComponentTree {
         while (!queue.isEmpty()) {
             RComponent node = queue.poll();
             result.add(node);
-            if (node instanceof RFolder folder) {
-                for (RComponent child : folder.getChildren()) {
+            if (node instanceof RGroup group) {
+                for (RComponent child : group.getChildren()) {
                     queue.offer(child);
                 }
             }
@@ -174,8 +177,8 @@ public class RComponentTree {
             } catch (ClassCastException t) {
 
             }
-            if (node instanceof RFolder folder) {
-                for (RComponent child : folder.getChildren()) {
+            if (node instanceof RGroup group) {
+                for (RComponent child : group.getChildren()) {
                     queue.offer(child);
                 }
             }
@@ -195,12 +198,12 @@ public class RComponentTree {
         }
     }
 
-    public void setAllMouseOverToFalse(RFolder parentNode) {
+    public void setAllMouseOverToFalse(RGroup parentNode) {
         List<RComponent> childNodes = parentNode.getChildren();
         for (RComponent node : childNodes) {
             node.setMouseOver(false);
-            if (node instanceof RFolder){
-                setAllMouseOverToFalse((RFolder) node);
+            if (node instanceof RGroup){
+                setAllMouseOverToFalse((RGroup) node);
             }
         }
     }
@@ -233,7 +236,7 @@ public class RComponentTree {
         try {
             expectedType.cast(foundNode);
         } catch (Exception ex) {
-            println("Path conflict warning: You tried to register a new " + expectedTypeName + " at \"" + path + "\"" +
+            LOGGER.warn("Path conflict warning: You tried to register a new " + expectedTypeName + " at \"" + path + "\"" +
                     " but that path is already in use by a " + foundNode.className + "." +
                     "\n\tThe original " + foundNode.className + " will still work as expected," +
                     " but the new " + expectedTypeName + " will not be shown and it will always return a default value." +

@@ -41,7 +41,7 @@ public class RDropdownMenu extends RFolder {
     }
 
     @Override
-    public boolean shouldDrawTitle() {
+    public final boolean shouldDrawTitle() {
         return false;
     }
 }

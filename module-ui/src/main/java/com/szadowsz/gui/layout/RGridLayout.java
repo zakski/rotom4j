@@ -38,7 +38,7 @@ public class RGridLayout extends RLayoutBase {
     }
 
     @Override
-    public void setCompLayout(PVector area, List<RComponent> components) {
+    public void setCompLayout(PVector start, PVector area, List<RComponent> components) {
 
     }
 

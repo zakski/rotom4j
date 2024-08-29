@@ -194,14 +194,14 @@ public class RLinearLayout extends RLayoutBase {
 //    }
 
     @Override
-    public void setCompLayout(PVector area, List<RComponent> components) { // TODO Lanterna
+    public void setCompLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
         // Filter out invisible components
         components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
 
         if(direction == RDirection.VERTICAL) { // TODO Lanterna
-            doFlexibleVerticalLayout(area, components);
+            doFlexibleVerticalLayout(start,area, components);
         } else {
-            doFlexibleHorizontalLayout(area, components);
+            doFlexibleHorizontalLayout(start,area, components);
         }
         this.changed = false;
     }
@@ -219,7 +219,7 @@ public class RLinearLayout extends RLayoutBase {
         this.changed = false;
     }
 
-    private void doFlexibleVerticalLayout(PVector area, List<RComponent> components) { // TODO Lanterna
+    private void doFlexibleVerticalLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
         float availableVerticalSpace = area.y;
         float availableHorizontalSpace = area.x;
         final Map<RComponent, PVector> fittingMap = new IdentityHashMap<>();
@@ -326,7 +326,7 @@ public class RLinearLayout extends RLayoutBase {
                     position.x = 0;
                     break;
             }
-            component.updateCoordinates(position.x,position.y,decidedSize.x,decidedSize.y);
+            component.updateCoordinates(start, position, decidedSize);
             topPosition += decidedSize.y + spacing;
         }
     }
@@ -436,7 +436,7 @@ public class RLinearLayout extends RLayoutBase {
         }
     }
 
-    private void doFlexibleHorizontalLayout(PVector area, List<RComponent> components) { // TODO Lanterna
+    private void doFlexibleHorizontalLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
         float availableVerticalSpace = area.y;
         float availableHorizontalSpace = area.x;
         final Map<RComponent, PVector> fittingMap = new IdentityHashMap<>();
@@ -543,7 +543,7 @@ public class RLinearLayout extends RLayoutBase {
                     position.y = 0;
                     break;
             }
-            component.updateCoordinates(position.x,position.y,decidedSize.x,decidedSize.y);
+            component.updateCoordinates(start, position, decidedSize);
             leftPosition += decidedSize.x + spacing;
         }
     }

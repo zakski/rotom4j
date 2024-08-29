@@ -403,13 +403,13 @@ public class RotomGui {
         if(tree.isPathTakenByUnexpectedType(fullPath, RButton.class)){
             return null;
         }
-        RButton node = (RButton) tree.find(fullPath);
-        if (node == null) {
+        RButton component = (RButton) tree.find(fullPath);
+        if (component == null) {
             RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
-            node = new RButton(this,fullPath, folder);
-            tree.insertNodeAtItsPath(node);
+            component = new RButton(this,fullPath, folder);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     /**
@@ -425,13 +425,13 @@ public class RotomGui {
         if(tree.isPathTakenByUnexpectedType(fullPath, RCheckbox.class)){
             return null;
         }
-        RCheckbox node = (RCheckbox) tree.find(fullPath);
-        if (node == null) {
+        RCheckbox component = (RCheckbox) tree.find(fullPath);
+        if (component == null) {
             RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
-            node = new RCheckbox(this,fullPath, folder, startingValue);
-            tree.insertNodeAtItsPath(node);
+            component = new RCheckbox(this,fullPath, folder, startingValue);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     /**
@@ -447,13 +447,13 @@ public class RotomGui {
         if(tree.isPathTakenByUnexpectedType(fullPath, RToggle.class)){
             return null;
         }
-        RToggle node = (RToggle) tree.find(fullPath);
-        if (node == null) {
+        RToggle component = (RToggle) tree.find(fullPath);
+        if (component == null) {
             RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
-            node = new RToggle(this,fullPath, folder, startingValue);
-            tree.insertNodeAtItsPath(node);
+            component = new RToggle(this,fullPath, folder, startingValue);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     /**
@@ -519,10 +519,12 @@ public class RotomGui {
     }
 
     public void setAllMouseOverToFalse(RFolder folder) { // TODO LazyGui
+        LOGGER.debug("Set Mouse Over to False For {} Component",  folder.getName());
         tree.setAllMouseOverToFalse(folder);
     }
 
     public void setAllMouseOverToFalse() { // TODO LazyGui
+        LOGGER.debug("Set Mouse Over to False For All Components");
         tree.setAllMouseOverToFalse();
     }
 

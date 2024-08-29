@@ -2,6 +2,10 @@ package com.szadowsz.gui.component.input.toggle;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.config.theme.RThemeColorType;
+import com.szadowsz.gui.config.theme.RThemeStore;
+import processing.core.PGraphics;
 
 /**
  *  Variant component for binary user input controls, that is also known as the Tick box.
@@ -20,6 +24,31 @@ public class RCheckbox extends RToggleBase {
      * @param startingValue
      */
     public RCheckbox(RotomGui gui, String path, RFolder parentFolder, boolean startingValue) {
-        super(gui, path, parentFolder);
+        super(gui, path, parentFolder, startingValue);
+    }
+
+    @Override
+    protected void drawToggleHandleRight(PGraphics pg, boolean value) {
+        float rectWidth = RLayoutStore.getCell() * 0.3f;
+        float rectHeight = RLayoutStore.getCell() * 0.25f;
+        pg.rectMode(CENTER);
+        pg.translate(size.x - RLayoutStore.getCell() * 0.5f, size.y * 0.5f);
+        if(isMouseOver){
+            pg.stroke(RThemeStore.getRGBA(RThemeColorType.FOCUS_FOREGROUND));
+        }else{
+            pg.stroke(RThemeStore.getRGBA(RThemeColorType.NORMAL_FOREGROUND));
+        }
+        float turnedOffHandleScale = 0.25f;
+        if(value){
+            pg.fill(RThemeStore.getRGBA(RThemeColorType.NORMAL_BACKGROUND));
+            pg.rect(-rectWidth*0.5f,0, rectWidth, rectHeight);
+            pg.fill(RThemeStore.getRGBA(RThemeColorType.FOCUS_FOREGROUND));
+            pg.rect(rectWidth*0.5f,0, rectWidth, rectHeight);
+        }else{
+            pg.fill(RThemeStore.getRGBA(RThemeColorType.NORMAL_BACKGROUND));
+            pg.rect(0,0, rectWidth*2, rectHeight);
+            pg.fill(RThemeStore.getRGBA(RThemeColorType.NORMAL_FOREGROUND));
+            pg.rect(-rectWidth*0.5f,0, rectWidth*turnedOffHandleScale, rectHeight*turnedOffHandleScale);
+        }
     }
 }

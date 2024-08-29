@@ -109,7 +109,7 @@ public class RBorderLayout extends RLayoutBase {
     }
 
     @Override
-    public void setCompLayout(PVector area, List<RComponent> components) {
+    public void setCompLayout(PVector start, PVector area, List<RComponent> components) {
         EnumMap<RLocation, RComponent> layout = makeCompLookupMap(components);
         float availableHorizontalSpace = area.x;
         float availableVerticalSpace = area.y;
@@ -122,7 +122,7 @@ public class RBorderLayout extends RLayoutBase {
         if(layout.containsKey(RLocation.TOP)) {
             RComponent topComponent = layout.get(RLocation.TOP);
             topComponentHeight = Math.min(topComponent.getPreferredSize().y, availableVerticalSpace);
-            topComponent.updateCoordinates(0,0,availableHorizontalSpace, topComponentHeight);
+            topComponent.updateCoordinates(start.x,start.y,0,0,availableHorizontalSpace, topComponentHeight);
             availableVerticalSpace -= topComponentHeight;
         }
 
@@ -130,7 +130,7 @@ public class RBorderLayout extends RLayoutBase {
         if(layout.containsKey(RLocation.BOTTOM)) {
             RComponent bottomComponent = layout.get(RLocation.BOTTOM);
             float bottomComponentHeight = Math.min(bottomComponent.getPreferredSize().y, availableVerticalSpace);
-            bottomComponent.updateCoordinates(0, area.y - bottomComponentHeight,availableHorizontalSpace, bottomComponentHeight);
+            bottomComponent.updateCoordinates(start.x,start.y,0, area.y - bottomComponentHeight,availableHorizontalSpace, bottomComponentHeight);
             availableVerticalSpace -= bottomComponentHeight;
         }
 
@@ -138,24 +138,24 @@ public class RBorderLayout extends RLayoutBase {
         if(layout.containsKey(RLocation.LEFT)) {
             RComponent leftComponent = layout.get(RLocation.LEFT);
             leftComponentWidth = Math.min(leftComponent.getPreferredSize().x, availableHorizontalSpace);
-            leftComponent.updateCoordinates(0, topComponentHeight,leftComponentWidth, availableVerticalSpace);
+            leftComponent.updateCoordinates(start.x,start.y,0, topComponentHeight,leftComponentWidth, availableVerticalSpace);
             availableHorizontalSpace -= leftComponentWidth;
         }
         if(layout.containsKey(RLocation.RIGHT)) {
             RComponent rightComponent = layout.get(RLocation.RIGHT);
             float rightComponentWidth = Math.min(rightComponent.getPreferredSize().x, availableHorizontalSpace);
-            rightComponent.updateCoordinates(area.x - rightComponentWidth, topComponentHeight, rightComponentWidth, availableVerticalSpace);
+            rightComponent.updateCoordinates(start.x,start.y,area.x - rightComponentWidth, topComponentHeight, rightComponentWidth, availableVerticalSpace);
             availableHorizontalSpace -= rightComponentWidth;
         }
         if(layout.containsKey(RLocation.CENTER)) {
             RComponent centerComponent = layout.get(RLocation.CENTER);
-            centerComponent.updateCoordinates(leftComponentWidth, topComponentHeight,availableHorizontalSpace, availableVerticalSpace);
+            centerComponent.updateCoordinates(start.x,start.y,leftComponentWidth, topComponentHeight,availableHorizontalSpace, availableVerticalSpace);
         }
         
         //Set the remaining components to 0x0
         for(RComponent component: components) {
             if(component.isVisible() && !layout.containsValue(component)) {
-                component.updateCoordinates(0,0,0,0);
+                component.updateCoordinates(start.x,start.y,0,0,0,0);
             }
         }
     }

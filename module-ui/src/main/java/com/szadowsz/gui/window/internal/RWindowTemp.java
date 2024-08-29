@@ -4,9 +4,9 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.config.RFontStore;
+import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLinearLayout;
-import com.szadowsz.ui.store.LayoutStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -21,22 +21,38 @@ import static com.szadowsz.ui.utils.Coordinates.isPointInRect;
 public class RWindowTemp extends RWindowInt {
     private static final Logger LOGGER = LoggerFactory.getLogger(RWindowTemp.class);
 
-    public RWindowTemp(PApplet app, RotomGui gui, RFolder folder, float posX, float posY, Float nullableSizeX) {
-        super(app,gui,folder,"", new PVector(posX, posY), new PVector(nullableSizeX,0));
+    public RWindowTemp(PApplet app, RotomGui gui, RFolder folder, PVector pos, PVector size) {
+        super(app,gui,folder,"", new PVector(pos.x, pos.y), new PVector(size.x,size.y));
+    }
+
+    /**
+     * Constructor for Internal Temporary Window
+     *
+     * @param app    PApplet to render window inside
+      * @param xPos   initial X display location in PApplet
+     * @param yPos   initial Y display location in PApplet
+     * @param width  initial window width
+     * @param height initial window height
+     */
+    public RWindowTemp(PApplet app, RotomGui gui, RFolder folder, float xPos, float yPos, float width, float height) {
+        this(app, gui, folder, new PVector(xPos, yPos), new PVector(width, height));
     }
 
     @Override
     protected void constrainHeight(PGraphics pg, float preferredHeight) {
-        if (!LayoutStore.getShouldKeepWindowsInBounds()) {
+        if (!RLayoutStore.shouldKeepWindowsInBounds()) {
             return;
         }
         size.y = preferredHeight;
+        contentSize.y = size.y;
+        sizeUnconstrained.y = size.y;
         if (pos.y + preferredHeight > pg.height) {
-            size.y = pg.height - pos.y;
-            contentSize.y = size.y;
+                size.y = pg.height - pos.y;
+                 vsb.ifPresent(s -> s.setVisible(true));
         }
     }
 
+    @Override
     protected RComponent findComponentAt(float x, float y) {
         for (RComponent node : folder.getChildren()) {
             if (!node.isVisible()) {
@@ -57,7 +73,7 @@ public class RWindowTemp extends RWindowInt {
      */
     @Override
     protected boolean isMouseInsideContent(RMouseEvent e) {
-        return isPointInsideWindow(e.getX(), e.getY()) && !isPointInsideResizeBorder(e.getX(), e.getY());
+        return isPointInsideWindow(e.getX(), e.getY());
     }
 
     @Override
@@ -113,12 +129,23 @@ public class RWindowTemp extends RWindowInt {
     @Override
     public void drawWindow(PGraphics pg) {
         pg.textFont(RFontStore.getMainFont());
+        setScrollbarHighlighted(isVisible && (isPointInsideScrollbar(app.mouseX, app.mouseY) && !isBeingDragged) || folder.isMouseOver());
         if (!isVisible || !folder.isVisibleParentAware()) {
             return;
         }
         constrainBounds(pg);
         pg.pushMatrix();
         drawBackgroundWithWindowBorder(pg, true);
+        vsb.ifPresent(s ->
+                s.draw(
+                        pg,
+                        pos.x,
+                        pos.y + ((folder.shouldDrawTitle())?RLayoutStore.getCell():0),
+                        contentSize.x,
+                        contentSize.y,
+                        sizeUnconstrained.y - ((folder.shouldDrawTitle())?RLayoutStore.getCell():0)
+                )
+        );
         if (!folder.getChildren().isEmpty()) {
             drawContent(pg);
         }
@@ -129,15 +156,23 @@ public class RWindowTemp extends RWindowInt {
 
     @Override
     public void mouseMoved(RMouseEvent e) {
-        if (isMouseInsideContent(e)) {
+        if (isMouseInsideScrollbar(e)) {
+            if (folder.getChildren().stream().anyMatch(RComponent::isMouseOver)) {
+                contentBuffer.invalidateBuffer();
+            }
+            e.consume();
+            vsb.ifPresent(s -> s.mouseMoved(e));
+            folder.setIsMouseOverThisNodeOnly(gui.getComponentTree());
+        } else if (isMouseInsideContent(e)) {
             LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), pos.x, pos.y, size.x, size.y);
             RComponent node = findComponentAt(e.getX(), e.getY());
             if (node != null && !node.isMouseOver()) {
-                LOGGER.debug("{} Inside NX {} NY {} Width {} Height {}", node.getName(), node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
+                LOGGER.debug("Inside {} Component MX {} MY {} NX {} NY {} Width {} Height {}",  node.getName(), e.getX(), e.getY(), node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
                 contentBuffer.invalidateBuffer();
             }
-            if (node != null && node.isParentWindowOpen()) {
-                node.setIsMouseOverThisNodeOnly();
+            if (node != null && node.isParentWindowVisible()) {
+                LOGGER.debug("Consume Mouse Move for {} Component",  node.getName());
+                node.setIsMouseOverThisNodeOnly(gui.getComponentTree());
                 e.consume();
             }
         } else {
@@ -159,7 +194,7 @@ public class RWindowTemp extends RWindowInt {
     public float getContentHeight(){
         switch (folder.getLayout()) {
             case RLinearLayout linear -> {
-                return (int) size.y;
+                return (int) contentSize.y;
             }
             default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
         }

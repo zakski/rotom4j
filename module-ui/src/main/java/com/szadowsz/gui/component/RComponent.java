@@ -1,6 +1,7 @@
 package com.szadowsz.gui.component;
 
 import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RFontStore;
@@ -12,6 +13,9 @@ import com.szadowsz.gui.input.RInputListener;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutConfig;
+import com.szadowsz.gui.window.internal.RWindowInt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PVector;
@@ -22,6 +26,7 @@ import processing.core.PVector;
  * Every GUI element extends from this class in some way.
  */
 public abstract class RComponent implements PConstants, RInputListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RComponent.class);
 
     // Reference to the RotomGui instance that owns this component
     protected final RotomGui gui;
@@ -36,11 +41,13 @@ public abstract class RComponent implements PConstants, RInputListener {
 
     // Top left position of component in pixels (absolute)
     protected final PVector pos = new PVector(); // TODO LazyGui & G4P
+    // Top left position of component in pixels (relative)
+    protected final PVector relPos = new PVector();
     // Width and height of component in pixels
     protected final PVector size = new PVector(); // TODO LazyGui & G4P
+
     // TODO LazyGui
     protected float heightInCells = 1;
-// protected int col; TODO push this sort of config to layout
 
     protected int localTheme = RThemeStore.getGlobalSchemeNum(); // TODO G4P
     protected RTheme palette = null;
@@ -78,7 +85,7 @@ public abstract class RComponent implements PConstants, RInputListener {
         this.name = extractNameFromPath(path);
 
         this.palette = RThemeStore.getTheme(localTheme);
-        size.y = heightInCells*RLayoutStore.getCell();
+         size.y = heightInCells*RLayoutStore.getCell();
     }
 
     private String extractNameFromPath(String path) {
@@ -129,6 +136,7 @@ public abstract class RComponent implements PConstants, RInputListener {
      */
     protected void fillBackground(PGraphics pg) { // TODO LazyGui
         if(isMouseOver){
+            LOGGER.debug("Doing Background Focus Fill {} Component",  getName());
             pg.fill(RThemeStore.getRGBA(RThemeColorType.FOCUS_BACKGROUND));
         } else {
             pg.fill(RThemeStore.getRGBA(RThemeColorType.NORMAL_BACKGROUND));
@@ -142,6 +150,7 @@ public abstract class RComponent implements PConstants, RInputListener {
      */
     protected void fillForeground(PGraphics pg) { // TODO LazyGui
         if(isMouseOver){
+            LOGGER.debug("Doing Foreground Focus Fill {} Component",  getName());
             pg.fill(RThemeStore.getRGBA(RThemeColorType.FOCUS_FOREGROUND));
         } else {
             pg.fill(RThemeStore.getRGBA(RThemeColorType.NORMAL_FOREGROUND));
@@ -339,11 +348,24 @@ public abstract class RComponent implements PConstants, RInputListener {
      * @param w absolute screen width
      * @param h absolute screen height
      */
-    public void updateCoordinates(float x, float y, float w, float h) { // TODO LazyGui
-        pos.x = x;
-        pos.y = y;
+    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) { // TODO LazyGui
+        pos.x = bX + rX;
+        pos.y = bY + rY;
+        relPos.x = rX;
+        relPos.y = rY;
         size.x = w;
         size.y = h;
+    }
+
+    /**
+     * The components must know its absolute position and size, so it can respond to user input events
+     *
+     * @param basePos absolute base position in window
+     * @param relPos relative position from base
+     * @param size allowed width and height
+     */
+    public void updateCoordinates(PVector basePos, PVector relPos, PVector dim) { // TODO LazyGui
+        updateCoordinates(basePos.x, basePos.y, relPos.x, relPos.y, dim.x,dim.y);
     }
 
     /**
@@ -422,12 +444,24 @@ public abstract class RComponent implements PConstants, RInputListener {
         return pos.x;
     }
 
+    public float getRelPosX() {
+        return relPos.x;
+    }
+
     public float getPosY() {
         return pos.y;
     }
 
+    public float getRelPosY() {
+        return relPos.y;
+    }
+
     public PVector getPosition() {
         return new PVector(pos.x,pos.y);
+    }
+
+    public PVector getRelPosition() {
+        return new PVector(relPos.x,relPos.y);
     }
 
     public PVector getPreferredSize(){
@@ -485,13 +519,22 @@ public abstract class RComponent implements PConstants, RInputListener {
     public boolean isVisibleParentAware() { // TODO LazyGui
         boolean visible = isVisible();
         if (parent != null) {
-            return visible && parent.isVisible();
+            return visible && parent.isVisibleParentAware();
         }
         return visible;
     }
 
     public void setMouseOver(boolean mouseOver) {
-        isMouseOver = mouseOver;
+        if (isMouseOver != mouseOver) {
+            isMouseOver = mouseOver;
+            RFolder folder = getParentFolder();
+            if (folder != null) {
+                RWindowInt window = folder.getWindow();
+                if (window != null) {
+                    window.redrawBuffer();
+                }
+            }
+        }
     }
 
     /**
@@ -519,9 +562,9 @@ public abstract class RComponent implements PConstants, RInputListener {
         return ((RFolder) parent).isWindowVisible();
     }
 
-    public void setIsMouseOverThisNodeOnly() { // TODO LazyGui
+    public void setIsMouseOverThisNodeOnly(RComponentTree tree) { // TODO LazyGui
         isMouseOver = true;
-//        NodeTree.setAllOtherNodesMouseOverToFalse(this);
+        tree.setAllOtherNodesMouseOverToFalse(this);
     }
 
     public void setLayoutConfig(RLayoutConfig config) {
