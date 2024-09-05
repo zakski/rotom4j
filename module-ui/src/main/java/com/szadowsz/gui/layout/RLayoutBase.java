@@ -1,6 +1,7 @@
 package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.window.internal.RWindowInt;
 import processing.core.PVector;
 
@@ -16,9 +17,12 @@ public abstract class RLayoutBase {
      *
      * @return width and height in a PVector
      */
-    public abstract PVector calcPreferredSize(List<RComponent> components);
+    public abstract PVector calcPreferredSize(String title, List<RComponent> components);
 
-    public abstract RLayoutConfig getLayoutConfig();
+    public abstract RGroup getGroup(); // TODO Me
+
+
+    public abstract RLayoutConfig getLayoutConfig(); // TODO Lanterna
 
     /**
      * Given a size constraint, update the location and size of each component in the component list by laying them out
@@ -41,5 +45,7 @@ public abstract class RLayoutBase {
      * @param components List of components to lay out
      */
     public abstract void setWinLayout(PVector area, List<RWindowInt> windows); // TODO Lanterna
+
+    public abstract void setGroup(RGroup group); // TODO Me
 
 }

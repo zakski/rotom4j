@@ -42,7 +42,7 @@ public class RRadioGroup extends RGroup{
     }
 
     @Override
-    public RLayoutConfig getLayoutConfig() {
+    public RLayoutConfig getCompLayoutConfig() {
         return null;
     }
 

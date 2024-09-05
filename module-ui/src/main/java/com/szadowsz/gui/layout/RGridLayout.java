@@ -3,6 +3,7 @@ package com.szadowsz.gui.layout;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.window.internal.RWindowInt;
 import processing.core.PVector;
 
@@ -28,7 +29,12 @@ public class RGridLayout extends RLayoutBase {
     }
 
     @Override
-    public PVector calcPreferredSize(List<RComponent> components) {
+    public PVector calcPreferredSize(String title, List<RComponent> components) {
+        return null;
+    }
+
+    @Override
+    public RGroup getGroup() {
         return null;
     }
 
@@ -44,6 +50,11 @@ public class RGridLayout extends RLayoutBase {
 
     @Override
     public void setWinLayout(PVector area, List<RWindowInt> windows) {
+
+    }
+
+    @Override
+    public void setGroup(RGroup group) {
 
     }
 }

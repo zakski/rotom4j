@@ -19,7 +19,11 @@
 package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.group.RGroup;
+import com.szadowsz.gui.window.internal.RSizeMode;
 import com.szadowsz.gui.window.internal.RWindowInt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PVector;
 
 import java.util.*;
@@ -31,6 +35,7 @@ import java.util.*;
  * @author martin
  */
 public class RBorderLayout extends RLayoutBase {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RBorderLayout.class);
 
     /**
      * This type is what you use as the layout data for components added to a panel using {@code BorderLayout} for its
@@ -77,8 +82,15 @@ public class RBorderLayout extends RLayoutBase {
             RLocation.LEFT,
             RLocation.RIGHT));
 
+    private RGroup group;
+
+    private int topSpacing = 0;
+    private int bottomSpacing = 0;
+    private int leftSpacing = 0;
+    private int rightSpacing = 0;
+
     @Override
-    public PVector calcPreferredSize(List<RComponent> components) {
+    public PVector calcPreferredSize(String title, List<RComponent> components) {
         EnumMap<RLocation, RComponent> layout = makeCompLookupMap(components);
         float preferredHeight =
                 (layout.containsKey(RLocation.TOP) ? layout.get(RLocation.TOP).getPreferredSize().y : 0)
@@ -100,6 +112,11 @@ public class RBorderLayout extends RLayoutBase {
                         layout.containsKey(RLocation.TOP) ? layout.get(RLocation.TOP).getPreferredSize().x : 0,
                         layout.containsKey(RLocation.BOTTOM) ? layout.get(RLocation.BOTTOM).getPreferredSize().x : 0));
         return new PVector(preferredWidth, preferredHeight);
+    }
+
+    @Override
+    public RGroup getGroup() {
+        return group;
     }
 
     @Override
@@ -137,19 +154,28 @@ public class RBorderLayout extends RLayoutBase {
         //Now divide the remaining space between LEFT, CENTER and RIGHT
         if(layout.containsKey(RLocation.LEFT)) {
             RComponent leftComponent = layout.get(RLocation.LEFT);
-            leftComponentWidth = Math.min(leftComponent.getPreferredSize().x, availableHorizontalSpace);
-            leftComponent.updateCoordinates(start.x,start.y,0, topComponentHeight,leftComponentWidth, availableVerticalSpace);
+            leftComponentWidth = Math.min(leftComponent.getPreferredSize().x, availableHorizontalSpace - leftSpacing);
+            leftComponent.updateCoordinates(
+                    start.x,start.y,
+                    0, topComponentHeight+topSpacing,
+                    leftComponentWidth, availableVerticalSpace-topSpacing-bottomSpacing);
             availableHorizontalSpace -= leftComponentWidth;
         }
         if(layout.containsKey(RLocation.RIGHT)) {
             RComponent rightComponent = layout.get(RLocation.RIGHT);
-            float rightComponentWidth = Math.min(rightComponent.getPreferredSize().x, availableHorizontalSpace);
-            rightComponent.updateCoordinates(start.x,start.y,area.x - rightComponentWidth, topComponentHeight, rightComponentWidth, availableVerticalSpace);
+            float rightComponentWidth = Math.min(rightComponent.getPreferredSize().x, availableHorizontalSpace - rightSpacing);
+            rightComponent.updateCoordinates(
+                    start.x,start.y,
+                    area.x - rightComponentWidth, topComponentHeight + topSpacing,
+                    rightComponentWidth, availableVerticalSpace - topSpacing-bottomSpacing);
             availableHorizontalSpace -= rightComponentWidth;
         }
         if(layout.containsKey(RLocation.CENTER)) {
             RComponent centerComponent = layout.get(RLocation.CENTER);
-            centerComponent.updateCoordinates(start.x,start.y,leftComponentWidth, topComponentHeight,availableHorizontalSpace, availableVerticalSpace);
+            centerComponent.updateCoordinates(
+                    start.x,start.y,
+                    leftComponentWidth + leftSpacing, topComponentHeight + topSpacing,
+                    availableHorizontalSpace - leftSpacing-rightSpacing, availableVerticalSpace - topSpacing-bottomSpacing);
         }
         
         //Set the remaining components to 0x0
@@ -162,6 +188,7 @@ public class RBorderLayout extends RLayoutBase {
 
     @Override
     public void setWinLayout(PVector area, List<RWindowInt> windows) {
+        LOGGER.debug("Setting Border layout For Windows");
         EnumMap<RLocation, RWindowInt> layout = makeWinLookupMap(windows);
         float availableHorizontalSpace = area.x;
         float availableVerticalSpace = area.y;
@@ -172,44 +199,54 @@ public class RBorderLayout extends RLayoutBase {
 
         //First allocate the top
         if(layout.containsKey(RLocation.TOP)) {
+            LOGGER.debug("Allocating Space for Top of Win Border layout");
             RWindowInt topWindow = layout.get(RLocation.TOP);
             topWindowHeight = Math.min(topWindow.getSize().y, availableVerticalSpace);
-            topWindow.setBounds(0,0,availableHorizontalSpace, topWindowHeight);
+            topWindow.setBounds(0,0,availableHorizontalSpace, topWindowHeight, RSizeMode.LAYOUT);
             availableVerticalSpace -= topWindowHeight;
         }
 
         //Next allocate the bottom
         if(layout.containsKey(RLocation.BOTTOM)) {
+            LOGGER.debug("Allocating Space for Bottom of Win Border layout");
             RWindowInt bottomWindow = layout.get(RLocation.BOTTOM);
             float bottomWindowHeight = Math.min(bottomWindow.getSize().y, availableVerticalSpace);
-            bottomWindow.setBounds(0, area.y - bottomWindowHeight,availableHorizontalSpace, bottomWindowHeight);
+            bottomWindow.setBounds(0, area.y - bottomWindowHeight,availableHorizontalSpace, bottomWindowHeight, RSizeMode.LAYOUT);
             availableVerticalSpace -= bottomWindowHeight;
         }
 
         //Now divide the remaining space between LEFT, CENTER and RIGHT
         if(layout.containsKey(RLocation.LEFT)) {
+            LOGGER.debug("Allocating Space for Left of Win Border layout");
             RWindowInt leftWindow = layout.get(RLocation.LEFT);
-            leftWindowWidth = Math.min(leftWindow.getSize().x, availableHorizontalSpace);
-            leftWindow.setBounds(0, topWindowHeight,leftWindowWidth, availableVerticalSpace);
+            leftWindowWidth = Math.min(leftWindow.getSize().x, availableHorizontalSpace - leftSpacing);
+            leftWindow.setBounds(0, topWindowHeight +topSpacing,leftWindowWidth, availableVerticalSpace -topSpacing-bottomSpacing, RSizeMode.LAYOUT);
             availableHorizontalSpace -= leftWindowWidth;
         }
         if(layout.containsKey(RLocation.RIGHT)) {
+            LOGGER.debug("Allocating Space for Right of Win Border layout");
             RWindowInt rightWindow = layout.get(RLocation.RIGHT);
-            float rightWindowWidth = Math.min(rightWindow.getSize().x, availableHorizontalSpace);
-            rightWindow.setBounds(area.x - rightWindowWidth, topWindowHeight, rightWindowWidth, availableVerticalSpace);
+            float rightWindowWidth = Math.min(rightWindow.getSize().x, availableHorizontalSpace - rightSpacing);
+            rightWindow.setBounds(area.x - rightWindowWidth, topWindowHeight+topSpacing, rightWindowWidth, availableVerticalSpace-topSpacing-bottomSpacing, RSizeMode.LAYOUT);
             availableHorizontalSpace -= rightWindowWidth;
         }
         if(layout.containsKey(RLocation.CENTER)) {
+            LOGGER.debug("Allocating Space for Center of Win Border layout");
             RWindowInt centerWindow = layout.get(RLocation.CENTER);
-            centerWindow.setBounds(leftWindowWidth, topWindowHeight,availableHorizontalSpace, availableVerticalSpace);
+            centerWindow.setBounds(leftWindowWidth+leftSpacing, topWindowHeight+topSpacing,availableHorizontalSpace-leftSpacing-rightSpacing, availableVerticalSpace-topSpacing-bottomSpacing, RSizeMode.LAYOUT);
         }
 
         //Set the remaining components to 0x0
         for(RWindowInt component: windows) {
             if(component.isVisible() && !layout.containsValue(component)) {
-                component.setBounds(0,0,0,0);
+                component.setBounds(0,0,0,0, RSizeMode.LAYOUT);
             }
         }
+    }
+
+    @Override
+    public void setGroup(RGroup group) {
+        this.group = group;
     }
 
     private EnumMap<RLocation, RComponent> makeCompLookupMap(List<RComponent> components) {
@@ -219,8 +256,8 @@ public class RBorderLayout extends RLayoutBase {
             if (!component.isVisible()) {
                 continue;
             }
-            if(component.getLayoutConfig() instanceof RLocation) {
-                map.put((RLocation)component.getLayoutConfig(), component);
+            if(component.getCompLayoutConfig() instanceof RLocation) {
+                map.put((RLocation)component.getCompLayoutConfig(), component);
             }
             else {
                 unassignedComponents.add(component);
@@ -245,8 +282,8 @@ public class RBorderLayout extends RLayoutBase {
             if (!window.isVisible()) {
                 continue;
             }
-            if(window.getFolder().getLayoutConfig() instanceof RLocation) {
-                map.put((RLocation)window.getFolder().getLayoutConfig(), window);
+            if(window.getFolder().getWinLayoutConfig() instanceof RLocation) {
+                map.put((RLocation)window.getFolder().getWinLayoutConfig(), window);
             }
             else {
                 unassignedWindows.add(window);
@@ -262,5 +299,17 @@ public class RBorderLayout extends RLayoutBase {
             }
         }
         return map;
+    }
+
+    public void setSpacing(int top, int bottom, int left, int right) {
+        this.topSpacing = top;
+        this.bottomSpacing = bottom;
+        this.leftSpacing = left;
+        this.rightSpacing = right;
+    }
+
+    @Override
+    public String toString() {
+        return "Border{}";
     }
 }

@@ -1,7 +1,6 @@
 package com.szadowsz.gui.component;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RFontStore;
@@ -48,6 +47,9 @@ public abstract class RComponent implements PConstants, RInputListener {
 
     // TODO LazyGui
     protected float heightInCells = 1;
+
+    protected RLayoutConfig layoutConfig = new RLayoutConfig() {
+    };
 
     protected int localTheme = RThemeStore.getGlobalSchemeNum(); // TODO G4P
     protected RTheme palette = null;
@@ -124,7 +126,7 @@ public abstract class RComponent implements PConstants, RInputListener {
      *
      * @return width rounded up to whole cells
      */
-    public float findValueTextWidthRoundedUpToWholeCells() {
+    public float calcValueWidth() {
         return calcTextWidth(getValueAsString());
     }
 
@@ -409,9 +411,8 @@ public abstract class RComponent implements PConstants, RInputListener {
         return size.y;
     }
 
-    public RLayoutConfig getLayoutConfig() {
-        return new RLayoutConfig() {
-        };
+    public RLayoutConfig getCompLayoutConfig() {
+        return layoutConfig;
     }
 
     public String getName(){ // TODO LazyGui
@@ -568,6 +569,7 @@ public abstract class RComponent implements PConstants, RInputListener {
     }
 
     public void setLayoutConfig(RLayoutConfig config) {
+        this.layoutConfig = config;
     }
 
     /**

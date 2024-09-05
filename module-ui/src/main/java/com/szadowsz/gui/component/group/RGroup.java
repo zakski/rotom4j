@@ -2,12 +2,13 @@ package com.szadowsz.gui.component.group;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.layout.RLinearLayout;
 import processing.core.PVector;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -38,7 +39,7 @@ public abstract class RGroup extends RComponent {
      */
     protected RGroup(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
-        layout = new RLinearLayout(); // Default to Linear Vertical
+        layout = new RLinearLayout(this); // Default to Linear Vertical
     }
 
 
@@ -48,7 +49,7 @@ public abstract class RGroup extends RComponent {
      * @return width and height in a PVector
      */
     protected PVector calcPreferredSize() {
-        return layout.calcPreferredSize(children);
+        return layout.calcPreferredSize(getName(),children);
     }
 
     /**
@@ -73,8 +74,12 @@ public abstract class RGroup extends RComponent {
         return children;
     }
 
-    public RLayoutConfig getLayoutConfig() {
+    public RLayoutConfig getCompLayoutConfig() {
         return layout.getLayoutConfig();
+    }
+
+    public RLayoutConfig getWinLayoutConfig() {
+        return layoutConfig;
     }
 
     public boolean canChangeLayout() {
@@ -86,5 +91,18 @@ public abstract class RGroup extends RComponent {
 
     public void insertChild(RComponent child){
         children.add(child);
+    }
+
+    public void sortChildren() {
+        children.sort((o1, o2) -> switch (layout){
+            case RLinearLayout linear -> {
+                if (linear.getDirection() == RDirection.VERTICAL){
+                    yield Float.compare(o1.getPosY(), o2.getPosY());
+                } else {
+                    yield Float.compare(o1.getPosX(), o2.getPosX());
+                }
+            }
+            default -> Float.compare(o1.getPosY(), o2.getPosY());
+        });
     }
 }

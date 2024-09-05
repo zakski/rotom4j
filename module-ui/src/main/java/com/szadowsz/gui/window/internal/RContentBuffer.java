@@ -5,7 +5,9 @@ import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
+import com.szadowsz.gui.layout.RLinearLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PConstants;
@@ -38,7 +40,7 @@ public final class RContentBuffer {
     }
 
     private void createBuffer(int sizeX, int sizeY) {
-        LOGGER.debug("Content Buffer Init - Old Size: [{},{}], New Size: [{},{}]",this.sizeX,this.sizeY,sizeX,sizeY);
+        LOGGER.debug("{} Content Buffer Init - Old Size: [{},{}], New Size: [{},{}]",win.getFolder().getName(),this.sizeX,this.sizeY,sizeX,sizeY);
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         buffer = win.getSketch().createGraphics(sizeX, sizeY, PConstants.P2D);
@@ -119,9 +121,8 @@ public final class RContentBuffer {
         // }
     }
 
-    private void drawChildren(RFolder folder, float x, float width) {
+    private void drawChildren(RFolder folder, float width) {
         List<RComponent> children = folder.getChildren();
-        RLayoutBase layout = folder.getLayout();
 
         int index = 0;
         for (RComponent component : children) {
@@ -134,9 +135,15 @@ public final class RContentBuffer {
             drawChildComponent(component);
             if (index > 0) { // TODO if as to kind of separator to draw
                 // separator
-                buffer.pushStyle();
-                drawHorizontalSeparator(buffer, (int) width);
-                buffer.popStyle();
+                if (folder.getLayout() instanceof RLinearLayout linear) {
+                    buffer.pushStyle();
+                    if (linear.getDirection() == RDirection.VERTICAL) {
+                        drawHorizontalSeparator(buffer, (int) width);
+                    } else {
+                        drawVerticalSeparator(buffer);
+                    }
+                    buffer.popStyle();
+                }
             }
             index++;
             buffer.popMatrix();
@@ -156,12 +163,14 @@ public final class RContentBuffer {
 
             buffer.textFont(RFontStore.getMainFont());
             buffer.textAlign(LEFT, CENTER);
-            folder.getLayout().setCompLayout(folder.getWindow().pos,folder.getWindow().contentSize, folder.getChildren());
-            drawChildren(folder, 0, buffer.width);
+            RLayoutBase layout = folder.getLayout();
+            LOGGER.info("{} Content Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
+            layout.setCompLayout(folder.getWindow().pos,folder.getWindow().contentSize, folder.getChildren());
+            drawChildren(folder,  buffer.width);
 
             buffer.endDraw();
         }
-        LOGGER.debug("Content Buffer [{},{}] Draw Duration {}", buffer.width,buffer.height,System.currentTimeMillis() - time);
+        LOGGER.debug("{} Content Buffer [{},{}] Draw Duration {}", folder.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
     }
 
     private synchronized void redrawIfNecessary(){

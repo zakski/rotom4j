@@ -6,6 +6,7 @@ import com.szadowsz.gui.component.RComponentTree;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.folder.RDropdownMenu;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.folder.RPane;
 import com.szadowsz.gui.component.folder.RToolbar;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
@@ -61,6 +62,8 @@ public class RotomGui {
     // Folder Stack Warnings
     private boolean printedPushWarningAlready = false;
     private boolean printedPopWarningAlready = false;
+
+    protected boolean isSetup;
 
     /**
      * Constructor for the RotomGui object which acts as a central hub for all GUI related methods within its' sketch.
@@ -340,26 +343,26 @@ public class RotomGui {
         return folder;
     }
 
-    public RFolder pushPane(String paneName) {
+    public RPane pushPane(String paneName) {
         tryLogStackWarning("pushPane(String)");
         StringBuilder builder = pushPathToStack(paneName);
-        tree.initFolderForPath(builder.toString());
-        RFolder pane = (RFolder) tree.find(builder.toString());
+        tree.initPaneForPath(builder.toString());
+        RPane pane = (RPane) tree.find(builder.toString());
         if (pane.getParent() instanceof RRoot root){
-            this.getWinManager().uncoverOrCreateWindow(pane);
+            this.getWinManager().uncoverOrCreatePane(pane);
             root.resizeForContents();
         }
         return pane;
     }
 
-    public RFolder pushPane(String paneName, RLayoutConfig config) {
+    public RPane pushPane(String paneName, RLayoutConfig config) {
         tryLogStackWarning("pushPane(String,RLayoutConfig)");
         StringBuilder builder = pushPathToStack(paneName);
-        tree.initFolderForPath(builder.toString());
-        RFolder pane = (RFolder) tree.find(builder.toString());
+        tree.initPaneForPath(builder.toString());
+        RPane pane = (RPane) tree.find(builder.toString());
         pane.setLayoutConfig(config);
         if (pane.getParent() instanceof RRoot root){
-            this.getWinManager().uncoverOrCreateWindow(pane);
+            this.getWinManager().uncoverOrCreatePane(pane);
             root.resizeForContents();
         }
         return pane;
@@ -498,6 +501,10 @@ public class RotomGui {
         return tree;
     }
 
+    public boolean isSetup(){
+        return isSetup;
+    }
+
     public void setFocus(RWindowInt window) { // TODO LazyGui
         winManager.setFocus(window);
         inputHandler.setFocus(window);
@@ -528,11 +535,20 @@ public class RotomGui {
         tree.setAllMouseOverToFalse();
     }
 
-    public void subscribe(RInputListener subscriber){
+    public void subscribe(RInputListener subscriber){ // TODO Me
         inputHandler.subscribe(subscriber);
     }
 
-    public void resetInput() {
+    public void resetInput() { // TODO Me
         inputHandler.reset();
+    }
+
+    public void startSetup() { // TODO Me
+        isSetup = true;
+    }
+
+    public void endSetup() {// TODO Me
+        isSetup = false;
+        //tree.getRoot().resizeForContents(); TODO Not sure if not needed
     }
 }

@@ -75,7 +75,7 @@ public class RColorPicker extends RGroup {
     }
 
     @Override
-    public RLayoutConfig getLayoutConfig() {
+    public RLayoutConfig getCompLayoutConfig() {
         return null;
     }
 

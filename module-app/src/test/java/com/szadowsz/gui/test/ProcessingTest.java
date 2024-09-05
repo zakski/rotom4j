@@ -36,6 +36,7 @@ public class ProcessingTest extends PApplet {
 
     @Override
     public void settings() {
+        LOGGER.debug("DO Settings");
         setLookAndFeel();
         GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
         int width = (int) Math.floor(gd.getDisplayMode().getWidth() * 0.8);
@@ -46,16 +47,20 @@ public class ProcessingTest extends PApplet {
 
     @Override
     public void setup() {
+        LOGGER.debug("DO setup");
         surface.setTitle("Rotom4J");
         surface.setResizable(true);
         surface.setLocation(100,100);
 
         gui = RotomGuiManager.embedGui(this,settings);
-        gui.setLayout(new RBorderLayout());
-//        gui.pushPane("File Pane", RBorderLayout.RLocation.LEFT);
-//        gui.checkbox("test1",true);
-//        gui.checkbox("test2",false);
-//        gui.popWindow();
+        gui.startSetup();
+        RBorderLayout layout = new RBorderLayout();
+        layout.setSpacing(8,8,8,8);
+        gui.setLayout(layout);
+        gui.pushPane("File Pane", RBorderLayout.RLocation.LEFT);
+        gui.checkbox("test1",true);
+        gui.toggle("test2",false);
+        gui.popWindow();
 
         gui.pushToolbar("Titlebar", RBorderLayout.RLocation.TOP);
         RButton test3 = gui.button("test3");
@@ -77,6 +82,7 @@ public class ProcessingTest extends PApplet {
         gui.popWindow();
 
         gui.popWindow();
+        gui.endSetup();
 
 //        RegisterGeneralUI.buildFileDropdown(gui);
 //        RegisterGeneralUI.buildViewDropdown(gui);
@@ -85,6 +91,9 @@ public class ProcessingTest extends PApplet {
 
     @Override
     public void draw() {
+        if (frameCount == 0){
+            LOGGER.debug("DO Draw");
+        }
         background(30,40,189);
     }
 

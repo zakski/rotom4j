@@ -44,8 +44,10 @@ public class RWindowInt implements RWindow, RInputListener {
     // PApplet to draw in
     protected final PApplet app;
 
+    // Parent Gui that manages the internal window
     protected final RotomGui gui;
 
+    //
     protected final RFolder folder;
 
     // Window Title
@@ -66,6 +68,7 @@ public class RWindowInt implements RWindow, RInputListener {
     protected final PVector contentSize;
 
     // Window Status Info
+    protected RSizeMode sizing = RSizeMode.COMPONENT;
     protected boolean isTitleHighlighted; // if the window title is visible, should it be highlighted
     protected boolean isScrollbarHighlighted;  // if the vertical scrollbar is visible, should it be highlighted
     protected boolean isBeingResized; // if the window shape is changing
@@ -96,11 +99,13 @@ public class RWindowInt implements RWindow, RInputListener {
         folder.setWindow(this);
         this.title = title;
 
+        LOGGER.debug("{} Window [{},{},{},{}] Init", title,pos.x,pos.y, size.x,size.y);
         this.pos = new PVector(pos.x, pos.y);
         this.size = new PVector(size.x, size.y);
         this.sizeUnconstrained = new PVector(size.x, size.y);
         this.contentSize = new PVector(size.x, size.y);
         initDimensions();
+        LOGGER.debug("{} Window [{},{},{},{}] Post-Dimension Init", title,pos.x,pos.y, size.x,size.y);
         contentBuffer = new RContentBuffer(this);
     }
 
@@ -160,7 +165,7 @@ public class RWindowInt implements RWindow, RInputListener {
         } else {
             if (size.x == 0 || size.y == 0) {
                 RLayoutBase layout = folder.getLayout();
-                PVector preferredSize = layout.calcPreferredSize(folder.getChildren());
+                PVector preferredSize = layout.calcPreferredSize((folder.shouldDrawTitle())?folder.getName():"",folder.getChildren());
                 if (size.y == 0) {
                     contentSize.y = preferredSize.y;
                     sizeUnconstrained.y = preferredSize.y;
@@ -390,8 +395,27 @@ public class RWindowInt implements RWindow, RInputListener {
      */
     protected void constrainWidth(PGraphics pg, float preferredWidth) {
         if (isResizeWidth()) {
-            size.x = contentSize.x = preferredWidth; // folder.autosuggestWindowWidthForContents();
+            size.x  = preferredWidth;
+            contentSize.x = size.x - ((vsb.isPresent()&&vsb.get().visible)?RLayoutStore.getCell():0);
             resizeForContents(false);
+        } else {
+            if (contentSize.x == size.x && vsb.isPresent() && vsb.get().visible) {
+                size.x = size.x + RLayoutStore.getCell();
+            }
+
+            if (sizing == RSizeMode.LAYOUT && preferredWidth != size.x) {
+                size.x  = preferredWidth;
+                contentSize.x = size.x - ((vsb.isPresent()&&vsb.get().visible)?RLayoutStore.getCell():0);
+            }
+
+            if (!RLayoutStore.shouldKeepWindowsInBounds()) {
+                return;
+            }
+
+            if (pos.x + size.x > pg.width) {
+                size.x = pg.width - pos.x;
+                contentSize.x = size.x - ((vsb.isPresent()&&vsb.get().visible)?RLayoutStore.getCell():0);
+            }
         }
         // TODO window bounds constraint
     }
@@ -408,21 +432,23 @@ public class RWindowInt implements RWindow, RInputListener {
         }
         size.y = preferredHeight;
         sizeUnconstrained.y = size.y;
-        if (folder.shouldDrawTitle()) {
-            contentSize.y = sizeUnconstrained.y - RLayoutStore.getCell();
-            if (pos.y + preferredHeight + RLayoutStore.getCell() > pg.height) {
-                size.y = pg.height - pos.y;
-                initScrollbar();
-                vsb.ifPresent(s -> s.setVisible(true));
-            }
-        } else {
-            contentSize.y = sizeUnconstrained.y;
-            if (pos.y + preferredHeight > pg.height) {
-                size.y = pg.height - pos.y;
-                initScrollbar();
-                vsb.ifPresent(s -> s.setVisible(true));
-            }
+        contentSize.y = sizeUnconstrained.y;
+
+        if (pos.y + size.y > pg.height) {
+            size.y = pg.height - pos.y;
+            initScrollbar();
+            vsb.ifPresent(s -> s.setVisible(true));
         }
+    }
+
+    protected PVector calcPreferredSize() {
+        PVector preferredContentSize = folder.getLayout().calcPreferredSize((folder.shouldDrawTitle())?folder.getName():"",folder.getChildren());
+        return switch (sizing) {
+            case COMPONENT -> new PVector(preferredContentSize.x + ((vsb.isPresent()&&vsb.get().visible)?RLayoutStore.getCell():0),
+                    preferredContentSize.y + ((folder.shouldDrawTitle())?RLayoutStore.getCell():0));
+            case USER -> new PVector(size.x,size.y);
+            case LAYOUT -> new PVector(size.x,size.y);
+        };
     }
 
     protected void constrainBounds(PGraphics pg) {
@@ -435,17 +461,22 @@ public class RWindowInt implements RWindow, RInputListener {
         float oldWindowSizeYUnconstrained = sizeUnconstrained.y;
 
         constrainPosition(pg);
-        PVector preferredSize = folder.getLayout().calcPreferredSize(folder.getChildren());
-        constrainHeight(pg, preferredSize.y + ((folder.shouldDrawTitle() ? RLayoutStore.getCell() : 0)));
+        PVector preferredSize = calcPreferredSize();
+
+        constrainHeight(pg, preferredSize.y);
         constrainWidth(pg, preferredSize.x);
         if (oldWindowSizeX != size.x || oldWindowSizeY != size.y ||
                 oldWindowSizeXForContents != contentSize.x || oldWindowSizeYForContents != contentSize.y ||
                 oldWindowSizeXUnconstrained != sizeUnconstrained.x || oldWindowSizeYUnconstrained != sizeUnconstrained.y) {
+            LOGGER.debug("Old Width: [" + oldWindowSizeX + "," + oldWindowSizeXUnconstrained + "," + oldWindowSizeXForContents + "], New Width: [" + contentSize.x + "," + sizeUnconstrained.x + "," + contentSize.x + "]");
+            LOGGER.debug("Old Height: [" + oldWindowSizeY + "," + oldWindowSizeYUnconstrained + "," + oldWindowSizeYForContents + "], New Height: [" + contentSize.y + "," + sizeUnconstrained.y + "," + contentSize.y + "]");
+
             reinitialiseBuffer();
         }
     }
 
     protected void handleBeingResized(RMouseEvent e) {
+        sizing = RSizeMode.USER;
         float minimumWindowSizeInCells = 4;
         float maximumWindowSize = app.width;
         float oldWindowSizeX = size.x;
@@ -454,8 +485,7 @@ public class RWindowInt implements RWindow, RInputListener {
         if (vsb.map(sb -> !sb.visible).orElse(true)) {
             contentSize.x = size.x;
         } else {
-            contentSize.x = size.x;
-            size.x = contentSize.x + RLayoutStore.getCell();
+            contentSize.x = size.x - RLayoutStore.getCell();
         }
         vsb.ifPresent(RScrollbar::invalidateBuffer);
         e.consume();
@@ -608,7 +638,9 @@ public class RWindowInt implements RWindow, RInputListener {
         if (!folder.getChildren().isEmpty()) {
             pg.pushMatrix();
             pg.translate(pos.x, pos.y);
-            pg.translate(0, RLayoutStore.getCell());
+            if (folder.shouldDrawTitle()){
+                pg.translate(0, RLayoutStore.getCell());
+            }
             if (vsb.isPresent() && vsb.get().visible) {
                 int yDiff = round((sizeUnconstrained.y - size.y) * vsb.map(s -> s.value).orElse(0.0f));
                 pg.image(contentBuffer.draw().get(0, yDiff, (int) contentSize.x, (int) (size.y - RLayoutStore.getCell())), 0, 0);
@@ -700,16 +732,8 @@ public class RWindowInt implements RWindow, RInputListener {
 
     public int getContentWidth() { // TODO Use Right Values
         switch (folder.getLayout()) {
-            case RLinearLayout linear -> {
-                if (linear.getDirection() == RDirection.VERTICAL) {
-                    if (vsb.isPresent()) {
-                        return (int) (size.x - RLayoutStore.getCell());
-                    } else {
-                        return (int) size.x;
-                    }
-                } else {
-                    return (int) size.x;
-                }
+            case RLinearLayout linear ->  {
+                return (int) contentSize.x;
             }
             default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
         }
@@ -717,16 +741,7 @@ public class RWindowInt implements RWindow, RInputListener {
 
     public float getContentHeight() { // TODO Use Right Values
         switch (folder.getLayout()) {
-            case RLinearLayout linear -> {
-                if (linear.getDirection() == RDirection.VERTICAL) {
-                    if (folder.shouldDrawTitle()) {
-                        return (int) (size.y - RLayoutStore.getCell());
-                    } else {
-                        return (int) size.y;
-                    }
-                } else {
-                    return (int) size.y;
-                }
+            case RLinearLayout linear -> {return (int) contentSize.y;
             }
             default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
         }
@@ -743,7 +758,7 @@ public class RWindowInt implements RWindow, RInputListener {
 
 
     public RLayoutConfig getLayoutConfig() {
-        return folder.getLayoutConfig();
+        return folder.getCompLayoutConfig();
     }
 
     @Override
@@ -814,17 +829,20 @@ public class RWindowInt implements RWindow, RInputListener {
         pos.y = y;
     }
 
-    public void setBounds(float x, float y, float sizeX, float sizeY) {
+    public void setBounds(float x, float y, float sizeX, float sizeY, RSizeMode mode) {
+        LOGGER.debug("Setting Bounds [{},{},{},{}] for {} using {}",x,y,sizeX,sizeY,folder.getName(), mode);
+        sizing = mode;
         pos.x = x;
         pos.y = y;
 
-         contentSize.y = sizeY;
-        sizeUnconstrained.y = contentSize.y;
+        size.y = sizeY;
         if (folder.shouldDrawTitle()) {
-            size.y = contentSize.y + RLayoutStore.getCell();
+            contentSize.y = size.y - RLayoutStore.getCell();
         } else {
-            size.y = contentSize.y;
+            contentSize.y = size.y;
         }
+        sizeUnconstrained.y = contentSize.y;
+
         contentSize.x = sizeX;
         sizeUnconstrained.x = sizeX;
         if (vsb.isPresent()) {
@@ -832,13 +850,14 @@ public class RWindowInt implements RWindow, RInputListener {
         } else {
             size.x = sizeX;
         }
+        LOGGER.debug("Adjusted Bounds [{},{},{},{}] for {}  using {}",x,y,size.x,size.y,folder.getName(), mode);
         reinitialiseBuffer();
-        folder.getLayout().setCompLayout(pos, contentSize, folder.getChildren());
+        folder.sortChildren();
     }
 
-    public void setDimensions(float x, float y) {
-        setBounds(pos.x, pos.y, x, y);
-    }
+//    public void setDimensions(float x, float y) {
+//        setBounds(pos.x, pos.y, x, y);
+//    }
 
     public void setWidth(Float nullableSizeX) {
         size.x = nullableSizeX;

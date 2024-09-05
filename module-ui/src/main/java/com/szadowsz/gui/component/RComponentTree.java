@@ -3,6 +3,7 @@ package com.szadowsz.gui.component;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.folder.RDropdownMenu;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.folder.RPane;
 import com.szadowsz.gui.component.folder.RToolbar;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
@@ -107,6 +108,30 @@ public class RComponentTree {
                 parent = (RFolder) n;
             } else {
                 LOGGER.warn("Expected to find or to be able to create a folder at path \"{}\" but found an existing {}. You cannot put any control elements there.", runningPath, n.className);
+            }
+            if (i < split.length - 1) {
+                runningPath += "/" + split[i + 1];
+            }
+        }
+    }
+
+    public void initPaneForPath(String path) {
+        String[] split = RPaths.splitByUnescapedSlashes(path);
+        String runningPath = split[0];
+        RGroup parent = null;
+        for (int i = 0; i < split.length; i++) {
+            RComponent n = find(runningPath);
+            if (n == null) {
+                if (parent == null) {
+                    parent = root;
+                }
+                n = new RPane(gui,runningPath, parent);
+                parent.getChildren().add(n);
+                parent = (RGroup) n;
+            } else if (n instanceof RPane) {
+                parent = (RFolder) n;
+            } else {
+                LOGGER.warn("Expected to find or to be able to create a pane at path \"{}\" but found an existing {}. You cannot put any control elements there.", runningPath, n.className);
             }
             if (i < split.length - 1) {
                 runningPath += "/" + split[i + 1];

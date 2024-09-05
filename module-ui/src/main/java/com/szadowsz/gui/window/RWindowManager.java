@@ -2,9 +2,11 @@ package com.szadowsz.gui.window;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.folder.RPane;
 import com.szadowsz.gui.component.folder.RToolbar;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.window.internal.RWindowInt;
+import com.szadowsz.gui.window.internal.RWindowPane;
 import com.szadowsz.gui.window.internal.RWindowTemp;
 import com.szadowsz.gui.window.internal.RWindowToolbar;
 import processing.core.PGraphics;
@@ -104,6 +106,46 @@ public final class RWindowManager {
             folder.getWindow().setCoordinates(pos.x, pos.y);
             if (nullableSizeX != null) {
                 folder.getWindow().setWidth(nullableSizeX);
+            }
+        }
+    }
+    public void uncoverOrCreatePane(RPane pane) { // TODO LazyGui
+        uncoverOrCreatePane(pane, true, null, null, null);
+    }
+
+    /**
+     * Create or make visible a window for the passed in folder
+     *
+     * @param folder    the corresponding folder node
+     * @param setFocus      true if the window is in focus, false otherwise
+     * @param nullablePosX  nullable windows x-coordinate
+     * @param nullablePosY  nullable windows y-coordinate
+     * @param nullableSizeX nullable windows width
+     */
+    public void uncoverOrCreatePane(RPane pane, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
+        PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
+        if (pane.getParentFolder() != null) {
+            RWindowInt parentWindow = pane.getParentFolder().getWindow();
+            if (parentWindow != null) {
+                pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
+            }
+        }
+        if (nullablePosX != null) {
+            pos.x = nullablePosX;
+        }
+        if (nullablePosY != null) {
+            pos.y = nullablePosY;
+        }
+        boolean windowFound = findWindow(pane, setFocus, pos);
+        if (!windowFound) {
+            RWindowInt window = new RWindowPane(gui.getSketch(),gui,pane, pos.x, pos.y);
+            windows.add(window);
+            window.open(setFocus);
+        }
+        if (windowFound && pane.getParent() == null) {
+            pane.getWindow().setCoordinates(pos.x, pos.y);
+            if (nullableSizeX != null) {
+                pane.getWindow().setWidth(nullableSizeX);
             }
         }
     }

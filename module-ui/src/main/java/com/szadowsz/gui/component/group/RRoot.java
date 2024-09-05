@@ -58,10 +58,13 @@ public final class RRoot extends RGroup {
     }
 
     public void resizeForContents() {
-        layout.setWinLayout(new PVector(gui.getSketch().width,gui.getSketch().height),children.stream().filter(c -> c instanceof RFolder).map(c -> ((RFolder) c).getWindow()).toList());
-        for(RComponent child : children){
-            if (child instanceof RFolder folder){
-                folder.getWindow().reinitialiseBuffer();
+        if (!gui.isSetup() && !children.isEmpty()) {
+            LOGGER.debug("Resizing Root for children of size {}", children.size());
+            layout.setWinLayout(new PVector(gui.getSketch().width, gui.getSketch().height), children.stream().filter(c -> c instanceof RFolder).map(c -> ((RFolder) c).getWindow()).toList());
+            for (RComponent child : children) {
+                if (child instanceof RFolder folder) {
+                    folder.getWindow().reinitialiseBuffer();
+                }
             }
         }
     }

@@ -117,7 +117,7 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
     public void insertChild(RComponent child){
         super.insertChild(child);
         if (window != null) {
-            window.reinitialiseBuffer();
+            window.reinitialiseBuffer(); // TODO
         }
     }
 
@@ -144,7 +144,7 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
 
         float titleTextWidth = calcNameTextWidth();
         spaceForName = PApplet.max(spaceForName, titleTextWidth);
-        PVector preferredSize = layout.calcPreferredSize(children);
+        PVector preferredSize = layout.calcPreferredSize(getName(),children);
         spaceTotal = PApplet.max(spaceTotal, preferredSize.x);
         return PApplet.constrain(spaceTotal, minimumSpaceTotal, maximumSpaceTotal);
     }
@@ -175,6 +175,7 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
     @Override
     public void setLayout(RLayoutBase layout) {
         this.layout = layout;
+        layout.setGroup(this);
         window.reinitialiseBuffer();
     }
 
