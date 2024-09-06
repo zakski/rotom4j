@@ -246,13 +246,8 @@ public class RWindowInt implements RWindow, RInputListener {
      * @return true if the point is inside the child nodes, false otherwise
      */
     protected boolean isPointInsideContent(float x, float y) {
-        if (folder.shouldDrawTitle()) {
-            return isPointInRect(x, y,
-                    pos.x, pos.y + RLayoutStore.getCell(),
-                    contentSize.x, contentSize.y);
-        } else {
-            return isPointInsideWindow(x, y);
-        }
+        PVector contentStart = getContentStart();
+        return isPointInRect(x, y, contentStart.x, contentStart.y, contentSize.x, contentSize.y);
     }
 
     /**
@@ -292,9 +287,9 @@ public class RWindowInt implements RWindow, RInputListener {
         if (vsb.isEmpty() || !vsb.get().visible) {
             return false;
         }
+        PVector contentStart = getContentStart();
         return isPointInRect(x, y,
-                pos.x + contentSize.x, pos.y + ((folder.shouldDrawTitle())?RLayoutStore.getCell():0),
-                RLayoutStore.getCell(), contentSize.y);
+                contentStart.x + contentSize.x, contentStart.y , RLayoutStore.getCell(), contentSize.y);
     }
 
 
@@ -637,10 +632,8 @@ public class RWindowInt implements RWindow, RInputListener {
     protected void drawContent(PGraphics pg) {
         if (!folder.getChildren().isEmpty()) {
             pg.pushMatrix();
-            pg.translate(pos.x, pos.y);
-            if (folder.shouldDrawTitle()){
-                pg.translate(0, RLayoutStore.getCell());
-            }
+            PVector contentStart = getContentStart();
+            pg.translate(contentStart.x, contentStart.y);
             if (vsb.isPresent() && vsb.get().visible) {
                 int yDiff = round((sizeUnconstrained.y - size.y) * vsb.map(s -> s.value).orElse(0.0f));
                 pg.image(contentBuffer.draw().get(0, yDiff, (int) contentSize.x, (int) (size.y - RLayoutStore.getCell())), 0, 0);
@@ -667,14 +660,15 @@ public class RWindowInt implements RWindow, RInputListener {
         pg.pushMatrix();
         drawBackgroundWithWindowBorder(pg, true);
         drawPathTooltipOnHighlight(pg);
+        PVector contentStart = getContentStart();
         vsb.ifPresent(s ->
                 s.draw(
                         pg,
-                        pos.x,
-                        pos.y + ((folder.shouldDrawTitle())?RLayoutStore.getCell():0),
+                        contentStart.x,
+                        contentStart.y,
                         contentSize.x,
                         contentSize.y,
-                        sizeUnconstrained.y - ((folder.shouldDrawTitle())?RLayoutStore.getCell():0)
+                        sizeUnconstrained.y - ((folder.shouldDrawTitle())?RLayoutStore.getCell():0) // TODO Sizing Check
                 )
         );
         if (!folder.getChildren().isEmpty()) {
@@ -730,7 +724,11 @@ public class RWindowInt implements RWindow, RInputListener {
         pg.rect(x1, y1, endRectSize, endRectSize);
     }
 
-    public int getContentWidth() { // TODO Use Right Values
+    public PVector getContentStart(){
+        return new PVector(pos.x, pos.y + ((folder.shouldDrawTitle())?RLayoutStore.getCell():0));
+    }
+
+    public int getContentWidth() {
         switch (folder.getLayout()) {
             case RLinearLayout linear ->  {
                 return (int) contentSize.x;
@@ -739,7 +737,7 @@ public class RWindowInt implements RWindow, RInputListener {
         }
     }
 
-    public float getContentHeight() { // TODO Use Right Values
+    public float getContentHeight() {
         switch (folder.getLayout()) {
             case RLinearLayout linear -> {return (int) contentSize.y;
             }
@@ -874,13 +872,12 @@ public class RWindowInt implements RWindow, RInputListener {
     /**
      * Method to open the Window
      *
-     * @param startDragging true if being dragged, false otherwise
+     * @param setFocus true if should be focused on, false otherwise
      */
-    public void open(boolean startDragging) { // TODO LazyGui
+    public void open(boolean setFocus) { // TODO LazyGui
         isVisible = true;
-        if (startDragging) {
-            isBeingDragged = true;
-            setFocusOnThis();
+        if (setFocus) {
+             setFocusOnThis();
         }
         reinitialiseBuffer();
     }
@@ -984,15 +981,17 @@ public class RWindowInt implements RWindow, RInputListener {
         if (e.isConsumed()) {
             return;
         }
-        for (RComponent node : folder.getChildren()) {
-            node.mouseReleasedAnywhere(e);
-        }
+
         if (isPointInsideContent(e.getX(), e.getY())) {
             RComponent clickedNode = findComponentAt(e.getX(), e.getY());
-            if (clickedNode != null && clickedNode.isParentWindowVisible() && clickedNode.isVisible()) {
-                contentBuffer.invalidateBuffer();
-                clickedNode.mouseReleasedOverComponent(e);
-                e.consume();
+            for (RComponent node : folder.getChildren()) {
+                if (!e.isConsumed() && node.equals(clickedNode) && clickedNode.isParentWindowVisible() && clickedNode.isVisible()) {
+                    contentBuffer.invalidateBuffer();
+                    clickedNode.mouseReleasedOverComponent(e);
+                    e.consume();
+                } else {
+                    node.mouseReleasedAnywhere(e);
+                }
             }
         }
     }
@@ -1013,7 +1012,8 @@ public class RWindowInt implements RWindow, RInputListener {
             vsb.ifPresent(s -> s.mouseMoved(e));
             folder.setIsMouseOverThisNodeOnly(gui.getComponentTree());
         } else if (isMouseInsideContent(e)) {
-            //       LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), pos.x, pos.y, size.x, size.y);
+            PVector contentStart = getContentStart();
+            LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), contentStart.x, contentStart.y, size.x, size.y);
             float yDiff = sizeUnconstrained.y - size.y;
             RComponent node = findComponentAt(e.getX(), e.getY() + yDiff * vsb.map(s -> s.value).orElse(0.0f));
             if (node != null && !node.isMouseOver()) {

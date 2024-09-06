@@ -140,10 +140,10 @@ public class RWindowTemp extends RWindowInt {
                 s.draw(
                         pg,
                         pos.x,
-                        pos.y + ((folder.shouldDrawTitle())?RLayoutStore.getCell():0),
+                        pos.y,
                         contentSize.x,
                         contentSize.y,
-                        sizeUnconstrained.y - ((folder.shouldDrawTitle())?RLayoutStore.getCell():0)
+                        sizeUnconstrained.y
                 )
         );
         if (!folder.getChildren().isEmpty()) {

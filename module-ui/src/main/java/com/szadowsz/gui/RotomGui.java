@@ -526,7 +526,7 @@ public class RotomGui {
     }
 
     public void setAllMouseOverToFalse(RFolder folder) { // TODO LazyGui
-        LOGGER.debug("Set Mouse Over to False For {} Component",  folder.getName());
+       // LOGGER.debug("Set Mouse Over to False For {} Component",  folder.getName());
         tree.setAllMouseOverToFalse(folder);
     }
 

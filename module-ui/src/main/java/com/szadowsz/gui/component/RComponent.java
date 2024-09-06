@@ -19,6 +19,8 @@ import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
+import java.util.Objects;
+
 /**
  * RComponent provides default behaviour for all components in RotomGui.
  * <p>
@@ -343,34 +345,6 @@ public abstract class RComponent implements PConstants, RInputListener {
     }
 
     /**
-     * The components must know its absolute position and size, so it can respond to user input events
-     *
-     * @param x absolute screen x
-     * @param y absolute screen y
-     * @param w absolute screen width
-     * @param h absolute screen height
-     */
-    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) { // TODO LazyGui
-        pos.x = bX + rX;
-        pos.y = bY + rY;
-        relPos.x = rX;
-        relPos.y = rY;
-        size.x = w;
-        size.y = h;
-    }
-
-    /**
-     * The components must know its absolute position and size, so it can respond to user input events
-     *
-     * @param basePos absolute base position in window
-     * @param relPos relative position from base
-     * @param size allowed width and height
-     */
-    public void updateCoordinates(PVector basePos, PVector relPos, PVector dim) { // TODO LazyGui
-        updateCoordinates(basePos.x, basePos.y, relPos.x, relPos.y, dim.x,dim.y);
-    }
-
-    /**
      * Secondary update function, called for all components every frame, regardless of their parent window's closed state.
      */
     public void updateValues() { // TODO LazyGui
@@ -525,19 +499,6 @@ public abstract class RComponent implements PConstants, RInputListener {
         return visible;
     }
 
-    public void setMouseOver(boolean mouseOver) {
-        if (isMouseOver != mouseOver) {
-            isMouseOver = mouseOver;
-            RFolder folder = getParentFolder();
-            if (folder != null) {
-                RWindowInt window = folder.getWindow();
-                if (window != null) {
-                    window.redrawBuffer();
-                }
-            }
-        }
-    }
-
     /**
      * Method to check if the parent window of this component is visible
      *
@@ -563,6 +524,19 @@ public abstract class RComponent implements PConstants, RInputListener {
         return ((RFolder) parent).isWindowVisible();
     }
 
+    public void setMouseOver(boolean mouseOver) {
+        if (isMouseOver != mouseOver) {
+            isMouseOver = mouseOver;
+            RFolder folder = getParentFolder();
+            if (folder != null) {
+                RWindowInt window = folder.getWindow();
+                if (window != null) {
+                    window.redrawBuffer();
+                }
+            }
+        }
+    }
+
     public void setIsMouseOverThisNodeOnly(RComponentTree tree) { // TODO LazyGui
         isMouseOver = true;
         tree.setAllOtherNodesMouseOverToFalse(this);
@@ -573,6 +547,45 @@ public abstract class RComponent implements PConstants, RInputListener {
     }
 
     /**
+     * The components must know its absolute position and size, so it can respond to user input events
+     *
+     * @param x absolute screen x
+     * @param y absolute screen y
+     * @param w absolute screen width
+     * @param h absolute screen height
+     */
+    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) { // TODO LazyGui
+        pos.x = bX + rX;
+        pos.y = bY + rY;
+        relPos.x = rX;
+        relPos.y = rY;
+        size.x = w;
+        size.y = h;
+    }
+
+    /**
+     * The components must know its absolute position and size, so it can respond to user input events
+     *
+     * @param basePos absolute base position in window
+     * @param relPos relative position from base
+     * @param dim allowed width and height
+     */
+    public void updateCoordinates(PVector basePos, PVector relPos, PVector dim) { // TODO LazyGui
+        updateCoordinates(basePos.x, basePos.y, relPos.x, relPos.y, dim.x,dim.y);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RComponent that)) return false;
+        return Objects.equals(path, that.path) && Objects.equals(name, that.name) && Objects.equals(pos, that.pos) && Objects.equals(size, that.size);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(path, name, pos, size);
+    }
+/**
      * Used by value nodes to load state from json
      *
      * @param loadedNode Json state of loaded component

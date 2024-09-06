@@ -6,6 +6,9 @@ import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.layout.RLinearLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 
 import java.util.List;
@@ -16,6 +19,7 @@ import java.util.function.Consumer;
  *  Base component for binary user input controls (etc. Toggle, Checkbox)
  */
 public abstract class RToggleBase extends RComponent {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RToggleBase.class);
 
     protected boolean armed;
     protected boolean value;
@@ -56,12 +60,14 @@ public abstract class RToggleBase extends RComponent {
     public void mousePressed(RMouseEvent e) { // TODO LazyGui
         super.mousePressed(e);
         armed = true;
+        LOGGER.debug("{} Armed",name);
     }
 
     @Override
     public void mouseReleasedAnywhere(RMouseEvent e) { // TODO LazyGui
        super.mouseReleasedAnywhere(e);
        armed = false;
+        LOGGER.debug("{} Released Outside",name);
     }
 
     @Override
@@ -69,6 +75,7 @@ public abstract class RToggleBase extends RComponent {
         super.mouseReleasedOverComponent(e);
         if(armed){
             value = !value;
+            LOGGER.debug("{} Toggled to {}",name,value);
             actions.forEach(a -> a.accept(value));
             onValueChangeEnd();
         }

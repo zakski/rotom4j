@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PConstants;
 import processing.core.PGraphics;
+import processing.core.PVector;
 
 import java.util.List;
 
@@ -165,7 +166,8 @@ public final class RContentBuffer {
             buffer.textAlign(LEFT, CENTER);
             RLayoutBase layout = folder.getLayout();
             LOGGER.info("{} Content Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
-            layout.setCompLayout(folder.getWindow().pos,folder.getWindow().contentSize, folder.getChildren());
+            PVector pos = folder.getWindow().getContentStart();
+            layout.setCompLayout(pos,folder.getWindow().contentSize, folder.getChildren());
             drawChildren(folder,  buffer.width);
 
             buffer.endDraw();
