@@ -162,7 +162,7 @@ public class RWindowTemp extends RWindowInt {
             }
             e.consume();
             vsb.ifPresent(s -> s.mouseMoved(e));
-            folder.setIsMouseOverThisNodeOnly(gui.getComponentTree());
+            folder.setIsMouseOverThisNodeOnly(gui.getComponentTree(),e);
         } else if (isMouseInsideContent(e)) {
             LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), pos.x, pos.y, size.x, size.y);
             RComponent node = findComponentAt(e.getX(), e.getY());
@@ -172,7 +172,7 @@ public class RWindowTemp extends RWindowInt {
             }
             if (node != null && node.isParentWindowVisible()) {
                 LOGGER.debug("Consume Mouse Move for {} Component",  node.getName());
-                node.setIsMouseOverThisNodeOnly(gui.getComponentTree());
+                node.setIsMouseOverThisNodeOnly(gui.getComponentTree(),e);
                 e.consume();
             }
         } else {

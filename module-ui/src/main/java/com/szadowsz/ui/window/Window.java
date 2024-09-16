@@ -953,7 +953,7 @@ public class Window implements UserInputSubscriber {
             float yDiff = windowSizeYUnconstrained - windowSizeY;
             AbstractNode node = tryFindChildNodeAt(e.getX(), e.getY() + yDiff * vsb.map(s -> s.value).orElse(0.0f));
             if (node != null && !node.isMouseOverNode) {
-                LOGGER.debug("{} Inside NX {} NY {} Width {} Height {}", node.getName(), node.pos.x, node.pos.y, node.size.x, node.getHeight());
+                LOGGER.debug("Inside {} [NX {} NY {} Width {} Height {}]", node.getName(), node.pos.x, node.pos.y, node.size.x, node.getHeight());
                 contentBuffer.invalidateBuffer();
             }
             if (node != null && node.isParentWindowVisible()) {

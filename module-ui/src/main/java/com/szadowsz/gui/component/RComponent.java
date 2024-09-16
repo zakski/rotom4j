@@ -140,7 +140,7 @@ public abstract class RComponent implements PConstants, RInputListener {
      */
     protected void fillBackground(PGraphics pg) { // TODO LazyGui
         if(isMouseOver){
-            LOGGER.debug("Doing Background Focus Fill {} Component",  getName());
+            LOGGER.trace("Doing Background Focus Fill {} Component",  getName());
             pg.fill(RThemeStore.getRGBA(RThemeColorType.FOCUS_BACKGROUND));
         } else {
             pg.fill(RThemeStore.getRGBA(RThemeColorType.NORMAL_BACKGROUND));
@@ -154,7 +154,7 @@ public abstract class RComponent implements PConstants, RInputListener {
      */
     protected void fillForeground(PGraphics pg) { // TODO LazyGui
         if(isMouseOver){
-            LOGGER.debug("Doing Foreground Focus Fill {} Component",  getName());
+            LOGGER.trace("Doing Foreground Focus Fill {} Component",  getName());
             pg.fill(RThemeStore.getRGBA(RThemeColorType.FOCUS_FOREGROUND));
         } else {
             pg.fill(RThemeStore.getRGBA(RThemeColorType.NORMAL_FOREGROUND));
@@ -439,11 +439,14 @@ public abstract class RComponent implements PConstants, RInputListener {
         return new PVector(relPos.x,relPos.y);
     }
 
+    /**
+     * Get the preferred size characteristics
+     *
+     * @return width and height in a PVector
+     */
     public PVector getPreferredSize(){
         return new PVector(suggestWidth(),getHeight());
     }
-
-
 
     public String getValueAsString(){
         return "";
@@ -537,7 +540,7 @@ public abstract class RComponent implements PConstants, RInputListener {
         }
     }
 
-    public void setIsMouseOverThisNodeOnly(RComponentTree tree) { // TODO LazyGui
+    public void setIsMouseOverThisNodeOnly(RComponentTree tree, RMouseEvent mouseEvent) { // TODO LazyGui
         isMouseOver = true;
         tree.setAllOtherNodesMouseOverToFalse(this);
     }

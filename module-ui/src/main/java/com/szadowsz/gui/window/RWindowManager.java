@@ -109,6 +109,7 @@ public final class RWindowManager {
             }
         }
     }
+
     public void uncoverOrCreatePane(RPane pane) { // TODO LazyGui
         uncoverOrCreatePane(pane, true, null, null, null);
     }

@@ -54,7 +54,7 @@ public final class RRoot extends RGroup {
 
     @Override
     public float suggestWidth() {
-        return calcPreferredSize().x;
+        return getPreferredSize().x;
     }
 
     public void resizeForContents() {

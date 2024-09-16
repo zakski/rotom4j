@@ -41,7 +41,7 @@ public final class RContentBuffer {
     }
 
     private void createBuffer(int sizeX, int sizeY) {
-        LOGGER.debug("{} Content Buffer Init - Old Size: [{},{}], New Size: [{},{}]",win.getFolder().getName(),this.sizeX,this.sizeY,sizeX,sizeY);
+        LOGGER.trace("{} Content Buffer Init - Old Size: [{},{}], New Size: [{},{}]",win.getFolder().getName(),this.sizeX,this.sizeY,sizeX,sizeY);
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         buffer = win.getSketch().createGraphics(sizeX, sizeY, PConstants.P2D);
@@ -167,12 +167,13 @@ public final class RContentBuffer {
             RLayoutBase layout = folder.getLayout();
             LOGGER.info("{} Content Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
             PVector pos = folder.getWindow().getContentStart();
+            LOGGER.info("{} Layout [{},{}]",folder.getName(),folder.getWindow().contentSize.x,folder.getWindow().contentSize.y);
             layout.setCompLayout(pos,folder.getWindow().contentSize, folder.getChildren());
-            drawChildren(folder,  buffer.width);
+            drawChildren(folder, buffer.width);
 
             buffer.endDraw();
         }
-        LOGGER.debug("{} Content Buffer [{},{}] Draw Duration {}", folder.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
+        LOGGER.info("{} Content Buffer [{},{}] Draw Duration {}", folder.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
     }
 
     private synchronized void redrawIfNecessary(){

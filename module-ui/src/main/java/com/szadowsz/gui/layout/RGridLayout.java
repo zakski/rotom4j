@@ -40,7 +40,8 @@ public class RGridLayout extends RLayoutBase {
 
     @Override
     public RLayoutConfig getLayoutConfig() {
-        return null;
+        return new RLayoutConfig() {
+        };
     }
 
     @Override

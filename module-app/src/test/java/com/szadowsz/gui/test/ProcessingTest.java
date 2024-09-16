@@ -60,6 +60,9 @@ public class ProcessingTest extends PApplet {
         gui.pushPane("File Pane", RBorderLayout.RLocation.LEFT);
         gui.checkbox("test1",true);
         gui.toggle("test2",false);
+        gui.colorPicker("color1",new Color(0,0,255));
+        gui.slider("slider1",125,0,255);
+        gui.slider("slider2",125.0f,0.0f,255.0f);
         gui.popWindow();
 
         gui.pushToolbar("Titlebar", RBorderLayout.RLocation.TOP);

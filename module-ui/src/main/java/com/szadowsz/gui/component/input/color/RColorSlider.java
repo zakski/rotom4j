@@ -5,6 +5,7 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.component.group.RColorPicker;
 import com.szadowsz.gui.component.input.slider.RSliderInt;
+import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.RShaderStore;
 import com.szadowsz.gui.config.theme.RThemeColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
@@ -23,8 +24,6 @@ public class RColorSlider extends RSliderInt { // TODO create other config optio
     public RColorSlider(RotomGui gui, String path, RColorPicker group, float currentValue) {
         super(gui, path, group, currentValue, 0, 255, true);
         this.parentColorPicker = group;
-        initSliderBackgroundShader();
-        RShaderStore.getOrLoadShader(gui,colorShaderPath);
     }
 
     protected void updateColorInParentFolder() {
@@ -50,6 +49,16 @@ public class RColorSlider extends RSliderInt { // TODO create other config optio
             pg.strokeWeight(1);
             pg.line(size.x / 2f, 0f, size.x / 2f, size.y-1f);
         }
+    }
+
+    @Override
+    public void initSliderBackgroundShader() {
+        RShaderStore.getOrLoadShader(gui,colorShaderPath);
+    }
+
+    @Override
+    public float suggestWidth() {
+        return RLayoutStore.getCell() * 8;
     }
 
     @Override

@@ -27,7 +27,7 @@ public class RCarousel extends RGroup {
     }
 
     @Override
-    protected PVector calcPreferredSize() {
+    public PVector getPreferredSize() {
         return null;
     }
 

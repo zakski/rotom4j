@@ -1,6 +1,7 @@
 package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
@@ -13,8 +14,6 @@ import processing.core.PVector;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.szadowsz.ui.store.LayoutStore.cell;
 
 /**
  * Layout that puts all components on a single horizontally or vertical line.
@@ -152,22 +151,15 @@ public class RLinearLayout extends RLayoutBase {
     }
 
     protected PVector calcPreferredSizeVertically(String title, List<RComponent> components) { // TODO Lanterna
-        float spaceForName = cell * 2;
-        float spaceForValue = cell * 2;
-
-        float titleTextWidth = RFontStore.calcMainTextWidth(title, RLayoutStore.getCell());
-
+        float maxWidth = RFontStore.calcMainTextWidth(title, RLayoutStore.getCell()) + RLayoutStore.getCell();
         float height = 0;
-        spaceForName = PApplet.max(spaceForName, titleTextWidth);
-
         for(RComponent child: components) {
-            float nameTextWidth = child.calcNameTextWidth();
-            spaceForName = PApplet.max(spaceForName, nameTextWidth);
-            float valueTextWidth = child.calcValueWidth();
-            spaceForValue = PApplet.max(spaceForValue, valueTextWidth);
+            PVector preferredSize = child.getPreferredSize();
+            maxWidth = PApplet.max(maxWidth,preferredSize.x);
+            height += preferredSize.y;
         }
         height += spacing * (components.size() - 1);
-        return new PVector(spaceForName + spaceForValue, Math.max(0, height));
+        return new PVector(maxWidth, Math.max(0, height));
     }
 
     @Override
@@ -190,7 +182,7 @@ public class RLinearLayout extends RLayoutBase {
 
     @Override
     public RLayoutConfig getLayoutConfig() {
-        return null;
+        return createLayoutData(Alignment.BEGINNING,GrowPolicy.NONE);
     }
 
     /**
@@ -254,30 +246,33 @@ public class RLinearLayout extends RLayoutBase {
         this.changed = false;
     }
 
-    private float suggestWidthForVerticalLayout(String title, List<RComponent> components, float availableHorizontalSpace) {
-        float spaceForName = cell * 2;
-        float spaceForValue = cell * 2;
-        float minimumSpaceTotal = spaceForName + spaceForValue;
-        float titleTextWidth = RFontStore.calcMainTextWidth(title, RLayoutStore.getCell());
-        spaceForName = PApplet.max(spaceForName, titleTextWidth);
-        for (RComponent child : components) {
-            float nameTextWidth = child.calcNameTextWidth();
-            spaceForName = PApplet.max(spaceForName, nameTextWidth);
-            float valueTextWidth = child.calcValueWidth();
-            spaceForValue = PApplet.max(spaceForValue, valueTextWidth);
-        }
-        return PApplet.constrain(spaceForName + spaceForValue, minimumSpaceTotal, availableHorizontalSpace);
-    }
+//    private float suggestWidthForVerticalLayout(String title, List<RComponent> components, float availableHorizontalSpace) {
+//        float titleTextWidth = RFontStore.calcMainTextWidth(title, RLayoutStore.getCell());
+//        float minimumSpaceTotal = titleTextWidth + RLayoutStore.getCell();
+//        float spaceForName = RLayoutStore.getCell() * 2;
+//        float spaceForValue = RLayoutStore.getCell() * 2;
+//        spaceForName = PApplet.max(spaceForName, titleTextWidth);
+//        for (RComponent child : components) {
+//            PVector preferredSize = child.getPreferredSize();
+//            float nameTextWidth = child.calcNameTextWidth();
+//            spaceForName = PApplet.max(spaceForName, nameTextWidth);
+//            float valueTextWidth = child.calcValueWidth();
+//            spaceForValue = PApplet.max(spaceForValue, valueTextWidth);
+//        }
+//        return PApplet.constrain(spaceForName + spaceForValue, minimumSpaceTotal, availableHorizontalSpace);
+//    }
 
     private void doFlexibleVerticalLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
         float availableVerticalSpace = area.y;
         float availableHorizontalSpace = area.x;
+        LOGGER.trace("{} Available Space [{},{}]",group.getName(),availableHorizontalSpace,availableVerticalSpace);
 
         final Map<RComponent, PVector> fittingMap = new IdentityHashMap<>();
 
         float totalRequiredVerticalSpace = 0;
 
-        float expectedWidth = suggestWidthForVerticalLayout(group.getName(), components, availableHorizontalSpace);
+        //float expectedWidth = suggestWidthForVerticalLayout(group.getName(), components, availableHorizontalSpace);
+        //LOGGER.debug("{} Expected Width {}",group.getName(),expectedWidth);
 
         for (RComponent component: components) {
             Alignment alignment = Alignment.BEGINNING;
@@ -289,11 +284,13 @@ public class RLinearLayout extends RLayoutBase {
             }
 
             PVector preferredSize = component.getPreferredSize();
+            LOGGER.trace("{} Component Preferred Size [{},{}]",component.getName(),preferredSize.x,preferredSize.y);
             PVector fittingSize = new PVector(
-                    Math.min(expectedWidth, preferredSize.x),
+                    Math.min(availableHorizontalSpace, preferredSize.x),
                     preferredSize.y);
+            LOGGER.trace("{} Component Fitting Size [{},{}]",component.getName(),fittingSize.x,fittingSize.y);
             if(alignment == Alignment.FILL) {
-                fittingSize.x = (expectedWidth);
+                fittingSize.x = (availableHorizontalSpace);
             }
 
             fittingMap.put(component, fittingSize);
@@ -335,8 +332,9 @@ public class RLinearLayout extends RLayoutBase {
             while (availableVerticalSpace > totalRequiredVerticalSpace) {
                 for(RComponent component: components) {
                     LinearLayoutData layoutData = null;
-                    if (component instanceof RGroup) {
-                        layoutData = (LinearLayoutData) ((RGroup) component).getCompLayoutConfig();
+                    if (!(component instanceof RFolder) && component instanceof RGroup group) {
+                        RLayoutConfig config = group.getCompLayoutConfig();
+                        layoutData = ((LinearLayoutData) config);
                     }
                     final PVector currentSize = fittingMap.get(component);
                     if (layoutData != null && layoutData.growPolicy == GrowPolicy.CAN_GROW) {

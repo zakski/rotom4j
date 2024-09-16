@@ -105,7 +105,7 @@ public class RWindowInt implements RWindow, RInputListener {
         this.sizeUnconstrained = new PVector(size.x, size.y);
         this.contentSize = new PVector(size.x, size.y);
         initDimensions();
-        LOGGER.debug("{} Window [{},{},{},{}] Post-Dimension Init", title,pos.x,pos.y, size.x,size.y);
+        LOGGER.debug("{} Window [{},{},{},{}] Post-Dimension Init", title,pos.x,pos.y, this.size.x,this.size.y);
         contentBuffer = new RContentBuffer(this);
     }
 
@@ -463,8 +463,8 @@ public class RWindowInt implements RWindow, RInputListener {
         if (oldWindowSizeX != size.x || oldWindowSizeY != size.y ||
                 oldWindowSizeXForContents != contentSize.x || oldWindowSizeYForContents != contentSize.y ||
                 oldWindowSizeXUnconstrained != sizeUnconstrained.x || oldWindowSizeYUnconstrained != sizeUnconstrained.y) {
-            LOGGER.debug("Old Width: [" + oldWindowSizeX + "," + oldWindowSizeXUnconstrained + "," + oldWindowSizeXForContents + "], New Width: [" + contentSize.x + "," + sizeUnconstrained.x + "," + contentSize.x + "]");
-            LOGGER.debug("Old Height: [" + oldWindowSizeY + "," + oldWindowSizeYUnconstrained + "," + oldWindowSizeYForContents + "], New Height: [" + contentSize.y + "," + sizeUnconstrained.y + "," + contentSize.y + "]");
+            LOGGER.trace("Old Width: [{},{},{}], New Width: [{},{},{}]", oldWindowSizeX, oldWindowSizeXUnconstrained, oldWindowSizeXForContents, contentSize.x, sizeUnconstrained.x, contentSize.x);
+            LOGGER.trace("Old Height: [{},{},{}], New Height: [{},{},{}]", oldWindowSizeY, oldWindowSizeYUnconstrained, oldWindowSizeYForContents, contentSize.y, sizeUnconstrained.y, contentSize.y);
 
             reinitialiseBuffer();
         }
@@ -828,7 +828,7 @@ public class RWindowInt implements RWindow, RInputListener {
     }
 
     public void setBounds(float x, float y, float sizeX, float sizeY, RSizeMode mode) {
-        LOGGER.debug("Setting Bounds [{},{},{},{}] for {} using {}",x,y,sizeX,sizeY,folder.getName(), mode);
+        LOGGER.trace("Setting Bounds [{},{},{},{}] for {} using {}",x,y,sizeX,sizeY,folder.getName(), mode);
         sizing = mode;
         pos.x = x;
         pos.y = y;
@@ -848,7 +848,7 @@ public class RWindowInt implements RWindow, RInputListener {
         } else {
             size.x = sizeX;
         }
-        LOGGER.debug("Adjusted Bounds [{},{},{},{}] for {}  using {}",x,y,size.x,size.y,folder.getName(), mode);
+        LOGGER.trace("Adjusted Bounds [{},{},{},{}] for {} using {}",x,y,size.x,size.y,folder.getName(), mode);
         reinitialiseBuffer();
         folder.sortChildren();
     }
@@ -1003,25 +1003,25 @@ public class RWindowInt implements RWindow, RInputListener {
                 contentBuffer.invalidateBuffer();
             }
             e.consume();
-            folder.setIsMouseOverThisNodeOnly(gui.getComponentTree());
+            folder.setIsMouseOverThisNodeOnly(gui.getComponentTree(),e);
         } else if (isMouseInsideScrollbar(e)) {
             if (folder.getChildren().stream().anyMatch(RComponent::isMouseOver)) {
                 contentBuffer.invalidateBuffer();
             }
             e.consume();
             vsb.ifPresent(s -> s.mouseMoved(e));
-            folder.setIsMouseOverThisNodeOnly(gui.getComponentTree());
+            folder.setIsMouseOverThisNodeOnly(gui.getComponentTree(),e);
         } else if (isMouseInsideContent(e)) {
             PVector contentStart = getContentStart();
-            LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), contentStart.x, contentStart.y, size.x, size.y);
+            // LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), contentStart.x, contentStart.y, size.x, size.y);
             float yDiff = sizeUnconstrained.y - size.y;
             RComponent node = findComponentAt(e.getX(), e.getY() + yDiff * vsb.map(s -> s.value).orElse(0.0f));
             if (node != null && !node.isMouseOver()) {
-                LOGGER.debug("{} Inside NX {} NY {} Width {} Height {}", node.getName(), node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
+                LOGGER.debug("Inside {} [NX {} NY {} Width {} Height {}]", node.getName(), node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
                 contentBuffer.invalidateBuffer();
             }
             if (node != null && node.isParentWindowVisible()) {
-                node.setIsMouseOverThisNodeOnly(gui.getComponentTree());
+                node.setIsMouseOverThisNodeOnly(gui.getComponentTree(),e);
                 e.consume();
             }
         } else {

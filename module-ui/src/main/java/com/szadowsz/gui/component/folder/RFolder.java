@@ -3,6 +3,7 @@ package com.szadowsz.gui.component.folder;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
+import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RThemeColorType;
@@ -59,8 +60,8 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
     }
 
     @Override
-    protected PVector calcPreferredSize() {
-        return null;
+    public PVector getPreferredSize() {
+        return new PVector(RFontStore.calcMainTextWidth(name, RLayoutStore.getCell()) + RLayoutStore.getCell() * 2,RLayoutStore.getCell());
     }
 
     protected void drawMiniatureWindowIcon(PGraphics pg) { // TODO LazyGui

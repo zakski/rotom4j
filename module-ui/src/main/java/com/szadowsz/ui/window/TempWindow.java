@@ -147,7 +147,7 @@ public class TempWindow extends Window {
             LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), posX, posY, windowSizeX, windowSizeY);
             AbstractNode node = tryFindChildNodeAt(e.getX(), e.getY());
             if (node != null && !node.isMouseOverNode) {
-                LOGGER.debug("{} Inside NX {} NY {} Width {} Height {}", node.getName(), node.pos.x, node.pos.y, node.size.x, node.getHeight());
+                LOGGER.debug("Inside {} [NX {} NY {} Width {} Height {}]", node.getName(), node.pos.x, node.pos.y, node.size.x, node.getHeight());
                 contentBuffer.invalidateBuffer();
             }
             if (node != null && node.isParentWindowVisible()) {

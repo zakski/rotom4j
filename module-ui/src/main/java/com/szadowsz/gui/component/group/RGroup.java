@@ -2,6 +2,7 @@ package com.szadowsz.gui.component.group;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RComponentTree;
 import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
@@ -11,6 +12,8 @@ import processing.core.PVector;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 
 /**
  * Base class for complex pre-defined groupings of components
@@ -42,16 +45,6 @@ public abstract class RGroup extends RComponent {
         layout = new RLinearLayout(this); // Default to Linear Vertical
     }
 
-
-    /**
-     * Calculate the size characteristics based on the layout
-     *
-     * @return width and height in a PVector
-     */
-    protected PVector calcPreferredSize() {
-        return layout.calcPreferredSize(getName(),children);
-    }
-
     /**
      * Find a node by its name
      *
@@ -69,6 +62,17 @@ public abstract class RGroup extends RComponent {
         }
         return null;
     }
+    protected RComponent findComponentAt(float x, float y) {
+        for (RComponent node : children) {
+            if (!node.isVisible()) {
+                continue;
+            }
+            if (isPointInRect(x, y, node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight())) {
+                return node;
+            }
+        }
+        return null;
+    }
 
     public List<RComponent> getChildren() {
         return children;
@@ -76,6 +80,11 @@ public abstract class RGroup extends RComponent {
 
     public RLayoutConfig getCompLayoutConfig() {
         return layout.getLayoutConfig();
+    }
+
+    @Override
+    public PVector getPreferredSize() {
+        return layout.calcPreferredSize(getName(),children);
     }
 
     public RLayoutConfig getWinLayoutConfig() {

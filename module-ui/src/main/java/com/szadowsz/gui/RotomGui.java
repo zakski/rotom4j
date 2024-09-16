@@ -1,15 +1,16 @@
 package com.szadowsz.gui;
 
 import com.jogamp.newt.opengl.GLWindow;
+import com.krab.lazy.nodes.impl.FolderNode;
+import com.krab.lazy.nodes.impl.SliderNode;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.RComponentTree;
 import com.szadowsz.gui.component.action.RButton;
-import com.szadowsz.gui.component.folder.RDropdownMenu;
-import com.szadowsz.gui.component.folder.RFolder;
-import com.szadowsz.gui.component.folder.RPane;
-import com.szadowsz.gui.component.folder.RToolbar;
+import com.szadowsz.gui.component.folder.*;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
+import com.szadowsz.gui.component.input.slider.RSlider;
+import com.szadowsz.gui.component.input.slider.RSliderInt;
 import com.szadowsz.gui.component.input.toggle.RCheckbox;
 import com.szadowsz.gui.component.input.toggle.RToggle;
 import com.szadowsz.gui.config.theme.RThemeStore;
@@ -30,6 +31,7 @@ import processing.core.PGraphics;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -437,6 +439,72 @@ public class RotomGui {
         return component;
     }
 
+    public RColorPickerFolder colorPicker(String path, Color startingValue) {
+        String fullPath = getCurrentPath() + path;
+        if(tree.isPathTakenByUnexpectedType(fullPath, RColorPickerFolder.class)){
+            return null;
+        }
+        RColorPickerFolder component = (RColorPickerFolder) tree.find(fullPath);
+        if (component == null) {
+            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            component = new RColorPickerFolder(this,fullPath, folder, startingValue);
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+    /**
+     * Gets the value of a float slider control element.
+     * lazily initializes it if needed and uses a default value specified in the parameter.
+     * along with enforcing a minimum and maximum of reachable values.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param defaultValue the default value, ideally between min and max
+     * @param min the value cannot go below this, min &lt; max must be true
+     * @param max the value cannot go above this, max &gt; min must be true
+     * @return current float value of the slider
+     */
+    public RSlider slider(String path, float defaultValue, float min, float max) {
+        String fullPath = getCurrentPath() + path;
+        if(tree.isPathTakenByUnexpectedType(fullPath, RSlider.class)){
+            return null;
+        }
+        RSlider component = (RSlider) tree.find(fullPath);
+        if (component == null) {
+            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            component = new RSlider(this,fullPath,folder, defaultValue, min, max,true);
+            component.initSliderBackgroundShader();
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+    /**
+     * Gets the value of an int slider control element.
+     * lazily initializes it if needed and uses a default value specified in the parameter.
+     * along with enforcing a minimum and maximum of reachable values.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param defaultValue the default value, ideally between min and max
+     * @param min the value cannot go below this, min < max must be true
+     * @param max the value cannot go above this, max > min must be true
+     * @return current float value of the slider
+     */
+    public RSliderInt slider(String path, int defaultValue, int min, int max) {
+        String fullPath = getCurrentPath() + path;
+        if(tree.isPathTakenByUnexpectedType(fullPath, RSlider.class)){
+            return null;
+        }
+        RSliderInt component = (RSliderInt) tree.find(fullPath);
+        if (component == null) {
+            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            component = new RSliderInt(this,fullPath,folder, defaultValue, min, max,true);
+            component.initSliderBackgroundShader();
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
     /**
      * Gets a toggle component at the specified location. Initializes it if needed and sets its value to the specified
      * starting parameter.
@@ -551,4 +619,6 @@ public class RotomGui {
         isSetup = false;
         //tree.getRoot().resizeForContents(); TODO Not sure if not needed
     }
+
+
 }

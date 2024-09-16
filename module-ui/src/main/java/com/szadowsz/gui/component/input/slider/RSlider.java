@@ -3,7 +3,6 @@ package com.szadowsz.gui.component.input.slider;
 import com.jogamp.newt.event.KeyEvent;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RDelayStore;
 import com.szadowsz.gui.config.RFontStore;
@@ -71,7 +70,7 @@ public class RSlider extends RComponent {
     protected boolean isVertical; // TODO LazyGui
     protected float mouseDeltaX, mouseDeltaY; // TODO LazyGui
 
-    protected float backgroundScrollX; // TODO LazyGui
+    protected float backgroundScroll; // TODO LazyGui
 
     protected String numpadBufferValue = ""; // TODO LazyGui
     protected int numpadInputAppendLastMillis = -1; // TODO LazyGui
@@ -193,13 +192,13 @@ public class RSlider extends RComponent {
 
     protected void drawBackgroundScroller(PGraphics pg, boolean constrainedThisFrame) { // TODO LazyGui
         if (!constrainedThisFrame) {
-            backgroundScrollX -= isVertical ? mouseDeltaY : mouseDeltaX;
+            backgroundScroll -= isVertical ? mouseDeltaY : mouseDeltaX;
         }
         float percentIndicatorNorm = 1f;
         boolean shouldShowPercentIndicator = isConstrained && showPercentIndicator;
         if (shouldShowPercentIndicator) {
             percentIndicatorNorm = constrain(norm(value, valueMin, valueMax), 0, 1);
-            backgroundScrollX = 0;
+            backgroundScroll = 0;
         }
 
         updateBackgroundShader(pg);
@@ -248,13 +247,13 @@ public class RSlider extends RComponent {
         constrainValue();
     }
 
-    protected void initSliderBackgroundShader() {
+    public void initSliderBackgroundShader() {
         RShaderStore.getOrLoadShader(gui,shaderPathDefault);
     }
 
     protected void updateBackgroundShader(PGraphics pg) { // TODO LazyGui
         PShader shader = RShaderStore.getOrLoadShader(gui,shaderPathDefault);
-        shader.set("scrollX", backgroundScrollX);
+        shader.set("scrollX", backgroundScroll);
         Color bgColor = RThemeStore.getColor(RThemeColorType.NORMAL_BACKGROUND);
         Color fgColor = RThemeStore.getColor(RThemeColorType.FOCUS_BACKGROUND);
         shader.set("colorA", bgColor.getRed(),  bgColor.getGreen(), bgColor.getBlue());
@@ -404,13 +403,19 @@ public class RSlider extends RComponent {
         super.mouseDragContinues(e);
         mouseDeltaX = e.getPrevX() - e.getX();
         mouseDeltaY = e.getPrevY() - e.getY();
+        if (isVertical) {
+            LOGGER.debug("Mouse DeltaY for Slider {} [{} = {} - {}]", name, mouseDeltaY, e.getPrevY(), e.getY());
+        } else {
+            LOGGER.debug("Mouse DeltaX for Slider {} [{} = {} - {}]", name, mouseDeltaX, e.getPrevX(), e.getX());
+        }
+        updateValues();
         e.consume();
     }
 
     @Override
     public void updateValues(){
         if (isDragged || isMouseOver) {
-            updateValueMouseInteraction();
+           updateValueMouseInteraction();
         }
         updateNumpad();
     }
