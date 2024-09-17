@@ -229,7 +229,7 @@ public class RSlider extends RComponent {
     protected void drawForeground(PGraphics pg, String name) {
         fillForeground(pg);
         drawTextLeft(pg, name);
-        drawTextRight(pg, getDisplayValue() + (isNumpadInputActive() ? "_" : ""), true);
+        drawTextRight(pg, getDisplayValue() + (isNumpadInputActive() ? "_" : ""), false);
     }
 
     protected boolean constrainValue() { // TODO LazyGui
@@ -390,12 +390,17 @@ public class RSlider extends RComponent {
     }
 
     @Override
+    public void mouseReleasedOverComponent(RMouseEvent e) {
+        mouseReleasedAnywhere(e);
+    }
+
+    @Override
     public void mouseReleasedAnywhere(RMouseEvent e) {
-        super.mouseReleasedAnywhere(e);
-        if(stringValueWhenDragStarted != null && !stringValueWhenDragStarted.equals(getValueAsString())){
+         if(stringValueWhenDragStarted != null && !stringValueWhenDragStarted.equals(getValueAsString())){
             onValueChangeEnd();
         }
         stringValueWhenDragStarted = null;
+        super.mouseReleasedAnywhere(e);
     }
 
     @Override
@@ -408,7 +413,6 @@ public class RSlider extends RComponent {
         } else {
             LOGGER.debug("Mouse DeltaX for Slider {} [{} = {} - {}]", name, mouseDeltaX, e.getPrevX(), e.getX());
         }
-        updateValues();
         e.consume();
     }
 
@@ -418,5 +422,10 @@ public class RSlider extends RComponent {
            updateValueMouseInteraction();
         }
         updateNumpad();
+    }
+
+    @Override
+    public String getValueAsString() {
+        return getDisplayValue();
     }
 }

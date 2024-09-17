@@ -47,31 +47,37 @@ public class RotomGui {
     // Folder Stack Constants
     private static final int stackSizeWarningLevel = 64;
 
+    // External Window
     protected final PApplet app;
-    protected final GLWindow appWindow;
+    protected final GLWindow appWindow; // Native
 
     // GUI Canvas Reference
     protected PGraphics guiCanvas; // TODO LazyGui
+
+    // Internal Window Manager
+    protected final RWindowManager winManager;
+
     // Guard against double draw
     protected int lastFrameCountGuiWasShown = -1;
 
     protected final RInputHandler inputHandler; // TODO LazyGui
-    protected final RWindowManager winManager;
-    protected final RComponentTree tree;
 
+    // Component Stack
+    protected final RComponentTree tree;
     protected final ArrayList<String> pathPrefix = new ArrayList<>(); // TODO LazyGui
 
     // Folder Stack Warnings
     private boolean printedPushWarningAlready = false;
     private boolean printedPopWarningAlready = false;
 
+    // Setup Flag to Avoid Too Much Resizing
     protected boolean isSetup;
 
     /**
      * Constructor for the RotomGui object which acts as a central hub for all GUI related methods within its' sketch.
-     *
+     * <p>
      * Meant to be initialized once in sketch setup() method
-     *
+     * <p>
      * Registers itself at end of the draw() method and displays the GUI whenever draw() ends.
      *
      * @param sketch main processing sketch class to display the GUI on and use keyboard and mouse input from

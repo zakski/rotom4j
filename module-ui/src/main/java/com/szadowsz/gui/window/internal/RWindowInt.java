@@ -889,10 +889,9 @@ public class RWindowInt implements RWindow, RInputListener {
 
     public synchronized void resizeForContents(boolean shouldResize) {
         isResizeWidth = shouldResize;
-    }
-
-    public void resizeForContents(){
-        resizeForContents(true);
+        if (isResizeWidth){
+            sizing = RSizeMode.COMPONENT;
+        }
     }
 
     @Override

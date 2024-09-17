@@ -3,6 +3,7 @@ package com.szadowsz.gui.component.group;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.RComponentTree;
+import com.szadowsz.gui.component.folder.RFolder;
 import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
@@ -100,6 +101,11 @@ public abstract class RGroup extends RComponent {
 
     public void insertChild(RComponent child){
         children.add(child);
+        RFolder folder = (this instanceof RFolder)? (RFolder) this : getParentFolder();
+        if (folder.getWindow() != null) {
+            folder.getWindow().resizeForContents(true);
+            folder.getWindow().reinitialiseBuffer();
+        }
     }
 
     public void sortChildren() {

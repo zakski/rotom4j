@@ -115,13 +115,6 @@ public class RFolder extends RGroup { // TODO do we want this as RGroup
         return window;
     }
 
-    public void insertChild(RComponent child){
-        super.insertChild(child);
-        if (window != null) {
-            window.reinitialiseBuffer(); // TODO
-        }
-    }
-
     @Override
     public void mousePressed(RMouseEvent e) {
         super.mousePressed(e);

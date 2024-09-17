@@ -123,15 +123,6 @@ public abstract class RComponent implements PConstants, RInputListener {
         return calcTextWidth(getVisibleName());
     }
 
-    /**
-     * Method to calculate the width of the value text for the font size
-     *
-     * @return width rounded up to whole cells
-     */
-    public float calcValueWidth() {
-        return calcTextWidth(getValueAsString());
-    }
-
 
     /**
      * Sets the background fill color of the component, as part of the draw method
@@ -341,7 +332,10 @@ public abstract class RComponent implements PConstants, RInputListener {
      * @param e the change made by the mouse
      */
     public void mouseReleasedOverComponent(RMouseEvent e) { // TODO LazyGui
-        // NOOP
+        if(isDragged){
+            e.consume();
+        }
+        isDragged = false;
     }
 
     /**
