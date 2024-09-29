@@ -1,7 +1,7 @@
 package com.szadowsz.gui;
 
 import com.szadowsz.gui.exception.RWindowException;
-import com.szadowsz.gui.window.external.RWindowExt;
+import com.szadowsz.gui.window.sketch.RWindowSketch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -17,9 +17,6 @@ public class RotomGuiManager {
 
     protected static List<PApplet> windows = new CopyOnWriteArrayList<>();
     protected static List<RotomGui> guis = new CopyOnWriteArrayList<>();
-
-
-
 
     /**
      * Embed GUi in Processing Sketch, with Provided Settings
@@ -61,7 +58,7 @@ public class RotomGuiManager {
      *
      * @param external the window to be registered
      */
-    public static void registerWindow(RWindowExt external) {
+    public static void registerWindow(RWindowSketch external) {
         if (!windows.contains(external)) {
             windows.add(external);
             guis.add(external.getGui());
@@ -74,7 +71,7 @@ public class RotomGuiManager {
      *
      * @param external the window to be unregistered
      */
-    public static void unregisterWindow(RWindowExt external) {
+    public static void unregisterWindow(RWindowSketch external) {
         if (windows.contains(external)) {
             windows.remove(external);
             guis.remove(external.getGui());

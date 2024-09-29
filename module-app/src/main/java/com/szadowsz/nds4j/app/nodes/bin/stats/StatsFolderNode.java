@@ -3,7 +3,7 @@ package com.szadowsz.nds4j.app.nodes.bin.stats;
 import com.szadowsz.nds4j.ref.ItemDex;
 import com.szadowsz.nds4j.file.bin.stats.StatsNFSFile;
 import com.szadowsz.nds4j.file.bin.stats.data.*;
-import com.szadowsz.ui.node.impl.FolderNode;
+import com.old.ui.node.impl.FolderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

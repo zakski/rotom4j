@@ -4,8 +4,8 @@ import com.szadowsz.nds4j.app.nodes.nitro.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.ImageableWithGraphic;
 import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
-import com.szadowsz.ui.node.LayoutType;
-import com.szadowsz.ui.node.impl.FolderNode;
+import com.old.ui.node.LayoutType;
+import com.old.ui.node.impl.FolderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

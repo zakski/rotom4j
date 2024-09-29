@@ -1,25 +1,17 @@
 package com.szadowsz.nds4j.app.nodes.nitro;
 
-import com.szadowsz.nds4j.app.Processing;
-import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.Imageable;
-import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
-import com.szadowsz.ui.constants.GlobalReferences;
-import com.szadowsz.ui.input.mouse.GuiMouseEvent;
-import com.szadowsz.ui.node.LayoutType;
-import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.node.impl.SliderNode;
-import com.szadowsz.ui.window.WindowManager;
+import com.old.ui.node.LayoutType;
+import com.old.ui.node.impl.FolderNode;
+import com.old.ui.node.impl.SliderNode;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
-import static com.szadowsz.ui.store.LayoutStore.cell;
+import static com.old.ui.store.LayoutStore.cell;
 
 public abstract class NitroFolderNode<I extends Imageable> extends FolderNode {
 

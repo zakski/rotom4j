@@ -2,7 +2,7 @@ package com.szadowsz.nds4j.app.managers;
 
 import com.szadowsz.nds4j.app.NDSGuiImpl;
 import com.szadowsz.nds4j.file.nitro.narc.NARC;
-import com.szadowsz.ui.node.impl.FolderNode;
+import com.old.ui.node.impl.FolderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

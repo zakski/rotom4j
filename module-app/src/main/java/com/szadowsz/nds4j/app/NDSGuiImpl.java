@@ -10,7 +10,6 @@ import com.szadowsz.nds4j.app.nodes.nitro.ncer.NCERFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.ncgr.NCGRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.nscr.NSCRFolderNode;
-import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.bin.evo.EvolutionNFSFile;
 import com.szadowsz.nds4j.file.bin.stats.GrowNFSFile;
@@ -22,25 +21,15 @@ import com.szadowsz.nds4j.file.nitro.ncer.NCER;
 import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
 import com.szadowsz.nds4j.file.nitro.nscr.NSCR;
-import com.szadowsz.ui.NDSGui;
-import com.szadowsz.ui.NDSGuiSettings;
-import com.szadowsz.ui.input.ActivateByType;
-import com.szadowsz.ui.node.AbstractNode;
-import com.szadowsz.ui.node.NodeTree;
-import com.szadowsz.ui.node.impl.ButtonNode;
-import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.node.impl.RadioFolderNode;
-import com.szadowsz.ui.node.impl.TextNode;
-import com.szadowsz.ui.window.WindowManager;
+import com.old.ui.NDSGui;
+import com.old.ui.NDSGuiSettings;
+import com.old.ui.node.NodeTree;
+import com.old.ui.node.impl.FolderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.szadowsz.ui.node.NodeTree.*;
+import static com.old.ui.node.NodeTree.*;
 
 public class NDSGuiImpl extends NDSGui {
     final static Logger LOGGER = LoggerFactory.getLogger(NDSGuiImpl.class);

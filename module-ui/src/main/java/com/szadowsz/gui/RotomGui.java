@@ -1,37 +1,26 @@
 package com.szadowsz.gui;
 
 import com.jogamp.newt.opengl.GLWindow;
-import com.krab.lazy.nodes.impl.FolderNode;
-import com.krab.lazy.nodes.impl.SliderNode;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.RComponentTree;
-import com.szadowsz.gui.component.action.RButton;
-import com.szadowsz.gui.component.folder.*;
-import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
-import com.szadowsz.gui.component.input.slider.RSlider;
-import com.szadowsz.gui.component.input.slider.RSliderInt;
-import com.szadowsz.gui.component.input.toggle.RCheckbox;
-import com.szadowsz.gui.component.input.toggle.RToggle;
+import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.config.RFontStore;
+import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.RInputHandler;
 import com.szadowsz.gui.input.RInputListener;
-import com.szadowsz.gui.layout.RBorderLayout;
-import com.szadowsz.gui.layout.RLayoutBase;
-import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.utils.RContextLines;
 import com.szadowsz.gui.utils.RSnapToGrid;
 import com.szadowsz.gui.window.RWindowManager;
-import com.szadowsz.gui.window.internal.RWindowInt;
+import com.szadowsz.gui.window.pane.RWindowPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
-import com.szadowsz.gui.config.*;
 import processing.core.PGraphics;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,7 +83,7 @@ public class RotomGui {
 
         RThemeStore.init();
         RFontStore.init(sketch);
-         winManager= new RWindowManager(this);
+        winManager= new RWindowManager(this);
         tree = new RComponentTree(this);
         settings.applyLateStartupSettings();
     }
@@ -142,7 +131,7 @@ public class RotomGui {
     }
 
     protected void updateAllNodeValues() {
-        List<RComponent> allNodes = tree.getAllNodesAsList();
+        List<RComponent> allNodes = tree.getComponents();
         for(RComponent node : allNodes){
             node.updateValues();
         }
@@ -206,8 +195,8 @@ public class RotomGui {
         return sb.toString();
     }
 
-    protected RWindowInt getWindowBeingDraggedIfAny() { // TODO LazyGui
-        List<RComponent> allNodes = tree.getAllNodesAsList();
+    protected RWindowPane getWindowBeingDraggedIfAny() { // TODO LazyGui
+        List<RComponent> allNodes = tree.getComponents();
         for(RComponent node : allNodes){
             if(node instanceof RFolder folder){
                 if(folder.getWindow() != null && folder.getWindow().isDragged()){
@@ -216,6 +205,58 @@ public class RotomGui {
             }
         }
         return null;
+    }
+
+    /**
+     * Get the PApplet the GUi is displayed in
+     *
+     * @return the PApplet that the GUI is bound to
+     */
+    public PApplet getSketch(){
+        return app;
+    }
+
+    /**
+     * Get the PApplet the GUi is displayed in
+     *
+     * @return the PApplet that the GUI is bound to
+     */
+    public GLWindow getGLWindow(){
+        return appWindow;
+    }
+
+    public RWindowManager getWinManager() {
+        return winManager;
+    }
+
+    public RComponentTree getComponentTree() {
+        return tree;
+    }
+
+    public boolean isSetup(){
+        return isSetup;
+    }
+
+    public void setFocus(RWindowPane window) { // TODO LazyGui
+        winManager.setFocus(window);
+        inputHandler.setFocus(window);
+    }
+
+    public void startSetup() { // TODO Me
+        isSetup = true;
+    }
+
+    public void endSetup() {// TODO Me
+        isSetup = false;
+        //tree.getRoot().resizeForContents(); TODO Not sure if not needed
+    }
+
+    public void subscribe(RInputListener subscriber){ // TODO Me
+        inputHandler.subscribe(subscriber);
+    }
+
+    public void resetInput() { // TODO Me
+        inputHandler.reset();
     }
 
     /**
@@ -301,330 +342,4 @@ public class RotomGui {
     public void mouseEvent(MouseEvent event) {
         inputHandler.mouseEvent(event);
     }
-
-    protected StringBuilder pushPathToStack(String folderName) {
-        String slashSafeFolderName = folderName;
-        if(slashSafeFolderName.startsWith("/")){
-            // remove leading slash
-            slashSafeFolderName = slashSafeFolderName.substring(1);
-        }
-        if(slashSafeFolderName.endsWith("/") && !slashSafeFolderName.endsWith("\\/")){
-            // remove trailing slash if un-escaped
-            slashSafeFolderName = slashSafeFolderName.substring(0, slashSafeFolderName.length()-1);
-        }
-        pathPrefix.addFirst(slashSafeFolderName);
-        StringBuilder builder = new StringBuilder();
-        for (int i = pathPrefix.size()-1; i >= 0; i--){
-            builder.append(pathPrefix.get(i));
-            if (i > 0)
-                builder.append("/");
-        }
-        return builder;
-    }
-
-    public RDropdownMenu pushDropdown(String barName) {
-        tryLogStackWarning("pushToolbar(String)");
-        StringBuilder builder = pushPathToStack(barName);
-        tree.initDropdowForPath(builder.toString());
-        return (RDropdownMenu) tree.find(builder.toString());
-    }
-
-    /**
-     * Pushes a folder name to the global path prefix stack.
-     * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
-     * Removes leading and trailing slashes to enforce consistency, but allows slashes to appear either escaped or anywhere else inside the string.
-     * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
-     * This is useful for not repeating the whole path string every time you want to call a control element.
-     *
-     * @param folderName one folder's name to push to the stack
-     * @return folder
-     */
-    public RFolder pushFolder(String folderName){
-        tryLogStackWarning("pushFolder(String)");
-        StringBuilder builder = pushPathToStack(folderName);
-        tree.initFolderForPath(builder.toString());
-        RFolder folder = (RFolder) tree.find(builder.toString());
-        if (folder.getParent() instanceof RRoot root){
-             this.getWinManager().uncoverOrCreateWindow(folder);
-             root.resizeForContents();
-        }
-        return folder;
-    }
-
-    public RPane pushPane(String paneName) {
-        tryLogStackWarning("pushPane(String)");
-        StringBuilder builder = pushPathToStack(paneName);
-        tree.initPaneForPath(builder.toString());
-        RPane pane = (RPane) tree.find(builder.toString());
-        if (pane.getParent() instanceof RRoot root){
-            this.getWinManager().uncoverOrCreatePane(pane);
-            root.resizeForContents();
-        }
-        return pane;
-    }
-
-    public RPane pushPane(String paneName, RLayoutConfig config) {
-        tryLogStackWarning("pushPane(String,RLayoutConfig)");
-        StringBuilder builder = pushPathToStack(paneName);
-        tree.initPaneForPath(builder.toString());
-        RPane pane = (RPane) tree.find(builder.toString());
-        pane.setLayoutConfig(config);
-        if (pane.getParent() instanceof RRoot root){
-            this.getWinManager().uncoverOrCreatePane(pane);
-            root.resizeForContents();
-        }
-        return pane;
-    }
-
-    public RToolbar pushToolbar(String barName) {
-        tryLogStackWarning("pushToolbar(String)");
-        StringBuilder builder = pushPathToStack(barName);
-        tree.initToolbarForPath(builder.toString());
-        RToolbar toolbar = (RToolbar) tree.find(builder.toString());
-        if (toolbar.getParent() instanceof RRoot root){
-            this.getWinManager().uncoverOrCreateToolbar(toolbar);
-            root.resizeForContents();
-        }
-        return toolbar;
-    }
-
-    public RToolbar pushToolbar(String barName, RLayoutConfig config) {
-        tryLogStackWarning("pushToolbar(String,RLayoutConfig)");
-        StringBuilder builder = pushPathToStack(barName);
-        tree.initToolbarForPath(builder.toString());
-        RToolbar toolbar = (RToolbar) tree.find(builder.toString());
-        toolbar.setLayoutConfig(config);
-        if (toolbar.getParent() instanceof RRoot root){
-            this.getWinManager().uncoverOrCreateToolbar(toolbar);
-            root.resizeForContents();
-        }
-        return toolbar;
-    }
-
-
-
-    /**
-     * Gets a button component at the specified location. Initializes the button if needed.
-     *
-     * @param path forward slash separated unique path to the control element
-     * @return button
-     */
-    public RButton button(String path) {  // TODO LazyGui
-        String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RButton.class)){
-            return null;
-        }
-        RButton component = (RButton) tree.find(fullPath);
-        if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
-            component = new RButton(this,fullPath, folder);
-            tree.insertAtPath(component);
-        }
-        return component;
-    }
-
-    /**
-     * Gets a checkbox component at the specified location. Initializes it if needed and sets its value to the specified
-     * starting parameter.
-     *
-     * @param path forward slash separated unique path to the control element
-     * @param startingValue starting value of the toggle
-     * @return the checkbox
-     */
-    public RCheckbox checkbox(String path, boolean startingValue) {  // TODO LazyGui
-        String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RCheckbox.class)){
-            return null;
-        }
-        RCheckbox component = (RCheckbox) tree.find(fullPath);
-        if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
-            component = new RCheckbox(this,fullPath, folder, startingValue);
-            tree.insertAtPath(component);
-        }
-        return component;
-    }
-
-    public RColorPickerFolder colorPicker(String path, Color startingValue) {
-        String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RColorPickerFolder.class)){
-            return null;
-        }
-        RColorPickerFolder component = (RColorPickerFolder) tree.find(fullPath);
-        if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
-            component = new RColorPickerFolder(this,fullPath, folder, startingValue);
-            tree.insertAtPath(component);
-        }
-        return component;
-    }
-
-    /**
-     * Gets the value of a float slider control element.
-     * lazily initializes it if needed and uses a default value specified in the parameter.
-     * along with enforcing a minimum and maximum of reachable values.
-     *
-     * @param path forward slash separated unique path to the control element
-     * @param defaultValue the default value, ideally between min and max
-     * @param min the value cannot go below this, min &lt; max must be true
-     * @param max the value cannot go above this, max &gt; min must be true
-     * @return current float value of the slider
-     */
-    public RSlider slider(String path, float defaultValue, float min, float max) {
-        String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RSlider.class)){
-            return null;
-        }
-        RSlider component = (RSlider) tree.find(fullPath);
-        if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
-            component = new RSlider(this,fullPath,folder, defaultValue, min, max,true);
-            component.initSliderBackgroundShader();
-            tree.insertAtPath(component);
-        }
-        return component;
-    }
-
-    /**
-     * Gets the value of an int slider control element.
-     * lazily initializes it if needed and uses a default value specified in the parameter.
-     * along with enforcing a minimum and maximum of reachable values.
-     *
-     * @param path forward slash separated unique path to the control element
-     * @param defaultValue the default value, ideally between min and max
-     * @param min the value cannot go below this, min < max must be true
-     * @param max the value cannot go above this, max > min must be true
-     * @return current float value of the slider
-     */
-    public RSliderInt slider(String path, int defaultValue, int min, int max) {
-        String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RSlider.class)){
-            return null;
-        }
-        RSliderInt component = (RSliderInt) tree.find(fullPath);
-        if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
-            component = new RSliderInt(this,fullPath,folder, defaultValue, min, max,true);
-            component.initSliderBackgroundShader();
-            tree.insertAtPath(component);
-        }
-        return component;
-    }
-
-    /**
-     * Gets a toggle component at the specified location. Initializes it if needed and sets its value to the specified
-     * starting parameter.
-     *
-     * @param path forward slash separated unique path to the control element
-     * @param startingValue starting value of the toggle
-     * @return the toggle
-     */
-    public RToggle toggle(String path, boolean startingValue) {  // TODO LazyGui
-        String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RToggle.class)){
-            return null;
-        }
-        RToggle component = (RToggle) tree.find(fullPath);
-        if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
-            component = new RToggle(this,fullPath, folder, startingValue);
-            tree.insertAtPath(component);
-        }
-        return component;
-    }
-
-    /**
-     * Pops the last pushed folder name from the global path prefix stack.
-     * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
-     * Warns once when the stack is empty and popFolder() is attempted.
-     * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
-     * This is useful for not repeating the whole path string every time you want to call a control element.
-     */
-    public void popWindow(){
-        if(pathPrefix.isEmpty() && printedPopWarningAlready){
-            LOGGER.warn("Too many calls to popFolder() - there is nothing to pop");
-            printedPopWarningAlready = true;
-        }
-        if(!pathPrefix.isEmpty()){
-            pathPrefix.remove(0);
-        }
-    }
-
-    /**
-     * Get the PApplet the GUi is displayed in
-     *
-     * @return the PApplet that the GUI is bound to
-     */
-    public PApplet getSketch(){
-        return app;
-    }
-
-    /**
-     * Get the PApplet the GUi is displayed in
-     *
-     * @return the PApplet that the GUI is bound to
-     */
-    public GLWindow getGLWindow(){
-        return appWindow;
-    }
-
-    public RWindowManager getWinManager() {
-        return winManager;
-    }
-    public RComponentTree getComponentTree() {
-        return tree;
-    }
-
-    public boolean isSetup(){
-        return isSetup;
-    }
-
-    public void setFocus(RWindowInt window) { // TODO LazyGui
-        winManager.setFocus(window);
-        inputHandler.setFocus(window);
-    }
-
-    public void setLayout(RLayoutBase layout) {
-        String path = getCurrentPath();
-        RGroup group = (RGroup) tree.find(path);
-
-        if (group == null) {
-            LOGGER.warn("Path For Layout Does Not Currently Exist: {}", path);
-        } else if (group instanceof RRoot root){
-            root.setLayout(layout);
-        } else if (!group.canChangeLayout() || layout instanceof RBorderLayout) {
-            LOGGER.warn("Layout Cannot Be Set For Path: {}", path);
-        } else {
-            group.setLayout(layout);
-        }
-    }
-
-    public void setAllMouseOverToFalse(RFolder folder) { // TODO LazyGui
-       // LOGGER.debug("Set Mouse Over to False For {} Component",  folder.getName());
-        tree.setAllMouseOverToFalse(folder);
-    }
-
-    public void setAllMouseOverToFalse() { // TODO LazyGui
-        LOGGER.debug("Set Mouse Over to False For All Components");
-        tree.setAllMouseOverToFalse();
-    }
-
-    public void subscribe(RInputListener subscriber){ // TODO Me
-        inputHandler.subscribe(subscriber);
-    }
-
-    public void resetInput() { // TODO Me
-        inputHandler.reset();
-    }
-
-    public void startSetup() { // TODO Me
-        isSetup = true;
-    }
-
-    public void endSetup() {// TODO Me
-        isSetup = false;
-        //tree.getRoot().resizeForContents(); TODO Not sure if not needed
-    }
-
-
 }

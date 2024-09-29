@@ -2,7 +2,7 @@ package com.szadowsz.gui.utils;
 
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.RComponentTree;
-import com.szadowsz.gui.component.folder.RFolder;
+import com.szadowsz.gui.component.group.folder.RFolder;
 import processing.core.PConstants;
 import processing.core.PGraphics;
 
@@ -40,7 +40,7 @@ public class RContextLines {
         pg.fill(lineStroke);
         pg.strokeCap(PConstants.SQUARE);
         pg.strokeWeight(weight);
-        List<RComponent> allNodes = tree.getAllNodesAsList();
+        List<RComponent> allNodes = tree.getComponents();
         if (showContextLinesMode == SHOW_CONTEXT_LINES_MODE_NEVER) {
             pg.popStyle();
             return;
@@ -53,10 +53,9 @@ public class RContextLines {
             if (folderNode.getWindow() == null || !folderNode.isWindowVisible() || !folderNode.isVisible()) {
                 continue;
             }
-            boolean shouldShowLineFromTitleTowardsInlineNode = showContextLinesMode == SHOW_CONTEXT_LINES_ALWAYS ||
-                    (folderNode.getWindow().isTitleHighlighted() && showContextLinesMode == SHOW_CONTEXT_LINES_MODE_ON_HOVER);
-            if (shouldShowLineFromTitleTowardsInlineNode) {
-                folderNode.getWindow().drawContextLineFromTitleBarToInlineNode(pg, endpointRectSize, shouldPickShortestLine);
+            boolean shouldShowLine = showContextLinesMode == SHOW_CONTEXT_LINES_ALWAYS || (folderNode.getWindow().isTitleHighlighted() && showContextLinesMode == SHOW_CONTEXT_LINES_MODE_ON_HOVER);
+            if (shouldShowLine) {
+                folderNode.getWindow().drawContextLine(pg, endpointRectSize, shouldPickShortestLine);
             }
         }
         pg.popStyle();

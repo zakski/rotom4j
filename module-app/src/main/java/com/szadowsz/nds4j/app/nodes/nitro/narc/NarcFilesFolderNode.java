@@ -13,11 +13,8 @@ import com.szadowsz.nds4j.file.nitro.ncer.NCER;
 import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
 import com.szadowsz.nds4j.file.nitro.nscr.NSCR;
-import com.szadowsz.ui.input.ActivateByType;
-import com.szadowsz.ui.node.impl.ButtonNode;
-import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.node.impl.TextNode;
-import com.szadowsz.ui.window.WindowManager;
+import com.old.ui.node.impl.ButtonNode;
+import com.old.ui.node.impl.FolderNode;
 
 import java.util.List;
 

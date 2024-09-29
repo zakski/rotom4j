@@ -3,13 +3,13 @@ package com.szadowsz.nds4j.app.nodes.nitro;
 import com.szadowsz.nds4j.app.utils.ImageUtils;
 import com.szadowsz.nds4j.file.Imageable;
 import com.szadowsz.nds4j.utils.Configuration;
-import com.szadowsz.ui.node.AbstractNode;
-import com.szadowsz.ui.node.NodeType;
-import com.szadowsz.ui.node.impl.FolderNode;
+import com.old.ui.node.AbstractNode;
+import com.old.ui.node.NodeType;
+import com.old.ui.node.impl.FolderNode;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
-import static com.szadowsz.ui.store.LayoutStore.cell;
+import static com.old.ui.store.LayoutStore.cell;
 import static processing.core.PApplet.ceil;
 
 public class PreviewNode extends AbstractNode {

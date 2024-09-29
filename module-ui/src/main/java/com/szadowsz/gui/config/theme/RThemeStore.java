@@ -13,43 +13,88 @@ import java.util.Map;
 public class RThemeStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(RThemeStore.class);
 
-    private static final Map<RThemeType, RTheme> paletteMap = new HashMap<>();
+    private static final Map<String, RTheme> paletteMap = new HashMap<>();
+
+    public static final String DEFAULT_THEME = "default";
 
     private RThemeStore() {
         // NOOP
     }
 
+    /**
+     *
+     */
     public static void init() {
-        RThemeType[] allTypes = RThemeType.values();
-        for (RThemeType type : allTypes) {
-            if(!paletteMap.containsKey(type)){
-                paletteMap.put(type, RThemeType.getPalette(type));
-            }
-        }
+        RTheme basic = new RTheme(0xFF0B0B0B, 0xFFB0B0B0, 0xFF2F2F2F, 0xFFFFFFFF, 0xFF787878);
+        paletteMap.put(DEFAULT_THEME, basic);
     }
 
-    // TODO LazyGui
-    public static Color getColor(RThemeColorType type) {
-        // TODO consider Theme/Internal Window/ GUI or External Window / Global granularity - Do we need one per Gui?
+    /**
+     *
+     * @param themeName
+     * @param type Color Type To Get
+     * @return
+     */
+    public static Color getColor(String themeName, RColorType type) {
+        RTheme theme = paletteMap.get(themeName);
         return switch (type) {
-            case WINDOW_BORDER -> paletteMap.get(RThemeType.CURRENT).windowBorder;
-            case NORMAL_BACKGROUND -> paletteMap.get(RThemeType.CURRENT).normalBackground;
-            case FOCUS_BACKGROUND -> paletteMap.get(RThemeType.CURRENT).focusBackground;
-            case NORMAL_FOREGROUND -> paletteMap.get(RThemeType.CURRENT).normalForeground;
-            case FOCUS_FOREGROUND -> paletteMap.get(RThemeType.CURRENT).focusForeground;
-         };
+             case WINDOW_BORDER -> theme.getWindowBorder();
+
+             case NORMAL_BACKGROUND -> theme.getNormal().getBackground();
+             case NORMAL_FOREGROUND -> theme.getNormal().getForeground();
+
+             case FOCUS_BACKGROUND -> theme.getFocused().getBackground();
+             case FOCUS_FOREGROUND -> theme.getFocused().getForeground();
+
+             case SELECTED_BACKGROUND -> theme.getSelected().getBackground();
+             case SELECTED_FOREGROUND -> theme.getSelected().getForeground();
+
+             case ACTIVE_BACKGROUND -> theme.getActive().getBackground();
+             case ACTIVE_FOREGROUND -> theme.getActive().getForeground();
+
+             case CURSOR_NEGATIVE  -> theme.getCursor().getBackground();
+             case CURSOR           -> theme.getCursor().getForeground();
+
+            case DISABLED_BACKGROUND -> theme.getDisabled().getBackground();
+            case DISABLED_FOREGROUND -> theme.getDisabled().getForeground();
+
+        };
     }
 
-    // TODO LazyGui
-    public static int getRGBA(RThemeColorType type) {
-        return getColor(type).getRGB();
+    /**
+     *
+     * @param type Color Type To Get
+     * @return
+     */
+    public static Color getColor(RColorType type) {
+        return getColor(DEFAULT_THEME,type);
     }
 
-        public static int getGlobalSchemeNum() { // TODO G4P
+    public static int getGlobalSchemeNum() {
         return 0; // TODO STUB
     }
 
+    /**
+     * Get The RGBA int value of the Specified Color from The Specified Theme
+     *
+     * @param theme
+     * @param type Color Type To Get
+     * @return
+     */
+    public static int getRGBA(String theme, RColorType type) {
+        return getColor(theme,type).getRGB();
+    }
+
+    /**
+     * Get The RGBA int value of the Specified Color from The Default Theme
+     * @param type Color Type To Get
+     * @return
+     */
+    public static int getRGBA(RColorType type) {
+        return getColor(DEFAULT_THEME,type).getRGB();
+    }
+
     public static RTheme getTheme(int localTheme) {
-        return null;  // TODO STUB
+        return null;
     }
 }

@@ -3,20 +3,14 @@ package com.szadowsz.nds4j.app.nodes.nitro.ncer;
 import com.szadowsz.nds4j.app.nodes.nitro.NitroCmpFolderNode;
 import com.szadowsz.nds4j.app.nodes.nitro.PreviewNode;
 import com.szadowsz.nds4j.app.nodes.nitro.ncgr.NCGRFolderNode;
-import com.szadowsz.nds4j.app.nodes.nitro.nclr.NCLRFolderNode;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.ncer.NCER;
-import com.szadowsz.ui.input.ActivateByType;
-import com.szadowsz.ui.node.LayoutType;
-import com.szadowsz.ui.node.impl.ButtonNode;
-import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.node.impl.SliderNode;
+import com.old.ui.node.LayoutType;
+import com.old.ui.node.impl.FolderNode;
+import com.old.ui.node.impl.SliderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PGraphics;
 import processing.core.PImage;
-
-import static com.szadowsz.ui.store.LayoutStore.cell;
 
 
 public class NCERFolderNode extends NitroCmpFolderNode<NCER> {

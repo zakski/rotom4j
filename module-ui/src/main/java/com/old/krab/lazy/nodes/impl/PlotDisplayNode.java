@@ -1,0 +1,179 @@
+package com.old.krab.lazy.nodes.impl;
+
+import com.old.krab.lazy.input.keys.LazyKeyEvent;
+import com.old.krab.lazy.input.mouse.LazyMouseEvent;
+import com.old.krab.lazy.nodes.AbstractNode;
+import com.old.krab.lazy.nodes.NodeType;
+import com.old.krab.lazy.themes.ThemeColorType;
+import com.old.krab.lazy.themes.ThemeStore;
+import com.old.krab.lazy.utils.KeyCodes;
+import processing.core.PGraphics;
+import processing.core.PVector;
+
+import static com.old.krab.lazy.stores.LayoutStore.cell;
+import static processing.core.PApplet.*;
+
+/**
+ * A node that displays a plot grid and allows to drag the grid around.
+ * Only changes and highlights the X and Y parts of the potentially three XYZ sliders, since we can't easily use the third dimension using the 2D grid and 2D mouse input.
+ */
+class PlotDisplayNode extends AbstractNode {
+
+    private final SliderNode sliderX;
+    private final SliderNode sliderY;
+
+    protected PlotDisplayNode(String path, FolderNode parentFolder, SliderNode sliderX, SliderNode sliderY) {
+        super(NodeType.TRANSIENT, path, parentFolder);
+        this.sliderX = sliderX;
+        this.sliderY = sliderY;
+    }
+
+    @Override
+    protected void drawNodeBackground(PGraphics pg) {
+        masterInlineNodeHeightInCells = floor(size.x / cell);
+        drawPlotGrid(pg);
+        if(isMouseOverNode){
+            sliderX.isMouseOverNode = true;
+            sliderY.isMouseOverNode = true;
+        }
+    }
+
+    @Override
+    protected void drawNodeForeground(PGraphics pg, String name) {
+
+    }
+
+    private void drawPlotGrid(PGraphics pg) {
+        pg.noFill();
+        pg.stroke(ThemeStore.getColor(ThemeColorType.FOCUS_BACKGROUND));
+        if (shouldHighlightGrid()) {
+            pg.stroke(ThemeStore.getColor(ThemeColorType.WINDOW_BORDER));
+        }
+        pg.pushMatrix();
+        int cellCountX = floor(masterInlineNodeHeightInCells);
+        int cellCountY = floor(masterInlineNodeHeightInCells);
+        // cell count is kept odd on purpose for the line to always go through rounded numbers and not skip around
+        float w = (size.x - 1);
+        float h = (size.y - 1);
+        float valueChangePerCell = 10;
+        float valueChangePerCellX = valueChangePerCell * sliderX.valueFloatPrecision;
+        float valueChangePerCellY = valueChangePerCell * sliderY.valueFloatPrecision;
+        float valueRangeX = cellCountX * valueChangePerCellX;
+        float valueRangeY = cellCountY * valueChangePerCellY;
+        float nearValueX = valueChangePerCellX / 2 + sliderX.valueFloat % valueChangePerCellX;
+        float nearValueY = valueChangePerCellY / 2 + sliderY.valueFloat % valueChangePerCellY;
+        pg.translate(w / 2f + 1, h / 2f);
+        float valueStartX = -valueChangePerCellX * 2;
+        float valueEndX = valueRangeX + valueChangePerCellX * 2;
+        float valueStartY = -valueChangePerCellY * 2;
+        float valueEndY = valueRangeY + valueChangePerCellY * 2;
+
+        // draw lines
+        for (float valX = valueStartX; valX <= valueEndX; valX += valueChangePerCellX) {
+            float x = map(valX - nearValueX, 0, valueRangeX, -w / 2f, w / 2f);
+            if (abs(x) <= w / 2f) {
+                pg.line(x, -h / 2, x, h / 2);
+            }
+        }
+        for (float valY = valueStartY; valY <= valueEndY; valY += valueChangePerCellY) {
+            float y = map(valY - nearValueY, 0, valueRangeY, -h / 2f, h / 2f);
+            if (abs(y) <= h / 2f) {
+                pg.line(-w / 2, y, w / 2, y);
+            }
+        }
+
+        pg.translate(0.5f, 0.5f);
+
+        // find zero position on screen
+        float zeroSize = min(w,h) * 0.08f;
+        float zeroScreenRange = w / 2 - zeroSize / 2;
+        float zeroScreenX = constrain(map(-sliderX.valueFloat, -valueRangeX / 2f, valueRangeX / 2f, -w / 2f, w / 2f), -zeroScreenRange, zeroScreenRange);
+        float zeroScreenY = constrain(map(-sliderY.valueFloat, -valueRangeY / 2f, valueRangeY / 2f, -h / 2f, h / 2f), -zeroScreenRange, zeroScreenRange);
+
+        // draw zero cross or arrow
+        strokeForegroundBasedOnMouseOver(pg);
+        pg.strokeWeight(1.99f);
+        pg.strokeCap(SQUARE);
+        if (abs(zeroScreenX) < zeroScreenRange && abs(zeroScreenY) < zeroScreenRange) {
+            // draw zero cross because it was found on screen
+            pg.line(zeroScreenX, zeroScreenY - zeroSize / 2,
+                    zeroScreenX, zeroScreenY + zeroSize / 2);
+            pg.line(zeroScreenX - zeroSize / 2, zeroScreenY,
+                    zeroScreenX + zeroSize / 2, zeroScreenY);
+        } else {
+            // the 0 is outside, so draw an arrow towards it at the border
+            float arrowLength = 20;
+            float arrowAppendageLength = 6;
+            float arrowAppendageAngle = 0.7f;
+            PVector toZero = new PVector(zeroScreenX, zeroScreenY);
+            PVector arrowBase = toZero.copy().setMag(toZero.mag() - arrowLength);
+            pg.line(arrowBase.x, arrowBase.y, zeroScreenX, zeroScreenY);
+            PVector appendageHuggingArrowLine = arrowBase.copy().setMag(arrowAppendageLength);
+            for (int i = 0; i < 2; i++) {
+                pg.pushMatrix();
+                pg.translate(zeroScreenX, zeroScreenY);
+                float rotateDirectionSign = i % 2 == 0 ? 1 : -1;
+                pg.rotate(PI + arrowAppendageAngle * rotateDirectionSign);
+                pg.line(0, 0, appendageHuggingArrowLine.x, appendageHuggingArrowLine.y);
+                pg.popMatrix();
+            }
+        }
+
+        // draw selection marker
+        pg.noStroke();
+        fillForegroundBasedOnMouseOver(pg);
+        pg.ellipse(0, 0, zeroSize+1, zeroSize+1);
+
+        pg.popMatrix();
+    }
+
+    private boolean shouldHighlightGrid() {
+        return isInlineNodeDragged ||
+                sliderX.isInlineNodeDragged ||
+                sliderY.isInlineNodeDragged ||
+                isMouseOverNode ||
+                sliderX.isMouseOverNode ||
+                sliderY.isMouseOverNode;
+    }
+
+
+    @Override
+    public void mousePressedEvent(LazyMouseEvent e) {
+        super.mousePressedEvent(e);
+        sliderY.verticalMouseMode = true;
+        sliderX.mousePressedEvent(e);
+        sliderY.mousePressedEvent(e);
+    }
+
+    @Override
+    public void mouseDragNodeContinueEvent(LazyMouseEvent e) {
+        sliderX.mouseDragNodeContinueEvent(e);
+        sliderY.mouseDragNodeContinueEvent(e);
+    }
+
+
+    @Override
+    public void mouseReleasedAnywhereEvent(LazyMouseEvent e) {
+        super.mouseReleasedAnywhereEvent(e);
+        sliderY.verticalMouseMode = false;
+    }
+
+    @Override
+    public void mouseWheelEvent(LazyMouseEvent e) {
+        super.mouseWheelEvent(e);
+        sliderX.mouseWheelEvent(e);
+        sliderY.mouseWheelEvent(e);
+    }
+
+    public void keyPressedOverNode(LazyKeyEvent e, float x, float y) {
+        super.keyPressedOverNode(e, x, y);
+        if((e.isControlDown() && e.getKeyCode() == KeyCodes.C) || (e.isControlDown() && e.getKeyCode() == KeyCodes.V)){
+            if(parent != null){
+                parent.keyPressedOverNode(e, x, y);
+            }
+        }else{
+            sliderX.keyPressedOverNode(e, x, y);
+            sliderY.keyPressedOverNode(e, x, y);
+        }
+    }
+}

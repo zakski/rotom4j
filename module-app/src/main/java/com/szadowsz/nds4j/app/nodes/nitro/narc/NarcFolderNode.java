@@ -1,7 +1,7 @@
 package com.szadowsz.nds4j.app.nodes.nitro.narc;
 
 import com.szadowsz.nds4j.file.nitro.narc.NARC;
-import com.szadowsz.ui.node.impl.FolderNode;
+import com.old.ui.node.impl.FolderNode;
 
 public class NarcFolderNode extends FolderNode {
 

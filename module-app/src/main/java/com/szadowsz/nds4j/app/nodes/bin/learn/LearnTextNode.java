@@ -1,8 +1,8 @@
 package com.szadowsz.nds4j.app.nodes.bin.learn;
 
 import com.google.gson.JsonElement;
-import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.node.impl.TextNode;
+import com.old.ui.node.impl.FolderNode;
+import com.old.ui.node.impl.TextNode;
 
 
 public class LearnTextNode extends TextNode {

@@ -1,7 +1,7 @@
 package com.szadowsz.nds4j.app;
 
 import com.szadowsz.nds4j.app.nodes.control.RegisterGeneralUI;
-import com.szadowsz.ui.NDSGuiSettings;
+import com.old.ui.NDSGuiSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;

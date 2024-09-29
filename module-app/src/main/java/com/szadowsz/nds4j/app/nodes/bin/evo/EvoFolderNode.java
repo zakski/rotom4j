@@ -6,12 +6,12 @@ import com.szadowsz.nds4j.file.bin.evo.data.EvoMethod;
 import com.szadowsz.nds4j.ref.ItemDex;
 import com.szadowsz.nds4j.ref.PokeDex;
 import com.szadowsz.nds4j.file.bin.evo.EvolutionNFSFile;
-import com.szadowsz.ui.node.impl.FolderNode;
+import com.old.ui.node.impl.FolderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 
-import static com.szadowsz.ui.store.LayoutStore.cell;
+import static com.old.ui.store.LayoutStore.cell;
 
 
 public class EvoFolderNode extends FolderNode {

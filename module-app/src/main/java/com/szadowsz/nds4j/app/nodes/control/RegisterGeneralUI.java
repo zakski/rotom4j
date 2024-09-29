@@ -4,16 +4,16 @@ import com.szadowsz.nds4j.app.NDSGuiImpl;
 import com.szadowsz.nds4j.app.nodes.nitro.NitroImgFolderNode;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.utils.Configuration;
-import com.szadowsz.ui.NDSGui;
-import com.szadowsz.ui.input.ActivateByType;
-import com.szadowsz.ui.node.NodeTree;
-import com.szadowsz.ui.node.impl.ButtonNode;
-import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.node.impl.ToggleNode;
-import com.szadowsz.ui.window.WindowManager;
+import com.old.ui.NDSGui;
+import com.old.ui.input.ActivateByType;
+import com.old.ui.node.NodeTree;
+import com.old.ui.node.impl.ButtonNode;
+import com.old.ui.node.impl.FolderNode;
+import com.old.ui.node.impl.ToggleNode;
+import com.old.ui.window.WindowManager;
 
 import static com.szadowsz.nds4j.app.nodes.control.ControlConstants.*;
-import static com.szadowsz.ui.store.LayoutStore.cell;
+import static com.old.ui.store.LayoutStore.cell;
 
 public class RegisterGeneralUI {
 

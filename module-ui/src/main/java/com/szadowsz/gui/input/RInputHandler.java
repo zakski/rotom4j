@@ -3,10 +3,8 @@ package com.szadowsz.gui.input;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.input.keys.RKeyboard;
 import com.szadowsz.gui.input.mouse.RMouse;
-import com.szadowsz.ui.input.UserInputSubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PApplet;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 
@@ -24,9 +22,9 @@ public class RInputHandler {
      *
      * @param g use the underlying applet to establish current mouse position
      */
-    public RInputHandler(RotomGui g) {
+    public RInputHandler(RotomGui gui) {
         this.keyboard = new RKeyboard(5000L,33L);
-        this.mouse = new RMouse(g,g.getSketch().mouseX,g.getSketch().mouseY);
+        this.mouse = new RMouse(gui,gui.getSketch().mouseX,gui.getSketch().mouseY);
     }
 
     /**

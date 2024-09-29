@@ -1,8 +1,7 @@
 package com.szadowsz.gui.input.keys;
 
-import com.szadowsz.gui.input.RInputListener;
-import com.szadowsz.ui.input.keys.ChordFunction;
-import com.szadowsz.ui.input.keys.KeyChord;
+import com.old.ui.input.keys.ChordFunction;
+import com.old.ui.input.keys.KeyChord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.event.KeyEvent;

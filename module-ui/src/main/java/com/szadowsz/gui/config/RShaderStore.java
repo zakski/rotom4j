@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import processing.opengl.PShader;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 

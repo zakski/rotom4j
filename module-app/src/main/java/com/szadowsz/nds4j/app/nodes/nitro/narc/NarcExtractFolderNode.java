@@ -3,18 +3,15 @@ package com.szadowsz.nds4j.app.nodes.nitro.narc;
 import com.szadowsz.nds4j.app.Processing;
 import com.szadowsz.nds4j.app.utils.FileChooser;
 import com.szadowsz.nds4j.file.nitro.narc.NARC;
-import com.szadowsz.ui.constants.GlobalReferences;
-import com.szadowsz.ui.input.ActivateByType;
-import com.szadowsz.ui.node.AbstractNode;
-import com.szadowsz.ui.node.impl.ButtonNode;
-import com.szadowsz.ui.node.impl.FolderNode;
-import com.szadowsz.ui.window.WindowManager;
+import com.old.ui.constants.GlobalReferences;
+import com.old.ui.input.ActivateByType;
+import com.old.ui.node.impl.ButtonNode;
+import com.old.ui.node.impl.FolderNode;
+import com.old.ui.window.WindowManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class NarcExtractFolderNode extends FolderNode {
     private static final Logger LOGGER = LoggerFactory.getLogger(NarcExtractFolderNode.class);

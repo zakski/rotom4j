@@ -1,8 +1,8 @@
 package com.szadowsz.nds4j.app.nodes.bin.grow;
 
 import com.szadowsz.nds4j.file.bin.stats.GrowNFSFile;
-import com.szadowsz.ui.node.LayoutType;
-import com.szadowsz.ui.node.impl.FolderNode;
+import com.old.ui.node.LayoutType;
+import com.old.ui.node.impl.FolderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
