@@ -18,4 +18,7 @@ public class RComponentTree {
     public RRoot getRoot() {
         return new RRoot();
     }
+
+    public void setAllOtherNodesMouseOverToFalse(RComponent component) {
+    }
 }

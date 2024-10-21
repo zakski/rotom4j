@@ -10,4 +10,7 @@ public class RContentBuffer {
     public PGraphics draw() {
         return null;
     }
+
+    public void invalidateBuffer() {
+    }
 }

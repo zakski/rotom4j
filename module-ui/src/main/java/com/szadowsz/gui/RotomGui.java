@@ -242,6 +242,10 @@ public class RotomGui {
         inputHandler.setFocus(window);
     }
 
+
+    public void setAllMouseOverToFalse(RFolder folder) {
+    }
+
     public void startSetup() { // TODO Me
         isSetup = true;
     }

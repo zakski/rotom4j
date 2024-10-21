@@ -1,6 +1,7 @@
 package com.szadowsz.gui.window;
 
 import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.group.folder.RToolbar;
 import com.szadowsz.gui.window.pane.RWindowPane;
 import processing.core.PGraphics;
 
@@ -44,5 +45,12 @@ public class RWindowManager {
         for (RWindowPane win : windows) {
             win.drawWindow(canvas);
         }
+    }
+
+    public boolean isFocused(RWindowPane window) {
+        return false;
+    }
+
+    public void uncoverOrCreateToolbar(RToolbar rToolbar, boolean b, Object o) {
     }
 }
