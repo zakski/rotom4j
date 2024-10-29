@@ -379,6 +379,7 @@ public class RSlider extends RComponent {
 
     @Override
     public void mousePressed(RMouseEvent mouseEvent, float mouseY) {
+        LOGGER.info("Mouse Pressed for Slider {}", name);
         super.mousePressed(mouseEvent,mouseY);
         stringValueWhenDragStarted = getValueAsString();
     }
@@ -403,9 +404,9 @@ public class RSlider extends RComponent {
         mouseDeltaX = mouseEvent.getPrevX() - mouseEvent.getX();
         mouseDeltaY = mouseEvent.getPrevY() - mouseEvent.getY();
         if (isVertical) {
-            LOGGER.debug("Mouse DeltaY for Slider {} [{} = {} - {}]", name, mouseDeltaY, mouseEvent.getPrevY(), mouseEvent.getY());
+            LOGGER.info("Mouse DeltaY for Slider {} [{} = {} - {}]", name, mouseDeltaY, mouseEvent.getPrevY(), mouseEvent.getY());
         } else {
-            LOGGER.debug("Mouse DeltaX for Slider {} [{} = {} - {}]", name, mouseDeltaX, mouseEvent.getPrevX(), mouseEvent.getX());
+            LOGGER.info("Mouse DeltaX for Slider {} [{} = {} - {}]", name, mouseDeltaX, mouseEvent.getPrevX(), mouseEvent.getX());
         }
         mouseEvent.consume();
     }

@@ -5,10 +5,13 @@ import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.folder.RPanel;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.input.mouse.RMouseHiding;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PVector;
 
 public class RWindowPanel extends RWindowPane {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RWindowPanel.class);
 
     public RWindowPanel(PApplet app, RotomGui gui, RPanel folder, String title, PVector pos, PVector size) {
         super(app, gui, folder, title, pos, size);
@@ -24,6 +27,7 @@ public class RWindowPanel extends RWindowPane {
 
     @Override
     public void mouseDragged(RMouseEvent e) {
+        LOGGER.info("Mouse Dragged for Window {}", title);
         if (!isVisible()) {
             return;
         }
@@ -33,7 +37,7 @@ public class RWindowPanel extends RWindowPane {
             vsb.ifPresent(s -> s.mouseDragged(e));
         }
         for (RComponent child : folder.getChildren()) {
-            if (child.isDragged() && child.isParentWindowVisible()) {
+            if (child.isDragged()) {
                 child.mouseDragged(e);
                 if (e.isConsumed() && child.isDraggable()) {
                     RMouseHiding.tryHideMouseForDragging(sketch);

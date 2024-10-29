@@ -958,6 +958,12 @@ public class RWindowPane implements RWindow, RInputListener {
                 setFocusOnThis();
             }
         }
+        // Reset Values
+        isCloseInProgress = false;
+        isBeingDragged = false;
+        isBeingResized = false;
+
+
         // Then Check Window Parts
         if (!isRoot() && ((isMouseInsideCloseButton(mouseEvent) && mouseEvent.isLeft()) || (isMouseInsideWindow(mouseEvent) && mouseEvent.isRight()))) {
             isCloseInProgress = true;
@@ -1031,9 +1037,11 @@ public class RWindowPane implements RWindow, RInputListener {
             vsb.ifPresent(s -> s.mouseDragged(mouseEvent));
         }
         for (RComponent child : folder.getChildren()) {
-            child.mouseDragged(mouseEvent);
-            if (mouseEvent.isConsumed()){
-                break;
+            if (child.isDragged()) {
+                child.mouseDragged(mouseEvent);
+                if (mouseEvent.isConsumed()) {
+                    break;
+                }
             }
         }
     }

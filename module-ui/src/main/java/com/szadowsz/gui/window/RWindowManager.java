@@ -124,7 +124,45 @@ public class RWindowManager {
         uncoverOrCreateToolbar(folder, true, null);
     }
 
+    /**
+     * Create or make visible a window for the passed in folder
+     *
+     * @param folder    the corresponding folder node
+     * @param setFocus      true if the window is in focus, false otherwise
+     * @param nullablePosX  nullable windows x-coordinate
+     * @param nullablePosY  nullable windows y-coordinate
+     * @param nullableSizeX nullable windows width
+     */
+    public void uncoverOrCreateWindow(RFolder folder, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
+        PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
+        if (folder.getParentFolder() != null) {
+            RWindowPane parentWindow = folder.getParentFolder().getWindow();
+            if (parentWindow != null) {
+                pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
+            }
+        }
+        if (nullablePosX != null) {
+            pos.x = nullablePosX;
+        }
+        if (nullablePosY != null) {
+            pos.y = nullablePosY;
+        }
+        boolean windowFound = findWindow(folder, setFocus, pos);
+        if (!windowFound) {
+            RWindowPane window = new RWindowPane(gui.getSketch(),gui,folder, pos.x, pos.y, 0,0);
+            windows.add(window);
+            window.open(setFocus);
+        }
+        if (windowFound && folder.getParent() == null) {
+            folder.getWindow().setCoordinates(pos.x, pos.y);
+            if (nullableSizeX != null) {
+                folder.getWindow().setWidth(nullableSizeX);
+            }
+        }
+    }
+    
     public void uncoverOrCreateWindow(RFolder folder) {
+        uncoverOrCreateWindow(folder, true, null, null, null);
     }
 
     /**

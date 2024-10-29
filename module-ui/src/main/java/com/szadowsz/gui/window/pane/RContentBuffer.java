@@ -165,15 +165,15 @@ public final class RContentBuffer {
             buffer.textFont(RFontStore.getMainFont());
             buffer.textAlign(LEFT, CENTER);
             RLayoutBase layout = folder.getLayout();
-            LOGGER.info("{} Content Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
+            LOGGER.debug("{} Content Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
             PVector pos = folder.getWindow().getContentStart();
-            LOGGER.info("{} Layout [{},{}]",folder.getName(),folder.getWindow().contentSize.x,folder.getWindow().contentSize.y);
+            LOGGER.debug("{} Layout [{},{}]",folder.getName(),folder.getWindow().contentSize.x,folder.getWindow().contentSize.y);
             layout.setCompLayout(pos,folder.getWindow().contentSize, folder.getChildren());
             drawChildren(folder, buffer.width);
 
             buffer.endDraw();
         }
-        LOGGER.info("{} Content Buffer [{},{}] Draw Duration {}", folder.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
+        LOGGER.debug("{} Content Buffer [{},{}] Draw Duration {}", folder.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
     }
 
     private synchronized void redrawIfNecessary(){

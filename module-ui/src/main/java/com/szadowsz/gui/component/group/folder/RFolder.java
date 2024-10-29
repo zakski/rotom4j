@@ -170,6 +170,13 @@ public class RFolder extends RGroup {
         setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
         mouseEvent.consume();
     }
+    @Override
+    public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY){
+        super.mousePressed(mouseEvent,adjustedMouseY);
+        gui.getWinManager().uncoverOrCreateWindow(this);
+        gui.getWinManager().setFocus(window);
+        this.isDragged = false;
+    }
 
     @Override
     public void insertChild(RComponent child) {
