@@ -9,7 +9,6 @@ import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.layout.RLinearLayout;
-import com.szadowsz.gui.utils.RCoordinates;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
@@ -23,8 +22,8 @@ import processing.core.PVector;
 
 import java.util.Optional;
 
-import static com.old.gui.utils.RCoordinates.isPointInRect;
 import static com.szadowsz.gui.config.theme.RColorType.*;
+import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 import static processing.core.PApplet.lerp;
 import static processing.core.PApplet.round;
 import static processing.core.PConstants.*;
@@ -95,10 +94,36 @@ public class RWindowPane implements RWindow, RInputListener {
         this.size = new PVector(width, height);
         this.sizeUnconstrained = new PVector(size.x, size.y);
         this.contentSize = new PVector(size.x, size.y);
-        //initDimensions();
+        initDimensions();
         LOGGER.debug("{} Window [{},{},{},{}] Post-Dimension Init", title, pos.x, pos.y, this.size.x, this.size.y);
         contentBuffer = new RContentBuffer(this);
     }
+
+    /**
+     * Constructor for Internal Window
+     *
+     * @param app    PApplet to render window inside
+     * @param xPos   initial X display location in PApplet
+     * @param yPos   initial Y display location in PApplet
+     * @param width  initial window width
+     * @param height initial window height
+     */
+    public RWindowPane(PApplet app, RotomGui gui, RFolder folder, float xPos, float yPos, float width, float height) {
+        this(app, gui, folder, folder.getName(), (int) xPos, (int) yPos, (int) width, (int) height);
+    }
+
+    /**
+     * Constructor for Internal Window
+     *
+     * @param app    PApplet to render window inside
+     * @param title  title to give the window
+     * @param pos    initial X,Y display location in PApplet
+     * @param dim    initial window dimensions
+     */
+    public RWindowPane(PApplet app, RotomGui gui, RFolder folder, String title, PVector pos, PVector dim) {
+        this(app, gui, folder, title, (int) pos.x, (int) pos.y, (int) dim.x, (int) dim.y);
+    }
+
 
     /**
      * Helper Method to work out the upper left most point of where the content should be drawn from
@@ -195,7 +220,7 @@ public class RWindowPane implements RWindow, RInputListener {
             return false;
         }
         PVector contentStart = getContentStart();
-        return RCoordinates.isPointInRect(x, y,
+        return isPointInRect(x, y,
                 contentStart.x + contentSize.x, contentStart.y, RLayoutStore.getCell(), contentSize.y);
     }
 
@@ -208,7 +233,7 @@ public class RWindowPane implements RWindow, RInputListener {
      */
     protected boolean isPointInsideTitleBar(float x, float y) {
         if (folder.shouldDrawTitle()) {
-            return RCoordinates.isPointInRect(x, y, pos.x, pos.y, size.x - RLayoutStore.getCell(), RLayoutStore.getCell());
+            return isPointInRect(x, y, pos.x, pos.y, size.x - RLayoutStore.getCell(), RLayoutStore.getCell());
         } else {
             return false;
         }
@@ -333,6 +358,60 @@ public class RWindowPane implements RWindow, RInputListener {
     }
 
     /**
+     * Initialise the dimensions of the Window
+     */
+    protected void initDimensions() {
+        if (folder.getChildren().isEmpty()) {
+            // We only have what's provided to go on as at this stage, as we would have no child components
+            if (size.x == 0 || size.y == 0) {
+                if (size.x == 0) {
+                    if (RLayoutStore.shouldSuggestWindowWidth() && folder.suggestWindowWidthInCells() == RLayoutStore.getWindowWidthInCells()) {
+                        size.x = folder.autosuggestWindowWidthForContents();
+                    } else {
+                        size.x = RLayoutStore.getCell() * folder.suggestWindowWidthInCells();
+                    }
+                    contentSize.x = size.x;
+                    sizeUnconstrained.x = size.x;
+                }
+                if (size.y == 0) {
+                    contentSize.y = RLayoutStore.getCell();
+                    sizeUnconstrained.y = contentSize.y;
+                    if (folder.shouldDrawTitle()) {
+                        size.y = contentSize.y + RLayoutStore.getCell();
+                    } else {
+                        size.y = contentSize.y;
+                    }
+                }
+            }
+        } else {
+            if (size.x == 0 || size.y == 0) {
+                RLayoutBase layout = folder.getLayout();
+                PVector preferredSize = layout.calcPreferredSize((folder.shouldDrawTitle())?folder.getName():"",folder.getChildren());
+                if (size.y == 0) {
+                    contentSize.y = preferredSize.y;
+                    sizeUnconstrained.y = preferredSize.y;
+                    if (folder.shouldDrawTitle()) {
+                        size.y = preferredSize.y + RLayoutStore.getCell();
+                    } else {
+                        size.y = preferredSize.y;
+                    }
+                }
+                if (size.x == 0) {
+                    contentSize.x = preferredSize.x;
+                    sizeUnconstrained.x = preferredSize.x;
+                    if (vsb.isPresent()) {
+                        size.x = preferredSize.x + RLayoutStore.getCell();
+                    } else {
+                        size.x = preferredSize.x;
+                    }
+                }
+
+            }
+        }
+    }
+
+
+    /**
      * Initialise Scrollbar for Vertical Layouts
      */
     protected void initScrollbar() {
@@ -359,9 +438,6 @@ public class RWindowPane implements RWindow, RInputListener {
     }
 
     protected void handleBeingResized(RMouseEvent mouseEvent) {
-    }
-
-    protected void close() {
     }
 
     /**
@@ -621,6 +697,14 @@ public class RWindowPane implements RWindow, RInputListener {
         drawResizeIndicator(canvas);
     }
 
+    public float getContentHeight() {
+        switch (folder.getLayout()) {
+            case RLinearLayout linear -> {return (int) contentSize.y;
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
+        }
+    }
+
     @Override
     public PApplet getSketch() {
         return sketch;
@@ -670,6 +754,14 @@ public class RWindowPane implements RWindow, RInputListener {
         return size.copy();
     }
 
+    public int getContentWidth() {
+        switch (folder.getLayout()) {
+            case RLinearLayout linear ->  {
+                return (int) contentSize.x;
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
+        }
+    }
 
     public RLayoutConfig getLayoutConfig() {
         return folder.getCompLayoutConfig();
@@ -720,7 +812,7 @@ public class RWindowPane implements RWindow, RInputListener {
 
         size.y = sizeY;
         if (folder.shouldDrawTitle()) {
-            contentSize.y = size.y - com.old.gui.config.RLayoutStore.getCell();
+            contentSize.y = size.y - RLayoutStore.getCell();
         } else {
             contentSize.y = size.y;
         }
@@ -729,7 +821,7 @@ public class RWindowPane implements RWindow, RInputListener {
         contentSize.x = sizeX;
         sizeUnconstrained.x = sizeX;
         if (vsb.isPresent()) {
-            size.x = sizeX + com.old.gui.config.RLayoutStore.getCell();
+            size.x = sizeX + RLayoutStore.getCell();
         } else {
             size.x = sizeX;
         }
@@ -737,6 +829,25 @@ public class RWindowPane implements RWindow, RInputListener {
         reinitialiseBuffer();
         folder.sortChildren();
     }
+
+    /**
+     * Method to open the Window
+     *
+     * @param setFocus true if should be focused on, false otherwise
+     */
+    public void open(boolean setFocus) {
+        isVisible = true;
+        if (setFocus) {
+            setFocusOnThis();
+        }
+        reinitialiseBuffer();
+    }
+
+    public void close() {
+        isVisible = false;
+        isBeingDragged = false;
+    }
+
 
     public void drawContextLine(PGraphics canvas, float endpointRectSize, boolean shouldPickShortestLine) {
     }
@@ -936,5 +1047,19 @@ public class RWindowPane implements RWindow, RInputListener {
     }
 
     public void reinitialiseBuffer() {
+        contentBuffer.resetBuffer();
+    }
+
+    public void resizeForContents(boolean shouldResize) {
+        isBeingResized = shouldResize;
+        if (isBeingResized){
+            sizing = RSizeMode.COMPONENT;
+        }
+    }
+
+    public void setCoordinates(float x, float y) {
+    }
+
+    public void setWidth(Float nullableSizeX) {
     }
 }

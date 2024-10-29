@@ -1,9 +1,8 @@
 package com.szadowsz.gui.component.group.folder;
 
-import com.old.gui.RotomGui;
-import com.old.gui.component.RComponent;
-import com.old.gui.component.folder.RFolder;
-import com.old.gui.component.group.RColorPicker;
+import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.group.RColorPicker;
 
 import java.awt.*;
 
@@ -11,7 +10,7 @@ import java.awt.*;
  * For if you want to open an RColorPicker in a separate (internal) window
  *
  */
-public class RColorPickerFolder extends com.old.gui.component.folder.RFolder {
+public class RColorPickerFolder extends RFolder {
     // TODO Component Stub : WIP
 
     /**
@@ -22,7 +21,7 @@ public class RColorPickerFolder extends com.old.gui.component.folder.RFolder {
      * @param parent        parent folder
      * @param startingValue color to first show
      */
-    public RColorPickerFolder(RotomGui gui, String path, com.old.gui.component.folder.RFolder parent, Color startingValue, boolean showAlpha) {
+    public RColorPickerFolder(RotomGui gui, String path, RFolder parent, Color startingValue, boolean showAlpha) {
         super(gui, path, parent);
         children.add(new RColorPicker(gui, path + "/PICKER", this, startingValue,showAlpha));
     }

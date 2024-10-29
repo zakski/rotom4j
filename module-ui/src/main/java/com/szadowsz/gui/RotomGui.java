@@ -3,13 +3,21 @@ package com.szadowsz.gui;
 import com.jogamp.newt.opengl.GLWindow;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.RComponentTree;
+import com.szadowsz.gui.component.action.RButton;
+import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
-import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.component.group.folder.*;
+import com.szadowsz.gui.component.input.slider.RSlider;
+import com.szadowsz.gui.component.input.slider.RSliderInt;
+import com.szadowsz.gui.component.input.toggle.RCheckbox;
+import com.szadowsz.gui.component.input.toggle.RToggle;
 import com.szadowsz.gui.config.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.RInputHandler;
 import com.szadowsz.gui.input.RInputListener;
+import com.szadowsz.gui.layout.RBorderLayout;
+import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.utils.RContextLines;
 import com.szadowsz.gui.utils.RSnapToGrid;
 import com.szadowsz.gui.window.RWindowManager;
@@ -21,6 +29,7 @@ import processing.core.PGraphics;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -207,6 +216,26 @@ public class RotomGui {
         return null;
     }
 
+    protected StringBuilder pushPathToStack(String folderName) {
+        String slashSafeFolderName = folderName;
+        if(slashSafeFolderName.startsWith("/")){
+            // remove leading slash
+            slashSafeFolderName = slashSafeFolderName.substring(1);
+        }
+        if(slashSafeFolderName.endsWith("/") && !slashSafeFolderName.endsWith("\\/")){
+            // remove trailing slash if un-escaped
+            slashSafeFolderName = slashSafeFolderName.substring(0, slashSafeFolderName.length()-1);
+        }
+        pathPrefix.addFirst(slashSafeFolderName);
+        StringBuilder builder = new StringBuilder();
+        for (int i = pathPrefix.size()-1; i >= 0; i--){
+            builder.append(pathPrefix.get(i));
+            if (i > 0)
+                builder.append("/");
+        }
+        return builder;
+    }
+
     /**
      * Get the PApplet the GUi is displayed in
      *
@@ -345,5 +374,223 @@ public class RotomGui {
      */
     public void mouseEvent(MouseEvent event) {
         inputHandler.mouseEvent(event);
+    }
+
+    public void setLayout(RBorderLayout layout) {
+        String path = getCurrentPath();
+        RGroup group = (RGroup) tree.find(path);
+
+        if (group == null) {
+            LOGGER.warn("Path For Layout Does Not Currently Exist: {}", path);
+        } else if (group instanceof RRoot root){
+            root.setLayout(layout);
+        } else if (!group.canChangeLayout() || layout instanceof RBorderLayout) {
+            LOGGER.warn("Layout Cannot Be Set For Path: {}", path);
+        } else {
+            group.setLayout(layout);
+        }
+    }
+
+    /**
+     * Pushes a folder name to the global path prefix stack.
+     * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
+     * Removes leading and trailing slashes to enforce consistency, but allows slashes to appear either escaped or anywhere else inside the string.
+     * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
+     * This is useful for not repeating the whole path string every time you want to call a control element.
+     *
+     * @param folderName one folder's name to push to the stack
+     * @return folder
+     */
+    public RFolder pushFolder(String folderName){
+        tryLogStackWarning("pushFolder(String)");
+        StringBuilder builder = pushPathToStack(folderName);
+        tree.initFolderForPath(builder.toString());
+        RFolder folder = (RFolder) tree.find(builder.toString());
+        if (folder.getParent() instanceof RRoot root){
+            this.getWinManager().uncoverOrCreateWindow(folder);
+            root.resizeForContents();
+        }
+        return folder;
+    }
+
+
+    public RPanel pushPanel(String paneName, RLayoutConfig config) {
+        tryLogStackWarning("pushPane(String,RLayoutConfig)");
+        StringBuilder builder = pushPathToStack(paneName);
+        tree.initPanelForPath(builder.toString());
+        RPanel panel = (RPanel) tree.find(builder.toString());
+        panel.setLayoutConfig(config);
+        if (panel.getParent() instanceof RRoot root){
+            this.getWinManager().uncoverOrCreatePanel(panel);
+            root.resizeForContents();
+        }
+        return panel;
+    }
+
+    public RToolbar pushToolbar(String barName, RBorderLayout.RLocation config) {
+        tryLogStackWarning("pushToolbar(String,RLayoutConfig)");
+        StringBuilder builder = pushPathToStack(barName);
+        tree.initToolbarForPath(builder.toString());
+        RToolbar toolbar = (RToolbar) tree.find(builder.toString());
+        toolbar.setLayoutConfig(config);
+        if (toolbar.getParent() instanceof RRoot root){
+            this.getWinManager().uncoverOrCreateToolbar(toolbar);
+            root.resizeForContents();
+        }
+        return toolbar;
+    }
+
+    public RDropdownMenu pushDropdown(String barName) {
+        tryLogStackWarning("pushToolbar(String)");
+        StringBuilder builder = pushPathToStack(barName);
+        tree.initDropdowForPath(builder.toString());
+        return (RDropdownMenu) tree.find(builder.toString());
+    }
+
+    /**
+     * Gets a button component at the specified location. Initializes the button if needed.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @return button
+     */
+    public RButton button(String path) {  // TODO LazyGui
+        String fullPath = getCurrentPath() + path;
+        if(tree.isPathTakenByUnexpectedType(fullPath, RButton.class)){
+            return null;
+        }
+        RButton component = (RButton) tree.find(fullPath);
+        if (component == null) {
+            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            component = new RButton(this,fullPath, folder);
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+    /**
+     * Gets a checkbox component at the specified location. Initializes it if needed and sets its value to the specified
+     * starting parameter.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param startingValue starting value of the toggle
+     * @return the checkbox
+     */
+    public RCheckbox checkbox(String path, boolean startingValue) {  // TODO LazyGui
+        String fullPath = getCurrentPath() + path;
+        if(tree.isPathTakenByUnexpectedType(fullPath, RCheckbox.class)){
+            return null;
+        }
+        RCheckbox component = (RCheckbox) tree.find(fullPath);
+        if (component == null) {
+            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            component = new RCheckbox(this,fullPath, folder, startingValue);
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+    public RColorPickerFolder colorPicker(String path, Color startingValue) {
+        String fullPath = getCurrentPath() + path;
+        if(tree.isPathTakenByUnexpectedType(fullPath, RColorPickerFolder.class)){
+            return null;
+        }
+        RColorPickerFolder component = (RColorPickerFolder) tree.find(fullPath);
+        if (component == null) {
+            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            component = new RColorPickerFolder(this,fullPath, folder, startingValue);
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+    /**
+     * Gets the value of a float slider control element.
+     * lazily initializes it if needed and uses a default value specified in the parameter.
+     * along with enforcing a minimum and maximum of reachable values.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param defaultValue the default value, ideally between min and max
+     * @param min the value cannot go below this, min &lt; max must be true
+     * @param max the value cannot go above this, max &gt; min must be true
+     * @return current float value of the slider
+     */
+    public RSlider slider(String path, float defaultValue, float min, float max) {
+        String fullPath = getCurrentPath() + path;
+        if(tree.isPathTakenByUnexpectedType(fullPath, RSlider.class)){
+            return null;
+        }
+        RSlider component = (RSlider) tree.find(fullPath);
+        if (component == null) {
+            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            component = new RSlider(this,fullPath,folder, defaultValue, min, max,true);
+            component.initSliderBackgroundShader();
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+    /**
+     * Gets the value of an int slider control element.
+     * lazily initializes it if needed and uses a default value specified in the parameter.
+     * along with enforcing a minimum and maximum of reachable values.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param defaultValue the default value, ideally between min and max
+     * @param min the value cannot go below this, min < max must be true
+     * @param max the value cannot go above this, max > min must be true
+     * @return current float value of the slider
+     */
+    public RSliderInt slider(String path, int defaultValue, int min, int max) {
+        String fullPath = getCurrentPath() + path;
+        if(tree.isPathTakenByUnexpectedType(fullPath, RSliderInt.class)){
+            return null;
+        }
+        RSliderInt component = (RSliderInt) tree.find(fullPath);
+        if (component == null) {
+            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            component = new RSliderInt(this,fullPath,folder, defaultValue, min, max,true);
+            component.initSliderBackgroundShader();
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+    /**
+     * Gets a toggle component at the specified location. Initializes it if needed and sets its value to the specified
+     * starting parameter.
+     *
+     * @param path forward slash separated unique path to the control element
+     * @param startingValue starting value of the toggle
+     * @return the toggle
+     */
+    public RToggle toggle(String path, boolean startingValue) {  // TODO LazyGui
+        String fullPath = getCurrentPath() + path;
+        if(tree.isPathTakenByUnexpectedType(fullPath, RToggle.class)){
+            return null;
+        }
+        RToggle component = (RToggle) tree.find(fullPath);
+        if (component == null) {
+            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            component = new RToggle(this,fullPath, folder, startingValue);
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+    /**
+     * Pops the last pushed folder name from the global path prefix stack.
+     * Can be used multiple times in pairs just like pushMatrix() and popMatrix().
+     * Warns once when the stack is empty and popFolder() is attempted.
+     * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
+     * This is useful for not repeating the whole path string every time you want to call a control element.
+     */
+    public void popWindow(){
+        if(pathPrefix.isEmpty() && printedPopWarningAlready){
+            LOGGER.warn("Too many calls to popFolder() - there is nothing to pop");
+            printedPopWarningAlready = true;
+        }
+        if(!pathPrefix.isEmpty()){
+            pathPrefix.remove(0);
+        }
     }
 }

@@ -35,6 +35,9 @@ public abstract class RComponent {
     protected final String path;  // TODO LazyGui
     protected final String name; // TODO LazyGui
 
+    // TODO LazyGui
+    public final String className = this.getClass().getSimpleName();
+
     protected int localTheme = RThemeStore.getGlobalSchemeNum(); // TODO G4P
     protected RTheme palette = null;
 
@@ -93,6 +96,13 @@ public abstract class RComponent {
 
     protected int calcHeightInCells(float minimumHeight){
         return ((int)(minimumHeight / RLayoutStore.getCell())) + ((minimumHeight % RLayoutStore.getCell() != 0) ? 1 : 0);
+    }
+
+    protected void onValueChangeEnd() { // TODO LazyGui
+        if(parent != null){
+            // go up the parent chain recursively and keep notifying of a change until the root is reached
+            parent.onValueChangeEnd();
+        }
     }
 
     /**
@@ -242,6 +252,10 @@ public abstract class RComponent {
      */
     public String getName() {
         return name;
+    }
+
+    public String getClassName() {
+        return className;
     }
 
     /**
@@ -398,6 +412,13 @@ public abstract class RComponent {
         size.y = heightInCells*RLayoutStore.getCell();
     }
 
+    public void setMouseOver(boolean b) {
+        isMouseOver = b;
+    }
+
+    public void setLayoutConfig(RLayoutConfig config) {
+        this.layoutConfig = config;
+    }
 
     /**
      *
@@ -406,7 +427,7 @@ public abstract class RComponent {
      */
     public void setMouseOverThisOnly(RComponentTree componentTree, RMouseEvent mouseEvent) {
         isMouseOver = true;
-        componentTree.setAllOtherNodesMouseOverToFalse(this);
+        componentTree.setAllOtherMouseOversToFalse(this);
     }
 
     /**
@@ -544,12 +565,5 @@ public abstract class RComponent {
      */
     public void updateCoordinates(PVector basePos, PVector relPos, PVector dim) { // TODO LazyGui
         updateCoordinates(basePos.x, basePos.y, relPos.x, relPos.y, dim.x,dim.y);
-    }
-
-    protected void onValueChangeEnd() { // TODO LazyGui
-        if(parent != null){
-            // go up the parent chain recursively and keep notifying of a change until the root is reached
-            parent.onValueChangeEnd();
-        }
     }
 }

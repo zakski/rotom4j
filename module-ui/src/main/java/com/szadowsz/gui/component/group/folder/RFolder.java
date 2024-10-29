@@ -35,7 +35,7 @@ public class RFolder extends RGroup {
      * @param path   the path in the component tree
      * @param parent the parent component reference
      */
-    protected RFolder(RotomGui gui, String path, RGroup parent) {
+    public RFolder(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
     }
 
@@ -73,6 +73,14 @@ public class RFolder extends RGroup {
         drawTextLeft(pg, displayName);
         drawBackdropRight(pg, RLayoutStore.getCell());
         drawMiniatureWindowIcon(pg);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public String getPath() {
+        return path;
     }
 
     /**
@@ -134,6 +142,10 @@ public class RFolder extends RGroup {
         return PApplet.constrain(spaceTotal, minimumSpaceTotal, maximumSpaceTotal);
     }
 
+    public float suggestWindowWidthInCells() {
+        return RLayoutStore.getWindowWidthInCells();
+    }
+
     @Override
     public float suggestWidth() {
         return autosuggestWindowWidthForContents();
@@ -157,5 +169,14 @@ public class RFolder extends RGroup {
     public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY){
         setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
         mouseEvent.consume();
+    }
+
+    @Override
+    public void insertChild(RComponent child) {
+        children.add(child);
+        if (getWindow() != null) {
+            getWindow().resizeForContents(true);
+            getWindow().reinitialiseBuffer();
+        }
     }
 }

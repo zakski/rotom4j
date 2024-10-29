@@ -1,10 +1,10 @@
 package com.szadowsz.gui.component.group.folder;
 
-import com.old.gui.RotomGui;
-import com.old.gui.component.folder.RFolder;
-import com.old.gui.component.group.RGroup;
 
-public class RPane extends RFolder {
+import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.group.RGroup;
+
+public class RPanel extends RFolder {
 
     /**
      * Construct a RFolder with a Specified Layout
@@ -13,7 +13,7 @@ public class RPane extends RFolder {
      * @param path   folder path
      * @param parent parent folder
      */
-    public RPane(RotomGui gui, String path, RGroup parent) {
+    public RPanel(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
     }
 }

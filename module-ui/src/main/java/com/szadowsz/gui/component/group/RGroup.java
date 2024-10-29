@@ -2,13 +2,10 @@ package com.szadowsz.gui.component.group;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
-import com.szadowsz.gui.layout.RDirection;
-import com.szadowsz.gui.layout.RLayoutBase;
-import com.szadowsz.gui.layout.RLayoutConfig;
-import com.szadowsz.gui.layout.RLinearLayout;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.layout.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +40,7 @@ public abstract class RGroup extends RComponent {
      */
     protected RGroup(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
+        layout = new RLinearLayout(this); // Default to Linear Vertical
     }
 
     /**
@@ -55,7 +53,7 @@ public abstract class RGroup extends RComponent {
     }
 
     public RLayoutBase getLayout() {
-        return null;
+        return layout;
     }
 
 
@@ -142,6 +140,15 @@ public abstract class RGroup extends RComponent {
 
     public RLayoutConfig getWinLayoutConfig() {
         return layoutConfig;
+    }
+
+    public void insertChild(RComponent child) {
+        children.add(child);
+        RFolder folder = getParentFolder();
+        if (folder.getWindow() != null) {
+            folder.getWindow().resizeForContents(true);
+            folder.getWindow().reinitialiseBuffer();
+        }
     }
 
     public void sortChildren() {

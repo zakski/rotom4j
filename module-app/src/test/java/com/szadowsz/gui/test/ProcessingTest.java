@@ -3,6 +3,11 @@ package com.szadowsz.gui.test;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.RotomGuiManager;
 import com.szadowsz.gui.RotomGuiSettings;
+import com.szadowsz.gui.component.action.RButton;
+import com.szadowsz.gui.component.group.folder.RDropdownMenu;
+import com.szadowsz.gui.input.mouse.RActivateByType;
+import com.szadowsz.gui.input.mouse.RMouseAction;
+import com.szadowsz.gui.layout.RBorderLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -49,37 +54,37 @@ public class ProcessingTest extends PApplet {
 
         gui = RotomGuiManager.embedGui(this,settings);
         gui.startSetup();
-//        RBorderLayout layout = new RBorderLayout();
-//        layout.setSpacing(8,8,8,8);
-//        gui.setLayout(layout);
-//        gui.pushPane("File Pane", RBorderLayout.RLocation.LEFT);
-//        gui.checkbox("test1",true);
-//        gui.toggle("test2",false);
-//        gui.colorPicker("color1",new Color(0,0,255));
-//        gui.slider("slider1",125,0,255);
-//        gui.slider("slider2",125.0f,0.0f,255.0f);
-//        gui.popWindow();
-//
-//        gui.pushToolbar("Titlebar", RBorderLayout.RLocation.TOP);
-//        RButton test3 = gui.button("test3");
-//        test3.registerAction(RActivateByType.RELEASE, new RMouseAction() {
-//            @Override
-//            public void execute() {
-//                System.out.println("TEST3"); // MAT DAMON
-//            }
-//        });
-//
-//        RDropdownMenu options = gui.pushDropdown("Options");
-//        RButton test4 = gui.button("test4");
-//        test4.registerAction(RActivateByType.RELEASE, new RMouseAction() {
-//            @Override
-//            public void execute() {
-//                System.out.println("TEST4"); // MAT DAMON
-//            }
-//        });
-//        gui.popWindow();
-//
-//        gui.popWindow();
+        RBorderLayout layout = new RBorderLayout();
+        layout.setSpacing(8,8,8,8);
+        gui.setLayout(layout);
+        gui.pushPanel("File Pane", RBorderLayout.RLocation.LEFT);
+        gui.checkbox("test1",true);
+        gui.toggle("test2",false);
+        gui.colorPicker("color1",new Color(0,0,255));
+        gui.slider("slider1",125,0,255);
+        gui.slider("slider2",125.0f,0.0f,255.0f);
+        gui.popWindow();
+
+        gui.pushToolbar("Titlebar", RBorderLayout.RLocation.TOP);
+        RButton test3 = gui.button("test3");
+        test3.registerAction(RActivateByType.RELEASE, new RMouseAction() {
+            @Override
+            public void execute() {
+                System.out.println("TEST3"); // MAT DAMON
+            }
+        });
+
+        RDropdownMenu options = gui.pushDropdown("Options");
+        RButton test4 = gui.button("test4");
+        test4.registerAction(RActivateByType.RELEASE, new RMouseAction() {
+            @Override
+            public void execute() {
+                System.out.println("TEST4"); // MAT DAMON
+            }
+        });
+        gui.popWindow();
+
+        gui.popWindow();
         gui.endSetup();
 
 //        RegisterGeneralUI.buildFileDropdown(gui);
