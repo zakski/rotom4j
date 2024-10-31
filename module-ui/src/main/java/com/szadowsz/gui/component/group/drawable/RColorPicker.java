@@ -1,7 +1,8 @@
-package com.szadowsz.gui.component.group;
+package com.szadowsz.gui.component.group.drawable;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.input.color.RColorHex;
 import com.szadowsz.gui.component.input.color.RColorPreview;
@@ -25,7 +26,7 @@ import static processing.core.PConstants.SQUARE;
 /**
  * Overall grouping of components (ColorPreview, ColorSLiders, etc.) that make up user color selection controls
  */
-public class RColorPicker extends RGroup {
+public class RColorPicker extends RGroupDrawable {
     private static final Logger LOGGER = LoggerFactory.getLogger(RColorPicker.class);
 
     protected static final String PREVIEW_NODE = "Preview";
@@ -64,7 +65,7 @@ public class RColorPicker extends RGroup {
      * @param parentFolder the parent component folder reference // TODO consider if needed
      */
     public RColorPicker(RotomGui gui, String path, RFolder parentFolder, Color c) {
-        this(gui, path, parentFolder,c,false);
+        this(gui, path, parentFolder, c, false);
     }
 
     protected void initNodes() {
@@ -72,51 +73,42 @@ public class RColorPicker extends RGroup {
             return;
         }
 
-        children.add(new RColorPreview(gui,path + "/" + PREVIEW_NODE,this,color));
+        children.add(new RColorPreview(gui, path + "/" + PREVIEW_NODE, this, color));
 
         // TODO try vertical sliders
-        RColorSlider r = new RColorSlider(gui,path + "/" + R_NODE_NAME,this,color.getRed());
+        RColorSlider r = new RColorSlider(gui, path + "/" + R_NODE_NAME, this, color.getRed());
         r.initSliderBackgroundShader();
         children.add(r);
-        RColorSlider g = new RColorSlider(gui,path + "/" + G_NODE_NAME,this,color.getGreen());
+        RColorSlider g = new RColorSlider(gui, path + "/" + G_NODE_NAME, this, color.getGreen());
         g.initSliderBackgroundShader();
         children.add(g);
-        RColorSlider b = new RColorSlider(gui,path + "/" + B_NODE_NAME,this,color.getBlue());
+        RColorSlider b = new RColorSlider(gui, path + "/" + B_NODE_NAME, this, color.getBlue());
         b.initSliderBackgroundShader();
         children.add(b);
 
-        if (showAlpha){
-            RColorSlider a = new RColorSlider(gui,path + "/" + A_NODE_NAME,this,color.getAlpha());
+        if (showAlpha) {
+            RColorSlider a = new RColorSlider(gui, path + "/" + A_NODE_NAME, this, color.getAlpha());
             a.initSliderBackgroundShader();
             children.add(a);
         }
-        children.add(new RColorHex(gui,path + "/" + HEX_NODE, this));
+        children.add(new RColorHex(gui, path + "/" + HEX_NODE, this));
     }
 
-    protected void setChildValue(String sliderName, float valueFloat) {
+    protected int getSliderValue(String nodeName) {
+        RColorSlider node = ((RColorSlider) findChildByName(nodeName));
+        return node.getValueAsInt();
+    }
+
+    protected void setSliderValue(String sliderName, float valueFloat) {
         RColorSlider slider = ((RColorSlider) findChildByName(sliderName));
         if (slider != null) {
             slider.setValueFromParent(valueFloat);
         }
     }
-//    @Override
-//    public RLayoutConfig getCompLayoutConfig() {
-//        return layoutConfig;
-//    }
 
-    @Override
-    public boolean canChangeLayout(){
-        return false;
-    }
-
-    @Override
-    public void setLayout(RLayoutBase layout) {
-        LOGGER.warn("Cannot change layout for RColorPicker at Path: {}",path);
-    }
-
-    @Override
-    protected void drawBackground(PGraphics pg) {
-
+    protected void setPreviewColor(){
+        RColorPreview preview = (RColorPreview) findChildByName(PREVIEW_NODE);
+        preview.setColor(color);
     }
 
     /**
@@ -124,7 +116,7 @@ public class RColorPicker extends RGroup {
      *
      * @param child
      */
-    private void drawChildComponent(PGraphics pg, RComponent child) {
+    protected void drawChildComponent(PGraphics pg, RComponent child) {
         pg.pushMatrix();
         pg.pushStyle();
         child.draw(pg);
@@ -138,7 +130,7 @@ public class RColorPicker extends RGroup {
      * @param pg    Processing Graphics Context
      * @param width separator width
      */
-    private void drawHorizontalSeparator(PGraphics pg, int width) {
+    protected void drawHorizontalSeparator(PGraphics pg, int width) {
         boolean show = RLayoutStore.isShowHorizontalSeparators();
         float weight = RLayoutStore.getHorizontalSeparatorStrokeWeight();
         if (show) {
@@ -154,7 +146,7 @@ public class RColorPicker extends RGroup {
      *
      * @param pg Processing Graphics Context
      */
-    private void drawVerticalSeparator(PGraphics pg) {
+    protected void drawVerticalSeparator(PGraphics pg) {
         //boolean show = LayoutStore.isShowHorizontalSeparators();
         float weight = RLayoutStore.getHorizontalSeparatorStrokeWeight();
         // if (show) {
@@ -167,7 +159,7 @@ public class RColorPicker extends RGroup {
 
     @Override
     protected void drawForeground(PGraphics pg, String name) {
-        LOGGER.debug("Drawing ColorPicker Group {} [{}, {}]", name,size.x,size.y);
+        LOGGER.debug("Drawing ColorPicker Group {} [{}, {}]", name, size.x, size.y);
         int index = 0;
         for (RComponent component : children) {
             if (!component.isVisible()) {
@@ -194,11 +186,36 @@ public class RColorPicker extends RGroup {
         }
     }
 
+    @Override
+    public boolean canChangeLayout() {
+        return false;
+    }
+
+    @Override
+    public void setLayout(RLayoutBase layout) {
+        LOGGER.warn("Cannot change layout for RColorPicker at Path: {}", path);
+    }
+
+    /**
+     * Reload the individual RGB values into the display nodes from the current Color
+     */
     public void loadValuesFromRGB() {
-        setChildValue(R_NODE_NAME, color.getRed());
-        setChildValue(G_NODE_NAME, color.getGreen());
-        setChildValue(B_NODE_NAME, color.getBlue());
-        setChildValue(A_NODE_NAME, color.getAlpha());
+//        setChildValue(R_NODE_NAME, color.getRed());
+//        setChildValue(G_NODE_NAME, color.getGreen());
+//        setChildValue(B_NODE_NAME, color.getBlue());
+//        setChildValue(A_NODE_NAME, color.getAlpha());
+        if (showAlpha) {
+            color = new Color(getSliderValue(R_NODE_NAME),
+                    getSliderValue(G_NODE_NAME),
+                    getSliderValue(B_NODE_NAME),
+                    getSliderValue(A_NODE_NAME));
+        } else {
+            color = new Color(getSliderValue(R_NODE_NAME),
+                    getSliderValue(G_NODE_NAME),
+                    getSliderValue(B_NODE_NAME));
+        }
+        setPreviewColor();
+        getParentFolder().getWindow().redrawBuffer();
     }
 
     @Override
@@ -208,7 +225,7 @@ public class RColorPicker extends RGroup {
 
     @Override
     public PVector getPreferredSize() {
-        return layout.calcPreferredSize(getParentFolder().getName(),children);
+        return layout.calcPreferredSize(getParentFolder().getName(), children);
     }
 
     public String getHexString() {

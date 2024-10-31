@@ -265,8 +265,11 @@ public class RSlider extends RComponent {
     protected void updateValueMouseInteraction() {
         float mouseDelta = isVertical ? mouseDeltaY : mouseDeltaX;
         if (mouseDelta != 0) {
+            LOGGER.info("Mouse Delta for Slider {} [{}]", name, mouseDelta);
             float delta = mouseDelta * precisionValue;
+            LOGGER.info("Slider Delta for Slider {} [{} - {}]", name, delta, value);
             setValue(value - delta);
+            LOGGER.info("Value for Slider {} [{}]", name, value);
             mouseDeltaX = 0;
             mouseDeltaY = 0;
         }
@@ -409,6 +412,7 @@ public class RSlider extends RComponent {
             LOGGER.info("Mouse DeltaX for Slider {} [{} = {} - {}]", name, mouseDeltaX, mouseEvent.getPrevX(), mouseEvent.getX());
         }
         mouseEvent.consume();
+        getParentFolder().getWindow().redrawBuffer();
     }
 
     @Override

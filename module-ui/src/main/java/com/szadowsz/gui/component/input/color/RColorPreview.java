@@ -2,7 +2,7 @@ package com.szadowsz.gui.component.input.color;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.group.RColorPicker;
+import com.szadowsz.gui.component.group.drawable.RColorPicker;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
@@ -28,7 +28,7 @@ public class RColorPreview extends RComponent {
      *
      * @param gui          the gui for the window that the component is drawn under
      * @param path         the path in the component tree
-     * @param parentFolder the parent component folder reference // TODO consider if needed
+     * @param group        the parent component reference // TODO consider if needed
      */
     public RColorPreview(RotomGui gui, String path, RColorPicker group, Color currentValue) {
         super(gui, path, group);
@@ -55,5 +55,9 @@ public class RColorPreview extends RComponent {
     @Override
     public float suggestWidth() {
         return RLayoutStore.getCell() * 8;
+    }
+
+    public void setColor(Color color) {
+        currentValue = color;
     }
 }

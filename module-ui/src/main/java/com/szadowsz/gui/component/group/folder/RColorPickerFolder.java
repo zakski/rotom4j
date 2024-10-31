@@ -2,7 +2,7 @@ package com.szadowsz.gui.component.group.folder;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.group.RColorPicker;
+import com.szadowsz.gui.component.group.drawable.RColorPicker;
 
 import java.awt.*;
 

@@ -4,10 +4,10 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.input.keys.RKeyEvent;
-import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import processing.core.PGraphics;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -41,6 +41,11 @@ public abstract class RGroup extends RComponent {
     protected RGroup(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
         layout = new RLinearLayout(this); // Default to Linear Vertical
+    }
+
+    @Override
+    protected void drawBackground(PGraphics pg) {
+        // NOOP
     }
 
     /**
@@ -120,18 +125,6 @@ public abstract class RGroup extends RComponent {
             case RGroup g -> g.keyPressed(keyEvent,mouseX,mouseY);
             case RComponent c -> keyPressedOver(keyEvent, mouseX, mouseY);
         }
-    }
-
-    @Override
-    public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY){
-        RComponent underMouse = findComponentAt(mouseEvent.getX(), adjustedMouseY);
-        if (underMouse != null){
-            if(!underMouse.isMouseOver()) {
-                LOGGER.debug("Inside Component {} [NX {} NY {} Width {} Height {}]", underMouse.getName(), underMouse.getPosX(), underMouse.getPosY(), underMouse.getWidth(), underMouse.getHeight());
-            }
-            underMouse.mouseOver(mouseEvent,adjustedMouseY);
-        }
-        mouseEvent.consume();
     }
 
     public RLayoutConfig getCompLayoutConfig() {

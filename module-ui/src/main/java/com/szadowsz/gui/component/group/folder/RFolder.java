@@ -43,11 +43,6 @@ public class RFolder extends RGroup {
         return name;
     }
 
-    @Override
-    protected void drawBackground(PGraphics pg) {
-        // NOOP
-    }
-
     protected void drawMiniatureWindowIcon(PGraphics pg) { // TODO LazyGui
         strokeForeground(pg);
         fillBackground(pg);
@@ -165,11 +160,6 @@ public class RFolder extends RGroup {
         }
     }
 
-    @Override
-    public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY){
-        setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
-        mouseEvent.consume();
-    }
     @Override
     public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY){
         super.mousePressed(mouseEvent,adjustedMouseY);

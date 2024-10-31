@@ -1,17 +1,17 @@
-package com.szadowsz.gui.component.group;
+package com.szadowsz.gui.component.group.drawable;
 
-import com.old.gui.RotomGui;
-import com.old.gui.component.folder.RFolder;
-import com.old.gui.component.group.RGroup;
-import com.old.gui.layout.RLayoutBase;
-import com.old.gui.layout.RLayoutConfig;
+import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.group.RGroupDrawable;
+import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.layout.RLayoutBase;
+import com.szadowsz.gui.layout.RLayoutConfig;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
 /**
- * Similar to a Spinner, this component should give you the option to rotate through a list of other Components
+ * Component to group Checkboxes, or Toggles, only one of which can be active at a time
  */
-public class RCarousel extends RGroup {
+public class RRadioGroup extends RGroupDrawable {
     // TODO Component Stub : WIP
 
     /**
@@ -23,18 +23,13 @@ public class RCarousel extends RGroup {
      * @param path         the path in the component tree
      * @param parentFolder the parent component folder reference // TODO consider if needed
      */
-    protected RCarousel(RotomGui gui, String path, RFolder parentFolder) {
+    protected RRadioGroup(RotomGui gui, String path, RFolder parentFolder) {
         super(gui, path, parentFolder);
     }
 
     @Override
     public PVector getPreferredSize() {
         return null;
-    }
-
-    @Override
-    protected void drawBackground(PGraphics pg) {
-
     }
 
     @Override

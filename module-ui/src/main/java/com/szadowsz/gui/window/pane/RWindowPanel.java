@@ -27,7 +27,6 @@ public class RWindowPanel extends RWindowPane {
 
     @Override
     public void mouseDragged(RMouseEvent e) {
-        LOGGER.info("Mouse Dragged for Window {}", title);
         if (!isVisible()) {
             return;
         }

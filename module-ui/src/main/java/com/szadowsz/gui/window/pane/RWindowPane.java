@@ -1037,7 +1037,9 @@ public class RWindowPane implements RWindow, RInputListener {
             vsb.ifPresent(s -> s.mouseDragged(mouseEvent));
         }
         for (RComponent child : folder.getChildren()) {
+            LOGGER.info("Mouse Drag Check for Content {}", child.getName());
             if (child.isDragged()) {
+                LOGGER.info("Mouse Dragged for Content {}", child.getName());
                 child.mouseDragged(mouseEvent);
                 if (mouseEvent.isConsumed()) {
                     break;
@@ -1056,6 +1058,10 @@ public class RWindowPane implements RWindow, RInputListener {
 
     public void reinitialiseBuffer() {
         contentBuffer.resetBuffer();
+    }
+
+    public void redrawBuffer() {
+        contentBuffer.invalidateBuffer();
     }
 
     public void resizeForContents(boolean shouldResize) {

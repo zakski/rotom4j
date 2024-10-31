@@ -18,11 +18,6 @@ public class RRoot extends RGroup {
     }
 
     @Override
-    protected void drawBackground(PGraphics pg) {
-        // NOOP
-    }
-
-    @Override
     protected void drawForeground(PGraphics pg, String name) {
         // NOOP
     }
