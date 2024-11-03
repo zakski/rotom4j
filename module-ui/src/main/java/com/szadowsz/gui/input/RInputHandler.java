@@ -20,7 +20,7 @@ public class RInputHandler {
     /**
      * Constructor to Initialise Input Handling Components
      *
-     * @param g use the underlying applet to establish current mouse position
+     * @param gui gui manager to get underlying sketch from
      */
     public RInputHandler(RotomGui gui) {
         this.keyboard = new RKeyboard(5000L,33L);
@@ -45,16 +45,29 @@ public class RInputHandler {
         mouse.mouseEvent(event);
     }
 
+    /**
+     * Method to make a subscriber gain focus
+     *
+     * @param subscriber sub to set focus for
+     */
     public void setFocus(RInputListener subscriber){
         mouse.setFocus(subscriber);
         keyboard.setFocus(subscriber);
     }
 
+    /**
+     * Method to add a new subscriber to input events
+     *
+     * @param subscriber sub to add
+     */
     public void subscribe(RInputListener subscriber) {
         mouse.subscribe(subscriber);
         keyboard.subscribe(subscriber);
     }
 
+    /**
+     * Reset the keyboard held keys
+     */
     public void reset() {
         keyboard.clear();
     }

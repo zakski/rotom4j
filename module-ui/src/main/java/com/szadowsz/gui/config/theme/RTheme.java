@@ -2,6 +2,9 @@ package com.szadowsz.gui.config.theme;
 
 import java.awt.*;
 
+/**
+ * Configuration Class For A GUI Theme
+ */
 public class RTheme {
     private final RThemePair normal;
     private final RThemePair focused;
@@ -11,6 +14,14 @@ public class RTheme {
     private final RThemePair cursor;
     private final Color windowBorder;
 
+    /**
+     * Private Constructor
+     *
+     * @param normal normal background/foreground pairing
+     * @param focused focused background/foreground pairing
+     * @param cursor cursor color pairing
+     * @param border border color
+     */
     private RTheme(RThemePair normal, RThemePair focused, RThemePair cursor, Color border) {
         this.normal = normal;
         this.focused = focused;
@@ -20,6 +31,17 @@ public class RTheme {
         this.cursor = cursor;
         this.windowBorder = border;
     }
+
+    /**
+     * The only visible constructor for this class.
+     * Enforces specifying all the available values as parameters.
+     *
+     * @param normalBackgroundColor background of idle elements
+     * @param normalForegroundColor foreground of idle elements
+     * @param focusBackgroundColor background of currently selected elements
+     * @param focusForegroundColor foreground of currently selected elements
+     * @param windowBorderColor color of the border lines
+     */
      RTheme(int normalBackgroundColor, int normalForegroundColor, int focusBackgroundColor, int focusForegroundColor, int windowBorderColor) {
         this(
                 new RThemePair(normalForegroundColor,normalBackgroundColor),
@@ -85,6 +107,11 @@ public class RTheme {
         return cursor;
     }
 
+    /**
+     * Get the color of the window border
+     *
+     * @return window border color
+     */
     public Color getWindowBorder() {
         return windowBorder;
     }

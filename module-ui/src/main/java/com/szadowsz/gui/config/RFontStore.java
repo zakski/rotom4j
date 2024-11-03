@@ -16,7 +16,7 @@ public class RFontStore {
     private final static float textMarginX = 5;
     private final static float textMarginY = 13;
 
-    // TODO LazyGui, do we want these configured via theme?
+    // TODO do we want these configured via theme?
     // Font path defaults
     private final static String mainFontPathDefault = "JetBrainsMono-Regular.ttf";
     private final static String sideFontPathDefault = "JetBrainsMono-Regular.ttf";
@@ -48,7 +48,7 @@ public class RFontStore {
      *
      * @param sketch to initialise with
      */
-    public static void init(PApplet sketch) { // TODO LazyGui
+    public static void init(PApplet sketch) {
         if (mainFontUtilsProvider == null) {
             mainFontUtilsProvider = sketch.createGraphics(64, 64);
             lastMainFontPath = mainFontPathDefault; // TODO provide way to set this
@@ -70,6 +70,34 @@ public class RFontStore {
                  }
              }
         }
+    }
+
+
+    /**
+     * Get Horizontal Text Margin
+     *
+     * @return X Margin
+     */
+    public static float getMarginX() {
+        return textMarginX;
+    }
+
+    /**
+     * Get Vertical Text Margin
+     *
+     * @return Y Margin
+     */
+    public static float getMarginY() {
+        return textMarginY;
+    }
+
+    /**
+     * Get the Main Font
+     *
+     * @return the font
+     */
+    public static PFont getMainFont() {
+        return mainFont;
     }
 
     /**
@@ -97,7 +125,7 @@ public class RFontStore {
      * @param availableWidth available space
      * @return truncated substring of the text
      */
-    public static String substringToFit(PGraphics pg, String text, float availableWidth) { // TODO LazyGui
+    public static String substringToFit(PGraphics pg, String text, float availableWidth) {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
             char character = text.charAt(i);
@@ -124,27 +152,5 @@ public class RFontStore {
      */
     public static String substringToFit(PGraphics pg, String text, float availableWidth, boolean margin) { // TODO LazyGui
         return substringToFit(pg, text, availableWidth - ((margin)?textMarginX:0));
-    }
-
-    /**
-     * Get Horizontal Text Margin
-     *
-     * @return X Margin
-     */
-    public static float getMarginX() {
-        return textMarginX;
-    }
-
-    /**
-     * Get Vertical Text Margin
-     *
-     * @return Y Margin
-     */
-    public static float getMarginY() {
-        return textMarginY;
-    }
-
-    public static PFont getMainFont() {
-        return mainFont;
     }
 }

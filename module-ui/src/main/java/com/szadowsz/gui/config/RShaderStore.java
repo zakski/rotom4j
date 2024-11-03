@@ -25,7 +25,7 @@ public class RShaderStore {
      * @param path location of the shader
      * @return the retrieved shader
      */
-    public static PShader getOrLoadShader(RotomGui gui, String path) { // TODO LazyGui
+    public static PShader getOrLoadShader(RotomGui gui, String path) {
         String fullPath = shaderFolder + path;
         if(!shaders.containsKey(fullPath)) {
             File dir = new File(fullPath);

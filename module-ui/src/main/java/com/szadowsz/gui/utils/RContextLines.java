@@ -8,6 +8,9 @@ import processing.core.PGraphics;
 
 import java.util.List;
 
+/**
+ * Utility Clas TO Draw Context lines
+ */
 public class RContextLines {
     public static final String NEVER = "never";
     public static final String ON_HOVER = "on hover";
@@ -34,6 +37,12 @@ public class RContextLines {
 //        GlobalReferences.gui.popFolder();
 //    }
 
+    /**
+     * Draw Context Lines
+     *
+     * @param pg processing graphics reference
+     * @param tree the component tree
+     */
     public static void drawLines(PGraphics pg, RComponentTree tree){
         pg.pushStyle();
         pg.stroke(lineStroke);

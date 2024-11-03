@@ -1,7 +1,7 @@
 package com.szadowsz.gui.config.theme;
 
 /**
- *
+ * Theme Color Types
  */
 public enum RColorType {
     WINDOW_BORDER,

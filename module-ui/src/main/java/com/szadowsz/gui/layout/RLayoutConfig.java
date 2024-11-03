@@ -20,7 +20,6 @@ package com.szadowsz.gui.layout;
 
 /**
  * Empty interface to use for values that can be used as a layout meta-data on components.
- * @author martin
  */
 public interface RLayoutConfig {
 }

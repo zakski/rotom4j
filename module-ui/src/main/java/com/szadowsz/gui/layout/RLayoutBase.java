@@ -19,10 +19,20 @@ public abstract class RLayoutBase {
      */
     public abstract PVector calcPreferredSize(String title, List<RComponent> components);
 
+    /**
+     * Get the Group that owns the layout
+     *
+     * @return the group the layout belongs to
+     */
     public abstract RGroup getGroup(); // TODO Me
 
 
-    public abstract RLayoutConfig getLayoutConfig(); // TODO Lanterna
+    /**
+     * The current layout config info
+     *
+     * @return layout config
+     */
+    public abstract RLayoutConfig getLayoutConfig();
 
     /**
      * Given a size constraint, update the location and size of each component in the component list by laying them out
@@ -33,7 +43,7 @@ public abstract class RLayoutBase {
      * @param area Size available to this layout manager to lay out the components on
      * @param components List of components to lay out
      */
-    public abstract void setCompLayout(PVector start, PVector area, List<RComponent> components); // TODO Lanterna
+    public abstract void setCompLayout(PVector start, PVector area, List<RComponent> components);
 
     /**
      * Given a size constraint, update the location and size of each component in the component list by laying them out
@@ -44,8 +54,13 @@ public abstract class RLayoutBase {
      * @param area Size available to this layout manager to lay out the components on
      * @param windows List of windows to lay out
      */
-    public abstract void setWinLayout(PVector area, List<RWindowPane> windows); // TODO Lanterna
+    public abstract void setWinLayout(PVector area, List<RWindowPane> windows);
 
+    /**
+     * Set who owns the layout
+     *
+     * @param group the group to be owned by
+     */
     public abstract void setGroup(RGroup group); // TODO Me
 
 }

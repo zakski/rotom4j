@@ -136,131 +136,6 @@ public class RLinearLayout extends RLayoutBase {
         this.changed = true;
     }
 
-    protected PVector calcPreferredSizeHorizontally(List<RComponent> components) { // TODO Lanterna
-        float maxHeight = 0;
-        float width = 0;
-        for(RComponent component: components) {
-            PVector preferredSize = component.getPreferredSize();
-            if(maxHeight < preferredSize.y) {
-                maxHeight = preferredSize.y;
-            }
-            width += preferredSize.x;
-        }
-        width += spacing * (components.size() - 1);
-        return new PVector(Math.max(0,width), maxHeight);
-    }
-
-    protected PVector calcPreferredSizeVertically(String title, List<RComponent> components) { // TODO Lanterna
-        float maxWidth = RFontStore.calcMainTextWidth(title, RLayoutStore.getCell()) + RLayoutStore.getCell();
-        float height = 0;
-        for(RComponent child: components) {
-            PVector preferredSize = child.getPreferredSize();
-            maxWidth = PApplet.max(maxWidth,preferredSize.x);
-            height += preferredSize.y;
-        }
-        height += spacing * (components.size() - 1);
-        return new PVector(maxWidth, Math.max(0, height));
-    }
-
-    @Override
-    public PVector calcPreferredSize(String title, List<RComponent> components) { // TODO Lanterna
-        // Filter out invisible components
-        components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
-
-        if(direction == RDirection.VERTICAL) {
-            return calcPreferredSizeVertically(title,components);
-        }
-        else {
-            return calcPreferredSizeHorizontally(components);
-        }
-    }
-
-    @Override
-    public RGroup getGroup() {
-        return group;
-    }
-
-    @Override
-    public RLayoutConfig getLayoutConfig() {
-        return createLayoutData(Alignment.BEGINNING,GrowPolicy.NONE);
-    }
-
-    /**
-     * Sets the amount of empty space to put in between components. For horizontal layouts, this is number of columns
-     * (by default 1) and for vertical layouts this is number of rows (by default 0).
-     * @param spacing Spacing between components, either in number of columns or rows depending on the direction
-     * @return Itself
-     */
-    public RLinearLayout setSpacing(int spacing) { // TODO Lanterna
-        this.spacing = spacing;
-        this.changed = true;
-        return this;
-    }
-
-    /**
-     * Returns the amount of empty space to put in between components. For horizontal layouts, this is number of columns
-     * (by default 1) and for vertical layouts this is number of rows (by default 0).
-     * @return Spacing between components, either in number of columns or rows depending on the direction
-     */
-    public int getSpacing() { // TODO Lanterna
-        return spacing;
-    }
-
-    public RDirection getDirection() {
-        return direction;
-    }
-
-//    @Override
-//    public boolean hasChanged() {
-//        return changed;
-//    }
-
-    @Override
-    public void setGroup(RGroup group) {
-        this.group = group;
-    }
-
-    @Override
-    public void setCompLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
-        // Filter out invisible components
-        components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
-
-        if(direction == RDirection.VERTICAL) { // TODO Lanterna
-            doFlexibleVerticalLayout(start,area, components);
-        } else {
-            doFlexibleHorizontalLayout(start,area, components);
-        }
-        this.changed = false;
-    }
-
-    @Override
-    public void setWinLayout(PVector area, List<RWindowPane> windows) { // TODO Lanterna
-        // Filter out invisible windows
-        windows = windows.stream().filter(RWindowPane::isVisible).collect(Collectors.toList());
-
-        if(direction == RDirection.VERTICAL) { // TODO Lanterna
-            doFlexibleWinVerticalLayout(area, windows);
-        } else {
-            doFlexibleWinHorizontalLayout(area, windows);
-        }
-        this.changed = false;
-    }
-
-//    private float suggestWidthForVerticalLayout(String title, List<RComponent> components, float availableHorizontalSpace) {
-//        float titleTextWidth = RFontStore.calcMainTextWidth(title, RLayoutStore.getCell());
-//        float minimumSpaceTotal = titleTextWidth + RLayoutStore.getCell();
-//        float spaceForName = RLayoutStore.getCell() * 2;
-//        float spaceForValue = RLayoutStore.getCell() * 2;
-//        spaceForName = PApplet.max(spaceForName, titleTextWidth);
-//        for (RComponent child : components) {
-//            PVector preferredSize = child.getPreferredSize();
-//            float nameTextWidth = child.calcNameTextWidth();
-//            spaceForName = PApplet.max(spaceForName, nameTextWidth);
-//            float valueTextWidth = child.calcValueWidth();
-//            spaceForValue = PApplet.max(spaceForValue, valueTextWidth);
-//        }
-//        return PApplet.constrain(spaceForName + spaceForValue, minimumSpaceTotal, availableHorizontalSpace);
-//    }
 
     private void doFlexibleVerticalLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
         float availableVerticalSpace = area.y;
@@ -704,6 +579,132 @@ public class RLinearLayout extends RLayoutBase {
             leftPosition += decidedSize.x + spacing;
         }
     }
+
+    protected PVector calcPreferredSizeHorizontally(List<RComponent> components) { // TODO Lanterna
+        float maxHeight = 0;
+        float width = 0;
+        for(RComponent component: components) {
+            PVector preferredSize = component.getPreferredSize();
+            if(maxHeight < preferredSize.y) {
+                maxHeight = preferredSize.y;
+            }
+            width += preferredSize.x;
+        }
+        width += spacing * (components.size() - 1);
+        return new PVector(Math.max(0,width), maxHeight);
+    }
+
+    protected PVector calcPreferredSizeVertically(String title, List<RComponent> components) { // TODO Lanterna
+        float maxWidth = RFontStore.calcMainTextWidth(title, RLayoutStore.getCell()) + RLayoutStore.getCell();
+        float height = 0;
+        for(RComponent child: components) {
+            PVector preferredSize = child.getPreferredSize();
+            maxWidth = PApplet.max(maxWidth,preferredSize.x);
+            height += preferredSize.y;
+        }
+        height += spacing * (components.size() - 1);
+        return new PVector(maxWidth, Math.max(0, height));
+    }
+
+    @Override
+    public PVector calcPreferredSize(String title, List<RComponent> components) { // TODO Lanterna
+        // Filter out invisible components
+        components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
+
+        if(direction == RDirection.VERTICAL) {
+            return calcPreferredSizeVertically(title,components);
+        }
+        else {
+            return calcPreferredSizeHorizontally(components);
+        }
+    }
+
+    @Override
+    public RGroup getGroup() {
+        return group;
+    }
+
+    @Override
+    public RLayoutConfig getLayoutConfig() {
+        return createLayoutData(Alignment.BEGINNING,GrowPolicy.NONE);
+    }
+
+    /**
+     * Sets the amount of empty space to put in between components. For horizontal layouts, this is number of columns
+     * (by default 1) and for vertical layouts this is number of rows (by default 0).
+     * @param spacing Spacing between components, either in number of columns or rows depending on the direction
+     * @return Itself
+     */
+    public RLinearLayout setSpacing(int spacing) { // TODO Lanterna
+        this.spacing = spacing;
+        this.changed = true;
+        return this;
+    }
+
+    /**
+     * Returns the amount of empty space to put in between components. For horizontal layouts, this is number of columns
+     * (by default 1) and for vertical layouts this is number of rows (by default 0).
+     * @return Spacing between components, either in number of columns or rows depending on the direction
+     */
+    public int getSpacing() { // TODO Lanterna
+        return spacing;
+    }
+
+    public RDirection getDirection() {
+        return direction;
+    }
+
+//    @Override
+//    public boolean hasChanged() {
+//        return changed;
+//    }
+
+    @Override
+    public void setGroup(RGroup group) {
+        this.group = group;
+    }
+
+    @Override
+    public void setCompLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
+        // Filter out invisible components
+        components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
+
+        if(direction == RDirection.VERTICAL) { // TODO Lanterna
+            doFlexibleVerticalLayout(start,area, components);
+        } else {
+            doFlexibleHorizontalLayout(start,area, components);
+        }
+        this.changed = false;
+    }
+
+    @Override
+    public void setWinLayout(PVector area, List<RWindowPane> windows) { // TODO Lanterna
+        // Filter out invisible windows
+        windows = windows.stream().filter(RWindowPane::isVisible).collect(Collectors.toList());
+
+        if(direction == RDirection.VERTICAL) { // TODO Lanterna
+            doFlexibleWinVerticalLayout(area, windows);
+        } else {
+            doFlexibleWinHorizontalLayout(area, windows);
+        }
+        this.changed = false;
+    }
+
+//    private float suggestWidthForVerticalLayout(String title, List<RComponent> components, float availableHorizontalSpace) {
+//        float titleTextWidth = RFontStore.calcMainTextWidth(title, RLayoutStore.getCell());
+//        float minimumSpaceTotal = titleTextWidth + RLayoutStore.getCell();
+//        float spaceForName = RLayoutStore.getCell() * 2;
+//        float spaceForValue = RLayoutStore.getCell() * 2;
+//        spaceForName = PApplet.max(spaceForName, titleTextWidth);
+//        for (RComponent child : components) {
+//            PVector preferredSize = child.getPreferredSize();
+//            float nameTextWidth = child.calcNameTextWidth();
+//            spaceForName = PApplet.max(spaceForName, nameTextWidth);
+//            float valueTextWidth = child.calcValueWidth();
+//            spaceForValue = PApplet.max(spaceForValue, valueTextWidth);
+//        }
+//        return PApplet.constrain(spaceForName + spaceForValue, minimumSpaceTotal, availableHorizontalSpace);
+//    }
 
     @Override
     public String toString() {

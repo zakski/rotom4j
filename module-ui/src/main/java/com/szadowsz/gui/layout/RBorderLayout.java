@@ -89,6 +89,70 @@ public class RBorderLayout extends RLayoutBase {
     private int leftSpacing = 0;
     private int rightSpacing = 0;
 
+    /**
+     * Create Component Location Lookup map
+     *
+     * @param components list of components
+     * @return components organised by location
+     */
+    private EnumMap<RLocation, RComponent> makeCompLookupMap(List<RComponent> components) {
+        EnumMap<RLocation, RComponent> map = new EnumMap<>(RLocation.class);
+        List<RComponent> unassignedComponents = new ArrayList<>();
+        for(RComponent component: components) {
+            if (!component.isVisible()) {
+                continue;
+            }
+            if(component.getCompLayoutConfig() instanceof RLocation) {
+                map.put((RLocation)component.getCompLayoutConfig(), component);
+            }
+            else {
+                unassignedComponents.add(component);
+            }
+        }
+        //Try to assign components to available locations
+        for(RComponent component: unassignedComponents) {
+            for(RLocation location: AUTO_ASSIGN_ORDER) {
+                if(!map.containsKey(location)) {
+                    map.put(location, component);
+                    break;
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     * Create Window Location Lookup map
+     *
+     * @param windows list of windows
+     * @return windows organised by location
+     */
+    private EnumMap<RLocation, RWindowPane> makeWinLookupMap(List<RWindowPane> windows) {
+        EnumMap<RLocation, RWindowPane> map = new EnumMap<>(RLocation.class);
+        List<RWindowPane> unassignedWindows = new ArrayList<>();
+        for(RWindowPane window: windows) {
+            if (!window.isVisible()) {
+                continue;
+            }
+            if(window.getFolder().getWinLayoutConfig() instanceof RLocation) {
+                map.put((RLocation)window.getFolder().getWinLayoutConfig(), window);
+            }
+            else {
+                unassignedWindows.add(window);
+            }
+        }
+        //Try to assign windows to available locations
+        for(RWindowPane window: unassignedWindows) {
+            for(RLocation location: AUTO_ASSIGN_ORDER) {
+                if(!map.containsKey(location)) {
+                    map.put(location, window);
+                    break;
+                }
+            }
+        }
+        return map;
+    }
+
     @Override
     public PVector calcPreferredSize(String title, List<RComponent> components) {
         EnumMap<RLocation, RComponent> layout = makeCompLookupMap(components);
@@ -122,7 +186,7 @@ public class RBorderLayout extends RLayoutBase {
     @Override
     public RLayoutConfig getLayoutConfig() {
         return new RLayoutConfig() {
-        };
+        }; // No Special config
     }
 
     @Override
@@ -249,58 +313,14 @@ public class RBorderLayout extends RLayoutBase {
         this.group = group;
     }
 
-    private EnumMap<RLocation, RComponent> makeCompLookupMap(List<RComponent> components) {
-        EnumMap<RLocation, RComponent> map = new EnumMap<>(RLocation.class);
-        List<RComponent> unassignedComponents = new ArrayList<>();
-        for(RComponent component: components) {
-            if (!component.isVisible()) {
-                continue;
-            }
-            if(component.getCompLayoutConfig() instanceof RLocation) {
-                map.put((RLocation)component.getCompLayoutConfig(), component);
-            }
-            else {
-                unassignedComponents.add(component);
-            }
-        }
-        //Try to assign components to available locations
-        for(RComponent component: unassignedComponents) {
-            for(RLocation location: AUTO_ASSIGN_ORDER) {
-                if(!map.containsKey(location)) {
-                    map.put(location, component);
-                    break;
-                }
-            }
-        }
-        return map;
-    }
-
-    private EnumMap<RLocation, RWindowPane> makeWinLookupMap(List<RWindowPane> windows) {
-        EnumMap<RLocation, RWindowPane> map = new EnumMap<>(RLocation.class);
-        List<RWindowPane> unassignedWindows = new ArrayList<>();
-        for(RWindowPane window: windows) {
-            if (!window.isVisible()) {
-                continue;
-            }
-            if(window.getFolder().getWinLayoutConfig() instanceof RLocation) {
-                map.put((RLocation)window.getFolder().getWinLayoutConfig(), window);
-            }
-            else {
-                unassignedWindows.add(window);
-            }
-        }
-        //Try to assign windows to available locations
-        for(RWindowPane window: unassignedWindows) {
-            for(RLocation location: AUTO_ASSIGN_ORDER) {
-                if(!map.containsKey(location)) {
-                    map.put(location, window);
-                    break;
-                }
-            }
-        }
-        return map;
-    }
-
+    /**
+     * Set the expected borader spacing
+     *
+     * @param top spacing between the top component and others
+     * @param bottom spacing between the bottom component and others
+     * @param left spacing between the left and center
+     * @param right spacing between the right and center
+     */
     public void setSpacing(int top, int bottom, int left, int right) {
         this.topSpacing = top;
         this.bottomSpacing = bottom;
