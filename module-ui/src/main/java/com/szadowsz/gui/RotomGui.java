@@ -378,7 +378,7 @@ public class RotomGui {
 
     public void setLayout(RBorderLayout layout) {
         String path = getCurrentPath();
-        RGroup group = (RGroup) tree.find(path);
+        RGroup group = (RGroup) tree.getComponent(path);
 
         if (group == null) {
             LOGGER.warn("Path For Layout Does Not Currently Exist: {}", path);
@@ -405,7 +405,7 @@ public class RotomGui {
         tryLogStackWarning("pushFolder(String)");
         StringBuilder builder = pushPathToStack(folderName);
         tree.initFolderForPath(builder.toString());
-        RFolder folder = (RFolder) tree.find(builder.toString());
+        RFolder folder = (RFolder) tree.getComponent(builder.toString());
         if (folder.getParent() instanceof RRoot root){
             this.getWinManager().uncoverOrCreateWindow(folder);
             root.resizeForContents();
@@ -418,7 +418,7 @@ public class RotomGui {
         tryLogStackWarning("pushPane(String,RLayoutConfig)");
         StringBuilder builder = pushPathToStack(paneName);
         tree.initPanelForPath(builder.toString());
-        RPanel panel = (RPanel) tree.find(builder.toString());
+        RPanel panel = (RPanel) tree.getComponent(builder.toString());
         panel.setLayoutConfig(config);
         if (panel.getParent() instanceof RRoot root){
             this.getWinManager().uncoverOrCreatePanel(panel);
@@ -431,7 +431,7 @@ public class RotomGui {
         tryLogStackWarning("pushToolbar(String,RLayoutConfig)");
         StringBuilder builder = pushPathToStack(barName);
         tree.initToolbarForPath(builder.toString());
-        RToolbar toolbar = (RToolbar) tree.find(builder.toString());
+        RToolbar toolbar = (RToolbar) tree.getComponent(builder.toString());
         toolbar.setLayoutConfig(config);
         if (toolbar.getParent() instanceof RRoot root){
             this.getWinManager().uncoverOrCreateToolbar(toolbar);
@@ -444,7 +444,7 @@ public class RotomGui {
         tryLogStackWarning("pushToolbar(String)");
         StringBuilder builder = pushPathToStack(barName);
         tree.initDropdowForPath(builder.toString());
-        return (RDropdownMenu) tree.find(builder.toString());
+        return (RDropdownMenu) tree.getComponent(builder.toString());
     }
 
     /**
@@ -458,9 +458,9 @@ public class RotomGui {
         if(tree.isPathTakenByUnexpectedType(fullPath, RButton.class)){
             return null;
         }
-        RButton component = (RButton) tree.find(fullPath);
+        RButton component = (RButton) tree.getComponent(fullPath);
         if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            RFolder folder = tree.getParentFolder(fullPath);
             component = new RButton(this,fullPath, folder);
             tree.insertAtPath(component);
         }
@@ -480,9 +480,9 @@ public class RotomGui {
         if(tree.isPathTakenByUnexpectedType(fullPath, RCheckbox.class)){
             return null;
         }
-        RCheckbox component = (RCheckbox) tree.find(fullPath);
+        RCheckbox component = (RCheckbox) tree.getComponent(fullPath);
         if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            RFolder folder = tree.getParentFolder(fullPath);
             component = new RCheckbox(this,fullPath, folder, startingValue);
             tree.insertAtPath(component);
         }
@@ -494,9 +494,9 @@ public class RotomGui {
         if(tree.isPathTakenByUnexpectedType(fullPath, RColorPickerFolder.class)){
             return null;
         }
-        RColorPickerFolder component = (RColorPickerFolder) tree.find(fullPath);
+        RColorPickerFolder component = (RColorPickerFolder) tree.getComponent(fullPath);
         if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            RFolder folder = tree.getParentFolder(fullPath);
             component = new RColorPickerFolder(this,fullPath, folder, startingValue);
             tree.insertAtPath(component);
         }
@@ -519,9 +519,9 @@ public class RotomGui {
         if(tree.isPathTakenByUnexpectedType(fullPath, RSlider.class)){
             return null;
         }
-        RSlider component = (RSlider) tree.find(fullPath);
+        RSlider component = (RSlider) tree.getComponent(fullPath);
         if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            RFolder folder = tree.getParentFolder(fullPath);
             component = new RSlider(this,fullPath,folder, defaultValue, min, max,true);
             component.initSliderBackgroundShader();
             tree.insertAtPath(component);
@@ -545,9 +545,9 @@ public class RotomGui {
         if(tree.isPathTakenByUnexpectedType(fullPath, RSliderInt.class)){
             return null;
         }
-        RSliderInt component = (RSliderInt) tree.find(fullPath);
+        RSliderInt component = (RSliderInt) tree.getComponent(fullPath);
         if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            RFolder folder = tree.getParentFolder(fullPath);
             component = new RSliderInt(this,fullPath,folder, defaultValue, min, max,true);
             component.initSliderBackgroundShader();
             tree.insertAtPath(component);
@@ -568,9 +568,9 @@ public class RotomGui {
         if(tree.isPathTakenByUnexpectedType(fullPath, RToggle.class)){
             return null;
         }
-        RToggle component = (RToggle) tree.find(fullPath);
+        RToggle component = (RToggle) tree.getComponent(fullPath);
         if (component == null) {
-            RFolder folder = tree.findParentFolderLazyInitPath(fullPath);
+            RFolder folder = tree.getParentFolder(fullPath);
             component = new RToggle(this,fullPath, folder, startingValue);
             tree.insertAtPath(component);
         }

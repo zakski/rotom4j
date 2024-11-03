@@ -7,9 +7,13 @@ import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLinearLayout;
 
+/**
+ * Toolbar to display across a Processing Window
+ */
 public class RToolbar extends RFolder {
+
     /**
-     * Construct a RFolder with a Specified Layout
+     * Construct an RToolbar
      *
      * @param gui
      * @param path   folder path

@@ -45,10 +45,16 @@ public abstract class RToggleBase extends RComponent {
         // NOOP
     }
 
+    /**
+     * Draws the difference between a toggle, and a checkbox
+     *
+     * @param pg graphics reference to draw on
+     * @param value toggle state to draw
+     */
     protected abstract void drawToggleHandleRight(PGraphics pg, boolean value); // TODO LazyGui
 
     @Override
-    protected void drawForeground(PGraphics pg, String name) { // TODO LazyGui
+    protected void drawForeground(PGraphics pg, String name) {
         drawTextLeft(pg, name);
         drawBackdropRight(pg, RLayoutStore.getCell());
         drawToggleHandleRight(pg, value);
@@ -65,7 +71,7 @@ public abstract class RToggleBase extends RComponent {
     @Override
     public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float mouseY) {
         super.mouseReleasedAnywhere(mouseEvent,mouseY);
-       armed = false;
+        armed = false;
         LOGGER.debug("{} Released Outside",name);
     }
 
@@ -87,12 +93,18 @@ public abstract class RToggleBase extends RComponent {
         mouseEvent.consume();
     }
 
-    public void registerAction(Consumer<Boolean> o) {
-        actions.add(o);
-    }
-
     @Override
     public float suggestWidth() {
         return RFontStore.calcMainTextWidth(name, RLayoutStore.getCell()) + RLayoutStore.getCell() * 2;
     }
+
+    /**
+     * Register an action to be performed when the mouse is released ove the component
+     *
+     * @param o action to execute
+     */
+    public void registerAction(Consumer<Boolean> o) {
+        actions.add(o);
+    }
+
 }

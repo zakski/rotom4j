@@ -26,12 +26,12 @@ import static processing.core.PApplet.*;
 
 
 /**
- * 1D slider component.
+ * 1D float slider component.
  * */
 public class RSlider extends RComponent {
     private static final Logger LOGGER = LoggerFactory.getLogger(RSlider.class);
 
-    // TODO LazyGui
+    // Current supported precisions
     protected static final ArrayList<Float> precisionRange = new RArrayListBuilder<Float>()
             .add(0.0001f)
             .add(0.001f)
@@ -41,47 +41,52 @@ public class RSlider extends RComponent {
             .add(10.0f)
             .add(100.0f).build();
 
-    // TODO LazyGui
+    // Current supported numpad characters
     protected final ArrayList<Character> numpadChars = new RArrayListBuilder<Character>()
             .add('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
             .build();
 
-    protected static final String SQUIGGLY_EQUALS = "≈ "; // TODO LazyGui
+    protected static final String SQUIGGLY_EQUALS = "≈ "; // TODO Not sure if needed
 
-    protected static final String shaderPathDefault = "sliderBackground.glsl"; // TODO LazyGui
+    protected static final String shaderPathDefault = "sliderBackground.glsl"; // Default Shader Resource File Name
 
-    protected static final String REGEX_FRACTION_SEPARATOR = "[.,]"; // TODO LazyGui
-    protected static final String REGEX_ANY_NUMBER_SERIES = "[0-9]*"; // TODO LazyGui
-    protected static final String FRACTIONAL_FLOAT_REGEX = REGEX_ANY_NUMBER_SERIES + REGEX_FRACTION_SEPARATOR + REGEX_ANY_NUMBER_SERIES; // TODO LazyGui
+    // REGEX constants
+    protected static final String REGEX_FRACTION_SEPARATOR = "[.,]";
+    protected static final String REGEX_ANY_NUMBER_SERIES = "[0-9]*";
+    protected static final String FRACTIONAL_FLOAT_REGEX = REGEX_ANY_NUMBER_SERIES + REGEX_FRACTION_SEPARATOR + REGEX_ANY_NUMBER_SERIES;
 
-    protected float value; // TODO LazyGui
+    protected float value; // The Current Value of the slider
 
-    protected int precisionIndex;  // TODO LazyGui
-    protected float precisionValue;  // TODO LazyGui
+    // Precision Configuration
+    protected int precisionIndex;
+    protected float precisionValue;
 
-    protected float valueDefault; // TODO LazyGui
+    // Default/Min/Max Values of the slider
+    protected float valueDefault;
+    protected float valueMin;
+    protected float valueMax;
 
-    protected boolean isConstrained;  // TODO LazyGui
-    protected float valueMin; // TODO LazyGui
-    protected float valueMax; // TODO LazyGui
+    // Mouse Movement to change the slider value
+    protected float mouseDeltaX, mouseDeltaY;
 
-    protected boolean showPercentIndicator;  // TODO LazyGui
+    // Configuration Toggles
+    protected boolean isConstrained;  // if we clamp to min and max values
+    protected boolean isVertical; // if the slider is vertical or horizontal
+    protected boolean showPercentIndicator;  // TODO Consider need
+    protected boolean showSquigglyEquals = true; // TODO Consider need
 
-    protected boolean isVertical; // TODO LazyGui
-    protected float mouseDeltaX, mouseDeltaY; // TODO LazyGui
 
-    protected float backgroundScroll; // TODO LazyGui
+    protected float backgroundScroll; // TODO consider need
 
-    protected String numpadBufferValue = ""; // TODO LazyGui
-    protected int numpadInputAppendLastMillis = -1; // TODO LazyGui
-    protected boolean wasNumpadInputActive = false; // TODO LazyGui
+    // Transient Numpad information TODO consider need
+    protected String numpadBufferValue = "";
+    protected int numpadInputAppendLastMillis = -1;
+    protected boolean wasNumpadInputActive = false;
 
-    protected String stringValueWhenDragStarted = null; // TODO LazyGui
+    // Initial value as string before drag changes the value
+    protected String stringValueWhenDragStarted = null;
 
-    // true by default locally to be overridden by the global setting LayoutStore.shouldDisplaySquigglyEquals() that is false by default
-    protected boolean displaySquigglyEquals = true; // TODO LazyGui
-
-    public RSlider(RotomGui gui, String path, RGroup parent, float defaultValue, float min, float max, boolean constrained) {  // TODO LazyGui
+    public RSlider(RotomGui gui, String path, RGroup parent, float defaultValue, float min, float max, boolean constrained) {
         super(gui, path, parent);
         valueDefault = defaultValue;
         if (!Float.isNaN(defaultValue)) {
@@ -93,20 +98,16 @@ public class RSlider extends RComponent {
         setSensiblePrecision(nf(value, 0, 0));
     }
 
-    public RSlider(RotomGui gui, String path, RGroup parent, float defaultValue, float min, float max, float precision, boolean constrained) {  // TODO LazyGui
-        this(gui, path, parent,defaultValue,min,max,constrained);
-        int index = precisionRange.indexOf(precision);
-        if (index>=0){
-            precisionIndex = index;
-        }
-    }
-
-    public RSlider(RotomGui gui, String path, RGroup parent, float defaultValue, float min, float max, boolean constrained, boolean displaySquigglyEquals){  // TODO LazyGui
+    public RSlider(RotomGui gui, String path, RGroup parent, float defaultValue, float min, float max, boolean constrained, boolean displaySquigglyEquals){
         this(gui, path, parent, defaultValue, min, max, constrained);
-        this.displaySquigglyEquals = displaySquigglyEquals;
+        this.showSquigglyEquals = displaySquigglyEquals;
     }
 
-    protected String getDisplayValue() { // TODO LazyGui
+    /**
+     * Convert float value to string value that we will write to the graphics buffer
+     * @return the string to display
+     */
+    protected String getDisplayValue() {
         // the numpadBufferValue flickers back to the old value for one frame if we just rely on "isNumpadActive()"
         // so we keep displaying the buffer for 1 more frame with "wasNumpadInputActiveLastFrame"
         if (isNumpadInputActive() || wasNumpadInputActive) {
@@ -122,7 +123,7 @@ public class RSlider extends RComponent {
         } else {
             valueToDisplay = nf(round(value), 0, 0);
         }
-        if (displaySquigglyEquals && RLayoutStore.shouldDisplaySquigglyEquals()) {
+        if (showSquigglyEquals && RLayoutStore.shouldDisplaySquigglyEquals()) {
             String valueWithoutRounding = nf(value, 0, 0);
             boolean precisionRoundingHidesInformation = valueToDisplay.length() < valueWithoutRounding.length();
             if (precisionRoundingHidesInformation) {
@@ -134,36 +135,64 @@ public class RSlider extends RComponent {
         return valueToDisplay;
     }
 
-    protected int getFractionalDigitLength(String value) { // TODO LazyGui
+    /**
+     * Calculate how many fractional digits the current value has
+     *
+     * @param value the value as a string
+     * @return the number of fractional digits
+     */
+    protected int getFractionalDigitLength(String value) {
         if (value.contains(".") || value.contains(",")) {
             return value.split(REGEX_FRACTION_SEPARATOR)[1].length();
         }
         return 0;
     }
 
-    protected boolean isNumpadInputActive() { // TODO LazyGui
+    /**
+     * Is the numpad currently active
+     *
+     * @return true if active, false otherwise
+     */
+    protected boolean isNumpadInputActive() {
         return numpadInputAppendLastMillis != -1 &&
-                gui.getSketch().millis() <= numpadInputAppendLastMillis + RDelayStore.getKeyboardBufferDelayMillis();
+                gui.getSketch().millis() <= numpadInputAppendLastMillis + RDelayStore.getKeyboardBufferDelayMs();
     }
 
+    /**
+     * Is the numpad currently in number replacement mode
+     *
+     * @return true if the current value should be replaced, false if it should be apprended to
+     */
     protected boolean isNumpadInReplaceMode() {
         return numpadInputAppendLastMillis == -1 ||
-                gui.getSketch().millis() - numpadInputAppendLastMillis > RDelayStore.getKeyboardBufferDelayMillis();
+                gui.getSketch().millis() - numpadInputAppendLastMillis > RDelayStore.getKeyboardBufferDelayMs();
     }
 
-    protected void setNumpadInputActiveStarted() { // TODO LazyGui
+    /**
+     * Set the timestamp of when the numpad was last active
+     */
+    protected void setNumpadInputActiveStarted() {
         numpadInputAppendLastMillis = gui.getSketch().millis();
     }
 
+    /**
+     * Set new precision, based on a valid index that points to an allowed precision value
+     * @param newPrecisionIndex the index to check against
+     */
     protected void setPrecisionByIndex(int newPrecisionIndex) {
         if (!validatePrecision(newPrecisionIndex)) {
             return;
         }
-        precisionIndex = constrain(newPrecisionIndex, 0, precisionRange.size() - 1); // TODO LazyGui
+        precisionIndex = constrain(newPrecisionIndex, 0, precisionRange.size() - 1);
         precisionValue = precisionRange.get(precisionIndex);
     }
 
-    protected void setSensiblePrecision(String value) { // TODO LazyGui
+    /**
+     * Set default precision based on initial provided value
+     *
+     * @param value the value provided in the constructor
+     */
+    protected void setSensiblePrecision(String value) {
         if(isConstrained && (valueMax - valueMin) <= 1){
             setPrecisionByIndex(precisionRange.indexOf(0.01f));
             return;
@@ -180,17 +209,35 @@ public class RSlider extends RComponent {
         setPrecisionByIndex(precisionRange.indexOf(1f));
     }
 
-    protected void setValue(float floatToSet) { // TODO LazyGui
+    /**
+     * Method to set the value of the slider
+     *
+     * @param floatToSet the value to set
+     */
+    protected void setValue(float floatToSet) {
         value = floatToSet;
-        onValueChange();
+        onValueChange(); // post-change processing
     }
 
-    protected boolean validatePrecision(int newPrecisionIndex) { // TODO LazyGui
+    /**
+     * Validate the new precision value to set is valid
+     *
+     * @param newPrecisionIndex the index to confirm is in range
+     * @return true if valid, false otherwise
+     */
+    protected boolean validatePrecision(int newPrecisionIndex) {
         return (newPrecisionIndex < precisionRange.size()) &&
                 (newPrecisionIndex >= 0);
     }
 
-    protected void drawBackgroundScroller(PGraphics pg, boolean constrainedThisFrame) { // TODO LazyGui
+    /**
+     * Method to draw the slider background
+     *
+     * @param pg the graphics to draw upon
+     * @param constrainedThisFrame whether we had to clam the value this frame
+     */
+    protected void drawBackgroundScroller(PGraphics pg, boolean constrainedThisFrame) {
+        // TODO evaluate if rendering slider values correctly, look at how we did scrollbar
         if (!constrainedThisFrame) {
             backgroundScroll -= isVertical ? mouseDeltaY : mouseDeltaX;
         }
@@ -232,7 +279,12 @@ public class RSlider extends RComponent {
         drawTextRight(pg, getDisplayValue() + (isNumpadInputActive() ? "_" : ""), false);
     }
 
-    protected boolean constrainValue() { // TODO LazyGui
+    /**
+     * If we expect a max/min value, clamp the current value to these limits, if it exceeds them
+     *
+     * @return true if we clamped the value, false otherwise
+     */
+    protected boolean constrainValue() {
         boolean constrained = false;
         if (isConstrained) {
             if (value > valueMax || value < valueMin) {
@@ -243,15 +295,19 @@ public class RSlider extends RComponent {
         return constrained;
     }
 
-    protected void onValueChange() { // TODO LazyGui
+    /**
+     * How to behave when the slider value changes
+     */
+    protected void onValueChange() {
         constrainValue();
     }
 
-    public void initSliderBackgroundShader() {
-        RShaderStore.getOrLoadShader(gui,shaderPathDefault);
-    }
-
-    protected void updateBackgroundShader(PGraphics pg) { // TODO LazyGui
+    /**
+     * Update the background shader based on the focus colours
+     *
+     * @param pg the graphics to draw the shader onto
+     */
+    protected void updateBackgroundShader(PGraphics pg) {
         PShader shader = RShaderStore.getOrLoadShader(gui,shaderPathDefault);
         shader.set("scrollX", backgroundScroll);
         Color bgColor = RThemeStore.getColor(RColorType.NORMAL_BACKGROUND);
@@ -262,19 +318,28 @@ public class RSlider extends RComponent {
         pg.shader(shader);
     }
 
+    /**
+     * Update the value based on the relevant recorded mouse drag delta
+     */
     protected void updateValueMouseInteraction() {
         float mouseDelta = isVertical ? mouseDeltaY : mouseDeltaX;
         if (mouseDelta != 0) {
-            LOGGER.info("Mouse Delta for Slider {} [{}]", name, mouseDelta);
+            LOGGER.debug("Mouse Delta for Slider {} [{}]", name, mouseDelta);
             float delta = mouseDelta * precisionValue;
-            LOGGER.info("Slider Delta for Slider {} [{} - {}]", name, delta, value);
+            LOGGER.debug("Slider Delta for Slider {} [{} - {}]", name, delta, value);
             setValue(value - delta);
-            LOGGER.info("Value for Slider {} [{}]", name, value);
+            LOGGER.debug("Value for Slider {} [{}]", name, value);
             mouseDeltaX = 0;
             mouseDeltaY = 0;
         }
     }
 
+    /**
+     * Numpad number append/replace processing
+     *
+     * @param input the value to append/replace
+     * @param inReplaceMode whether we append to or replace the existing number
+     */
     protected void appendNumberToBufferValue(Integer input, boolean inReplaceMode) {
         String inputString = String.valueOf(input);
         setNumpadInputActiveStarted();
@@ -284,12 +349,18 @@ public class RSlider extends RComponent {
         numpadBufferValue += inputString;
     }
 
+    /**
+     * Convert numpad buffer string to float, and set as value
+     *
+     * @param toParseAsFloat the string to convert
+     * @return true if successful, false otherwise
+     */
     protected boolean parseNumpadBuffer(String toParseAsFloat) {
         float parsed;
         try {
             parsed = Float.parseFloat(toParseAsFloat);
         } catch (NumberFormatException formatException) {
-            println(formatException.getMessage(), formatException);
+            LOGGER.error(formatException.getMessage(), formatException);
             return false;
         }
         setValue(parsed);
@@ -297,6 +368,11 @@ public class RSlider extends RComponent {
         return true;
     }
 
+    /**
+     * Numpad input key processing
+     *
+     * @param e the key event to process
+     */
     protected void readNumpadInput(RKeyEvent e) {
         boolean inReplaceMode = isNumpadInReplaceMode();
         if (numpadChars.contains(e.getKey())) {
@@ -326,6 +402,9 @@ public class RSlider extends RComponent {
         }
     }
 
+    /**
+     * Update the slider based on active numpad changes
+     */
     protected void updateNumpad() {
         if (!isNumpadInputActive() && wasNumpadInputActive) {
             if (numpadBufferValue.endsWith(".")) {
@@ -338,6 +417,14 @@ public class RSlider extends RComponent {
         wasNumpadInputActive = isNumpadInputActive();
     }
 
+    /**
+     * Method to ensure any expected background shaders are loaded in the Store, as expected
+     */
+    public void initSliderBackgroundShader() {
+        RShaderStore.getOrLoadShader(gui,shaderPathDefault);
+    }
+
+
     @Override
     public float suggestWidth() {
         return RFontStore.calcMainTextWidth(name, RLayoutStore.getCell()) +
@@ -345,7 +432,7 @@ public class RSlider extends RComponent {
     }
 
     @Override
-    public void keyPressedOver(RKeyEvent e, float x, float y) { // TODO LazyGui
+    public void keyPressedOver(RKeyEvent e, float x, float y) {
          // TODO Difference between has focus and just mouse over
         super.keyPressedOver(e, x, y);
         if (e.getKey() == 'r') {
@@ -355,7 +442,7 @@ public class RSlider extends RComponent {
             e.consume();
         }
         readNumpadInput(e);
-        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) { // TODO LazyGui better Key handling
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) { // TODO better Key handling
             String value = getDisplayValue().replaceAll(SQUIGGLY_EQUALS, "");
             if (value.endsWith(".")) {
                 value += "0";
@@ -363,7 +450,7 @@ public class RSlider extends RComponent {
             RClipboard.copy(value);
             e.consume();
         }
-        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) { // TODO LazyGui better Key handling
+        if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) { // TODO better Key handling
             String clipboardString = RClipboard.paste();
 
             try {
@@ -407,9 +494,9 @@ public class RSlider extends RComponent {
         mouseDeltaX = mouseEvent.getPrevX() - mouseEvent.getX();
         mouseDeltaY = mouseEvent.getPrevY() - mouseEvent.getY();
         if (isVertical) {
-            LOGGER.info("Mouse DeltaY for Slider {} [{} = {} - {}]", name, mouseDeltaY, mouseEvent.getPrevY(), mouseEvent.getY());
+            LOGGER.debug("Mouse DeltaY for Slider {} [{} = {} - {}]", name, mouseDeltaY, mouseEvent.getPrevY(), mouseEvent.getY());
         } else {
-            LOGGER.info("Mouse DeltaX for Slider {} [{} = {} - {}]", name, mouseDeltaX, mouseEvent.getPrevX(), mouseEvent.getX());
+            LOGGER.debug("Mouse DeltaX for Slider {} [{} = {} - {}]", name, mouseDeltaX, mouseEvent.getPrevX(), mouseEvent.getX());
         }
         mouseEvent.consume();
         getParentFolder().getWindow().redrawBuffer();

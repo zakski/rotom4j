@@ -1,12 +1,14 @@
-package com.old.gui.component.text;
+package com.szadowsz.gui.component.binary;
 
-import com.old.gui.RotomGui;
-import com.old.gui.component.folder.RFolder;
+
+import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.component.text.RTextBase;
 
 /**
- * Tooltip CComponent
+ * Binary data viewer/editor component.
  */
-public class RTooltip extends RTextBase {
+public class RCodeArea extends RTextBase { // TODO Determine Exact Relationship
     // TODO Component Stub : WIP
 
     /**
@@ -18,7 +20,7 @@ public class RTooltip extends RTextBase {
      * @param path         the path in the component tree
      * @param parentFolder the parent component folder reference // TODO consider if needed
      */
-    protected RTooltip(RotomGui gui, String path, RFolder parentFolder) {
+    protected RCodeArea(RotomGui gui, String path, RFolder parentFolder) {
         super(gui, path, parentFolder);
     }
 }

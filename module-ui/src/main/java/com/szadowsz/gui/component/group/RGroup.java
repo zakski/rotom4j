@@ -21,14 +21,17 @@ import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 public abstract class RGroup extends RComponent {
     private static final Logger LOGGER = LoggerFactory.getLogger(RGroup.class);
 
+    /**
+     * Ordering For Node Group
+     */
     protected RLayoutBase layout;
-
 
     /**
      * CopyOnWriteArrayList is needed to avoid concurrent modification
      * because the children get drawn by one thread and user input changes the list from another thread
      */
     protected final CopyOnWriteArrayList<RComponent> children = new CopyOnWriteArrayList<>(); // TODO LazyGui
+
     /**
      * Default Constructor
      * <p>
@@ -57,19 +60,38 @@ public abstract class RGroup extends RComponent {
         return children;
     }
 
+    /**
+     * Get Layout to arrange the Children by
+     *
+     * @return the Layout
+     */
     public RLayoutBase getLayout() {
         return layout;
     }
 
-
+    /**
+     * Method to check if a Child is being hovered over by the mouse
+     *
+     * @return true if the mouse is over a child, false otherwise
+     */
     public boolean isChildMouseOver(){
         return children.stream().anyMatch(RComponent::isMouseOver);
     }
 
+    /**
+     * Method to check if the layout can be changed
+     *
+     * @return true if it can be, false otherwise
+     */
     public boolean canChangeLayout() {
         return true;
     }
 
+    /**
+     * Method to change the layout, if able
+     *
+     * @param layout the layout to set
+     */
     public abstract void setLayout(RLayoutBase layout);
 
     /**
@@ -110,10 +132,11 @@ public abstract class RGroup extends RComponent {
     }
 
     /**
+     * Method to handle key presses
      *
-     * @param keyEvent
-     * @param mouseX
-     * @param mouseY
+     * @param keyEvent the key event info
+     * @param mouseX Mouse X-Coordinate
+     * @param mouseY Mouse Y-Coordinate
      */
     public void keyPressed(RKeyEvent keyEvent, float mouseX, float mouseY) {
         if (!isVisible()){
@@ -127,14 +150,25 @@ public abstract class RGroup extends RComponent {
         }
     }
 
+    @Override
     public RLayoutConfig getCompLayoutConfig() {
         return layout.getLayoutConfig();
     }
 
+    /**
+     * Get the Window Layout Config
+     *
+     * @return layout config
+     */
     public RLayoutConfig getWinLayoutConfig() {
         return layoutConfig;
     }
 
+    /**
+     * Method to add a new child
+     *
+     * @param child the child to add
+     */
     public void insertChild(RComponent child) {
         children.add(child);
         RFolder folder = getParentFolder();
@@ -144,6 +178,9 @@ public abstract class RGroup extends RComponent {
         }
     }
 
+    /**
+     * Method to sort the children according to their layout position
+     */
     public void sortChildren() {
         children.sort((o1, o2) -> switch (layout){
             case RLinearLayout linear -> {

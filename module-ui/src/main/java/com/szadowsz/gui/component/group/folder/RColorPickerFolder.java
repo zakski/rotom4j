@@ -11,7 +11,6 @@ import java.awt.*;
  *
  */
 public class RColorPickerFolder extends RFolder {
-    // TODO Component Stub : WIP
 
     /**
      * Construct a RColorPicker with The Default Layout

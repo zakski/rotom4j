@@ -7,7 +7,7 @@ import com.szadowsz.gui.component.group.RGroup;
 public class RPanel extends RFolder {
 
     /**
-     * Construct a RFolder with a Specified Layout
+     * Construct a RPanel
      *
      * @param gui
      * @param path   folder path

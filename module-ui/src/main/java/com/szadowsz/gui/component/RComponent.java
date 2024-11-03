@@ -86,12 +86,7 @@ public abstract class RComponent {
         if ("".equals(path)) { // this is the root component
             return gui.getSketch().getClass().getSimpleName(); // not using lowercase separated class name after all because it breaks what users expect to see
         }
-        String[] split = RPaths.splitByUnescapesSlashesWithoutRemovingThem(path);
-        if (split.length == 0) {
-            return "";
-        }
-        String nameWithoutPrefixSlash = RPaths.getNameWithoutPrefixSlash(split[split.length - 1]);
-        return RPaths.getDisplayStringWithoutEscapes(nameWithoutPrefixSlash);
+        return RPaths.getNameFromPath(name);
     }
 
     protected int calcHeightInCells(float minimumHeight){

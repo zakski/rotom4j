@@ -1,13 +1,12 @@
 package com.szadowsz.gui.component.group.folder;
 
-import com.old.gui.RotomGui;
-import com.old.gui.component.folder.RFolder;
+import com.szadowsz.gui.RotomGui;
 
 /**
  * For if you want to open an RRadioGroup in a separate (internal) window
  *
  */
-public class RRadioFolder extends com.old.gui.component.folder.RFolder {
+public class RRadioFolder extends RFolder {
     // TODO Component Stub : WIP
 
     /**

@@ -2,6 +2,7 @@ package com.szadowsz.gui.window.pane;
 
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.RPaths;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
@@ -24,8 +25,7 @@ import java.util.Optional;
 
 import static com.szadowsz.gui.config.theme.RColorType.*;
 import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
-import static processing.core.PApplet.lerp;
-import static processing.core.PApplet.round;
+import static processing.core.PApplet.*;
 import static processing.core.PConstants.*;
 
 /**
@@ -115,10 +115,10 @@ public class RWindowPane implements RWindow, RInputListener {
     /**
      * Constructor for Internal Window
      *
-     * @param app    PApplet to render window inside
-     * @param title  title to give the window
-     * @param pos    initial X,Y display location in PApplet
-     * @param dim    initial window dimensions
+     * @param app   PApplet to render window inside
+     * @param title title to give the window
+     * @param pos   initial X,Y display location in PApplet
+     * @param dim   initial window dimensions
      */
     public RWindowPane(PApplet app, RotomGui gui, RFolder folder, String title, PVector pos, PVector dim) {
         this(app, gui, folder, title, (int) pos.x, (int) pos.y, (int) dim.x, (int) dim.y);
@@ -256,7 +256,7 @@ public class RWindowPane implements RWindow, RInputListener {
      * @param e mouse event
      * @return true if the mouse is inside the close button, false otherwise
      */
-    protected boolean isMouseInsideCloseButton(RMouseEvent e)  {
+    protected boolean isMouseInsideCloseButton(RMouseEvent e) {
         return isPointInsideCloseButton(e.getX(), e.getY());
     }
 
@@ -386,7 +386,7 @@ public class RWindowPane implements RWindow, RInputListener {
         } else {
             if (size.x == 0 || size.y == 0) {
                 RLayoutBase layout = folder.getLayout();
-                PVector preferredSize = layout.calcPreferredSize((folder.shouldDrawTitle())?folder.getName():"",folder.getChildren());
+                PVector preferredSize = layout.calcPreferredSize((folder.shouldDrawTitle()) ? folder.getName() : "", folder.getChildren());
                 if (size.y == 0) {
                     contentSize.y = preferredSize.y;
                     sizeUnconstrained.y = preferredSize.y;
@@ -669,7 +669,29 @@ public class RWindowPane implements RWindow, RInputListener {
      * @param canvas Processing Graphics Context
      */
     protected void drawPathTooltipOnHighlight(PGraphics canvas) {
-        // TODO NOOP
+        if (!isPointInsideTitleBar(sketch.mouseX, sketch.mouseY) || !RLayoutStore.shouldShowPathTooltips()) {
+            return;
+        }
+        canvas.pushMatrix();
+        canvas.pushStyle();
+        canvas.translate(pos.x, pos.y);
+        String[] pathSplit = RPaths.splitFullPathWithoutEndAndRoot(folder.getPath());
+        int lineCount = pathSplit.length;
+        float tooltipXOffset = RLayoutStore.getCell() * 0.5f;
+        float tooltipWidthMinimum = size.x - tooltipXOffset - RLayoutStore.getCell();
+        canvas.noStroke();
+        canvas.rectMode(CORNER);
+        canvas.textAlign(LEFT, CENTER);
+        for (int i = 0; i < lineCount; i++) {
+            String line = pathSplit[lineCount - 1 - i];
+            float tooltipWidth = max(tooltipWidthMinimum, canvas.textWidth(line) + RFontStore.getMarginX() * 2);
+            canvas.fill(RThemeStore.getRGBA(NORMAL_BACKGROUND));
+            canvas.rect(tooltipXOffset, -i * RLayoutStore.getCell() - RLayoutStore.getCell(), tooltipWidth, RLayoutStore.getCell());
+            canvas.fill(RThemeStore.getRGBA(NORMAL_FOREGROUND));
+            canvas.text(line, RFontStore.getMarginX() + tooltipXOffset, -i * RLayoutStore.getCell() - RFontStore.getMarginY());
+        }
+        canvas.popMatrix();
+        canvas.popStyle();
     }
 
     protected void drawPane(PGraphics canvas) {
@@ -699,7 +721,8 @@ public class RWindowPane implements RWindow, RInputListener {
 
     public float getContentHeight() {
         switch (folder.getLayout()) {
-            case RLinearLayout linear -> {return (int) contentSize.y;
+            case RLinearLayout linear -> {
+                return (int) contentSize.y;
             }
             default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
         }
@@ -756,7 +779,7 @@ public class RWindowPane implements RWindow, RInputListener {
 
     public int getContentWidth() {
         switch (folder.getLayout()) {
-            case RLinearLayout linear ->  {
+            case RLinearLayout linear -> {
                 return (int) contentSize.x;
             }
             default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
@@ -805,7 +828,7 @@ public class RWindowPane implements RWindow, RInputListener {
 
 
     public void setBounds(float x, float y, float sizeX, float sizeY, RSizeMode mode) {
-        LOGGER.trace("Setting Bounds [{},{},{},{}] for {} using {}",x,y,sizeX,sizeY,folder.getName(), mode);
+        LOGGER.trace("Setting Bounds [{},{},{},{}] for {} using {}", x, y, sizeX, sizeY, folder.getName(), mode);
         sizing = mode;
         pos.x = x;
         pos.y = y;
@@ -825,7 +848,7 @@ public class RWindowPane implements RWindow, RInputListener {
         } else {
             size.x = sizeX;
         }
-        LOGGER.trace("Adjusted Bounds [{},{},{},{}] for {} using {}",x,y,size.x,size.y,folder.getName(), mode);
+        LOGGER.trace("Adjusted Bounds [{},{},{},{}] for {} using {}", x, y, size.x, size.y, folder.getName(), mode);
         reinitialiseBuffer();
         folder.sortChildren();
     }
@@ -882,7 +905,7 @@ public class RWindowPane implements RWindow, RInputListener {
             if (!child.isVisible()) {
                 continue;
             }
-            if (isPointInRect(x,y, child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight())) {
+            if (isPointInRect(x, y, child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight())) {
                 return child;
             }
         }
@@ -919,25 +942,25 @@ public class RWindowPane implements RWindow, RInputListener {
             float mouseY = mouseEvent.getY() + yShift;
             LOGGER.trace("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", mouseEvent.getX(), mouseY, contentStart.x, contentStart.y, size.x, size.y);
             RComponent child = findComponentAt(mouseEvent.getX(), mouseY);
-            if (child != null){
-                if(!child.isMouseOver()) {
+            if (child != null) {
+                if (!child.isMouseOver()) {
                     LOGGER.debug("Inside Component {} [NX {} NY {} Width {} Height {}]", child.getName(), child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
                     contentBuffer.invalidateBuffer();
                 }
-                child.mouseOver(mouseEvent,mouseY);
+                child.mouseOver(mouseEvent, mouseY);
             }
         } else if (isMouseInsideTitlebar(mouseEvent)) {
             if (folder.isChildMouseOver()) {
                 contentBuffer.invalidateBuffer();
             }
-            folder.setMouseOverThisOnly(gui.getComponentTree(),mouseEvent);
+            folder.setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
             mouseEvent.consume();
         } else if (isMouseInsideScrollbar(mouseEvent)) {
             if (folder.isChildMouseOver()) {
                 contentBuffer.invalidateBuffer();
             }
             vsb.ifPresent(s -> s.mouseMoved(mouseEvent));
-            folder.setMouseOverThisOnly(gui.getComponentTree(),mouseEvent);
+            folder.setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
             mouseEvent.consume();
         } else {
             if (folder.isChildMouseOver()) {
@@ -974,15 +997,15 @@ public class RWindowPane implements RWindow, RInputListener {
                 float yShift = getScrolledY();
                 float mouseY = mouseEvent.getY() + yShift;
                 contentBuffer.invalidateBuffer();
-                child.mousePressed(mouseEvent,mouseY);
+                child.mousePressed(mouseEvent, mouseY);
             }
         } else if (isMouseInsideTitlebar(mouseEvent) && mouseEvent.isLeft()) {
             isBeingDragged = true;
             mouseEvent.consume();
-       } else if (isMouseInsideScrollbar(mouseEvent) && mouseEvent.isLeft()) {
+        } else if (isMouseInsideScrollbar(mouseEvent) && mouseEvent.isLeft()) {
             vsb.ifPresent(s -> s.mousePressed(mouseEvent));
             mouseEvent.consume();
-       } else  if (isMouseInsideResizeBorder(mouseEvent) && RLayoutStore.isWindowResizeEnabled()) {
+        } else if (isMouseInsideResizeBorder(mouseEvent) && RLayoutStore.isWindowResizeEnabled()) {
             isBeingResized = true;
             mouseEvent.consume();
         }
@@ -1015,7 +1038,7 @@ public class RWindowPane implements RWindow, RInputListener {
         } else if (isMouseInsideScrollbar(mouseEvent) && mouseEvent.isLeft()) {
             vsb.ifPresent(s -> s.mousePressed(mouseEvent));
             mouseEvent.consume();
-        } else  if (isMouseInsideResizeBorder(mouseEvent) && RLayoutStore.isWindowResizeEnabled()) {
+        } else if (isMouseInsideResizeBorder(mouseEvent) && RLayoutStore.isWindowResizeEnabled()) {
             isBeingResized = true;
             mouseEvent.consume();
         }
@@ -1066,7 +1089,7 @@ public class RWindowPane implements RWindow, RInputListener {
 
     public void resizeForContents(boolean shouldResize) {
         isBeingResized = shouldResize;
-        if (isBeingResized){
+        if (isBeingResized) {
             sizing = RSizeMode.COMPONENT;
         }
     }

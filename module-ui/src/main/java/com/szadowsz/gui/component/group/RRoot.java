@@ -9,9 +9,17 @@ import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
+/**
+ * Top Level Component
+ */
 public class RRoot extends RGroup {
     private static final Logger LOGGER = LoggerFactory.getLogger(RRoot.class);
 
+    /**
+     * Construct the Root Component
+     * <p>
+     =  * @param gui
+     */
     public RRoot(RotomGui gui) {
         super(gui, "", null);
         isDraggable = false;
@@ -41,6 +49,9 @@ public class RRoot extends RGroup {
         }
     }
 
+    /**
+     * Method to re-arrange windows according to the layout
+     */
     public void resizeForContents() {
         if (!gui.isSetup() && !children.isEmpty()) {
             LOGGER.debug("Resizing Root for children of size {}", children.size());

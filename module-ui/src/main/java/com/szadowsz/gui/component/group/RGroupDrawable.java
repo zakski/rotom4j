@@ -4,10 +4,12 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
-import com.szadowsz.gui.input.mouse.RMouseHiding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Sub-Class for Groups that draw their children
+ */
 public abstract class RGroupDrawable extends RGroup {
     private static final Logger LOGGER = LoggerFactory.getLogger(RGroupDrawable.class);
 
@@ -34,12 +36,7 @@ public abstract class RGroupDrawable extends RGroup {
         return children.stream().anyMatch(RComponent::isMouseOver);
     }
 
-    /**
-     *
-     * @param keyEvent
-     * @param mouseX
-     * @param mouseY
-     */
+    @Override
     public void keyPressed(RKeyEvent keyEvent, float mouseX, float mouseY) {
         if (!isVisible()){
             return;

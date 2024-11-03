@@ -56,18 +56,8 @@ public class RColorPicker extends RGroupDrawable {
     }
 
     /**
-     * Default Constructor
-     * <p>
-     * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
-     *
-     * @param gui          the gui for the window that the component is drawn under
-     * @param path         the path in the component tree
-     * @param parentFolder the parent component folder reference // TODO consider if needed
+     * Utility Method to Create the Children
      */
-    public RColorPicker(RotomGui gui, String path, RFolder parentFolder, Color c) {
-        this(gui, path, parentFolder, c, false);
-    }
-
     protected void initNodes() {
         if (!children.isEmpty()) {
             return;
@@ -94,27 +84,43 @@ public class RColorPicker extends RGroupDrawable {
         children.add(new RColorHex(gui, path + "/" + HEX_NODE, this));
     }
 
+    /**
+     * Method to get the value of a color part
+     *
+     * @param nodeName Color component slider to find
+     * @return the current value of the color component, i.e. R, G, B or A
+     */
     protected int getSliderValue(String nodeName) {
         RColorSlider node = ((RColorSlider) findChildByName(nodeName));
         return node.getValueAsInt();
     }
 
-    protected void setSliderValue(String sliderName, float valueFloat) {
-        RColorSlider slider = ((RColorSlider) findChildByName(sliderName));
-        if (slider != null) {
-            slider.setValueFromParent(valueFloat);
-        }
-    }
-
+    /**
+     * Update the Preview Color
+     */
     protected void setPreviewColor(){
         RColorPreview preview = (RColorPreview) findChildByName(PREVIEW_NODE);
         preview.setColor(color);
     }
 
     /**
+     * Set Color Component Value
+     *
+     * @param partName name of the color part to change
+     * @param value value of the part as an int
+     */
+    protected void setSliderValue(String partName, int value) {
+        RColorSlider slider = ((RColorSlider) findChildByName(partName));
+        if (slider != null) {
+            slider.setValueFromParent(value);
+        }
+    }
+
+    /**
      * Draw Child Component
      *
-     * @param child
+     * @param pg    Processing Graphics Context
+     * @param child draw
      */
     protected void drawChildComponent(PGraphics pg, RComponent child) {
         pg.pushMatrix();
@@ -200,10 +206,6 @@ public class RColorPicker extends RGroupDrawable {
      * Reload the individual RGB values into the display nodes from the current Color
      */
     public void loadValuesFromRGB() {
-//        setChildValue(R_NODE_NAME, color.getRed());
-//        setChildValue(G_NODE_NAME, color.getGreen());
-//        setChildValue(B_NODE_NAME, color.getBlue());
-//        setChildValue(A_NODE_NAME, color.getAlpha());
         if (showAlpha) {
             color = new Color(getSliderValue(R_NODE_NAME),
                     getSliderValue(G_NODE_NAME),
@@ -228,7 +230,12 @@ public class RColorPicker extends RGroupDrawable {
         return layout.calcPreferredSize(getParentFolder().getName(), children);
     }
 
+    /**
+     * Calculate the Hex String to display
+     *
+     * @return hex id of the current color
+     */
     public String getHexString() {
-        return String.format("%06X", 0xFFFFFF & Color.BLUE.getRGB());
+        return String.format("%06X", 0xFFFFFF & color.getRGB());
     }
 }

@@ -13,18 +13,17 @@ import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
-import static com.old.ui.store.LayoutStore.cell;
 import static processing.core.PConstants.CENTER;
 import static processing.core.PConstants.CORNER;
 
 /**
  * Folder Component that controls the visibility of its child components in a separate internal window
- *
+ * <p>
  * It opens the window with child components when clicked.
  */
 public class RFolder extends RGroup {
 
-    protected RWindowPane window; // TODO LazyGui
+    protected RWindowPane window; // reference to the companion window
 
     /**
      * Default Constructor
@@ -39,11 +38,22 @@ public class RFolder extends RGroup {
         super(gui, path, parent);
     }
 
-    protected String getInlineDisplayNameOverridableByContents(String name) { // TODO LazyGui
+    /**
+     * Method to allow override of display name
+     *
+     * @param name default name
+     * @return finalised display name
+     */
+    protected String getDisplayName(String name) { // TODO is this needed?
         return name;
     }
 
-    protected void drawMiniatureWindowIcon(PGraphics pg) { // TODO LazyGui
+    /**
+     * Draw Miniature Window to the right of the component
+     *
+     * @param pg graphics context to draw onto
+     */
+    protected void drawMiniatureWindowIcon(PGraphics pg) {
         strokeForeground(pg);
         fillBackground(pg);
         float previewRectSize = RLayoutStore.getCell() * 0.6f;
@@ -64,34 +74,37 @@ public class RFolder extends RGroup {
 
     @Override
     protected void drawForeground(PGraphics pg, String name) {
-        String displayName = getInlineDisplayNameOverridableByContents(name);
+        String displayName = getDisplayName(name);
         drawTextLeft(pg, displayName);
         drawBackdropRight(pg, RLayoutStore.getCell());
         drawMiniatureWindowIcon(pg);
     }
 
     /**
+     * Get the Component Tree path
      *
-     * @return
+     * @return path to the folder in the component tree
      */
     public String getPath() {
         return path;
     }
 
     /**
+     * Get the Window that the Folder's Children are displayed in
      *
-     * @return
+     * @return companion window
      */
     public RWindowPane getWindow() {
         return window;
     }
 
     /**
+     * Check if the companion window is visible
      *
-     * @return
+     * @return true if visible, false otherwise
      */
     public boolean isWindowVisible() {
-        return false;
+        return window != null && window.isVisible();
     }
 
     /**
@@ -111,16 +124,22 @@ public class RFolder extends RGroup {
     }
 
     /**
+     * Method to set the companion window
      *
-     * @param pane
+     * @param pane internal window to set as companion
      */
     public void setWindow(RWindowPane pane) {
         window = pane;
     }
 
+    /**
+     * Method to auto calculate a good width for the window based on its contents
+     *
+     * @return the width
+     */
     public float autosuggestWindowWidthForContents() {
         if (!RLayoutStore.shouldSuggestWindowWidth()) {
-            return cell * RLayoutStore.getWindowWidthInCells();
+            return RLayoutStore.getCell() * RLayoutStore.getWindowWidthInCells();
         }
         float maximumSpaceTotal = gui.getGLWindow().getWidth();//cell * LayoutStore.defaultWindowWidthInCells;
 
@@ -130,14 +149,22 @@ public class RFolder extends RGroup {
 
         float minimumSpaceTotal = spaceForName + spaceForValue;
 
-        float titleTextWidth = RFontStore.calcMainTextWidth(name,RLayoutStore.getCell());
+        float titleTextWidth = RFontStore.calcMainTextWidth(name, RLayoutStore.getCell());
         spaceForName = PApplet.max(spaceForName, titleTextWidth);
-        PVector preferredSize = layout.calcPreferredSize(getName(),children);
+        PVector preferredSize = layout.calcPreferredSize(getName(), children);
         spaceTotal = PApplet.max(spaceTotal, preferredSize.x);
         return PApplet.constrain(spaceTotal, minimumSpaceTotal, maximumSpaceTotal);
     }
 
+    /**
+     * Method to suggest window width in cells
+     *
+     * @return window width in cells
+     */
     public float suggestWindowWidthInCells() {
+        // TODO Better?
+        // float width = autosuggestWindowWidthForContents();
+        // return width / RLayoutStore.getCell() + ((width % RLayoutStore.getCell() == 0)?0:1);
         return RLayoutStore.getWindowWidthInCells();
     }
 
@@ -146,23 +173,23 @@ public class RFolder extends RGroup {
         return autosuggestWindowWidthForContents();
     }
 
-
     @Override
     public void keyPressed(RKeyEvent keyEvent, float mouseX, float mouseY) {
-        if (!isWindowVisible()){
+        if (!isWindowVisible()) {
             return;
         }
         RComponent underMouse = findComponentAt(mouseX, mouseY);
-        switch (underMouse){
-            case null -> {}// NOOP
-            case RGroup g -> g.keyPressed(keyEvent,mouseX,mouseY);
+        switch (underMouse) {
+            case null -> {
+            }// NOOP
+            case RGroup g -> g.keyPressed(keyEvent, mouseX, mouseY);
             case RComponent c -> keyPressedOver(keyEvent, mouseX, mouseY);
         }
     }
 
     @Override
-    public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY){
-        super.mousePressed(mouseEvent,adjustedMouseY);
+    public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
+        super.mousePressed(mouseEvent, adjustedMouseY);
         gui.getWinManager().uncoverOrCreateWindow(this);
         gui.getWinManager().setFocus(window);
         this.isDragged = false;
