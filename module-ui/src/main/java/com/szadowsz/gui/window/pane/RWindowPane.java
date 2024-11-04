@@ -6,12 +6,13 @@ import com.szadowsz.gui.component.RPaths;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.input.mouse.RMouseHiding;
 import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.layout.RLinearLayout;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.gui.config.RFontStore;
+import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.input.RInputListener;
 import com.szadowsz.gui.window.RWindow;
@@ -26,7 +27,6 @@ import java.util.Optional;
 import static com.szadowsz.gui.config.theme.RColorType.*;
 import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 import static processing.core.PApplet.*;
-import static processing.core.PConstants.*;
 
 /**
  * Base Class for Internal Windows
@@ -438,8 +438,23 @@ public class RWindowPane implements RWindow, RInputListener {
     }
 
     protected void handleBeingResized(RMouseEvent mouseEvent) {
+        sizing = RSizeMode.USER;
+        float minimumWindowSizeInCells = 4;
+        float maximumWindowSize = sketch.width;
+        float oldWindowSizeX = size.x;
+        size.x += mouseEvent.getX() - mouseEvent.getPrevX();
+        size.x = constrain(size.x, minimumWindowSizeInCells * RLayoutStore.getCell(), maximumWindowSize);
+        if (vsb.map(sb -> !sb.isVisible()).orElse(true)) {
+            contentSize.x = size.x;
+        } else {
+            contentSize.x = size.x - RLayoutStore.getCell();
+        }
+        vsb.ifPresent(RScrollbar::invalidateBuffer);
+        mouseEvent.consume();
+        reinitialiseBuffer();
+        LOGGER.debug("oldX: " + mouseEvent.getPrevX() + ", new:X " + mouseEvent.getX());
+        LOGGER.debug("old: " + oldWindowSizeX + ", new: " + size.x);
     }
-
     /**
      * Keep the window in bounds, by altering its position
      *
@@ -963,7 +978,9 @@ public class RWindowPane implements RWindow, RInputListener {
             folder.setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
             mouseEvent.consume();
         } else {
+            LOGGER.info("Outside {} Window",title);
             if (folder.isChildMouseOver()) {
+                LOGGER.info("Child Was Over {} Window",title);
                 contentBuffer.invalidateBuffer();
             }
             gui.setAllMouseOverToFalse(this.folder);
@@ -1021,7 +1038,17 @@ public class RWindowPane implements RWindow, RInputListener {
         if (isCloseInProgress && ((isMouseInsideCloseButton(mouseEvent) && mouseEvent.isLeft()) || (isMouseInsideWindow(mouseEvent) && mouseEvent.isRight()))) {
             close();
             mouseEvent.consume();
-        } else if (isMouseInsideContent(mouseEvent)) {
+        } else if (isMouseInsideTitlebar(mouseEvent) && mouseEvent.isLeft()) {
+            isBeingDragged = true;
+            mouseEvent.consume();
+        } else if (isMouseInsideScrollbar(mouseEvent) && mouseEvent.isLeft()) {
+            vsb.ifPresent(s -> s.mousePressed(mouseEvent));
+            mouseEvent.consume();
+        } else if (isMouseInsideResizeBorder(mouseEvent) && RLayoutStore.isWindowResizeEnabled()) {
+            LOGGER.info("{} isBeingResized", title);
+            isBeingResized = true;
+            mouseEvent.consume();
+        } else {
             RComponent released = findComponentAt(mouseEvent.getX(), mouseEvent.getY());
             float yShift = getScrolledY();
             float mouseY = mouseEvent.getY() + yShift;
@@ -1031,16 +1058,11 @@ public class RWindowPane implements RWindow, RInputListener {
                     contentBuffer.invalidateBuffer();
                 }
                 child.mouseReleased(mouseEvent, mouseY, isReleased);
+                if (mouseEvent.isConsumed()){
+                    RMouseHiding.tryRevealMouseAfterDragging(sketch);
+                    break;
+                }
             }
-        } else if (isMouseInsideTitlebar(mouseEvent) && mouseEvent.isLeft()) {
-            isBeingDragged = true;
-            mouseEvent.consume();
-        } else if (isMouseInsideScrollbar(mouseEvent) && mouseEvent.isLeft()) {
-            vsb.ifPresent(s -> s.mousePressed(mouseEvent));
-            mouseEvent.consume();
-        } else if (isMouseInsideResizeBorder(mouseEvent) && RLayoutStore.isWindowResizeEnabled()) {
-            isBeingResized = true;
-            mouseEvent.consume();
         }
     }
 
@@ -1060,10 +1082,13 @@ public class RWindowPane implements RWindow, RInputListener {
             vsb.ifPresent(s -> s.mouseDragged(mouseEvent));
         }
         for (RComponent child : folder.getChildren()) {
-            LOGGER.info("Mouse Drag Check for Content {}", child.getName());
+            LOGGER.debug("Mouse Drag Check for Content {}", child.getName());
             if (child.isDragged()) {
-                LOGGER.info("Mouse Dragged for Content {}", child.getName());
+                LOGGER.debug("Mouse Dragged for Content {}", child.getName());
                 child.mouseDragged(mouseEvent);
+                if (mouseEvent.isConsumed() && child.isDraggable()) {
+                    RMouseHiding.tryHideMouseForDragging(sketch);
+                }
                 if (mouseEvent.isConsumed()) {
                     break;
                 }

@@ -26,20 +26,25 @@ public class RWindowPanel extends RWindowPane {
     }
 
     @Override
-    public void mouseDragged(RMouseEvent e) {
+    public void mouseDragged(RMouseEvent mouseEvent) {
         if (!isVisible()) {
             return;
         }
         if (isBeingResized) {
-            handleBeingResized(e);
+            handleBeingResized(mouseEvent);
         } else if (vsb.map(RScrollbar::isDragging).orElse(false)) {
-            vsb.ifPresent(s -> s.mouseDragged(e));
+            vsb.ifPresent(s -> s.mouseDragged(mouseEvent));
         }
         for (RComponent child : folder.getChildren()) {
+            LOGGER.debug("Mouse Drag Check for Content {}", child.getName());
             if (child.isDragged()) {
-                child.mouseDragged(e);
-                if (e.isConsumed() && child.isDraggable()) {
+                LOGGER.debug("Mouse Dragged for Content {}", child.getName());
+                child.mouseDragged(mouseEvent);
+                if (mouseEvent.isConsumed() && child.isDraggable()) {
                     RMouseHiding.tryHideMouseForDragging(sketch);
+                }
+                if (mouseEvent.isConsumed()) {
+                    break;
                 }
             }
         }

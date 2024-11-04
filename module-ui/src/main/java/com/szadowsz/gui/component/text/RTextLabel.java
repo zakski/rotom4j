@@ -7,7 +7,7 @@ import com.szadowsz.gui.component.group.folder.RFolder;
  * Non-Editable Text label component.
  *
  */
-public class RTextLabel extends RTextField {
+public class RTextLabel extends RTextBase {
     // TODO Component Stub : WIP
 
     /**
@@ -18,8 +18,10 @@ public class RTextLabel extends RTextField {
      * @param gui          the gui for the window that the component is drawn under
      * @param path         the path in the component tree
      * @param parentFolder the parent component folder reference // TODO consider if needed
+     * @param content the value of the label
      */
-    protected RTextLabel(RotomGui gui, String path, RFolder parentFolder) {
+    public RTextLabel(RotomGui gui, String path, RFolder parentFolder, String content) {
         super(gui, path, parentFolder);
+        stext.setText(content);
     }
 }

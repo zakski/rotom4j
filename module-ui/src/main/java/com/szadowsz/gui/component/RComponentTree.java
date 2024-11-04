@@ -167,6 +167,20 @@ public class RComponentTree {
     }
 
     /**
+     * Method to set every component under the parent's mouse over field to false
+     *
+     * @param parentNode the component to start from
+     */
+    public void setAllMouseOverToFalse(RGroup parentNode) {
+        List<RComponent> children = parentNode.getChildren();
+        for (RComponent child : children) {
+            child.setMouseOver(false);
+            if (child instanceof RGroup){
+                setAllMouseOverToFalse((RGroup) child);
+            }
+        }
+    }
+    /**
      * Method to create, if necessary, an RFolder at a given path
      *
      * @param path path to initialise at

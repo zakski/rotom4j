@@ -3,7 +3,7 @@ package com.szadowsz.gui.component;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.gui.config.RFontStore;
+import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RTheme;
@@ -86,7 +86,7 @@ public abstract class RComponent {
         if ("".equals(path)) { // this is the root component
             return gui.getSketch().getClass().getSimpleName(); // not using lowercase separated class name after all because it breaks what users expect to see
         }
-        return RPaths.getNameFromPath(name);
+        return RPaths.getNameFromPath(path);
     }
 
     protected int calcHeightInCells(float minimumHeight){
@@ -162,7 +162,7 @@ public abstract class RComponent {
         fillForeground(pg);
         String trimmedText = RFontStore.substringToFit(pg, text, size.x,true);
         pg.textAlign(LEFT, CENTER);
-        pg.text(trimmedText, RFontStore.getMarginX(), com.old.gui.config.RLayoutStore.getCell() - RFontStore.getMarginY());
+        pg.text(trimmedText, RFontStore.getMarginX(), RLayoutStore.getCell() - RFontStore.getMarginY());
     }
 
     /**
@@ -174,7 +174,7 @@ public abstract class RComponent {
      */
     protected void drawTextRight(PGraphics pg, String text, boolean fillBackground) { // TODO LazyGui
         if(fillBackground){
-            float backdropBuffer = com.old.gui.config.RLayoutStore.getCell() * 0.5f;
+            float backdropBuffer = RLayoutStore.getCell() * 0.5f;
             float w = pg.textWidth(text) + RFontStore.getMarginX() + backdropBuffer;
             drawBackdropRight(pg, w);
         }

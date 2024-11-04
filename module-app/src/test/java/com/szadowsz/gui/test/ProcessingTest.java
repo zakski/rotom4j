@@ -63,6 +63,9 @@ public class ProcessingTest extends PApplet {
         gui.colorPicker("color1",new Color(0,0,255));
         gui.slider("slider1",125,0,255);
         gui.slider("slider2",125.0f,0.0f,255.0f);
+        gui.pushFolder("text test");
+        gui.label("test label", "THIS IS A TEST LABEL");
+        gui.popWindow();
         gui.popWindow();
 
         gui.pushToolbar("Titlebar", RBorderLayout.RLocation.TOP);

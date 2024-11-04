@@ -11,7 +11,9 @@ import com.szadowsz.gui.component.input.slider.RSlider;
 import com.szadowsz.gui.component.input.slider.RSliderInt;
 import com.szadowsz.gui.component.input.toggle.RCheckbox;
 import com.szadowsz.gui.component.input.toggle.RToggle;
-import com.szadowsz.gui.config.RFontStore;
+import com.szadowsz.gui.component.text.RTextLabel;
+import com.szadowsz.gui.config.theme.RColorConverter;
+import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.RInputHandler;
@@ -78,7 +80,7 @@ public class RotomGui {
      * <p>
      * Registers itself at end of the draw() method and displays the GUI whenever draw() ends.
      *
-     * @param sketch main processing sketch class to display the GUI on and use keyboard and mouse input from
+     * @param sketch   main processing sketch class to display the GUI on and use keyboard and mouse input from
      * @param settings settings to apply
      */
     RotomGui(PApplet sketch, RotomGuiSettings settings) {
@@ -91,8 +93,9 @@ public class RotomGui {
         settings.applyEarlyStartupSettings();
 
         RThemeStore.init();
+        RColorConverter.init(sketch);
         RFontStore.init(sketch);
-        winManager= new RWindowManager(this);
+        winManager = new RWindowManager(this);
         tree = new RComponentTree(this);
         settings.applyLateStartupSettings();
     }
@@ -106,7 +109,7 @@ public class RotomGui {
      * current path is for its own control elements like the options folder and so users don't have to pop all of their
      * folders, since they get cleared every frame.
      */
-    protected void clearStack(){
+    protected void clearStack() {
         pathPrefix.clear();
     }
 
@@ -118,9 +121,9 @@ public class RotomGui {
             guiCanvas = app.createGraphics(app.width, app.height, P2D);
             guiCanvas.colorMode(HSB, 1, 1, 1, 1);
             int smoothValue = RLayoutStore.getSmoothingValue();
-            if(smoothValue == 0){
+            if (smoothValue == 0) {
                 guiCanvas.noSmooth();
-            }else{
+            } else {
                 guiCanvas.smooth(smoothValue);
             }
 
@@ -136,12 +139,12 @@ public class RotomGui {
     protected void registerListeners() {
         app.registerMethod("draw", this);
         app.registerMethod("keyEvent", this);
-        app.registerMethod("mouseEvent",this);
+        app.registerMethod("mouseEvent", this);
     }
 
     protected void updateAllNodeValues() {
         List<RComponent> allNodes = tree.getComponents();
-        for(RComponent node : allNodes){
+        for (RComponent node : allNodes) {
             node.updateValues();
         }
     }
@@ -158,11 +161,12 @@ public class RotomGui {
 //        MouseHiding.updateSettings();
 //        gui.popFolder();
     }
+
     protected void resetPerspective() {
         float cameraFOV = PI / 3f;
         float cameraAspect = (float) app.width / (float) app.height;
         float cameraY = app.height / 2.0f;
-        float cameraZ = cameraY / tan(PI*60/360);
+        float cameraZ = cameraY / tan(PI * 60 / 360);
         float cameraNear = cameraZ / 10;
         float cameraFar = cameraZ * 10;
         app.perspective(cameraFOV, cameraAspect, cameraNear, cameraFar);
@@ -179,20 +183,21 @@ public class RotomGui {
     }
 
     private void tryLogStackWarning(String method) {
-        if(pathPrefix.size() >= stackSizeWarningLevel && !printedPushWarningAlready){
+        if (pathPrefix.size() >= stackSizeWarningLevel && !printedPushWarningAlready) {
             LOGGER.warn("Too many calls to {} - stack size reached the warning limit of " + stackSizeWarningLevel +
-                    ", possibly due to runaway recursion",method);
+                    ", possibly due to runaway recursion", method);
             printedPushWarningAlready = true;
         }
     }
+
     /**
      * Gets the current path prefix stack, inserting a forward slash after each folder name in the stack.
      * Mostly used internally by LazyGui, but it can also be useful for debugging.
      *
      * @return entire path prefix stack concatenated to one string
      */
-    protected String getCurrentPath(){ // TODO LazyGui
-        if(pathPrefix.isEmpty()){
+    protected String getCurrentPath() { // TODO LazyGui
+        if (pathPrefix.isEmpty()) {
             return "";
         }
         StringBuilder sb = new StringBuilder();
@@ -206,9 +211,9 @@ public class RotomGui {
 
     protected RWindowPane getWindowBeingDraggedIfAny() { // TODO LazyGui
         List<RComponent> allNodes = tree.getComponents();
-        for(RComponent node : allNodes){
-            if(node instanceof RFolder folder){
-                if(folder.getWindow() != null && folder.getWindow().isDragged()){
+        for (RComponent node : allNodes) {
+            if (node instanceof RFolder folder) {
+                if (folder.getWindow() != null && folder.getWindow().isDragged()) {
                     return folder.getWindow();
                 }
             }
@@ -218,17 +223,17 @@ public class RotomGui {
 
     protected StringBuilder pushPathToStack(String folderName) {
         String slashSafeFolderName = folderName;
-        if(slashSafeFolderName.startsWith("/")){
+        if (slashSafeFolderName.startsWith("/")) {
             // remove leading slash
             slashSafeFolderName = slashSafeFolderName.substring(1);
         }
-        if(slashSafeFolderName.endsWith("/") && !slashSafeFolderName.endsWith("\\/")){
+        if (slashSafeFolderName.endsWith("/") && !slashSafeFolderName.endsWith("\\/")) {
             // remove trailing slash if un-escaped
-            slashSafeFolderName = slashSafeFolderName.substring(0, slashSafeFolderName.length()-1);
+            slashSafeFolderName = slashSafeFolderName.substring(0, slashSafeFolderName.length() - 1);
         }
         pathPrefix.addFirst(slashSafeFolderName);
         StringBuilder builder = new StringBuilder();
-        for (int i = pathPrefix.size()-1; i >= 0; i--){
+        for (int i = pathPrefix.size() - 1; i >= 0; i--) {
             builder.append(pathPrefix.get(i));
             if (i > 0)
                 builder.append("/");
@@ -241,7 +246,7 @@ public class RotomGui {
      *
      * @return the PApplet that the GUI is bound to
      */
-    public PApplet getSketch(){
+    public PApplet getSketch() {
         return app;
     }
 
@@ -250,7 +255,7 @@ public class RotomGui {
      *
      * @return the PApplet that the GUI is bound to
      */
-    public GLWindow getGLWindow(){
+    public GLWindow getGLWindow() {
         return appWindow;
     }
 
@@ -262,7 +267,7 @@ public class RotomGui {
         return tree;
     }
 
-    public boolean isSetup(){
+    public boolean isSetup() {
         return isSetup;
     }
 
@@ -273,6 +278,8 @@ public class RotomGui {
 
 
     public void setAllMouseOverToFalse(RFolder folder) {
+        LOGGER.info("Set Mouse Over to False For {} Component", folder.getName());
+        tree.setAllMouseOverToFalse(folder);
     }
 
     public void startSetup() { // TODO Me
@@ -284,7 +291,7 @@ public class RotomGui {
         //tree.getRoot().resizeForContents(); TODO Not sure if not needed
     }
 
-    public void subscribe(RInputListener subscriber){ // TODO Me
+    public void subscribe(RInputListener subscriber) { // TODO Me
         inputHandler.subscribe(subscriber);
     }
 
@@ -302,20 +309,20 @@ public class RotomGui {
      * If it does get called manually, it will get drawn when requested and then skip its automatic execution for that
      * frame.
      * <p>
-     *  Resets any potential hint(DISABLE_DEPTH_TEST) to the default hint(ENABLE_DEPTH_TEST) when done,
-     *  because it needs the DISABLE_DEPTH_TEST to draw the GUI over 3D scenes and has currently no way to save or query
-     *  the original hint state.
+     * Resets any potential hint(DISABLE_DEPTH_TEST) to the default hint(ENABLE_DEPTH_TEST) when done,
+     * because it needs the DISABLE_DEPTH_TEST to draw the GUI over 3D scenes and has currently no way to save or query
+     * the original hint state.
      *
      * @param targetCanvas canvas to draw the GUI on
      */
     public void draw(PGraphics targetCanvas) { // TODO LazyGui
-        if(lastFrameCountGuiWasShown == app.frameCount){
+        if (lastFrameCountGuiWasShown == app.frameCount) {
             // we are at the end of the user's sketch draw(), but the gui has already been displayed this frame
             clearStack();
             return;
         }
         lastFrameCountGuiWasShown = app.frameCount;
-        if(app.frameCount == 1){
+        if (app.frameCount == 1) {
             RRoot root = tree.getRoot();
             root.resizeForContents();
         }
@@ -326,8 +333,8 @@ public class RotomGui {
         clearStack();
         updateOptions();
         if (!RLayoutStore.isGuiHidden()) {
-            RSnapToGrid.displayGuideAndApplyFilter(this,guiCanvas, getWindowBeingDraggedIfAny());
-            RContextLines.drawLines(guiCanvas,tree);
+            RSnapToGrid.displayGuideAndApplyFilter(this, guiCanvas, getWindowBeingDraggedIfAny());
+            RContextLines.drawLines(guiCanvas, tree);
             winManager.updateAndDrawWindows(guiCanvas);
         }
         guiCanvas.endDraw();
@@ -352,6 +359,7 @@ public class RotomGui {
      * Must stay public because otherwise this registering won't work: app.registerMethod("draw", this);
      * <p>
      * Calls {@link RotomGui#draw(PGraphics) draw(PGraphics)} internally with the default sketch PGraphics.
+     *
      * @see RotomGui#draw(PGraphics)
      */
     public final void draw() {
@@ -382,7 +390,7 @@ public class RotomGui {
 
         if (group == null) {
             LOGGER.warn("Path For Layout Does Not Currently Exist: {}", path);
-        } else if (group instanceof RRoot root){
+        } else if (group instanceof RRoot root) {
             root.setLayout(layout);
         } else if (!group.canChangeLayout() || layout instanceof RBorderLayout) {
             LOGGER.warn("Layout Cannot Be Set For Path: {}", path);
@@ -401,12 +409,12 @@ public class RotomGui {
      * @param folderName one folder's name to push to the stack
      * @return folder
      */
-    public RFolder pushFolder(String folderName){
+    public RFolder pushFolder(String folderName) {
         tryLogStackWarning("pushFolder(String)");
         StringBuilder builder = pushPathToStack(folderName);
         tree.initFolderForPath(builder.toString());
         RFolder folder = (RFolder) tree.getComponent(builder.toString());
-        if (folder.getParent() instanceof RRoot root){
+        if (folder.getParent() instanceof RRoot root) {
             this.getWinManager().uncoverOrCreateWindow(folder);
             root.resizeForContents();
         }
@@ -420,7 +428,7 @@ public class RotomGui {
         tree.initPanelForPath(builder.toString());
         RPanel panel = (RPanel) tree.getComponent(builder.toString());
         panel.setLayoutConfig(config);
-        if (panel.getParent() instanceof RRoot root){
+        if (panel.getParent() instanceof RRoot root) {
             this.getWinManager().uncoverOrCreatePanel(panel);
             root.resizeForContents();
         }
@@ -433,7 +441,7 @@ public class RotomGui {
         tree.initToolbarForPath(builder.toString());
         RToolbar toolbar = (RToolbar) tree.getComponent(builder.toString());
         toolbar.setLayoutConfig(config);
-        if (toolbar.getParent() instanceof RRoot root){
+        if (toolbar.getParent() instanceof RRoot root) {
             this.getWinManager().uncoverOrCreateToolbar(toolbar);
             root.resizeForContents();
         }
@@ -455,13 +463,13 @@ public class RotomGui {
      */
     public RButton button(String path) {  // TODO LazyGui
         String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RButton.class)){
+        if (tree.isPathTakenByUnexpectedType(fullPath, RButton.class)) {
             return null;
         }
         RButton component = (RButton) tree.getComponent(fullPath);
         if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            component = new RButton(this,fullPath, folder);
+            component = new RButton(this, fullPath, folder);
             tree.insertAtPath(component);
         }
         return component;
@@ -471,19 +479,19 @@ public class RotomGui {
      * Gets a checkbox component at the specified location. Initializes it if needed and sets its value to the specified
      * starting parameter.
      *
-     * @param path forward slash separated unique path to the control element
+     * @param path          forward slash separated unique path to the control element
      * @param startingValue starting value of the toggle
      * @return the checkbox
      */
     public RCheckbox checkbox(String path, boolean startingValue) {  // TODO LazyGui
         String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RCheckbox.class)){
+        if (tree.isPathTakenByUnexpectedType(fullPath, RCheckbox.class)) {
             return null;
         }
         RCheckbox component = (RCheckbox) tree.getComponent(fullPath);
         if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            component = new RCheckbox(this,fullPath, folder, startingValue);
+            component = new RCheckbox(this, fullPath, folder, startingValue);
             tree.insertAtPath(component);
         }
         return component;
@@ -491,13 +499,27 @@ public class RotomGui {
 
     public RColorPickerFolder colorPicker(String path, Color startingValue) {
         String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RColorPickerFolder.class)){
+        if (tree.isPathTakenByUnexpectedType(fullPath, RColorPickerFolder.class)) {
             return null;
         }
         RColorPickerFolder component = (RColorPickerFolder) tree.getComponent(fullPath);
         if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            component = new RColorPickerFolder(this,fullPath, folder, startingValue);
+            component = new RColorPickerFolder(this, fullPath, folder, startingValue);
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+    public RTextLabel label(String path, String content) {
+        String fullPath = getCurrentPath() + path;
+        if (tree.isPathTakenByUnexpectedType(fullPath, RTextLabel.class)) {
+            return null;
+        }
+        RTextLabel component = (RTextLabel) tree.getComponent(fullPath);
+        if (component == null) {
+            RFolder folder = tree.getParentFolder(fullPath);
+            component = new RTextLabel(this, fullPath, folder, content);
             tree.insertAtPath(component);
         }
         return component;
@@ -508,21 +530,21 @@ public class RotomGui {
      * lazily initializes it if needed and uses a default value specified in the parameter.
      * along with enforcing a minimum and maximum of reachable values.
      *
-     * @param path forward slash separated unique path to the control element
+     * @param path         forward slash separated unique path to the control element
      * @param defaultValue the default value, ideally between min and max
-     * @param min the value cannot go below this, min &lt; max must be true
-     * @param max the value cannot go above this, max &gt; min must be true
+     * @param min          the value cannot go below this, min &lt; max must be true
+     * @param max          the value cannot go above this, max &gt; min must be true
      * @return current float value of the slider
      */
     public RSlider slider(String path, float defaultValue, float min, float max) {
         String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RSlider.class)){
+        if (tree.isPathTakenByUnexpectedType(fullPath, RSlider.class)) {
             return null;
         }
         RSlider component = (RSlider) tree.getComponent(fullPath);
         if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            component = new RSlider(this,fullPath,folder, defaultValue, min, max,true);
+            component = new RSlider(this, fullPath, folder, defaultValue, min, max, true);
             component.initSliderBackgroundShader();
             tree.insertAtPath(component);
         }
@@ -534,21 +556,21 @@ public class RotomGui {
      * lazily initializes it if needed and uses a default value specified in the parameter.
      * along with enforcing a minimum and maximum of reachable values.
      *
-     * @param path forward slash separated unique path to the control element
+     * @param path         forward slash separated unique path to the control element
      * @param defaultValue the default value, ideally between min and max
-     * @param min the value cannot go below this, min < max must be true
-     * @param max the value cannot go above this, max > min must be true
+     * @param min          the value cannot go below this, min < max must be true
+     * @param max          the value cannot go above this, max > min must be true
      * @return current float value of the slider
      */
     public RSliderInt slider(String path, int defaultValue, int min, int max) {
         String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RSliderInt.class)){
+        if (tree.isPathTakenByUnexpectedType(fullPath, RSliderInt.class)) {
             return null;
         }
         RSliderInt component = (RSliderInt) tree.getComponent(fullPath);
         if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            component = new RSliderInt(this,fullPath,folder, defaultValue, min, max,true);
+            component = new RSliderInt(this, fullPath, folder, defaultValue, min, max, true);
             component.initSliderBackgroundShader();
             tree.insertAtPath(component);
         }
@@ -559,19 +581,19 @@ public class RotomGui {
      * Gets a toggle component at the specified location. Initializes it if needed and sets its value to the specified
      * starting parameter.
      *
-     * @param path forward slash separated unique path to the control element
+     * @param path          forward slash separated unique path to the control element
      * @param startingValue starting value of the toggle
      * @return the toggle
      */
     public RToggle toggle(String path, boolean startingValue) {  // TODO LazyGui
         String fullPath = getCurrentPath() + path;
-        if(tree.isPathTakenByUnexpectedType(fullPath, RToggle.class)){
+        if (tree.isPathTakenByUnexpectedType(fullPath, RToggle.class)) {
             return null;
         }
         RToggle component = (RToggle) tree.getComponent(fullPath);
         if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            component = new RToggle(this,fullPath, folder, startingValue);
+            component = new RToggle(this, fullPath, folder, startingValue);
             tree.insertAtPath(component);
         }
         return component;
@@ -584,12 +606,12 @@ public class RotomGui {
      * Any GUI control element call will apply all the folders in the stack as a prefix to their own path parameter.
      * This is useful for not repeating the whole path string every time you want to call a control element.
      */
-    public void popWindow(){
-        if(pathPrefix.isEmpty() && printedPopWarningAlready){
+    public void popWindow() {
+        if (pathPrefix.isEmpty() && printedPopWarningAlready) {
             LOGGER.warn("Too many calls to popFolder() - there is nothing to pop");
             printedPopWarningAlready = true;
         }
-        if(!pathPrefix.isEmpty()){
+        if (!pathPrefix.isEmpty()) {
             pathPrefix.remove(0);
         }
     }

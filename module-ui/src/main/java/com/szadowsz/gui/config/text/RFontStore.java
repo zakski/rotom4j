@@ -1,4 +1,4 @@
-package com.szadowsz.gui.config;
+package com.szadowsz.gui.config.text;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,13 +101,22 @@ public class RFontStore {
     }
 
     /**
+     * Get the Side Font
+     *
+     * @return the font
+     */
+    public static PFont getSideFont() {
+        return sideFont;
+    }
+
+    /**
      * Method to calculate text width as a multiple of the cell size
      *
      * @param textToMeasure text to measure pixel length
      * @param cell cell size
      * @return width as a multiple of the cell size
      */
-    public static float calcMainTextWidth(String textToMeasure, float cell) { // TODO LazyGui
+    public static float calcMainTextWidth(String textToMeasure, float cell) {
         mainFontUtilsProvider.beginDraw();
         mainFontUtilsProvider.textFont(mainFont);
         mainFontUtilsProvider.endDraw();
@@ -150,7 +159,7 @@ public class RFontStore {
      * @param margin if true, account for margin
      * @return truncated substring of the text
      */
-    public static String substringToFit(PGraphics pg, String text, float availableWidth, boolean margin) { // TODO LazyGui
+    public static String substringToFit(PGraphics pg, String text, float availableWidth, boolean margin) {
         return substringToFit(pg, text, availableWidth - ((margin)?textMarginX:0));
     }
 }

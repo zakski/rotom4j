@@ -5,7 +5,7 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RDelayStore;
-import com.szadowsz.gui.config.RFontStore;
+import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.RShaderStore;
 import com.szadowsz.gui.config.theme.RColorType;
@@ -469,7 +469,7 @@ public class RSlider extends RComponent {
 
     @Override
     public void mousePressed(RMouseEvent mouseEvent, float mouseY) {
-        LOGGER.info("Mouse Pressed for Slider {}", name);
+        LOGGER.debug("Mouse Pressed for Slider {}", name);
         super.mousePressed(mouseEvent,mouseY);
         stringValueWhenDragStarted = getValueAsString();
     }

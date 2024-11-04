@@ -3,7 +3,7 @@ package com.szadowsz.gui.layout;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.gui.config.RFontStore;
+import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.window.pane.RSizeMode;
 import com.szadowsz.gui.window.pane.RWindowPane;
