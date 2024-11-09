@@ -132,6 +132,23 @@ public abstract class RGroup extends RComponent {
     }
 
     /**
+     * Find A Component At The Given Coordinates
+     *
+     * @return The Component at these Coordinates, if one exists, false otherwise
+     */
+    public RComponent findFocusedComponent() {
+        for (RComponent node : children) {
+            if (!node.isVisible()) {
+                continue;
+            }
+            if (node.hasFocus()) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Method to handle key presses
      *
      * @param keyEvent the key event info
@@ -142,11 +159,41 @@ public abstract class RGroup extends RComponent {
         if (!isVisible()){
             return;
         }
+        RComponent focused = findFocusedComponent();
+        if (focused != null){
+            switch (focused) {
+                case null -> {
+                }// NOOP
+                case RGroup g -> g.keyPressed(keyEvent, mouseX, mouseY);
+                case RComponent c -> keyPressedFocused(keyEvent);
+            }
+        } else {
+            RComponent underMouse = findComponentAt(mouseX, mouseY);
+            switch (underMouse) {
+                case null -> {
+                }// NOOP
+                case RGroup g -> g.keyPressed(keyEvent, mouseX, mouseY);
+                case RComponent c -> keyPressedOver(keyEvent, mouseX, mouseY);
+            }
+        }
+    }
+
+    /**
+     * Method to handle key chord presses
+     *
+     * @param keyEvent the key event info
+     * @param mouseX Mouse X-Coordinate
+     * @param mouseY Mouse Y-Coordinate
+     */
+    public void keyChordPressed(RKeyEvent keyEvent, float mouseX, float mouseY) {
+        if (!isVisible()) {
+            return;
+        }
         RComponent underMouse = findComponentAt(mouseX, mouseY);
         switch (underMouse){
             case null -> {}// NOOP
-            case RGroup g -> g.keyPressed(keyEvent,mouseX,mouseY);
-            case RComponent c -> keyPressedOver(keyEvent, mouseX, mouseY);
+            case RGroup g -> g.keyChordPressedOver(keyEvent,mouseX,mouseY);
+            case RComponent c -> keyChordPressedOver(keyEvent, mouseX, mouseY);
         }
     }
 
@@ -193,4 +240,6 @@ public abstract class RGroup extends RComponent {
             default -> Float.compare(o1.getPosY(), o2.getPosY());
         });
     }
+
+
 }

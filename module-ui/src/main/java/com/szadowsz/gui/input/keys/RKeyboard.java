@@ -2,6 +2,7 @@ package com.szadowsz.gui.input.keys;
 
 import com.old.ui.input.keys.ChordFunction;
 import com.old.ui.input.keys.KeyChord;
+import com.szadowsz.gui.RotomGui;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.event.KeyEvent;
@@ -20,6 +21,8 @@ public final class RKeyboard {
     private Map<Integer, Long> keys = new ConcurrentHashMap<>();
     private Map<Integer, Long> releasedKeys = new ConcurrentHashMap<>();
 
+    private final RotomGui gui;
+
     /**
      * Time interval constant, anything pressed for less than this is not considered held.
      */
@@ -32,11 +35,12 @@ public final class RKeyboard {
     /**
      * List to store current keyboard shortcuts.
      */
-    private Map<KeyChord, ChordFunction> chords = new ConcurrentHashMap<>();
+    private Map<RKeyChord, RChordAction> chords = new ConcurrentHashMap<>();
 
     private final List<RKeyListener> handlers = new CopyOnWriteArrayList<>();
 
-    public RKeyboard(long timeBeforeConsideredHeld, long timeUntilNotReleased) {
+    public RKeyboard(RotomGui gui, long timeBeforeConsideredHeld, long timeUntilNotReleased) {
+        this.gui = gui;
         holdTime = timeBeforeConsideredHeld;
         releaseTime = timeUntilNotReleased;
     }
@@ -104,7 +108,7 @@ public final class RKeyboard {
      * @param chord    keys of the shortcut
      * @param function what the shortcut does
      */
-    public void mapShortcut(KeyChord chord, ChordFunction function) {
+    public void mapShortcut(RKeyChord chord, RChordAction function) {
         chords.put(chord, function);
         LOGGER.info("Added a new keyboard shortcut: " + chord.toString());
     }
@@ -114,34 +118,56 @@ public final class RKeyboard {
      *
      * @param shortcuts the new shortcut layout to apply
      */
-    public void mapShortcuts(Map<KeyChord, ChordFunction> shortcuts) {
+    public void mapShortcuts(Map<RKeyChord, RChordAction> shortcuts) {
         clear(); // clear them so we don't inadvertently trigger a new shortcut.
         chords.putAll(shortcuts);
         LOGGER.info("Applied new keyboard shortcuts");
     }
 
-    private void pressKey(RKeyEvent e) {
-        if (!keys.containsKey(e.getKeyCode())) {
-            LOGGER.info("Pressed key: {}", java.awt.event.KeyEvent.getKeyText(e.getKeyCode()));
-            keys.put(e.getKeyCode(), System.currentTimeMillis());
-            releasedKeys.remove(e.getKeyCode());
+    private void pressKey(KeyEvent event) {
+        if (!keys.containsKey(event.getKeyCode())) {
+            LOGGER.info("Pressed key: {}", java.awt.event.KeyEvent.getKeyText(event.getKeyCode()));
+            keys.put(event.getKeyCode(), System.currentTimeMillis());
+            releasedKeys.remove(event.getKeyCode());
        }
+        RKeyEvent e = new RKeyEvent(gui, new ConcurrentHashMap<>(keys), event);
+        // Handle Local Chords
         for (RKeyListener subscriber : handlers) {
-            subscriber.keyPressed(e);
+            subscriber.keyChordPressed(e);
             if (e.isConsumed()) {
                 break;
             }
         }
+
+        // Handle Global Coords
+        if (!e.isConsumed()){
+            RChordAction chordFunc = chords.get(new RKeyChord(getDownedKeys()));
+            if (chordFunc != null) {
+                chordFunc.execute(e);
+                e.consume();
+            }
+        }
+
+        // Handle Normal Presses
+        if (!e.isConsumed()) {
+            for (RKeyListener subscriber : handlers) {
+                subscriber.keyPressed(e);
+                if (e.isConsumed()) {
+                    break;
+                }
+            }
+        }
     }
 
-    private void releaseKey(RKeyEvent e) {
-        if (keys.containsKey(e.getKeyCode())) {
-            long time = keys.remove(e.getKeyCode());
-            releasedKeys.put(e.getKeyCode(), System.currentTimeMillis());
-            LOGGER.info("Released key: {}, Held for {}", java.awt.event.KeyEvent.getKeyText(e.getKeyCode()),time);
+    private void releaseKey(KeyEvent event) {
+        if (keys.containsKey(event.getKeyCode())) {
+            long time = keys.remove(event.getKeyCode());
+            releasedKeys.put(event.getKeyCode(), System.currentTimeMillis());
+            LOGGER.info("Released key: {}, Held for {}", java.awt.event.KeyEvent.getKeyText(event.getKeyCode()),time);
         } else {
-            LOGGER.warn("Couldn't Release key: {}", java.awt.event.KeyEvent.getKeyText(e.getKeyCode()));
+            LOGGER.warn("Couldn't Release key: {}", java.awt.event.KeyEvent.getKeyText(event.getKeyCode()));
          }
+        RKeyEvent e = new RKeyEvent(gui, new ConcurrentHashMap<>(keys), event);
         for (RKeyListener subscriber : handlers) {
             subscriber.keyReleased(e);
             if (e.isConsumed()) {
@@ -150,7 +176,8 @@ public final class RKeyboard {
         }
     }
 
-    private void typedKey(RKeyEvent e) {
+    private void typedKey(KeyEvent event) {
+        RKeyEvent e = new RKeyEvent(gui, new ConcurrentHashMap<>(keys), event);
         for (RKeyListener subscriber : handlers) {
             subscriber.keyTyped(e);
             if (e.isConsumed()) {
@@ -159,20 +186,18 @@ public final class RKeyboard {
         }
     }
 
-
     /**
      * Process the KeyEvent And notify aLl Subscribers
      *
      * @param event event to process
      */
     public void keyEvent(KeyEvent event)  {
-        RKeyEvent e = new RKeyEvent(event);
-        LOGGER.debug("KeyEvent: {}", e); // TODO Consider Need to Note Window here
+        LOGGER.debug("KeyEvent: {}", event); // TODO Consider Need to Note Window here
         // Call reaction methods contextually
         switch (event.getAction()){
-            case KeyEvent.PRESS -> pressKey(e);
-            case KeyEvent.RELEASE -> releaseKey(e);
-            case KeyEvent.TYPE -> typedKey(e);
+            case KeyEvent.PRESS -> pressKey(event);
+            case KeyEvent.RELEASE -> releaseKey(event);
+            case KeyEvent.TYPE -> typedKey(event);
         }
     }
 

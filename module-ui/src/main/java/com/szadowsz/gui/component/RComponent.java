@@ -398,6 +398,15 @@ public abstract class RComponent {
     }
 
     /**
+     * TODO
+     *
+     * @return TODO
+     */
+    public boolean hasFocus() {
+        return false;
+    }
+
+    /**
      * Set the Height of The Window, modified by only being set in whole cells.
      *
      * @param height raw height
@@ -426,6 +435,15 @@ public abstract class RComponent {
     }
 
     /**
+     * Handle a pressed key while the component focused upon
+     *
+     * @param keyEvent the pressed key
+     */
+    public void keyPressedFocused(RKeyEvent keyEvent) {
+        // NOOP
+    }
+
+    /**
      * Handle a pressed key while over the component
      *
      * @param keyEvent the pressed key
@@ -433,6 +451,17 @@ public abstract class RComponent {
      * @param mouseY y position
      */
     public void keyPressedOver(RKeyEvent keyEvent, float mouseX, float mouseY) {
+        // NOOP
+    }
+
+    /**
+     * Handle a pressed key chord while over the component
+     *
+     * @param keyEvent the pressed key
+     * @param mouseX x position
+     * @param mouseY y position
+     */
+    public void keyChordPressedOver(RKeyEvent keyEvent, float mouseX, float mouseY) {
         // NOOP
     }
 

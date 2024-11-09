@@ -946,6 +946,23 @@ public class RWindowPane implements RWindow, RInputListener {
     }
 
     @Override
+    public void keyChordPressed(RKeyEvent keyEvent) {
+        if (!isVisible()) {
+            return;
+        }
+
+        float mouseX = sketch.mouseX;
+        float mouseY = sketch.mouseY;
+
+        if (isPointInsideTitleBar(mouseX, mouseY)) {
+            folder.keyChordPressedOver(keyEvent, mouseX, mouseY);
+            return;
+        }
+
+        folder.keyChordPressed(keyEvent, mouseX, mouseY);
+    }
+
+    @Override
     public void mouseMoved(RMouseEvent mouseEvent) {
         if (!isVisible()) {
             return;
@@ -978,7 +995,6 @@ public class RWindowPane implements RWindow, RInputListener {
             folder.setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
             mouseEvent.consume();
         } else {
-            LOGGER.info("Outside {} Window",title);
             if (folder.isChildMouseOver()) {
                 LOGGER.info("Child Was Over {} Window",title);
                 contentBuffer.invalidateBuffer();

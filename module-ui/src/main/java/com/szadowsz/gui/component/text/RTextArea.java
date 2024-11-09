@@ -8,7 +8,7 @@ import com.szadowsz.gui.component.group.folder.RFolder;
  * <p>
  * It allows the user to enter and edit multiple lines of text.
  */
-public class RTextArea extends RTextBase {
+public class RTextArea extends RTextEditable {
     // TODO Component Stub : WIP
 
     /**

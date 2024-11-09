@@ -23,7 +23,7 @@ public class RInputHandler {
      * @param gui gui manager to get underlying sketch from
      */
     public RInputHandler(RotomGui gui) {
-        this.keyboard = new RKeyboard(5000L,33L);
+        this.keyboard = new RKeyboard(gui,5000L,33L);
         this.mouse = new RMouse(gui,gui.getSketch().mouseX,gui.getSketch().mouseY);
     }
 

@@ -3,35 +3,42 @@ package com.szadowsz.gui.component.text;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.component.text.style.RAlign;
+import com.szadowsz.gui.component.text.style.RString;
 import com.szadowsz.gui.config.theme.RColorConverter;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.text.RTextConstants;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import processing.awt.PGraphicsJava2D;
 import processing.core.PGraphics;
 
 import java.awt.font.TextAttribute;
+import java.awt.font.TextLayout;
+import java.util.LinkedList;
 
-import static com.old.ui.store.LayoutStore.cell;
 import static processing.core.PConstants.*;
 
 /**
  * Base class for any component that primarily uses text.
  */
-public class RTextBase extends RComponent {
-    // TODO Component Stub : WIP
+public abstract class RTextBase extends RComponent {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RTextBase.class);
 
     private final String regexLookBehindForNewLine = "(?<=\\n)";
 
     /** The styled text used by this component */
-    protected StyledString stext = new StyledString("");
+    protected RString stext = new RString("");
 
     // Alignment within zone
     protected RAlign textAlignH = RAlign.LEFT;
     protected RAlign textAlignV = RAlign.MIDDLE;
 
-    protected boolean bufferInvalid = true;
+    protected RTextBuffer buffer;
+
     protected boolean shouldDisplayHeaderRow;
 
     /**
@@ -45,6 +52,7 @@ public class RTextBase extends RComponent {
      */
     protected RTextBase(RotomGui gui, String path, RFolder parentFolder) {
         super(gui, path, parentFolder);
+        buffer = new RTextBuffer(gui.getSketch(),this);
     }
 
     /**
@@ -55,7 +63,7 @@ public class RTextBase extends RComponent {
      */
     protected void addAttributeImpl(TextAttribute style, Object value) {
         stext.addAttribute(style, value);
-        bufferInvalid = true;
+        buffer.invalidateBuffer();
     }
 
     /**
@@ -74,7 +82,7 @@ public class RTextBase extends RComponent {
         if (e > stext.length())
             e = stext.length();
         stext.addAttribute(style, value, s, e);
-        bufferInvalid = true;
+        buffer.invalidateBuffer();
     }
 
     /**
@@ -160,27 +168,70 @@ public class RTextBase extends RComponent {
         // NOOP
     }
 
+    protected float alignHeight() {
+        switch (textAlignV) {
+            case TOP:
+                return 0;
+            case BOTTOM:
+                return size.y - stext.getTextAreaHeight();
+            case MIDDLE:
+            default:
+                return  (size.y - stext.getTextAreaHeight()) / 2;
+        }
+    }
+
+    protected float alignWidth(TextLayout layout) {
+        float tw = 0;
+        switch (textAlignH) {
+            case CENTER:
+                tw = layout.getVisibleAdvance();
+                while (tw > size.x) {
+                    tw -= size.x;
+                }
+                return  (size.x - tw) / 2;
+            case RIGHT:
+                tw = layout.getVisibleAdvance();
+                while (tw > size.x) {
+                    tw -= size.x;
+                }
+                return size.x - tw;
+            case LEFT:
+            case JUSTIFY:
+            default:
+                return 0;
+        }
+    }
+
+
+    void display(PGraphicsJava2D buffer) {
+        float textY = alignHeight();
+        LinkedList<RString.TextLayoutInfo> lines = stext.getLines(buffer);
+
+        buffer.translate(0, textY); // translate to text start position
+        for (RString.TextLayoutInfo lineInfo : lines) {
+            TextLayout layout = lineInfo.layout;
+            buffer.translate(0, layout.getAscent());
+            float textX = alignWidth(layout);
+            fillForeground(buffer);
+            layout.draw(buffer.g2, textX, 0);
+            buffer.translate(0, layout.getDescent() + layout.getLeading());
+        }
+    }
+
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         fillBackground(pg);
-        String toDisplay = stext.getPlainText();
-        int lineCount = toDisplay.split(regexLookBehindForNewLine).length + (toDisplay.endsWith("\n") ? 1 : 0);
-        if(shouldDisplayHeaderRow){
-            drawTextLeft(pg, name);
-            lineCount += 1;
-        }
-        heightInCells = lineCount;
-        String contentToDraw = toDisplay.isEmpty() ? "..." : toDisplay;
-        fillForeground(pg);
-        drawContent(pg, contentToDraw);
+        pg.image(buffer.draw(),0,0);
     }
+
+
 
     /**
      * Get the text used for this control.
      *
      * @return the displayed text with styling
      */
-    public StyledString getStyledText() {
+    public RString getStyledText() {
         return stext;
     }
 
@@ -215,7 +266,7 @@ public class RTextBase extends RComponent {
         if (vert != null && vert.isVertAlign()) {
             textAlignV = vert;
         }
-        bufferInvalid = true;
+        buffer.invalidateBuffer();
     }
 
     /**
@@ -264,22 +315,23 @@ public class RTextBase extends RComponent {
      * @param vert GAlign.TOP, MIDDLE, BOTTOM
      */
     public void setText(String text, RAlign horz, RAlign vert) {
-        text = text == null || text.length() == 0 ? " " : text;
+        text = text == null || text.isEmpty() ? " " : text;
         float contentMarginLeft = 0.3f * RLayoutStore.getCell();
         float textFieldWidth = size.x - contentMarginLeft - RFontStore.getMarginX();
-        stext = new StyledString(text, (int) textFieldWidth);
+        stext = new RString(text, (int) textFieldWidth);
         setTextAlign(horz, vert);
-        bufferInvalid = true;
+        buffer.invalidateBuffer();
     }
 
     @Override
     public float suggestWidth() {
         return RFontStore.calcMainTextWidth(name,RLayoutStore.getCell()) +
-                Math.max(cell * 2,RFontStore.calcMainTextWidth(getValueAsString(),RLayoutStore.getCell()));
+                Math.max(RLayoutStore.getCell() * 2,RFontStore.calcMainTextWidth(getValueAsString(),RLayoutStore.getCell()));
     }
 
     @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
         super.updateCoordinates(bX, bY, rX, rY, w, h);
+        buffer.resetBuffer();
     }
 }

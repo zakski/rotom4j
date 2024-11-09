@@ -2,6 +2,14 @@ package com.szadowsz.gui.input.keys;
 
 public interface RKeyListener {
 
+
+    /**
+     * Event when a Key Chord is Pressed
+     *
+     * @param e event data
+     */
+    void keyChordPressed(RKeyEvent e);
+
     /**
      * Event when a Key is Pressed
      *

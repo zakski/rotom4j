@@ -33,7 +33,16 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public boolean isMouseOver(){
-        return children.stream().anyMatch(RComponent::isMouseOver);
+        return isChildMouseOver();
+    }
+
+    /**
+     * TODO
+     *
+     * @return TODO
+     */
+    public boolean hasFocus() {
+        return children.stream().anyMatch(RComponent::hasFocus);
     }
 
     @Override
@@ -41,11 +50,22 @@ public abstract class RGroupDrawable extends RGroup {
         if (!isVisible()){
             return;
         }
-        RComponent underMouse = findComponentAt(mouseX, mouseY);
-        switch (underMouse){
-            case null -> {}// NOOP
-            case RGroup g -> g.keyPressed(keyEvent,mouseX,mouseY);
-            case RComponent c -> keyPressedOver(keyEvent, mouseX, mouseY);
+        RComponent focused = findFocusedComponent();
+        if (focused != null){
+            switch (focused) {
+                case null -> {
+                }// NOOP
+                case RGroup g -> g.keyPressed(keyEvent, mouseX, mouseY);
+                case RComponent c -> keyPressedFocused(keyEvent);
+            }
+        } else {
+            RComponent underMouse = findComponentAt(mouseX, mouseY);
+            switch (underMouse) {
+                case null -> {
+                }// NOOP
+                case RGroup g -> g.keyPressed(keyEvent, mouseX, mouseY);
+                case RComponent c -> keyPressedOver(keyEvent, mouseX, mouseY);
+            }
         }
     }
     @Override

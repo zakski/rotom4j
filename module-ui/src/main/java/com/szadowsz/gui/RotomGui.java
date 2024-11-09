@@ -278,7 +278,6 @@ public class RotomGui {
 
 
     public void setAllMouseOverToFalse(RFolder folder) {
-        LOGGER.info("Set Mouse Over to False For {} Component", folder.getName());
         tree.setAllMouseOverToFalse(folder);
     }
 

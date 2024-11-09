@@ -11,6 +11,11 @@ import com.szadowsz.gui.input.mouse.RMouseListener;
 public interface RInputListener extends RKeyListener, RMouseListener {
 
     @Override
+    default void keyChordPressed(RKeyEvent e) {
+        // NOOP
+    }
+
+    @Override
     default void keyPressed(RKeyEvent e) {
         // NOOP
     }

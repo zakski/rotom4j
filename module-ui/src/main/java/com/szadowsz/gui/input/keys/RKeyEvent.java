@@ -1,15 +1,20 @@
 package com.szadowsz.gui.input.keys;
 
+import com.szadowsz.gui.RotomGui;
 import processing.event.KeyEvent;
 
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RKeyEvent {
     //private static final Logger LOGGER = LoggerFactory.getLogger(RKeyEvent.class);
 
+    private final RotomGui gui;
+
     // Data About the Key Being Pressed
     private final char key;
     private final int keyCode;
+
 
     // Data About Metakeys
     private final boolean isShiftDown;
@@ -19,7 +24,8 @@ public class RKeyEvent {
     // If A Component has consumed the event
     private boolean consumed = false;
 
-    public RKeyEvent(KeyEvent e) {
+    public RKeyEvent(RotomGui gui, ConcurrentHashMap<Integer, Long> integerLongConcurrentHashMap, KeyEvent e) {
+        this.gui = gui;
         this.isShiftDown = e.isShiftDown();
         this.isControlDown = e.isControlDown();
         this.isAltDown = e.isAltDown();

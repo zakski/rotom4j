@@ -9,7 +9,7 @@ import com.szadowsz.gui.component.group.folder.RFolder;
  *
  * It allows the user to enter and edit a single line of text.
  */
-public class RTextField extends RTextBase {
+public class RTextField extends RTextEditable {
     // TODO Component Stub : WIP
 
     /**

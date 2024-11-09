@@ -21,10 +21,12 @@
   Boston, MA  02111-1307  USA
  */
 
-package com.szadowsz.gui.component.text;
+package com.szadowsz.gui.component.text.style;
 
 import com.szadowsz.gui.config.text.RTextConstants;
+import processing.awt.PGraphicsJava2D;
 import processing.core.PApplet;
+import processing.core.PFont;
 
 import java.awt.*;
 import java.awt.font.*;
@@ -52,7 +54,7 @@ import java.util.ListIterator;
  * @author Peter Lager
  *
  */
-public final class StyledString implements Serializable {
+public final class RString implements Serializable {
 
 	private static final long serialVersionUID = -8050839288193585698L;
 
@@ -60,7 +62,7 @@ public final class StyledString implements Serializable {
 	transient private ImageGraphicAttribute spacer = null;
 	transient private LineBreakMeasurer lineMeasurer = null;
 	transient private LinkedList<TextLayoutInfo> linesInfo = new LinkedList<TextLayoutInfo>();
-	transient private Font font = null; // Only used to detect change in Graphics2D buffer
+	transient private PFont font = null; // Only used to detect change in Graphics2D buffer
 
 	private static final char EOL = '\n';
 
@@ -99,7 +101,7 @@ public final class StyledString implements Serializable {
 	 * 
 	 * @param startText the initial text for this instance
 	 */
-	public StyledString(String startText) {
+	public RString(String startText) {
 		plainText = removeSingleSpacingFromPlainText(startText);
 		spacer = getParagraghSpacer(1); // safety
 		// Get rid of any EOLs
@@ -116,7 +118,7 @@ public final class StyledString implements Serializable {
 	 * @param startText the text to use
 	 * @param wrapWidth the wrap width
 	 */
-	public StyledString(String startText, int wrapWidth) {
+	public RString(String startText, int wrapWidth) {
 		if (wrapWidth > 0 && wrapWidth < Integer.MAX_VALUE)
 			this.wrapWidth = wrapWidth;
 		plainText = (wrapWidth == Integer.MAX_VALUE) ? removeSingleSpacingFromPlainText(startText)
@@ -173,7 +175,7 @@ public final class StyledString implements Serializable {
 	 * @param as
 	 * @return the converted string
 	 */
-	StyledString convertToSingleLineText() {
+    public RString convertToSingleLineText() {
 		// Make sure we have something to work with.
 		if (styledText == null || plainText == null) {
 			plainText = "";
@@ -765,19 +767,18 @@ public final class StyledString implements Serializable {
 		return true;
 	}
 
-	private void setFont(Font a_font) {
-		if (a_font != null) { // && a_font != font){
-//			Log.logger().info("New font: " + a_font);
-//			font = a_font;
+	private void setFont(PFont a_font) {
+		if (a_font != null) {
+			Font n_font = (Font) a_font.findNative();
 			baseStyle.clear();
-			baseStyle.add(new AttributeRun(TextAttribute.FAMILY, a_font.getFamily()));
-			baseStyle.add(new AttributeRun(TextAttribute.SIZE, a_font.getSize()));
+			baseStyle.add(new AttributeRun(TextAttribute.FAMILY, n_font.getFamily()));
+			baseStyle.add(new AttributeRun(TextAttribute.SIZE, n_font.getSize()));
 			baseStyle.add(new AttributeRun(TextAttribute.WIDTH, TextAttribute.WIDTH_REGULAR));
-			if (a_font.isBold())
+			if (n_font.isBold())
 				baseStyle.add(new AttributeRun(TextAttribute.WEIGHT, TextAttribute.WEIGHT_REGULAR));
 			else
 				baseStyle.add(new AttributeRun(TextAttribute.WEIGHT, TextAttribute.WEIGHT_REGULAR));
-			if (a_font.isItalic())
+			if (n_font.isItalic())
 				baseStyle.add(new AttributeRun(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE));
 			else
 				baseStyle.add(new AttributeRun(TextAttribute.POSTURE, TextAttribute.POSTURE_REGULAR));
@@ -793,18 +794,18 @@ public final class StyledString implements Serializable {
 	 * Get the text layouts for display if the string has changed since last call to
 	 * this method regenerate them.
 	 * 
-	 * @param g2d Graphics2D display context
+	 * @param pg Graphics2D display context
 	 * @return a list of text layouts for rendering
 	 */
-	public LinkedList<TextLayoutInfo> getLines(Graphics2D g2d) {
-		if (font != g2d.getFont()) {
-			setFont(g2d.getFont());
+	public LinkedList<TextLayoutInfo> getLines(PGraphicsJava2D pg) {
+
+		if (font != pg.textFont || invalidText) {
+			setFont(pg.textFont);
 			invalidText = true;
 		}
 		if (invalidText) {
 			styledText = new AttributedString(plainText);
 			styledText = insertParagraphMarkers(plainText, styledText);
-			setFont(g2d.getFont());
 			applyAttributes();
 			invalidText = false;
 			invalidLayout = true;
@@ -818,7 +819,7 @@ public final class StyledString implements Serializable {
 				nbrLines = 0;
 				// We could test for "\n" here
 				AttributedCharacterIterator paragraph = styledText.getIterator(null, 0, plainText.length());
-				FontRenderContext frc = g2d.getFontRenderContext();
+				FontRenderContext frc = pg.g2.getFontRenderContext();
 				lineMeasurer = new LineBreakMeasurer(paragraph, frc);
 				float yposinpara = 0;
 				int charssofar = 0;
@@ -921,24 +922,24 @@ public final class StyledString implements Serializable {
 	 * @param py
 	 * @return
 	 */
-	TextLayoutHitInfo calculateFromXY(Graphics2D g2d, float px, float py) {
-		TextHitInfo thi = null;
-		TextLayoutInfo tli = null;
-		TextLayoutHitInfo tlhi = null;
-		if (invalidLayout)
-			getLines(g2d);
-		if (px < 0)
-			px = 0;
-		if (py < 0)
-			py = 0;
-		tli = getTLIforYpos(py);
-		// Correct py to match layout's upper-left bounds
-		py -= tli.yPosInPara;
-		// get hit
-		thi = tli.layout.hitTestChar(px, py);
-		tlhi = new TextLayoutHitInfo(tli, thi);
-		return tlhi;
-	}
+//	TextLayoutHitInfo calculateFromXY(Graphics2D g2d, float px, float py) {
+//		TextHitInfo thi = null;
+//		TextLayoutInfo tli = null;
+//		TextLayoutHitInfo tlhi = null;
+//		if (invalidLayout)
+//			getLines(g2d);
+//		if (px < 0)
+//			px = 0;
+//		if (py < 0)
+//			py = 0;
+//		tli = getTLIforYpos(py);
+//		// Correct py to match layout's upper-left bounds
+//		py -= tli.yPosInPara;
+//		// get hit
+//		thi = tli.layout.hitTestChar(px, py);
+//		tlhi = new TextLayoutHitInfo(tli, thi);
+//		return tlhi;
+//	}
 
 	/**
 	 * Get a layout based on line number
@@ -981,7 +982,7 @@ public final class StyledString implements Serializable {
 	 * @return the first layout where c is greater that the layout's start char
 	 *         index.
 	 */
-	TextLayoutInfo getTLIforCharNo(int charNo) {
+    public TextLayoutInfo getTLIforCharNo(int charNo) {
 		TextLayoutInfo tli = null;
 		if (!linesInfo.isEmpty()) {
 			for (int i = linesInfo.size() - 1; i >= 0; i--) {
@@ -1054,7 +1055,7 @@ public final class StyledString implements Serializable {
 	 * Ensure we do not have more than 2 consecutive blank lines. This can happen
 	 * when manually deleting a line adjacent to a blank line.
 	 */
-	protected void removeConsecutiveBlankLines() {
+    public void removeConsecutiveBlankLines() {
 		plainText = removeTripleSpacingFromPlainText(plainText);
 	}
 
@@ -1134,7 +1135,7 @@ public final class StyledString implements Serializable {
 	 * @param ss    the styled string
 	 * @param fname the filename to use
 	 */
-	public static void save(PApplet papp, StyledString ss, String fname) {
+	public static void save(PApplet papp, RString ss, String fname) {
 		OutputStream os;
 		ObjectOutputStream oos;
 		try {
@@ -1155,14 +1156,14 @@ public final class StyledString implements Serializable {
 	 * @param fname the filename of the StyledString
 	 * @return the styled string instance loaded from the file
 	 */
-	public static StyledString load(PApplet papp, String fname) {
-		StyledString ss = null;
+	public static RString load(PApplet papp, String fname) {
+		RString ss = null;
 		InputStream is;
 		ObjectInputStream ios;
 		try {
 			is = papp.createInput(fname);
 			ios = new ObjectInputStream(is);
-			ss = (StyledString) ios.readObject();
+			ss = (RString) ios.readObject();
 			is.close();
 			ios.close();
 		} catch (IOException e) {
@@ -1173,7 +1174,7 @@ public final class StyledString implements Serializable {
 		return ss;
 	}
 
-	public StyledString deepCopy() throws Exception {
+	public RString deepCopy() throws Exception {
 		// Serialization of object
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ObjectOutputStream out = new ObjectOutputStream(bos);
@@ -1182,7 +1183,7 @@ public final class StyledString implements Serializable {
 		// De-serialization of object
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 		ObjectInputStream in = new ObjectInputStream(bis);
-		StyledString copied = (StyledString) in.readObject();
+		RString copied = (RString) in.readObject();
 
 		return copied;
 	}

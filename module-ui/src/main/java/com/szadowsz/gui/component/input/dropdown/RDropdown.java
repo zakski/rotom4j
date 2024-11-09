@@ -7,6 +7,13 @@ import processing.core.PGraphics;
 
 /**
  * A dropdown list component, single selection
+ * The number of items in the list is not restricted but the user can define the
+ * maximum number of items to be displayed in the drop list. If there are too
+ * many items to display a vertical scroll bar is provide to scroll through all
+ * the items.
+ *
+ * The vertical size of an individual item is calculated from the overall height
+ * specified when creating the control.
  */
 public class RDropdown extends RComponent {
     // TODO Component Stub : WIP
