@@ -3,8 +3,6 @@ package com.szadowsz.gui.component.text;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.gui.component.text.style.RAlign;
-import com.szadowsz.gui.component.text.style.RString;
 import com.szadowsz.gui.config.theme.RColorConverter;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
@@ -31,7 +29,7 @@ public abstract class RTextBase extends RComponent {
     private final String regexLookBehindForNewLine = "(?<=\\n)";
 
     /** The styled text used by this component */
-    protected RString stext = new RString("");
+    protected RText stext = new RText("");
 
     // Alignment within zone
     protected RAlign textAlignH = RAlign.LEFT;
@@ -205,10 +203,10 @@ public abstract class RTextBase extends RComponent {
 
     void display(PGraphicsJava2D buffer) {
         float textY = alignHeight();
-        LinkedList<RString.TextLayoutInfo> lines = stext.getLines(buffer);
+        LinkedList<RText.TextLayoutInfo> lines = stext.getLines(buffer);
 
         buffer.translate(0, textY); // translate to text start position
-        for (RString.TextLayoutInfo lineInfo : lines) {
+        for (RText.TextLayoutInfo lineInfo : lines) {
             TextLayout layout = lineInfo.layout;
             buffer.translate(0, layout.getAscent());
             float textX = alignWidth(layout);
@@ -231,7 +229,7 @@ public abstract class RTextBase extends RComponent {
      *
      * @return the displayed text with styling
      */
-    public RString getStyledText() {
+    public RText getStyledText() {
         return stext;
     }
 
@@ -318,7 +316,7 @@ public abstract class RTextBase extends RComponent {
         text = text == null || text.isEmpty() ? " " : text;
         float contentMarginLeft = 0.3f * RLayoutStore.getCell();
         float textFieldWidth = size.x - contentMarginLeft - RFontStore.getMarginX();
-        stext = new RString(text, (int) textFieldWidth);
+        stext = new RText(text, (int) textFieldWidth);
         setTextAlign(horz, vert);
         buffer.invalidateBuffer();
     }

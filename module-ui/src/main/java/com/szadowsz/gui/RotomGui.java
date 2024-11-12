@@ -11,6 +11,7 @@ import com.szadowsz.gui.component.input.slider.RSlider;
 import com.szadowsz.gui.component.input.slider.RSliderInt;
 import com.szadowsz.gui.component.input.toggle.RCheckbox;
 import com.szadowsz.gui.component.input.toggle.RToggle;
+import com.szadowsz.gui.component.text.RTextField;
 import com.szadowsz.gui.component.text.RTextLabel;
 import com.szadowsz.gui.config.theme.RColorConverter;
 import com.szadowsz.gui.config.text.RFontStore;
@@ -505,6 +506,20 @@ public class RotomGui {
         if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
             component = new RColorPickerFolder(this, fullPath, folder, startingValue);
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+    public RTextField field(String path, String content) {
+        String fullPath = getCurrentPath() + path;
+        if (tree.isPathTakenByUnexpectedType(fullPath, RTextField.class)) {
+            return null;
+        }
+        RTextField component = (RTextField) tree.getComponent(fullPath);
+        if (component == null) {
+            RFolder folder = tree.getParentFolder(fullPath);
+            component = new RTextField(this, fullPath, folder);
             tree.insertAtPath(component);
         }
         return component;

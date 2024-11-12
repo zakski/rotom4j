@@ -16,6 +16,7 @@ public class RKeyEvent {
     private final int keyCode;
 
 
+    private final ConcurrentHashMap<Integer, Long> heldKeys;
     // Data About Metakeys
     private final boolean isShiftDown;
     private final boolean isControlDown;
@@ -24,8 +25,9 @@ public class RKeyEvent {
     // If A Component has consumed the event
     private boolean consumed = false;
 
-    public RKeyEvent(RotomGui gui, ConcurrentHashMap<Integer, Long> integerLongConcurrentHashMap, KeyEvent e) {
+    public RKeyEvent(RotomGui gui, ConcurrentHashMap<Integer, Long> heldKeys, KeyEvent e) {
         this.gui = gui;
+        this.heldKeys = heldKeys;
         this.isShiftDown = e.isShiftDown();
         this.isControlDown = e.isControlDown();
         this.isAltDown = e.isAltDown();
@@ -86,6 +88,10 @@ public class RKeyEvent {
      */
     public boolean isShiftDown() {
         return isShiftDown;
+    }
+
+    public boolean hasChord(RKeyChord chord){
+        return chord.containedBy(heldKeys);
     }
 
 

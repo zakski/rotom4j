@@ -21,7 +21,7 @@
   Boston, MA  02111-1307  USA
  */
 
-package com.szadowsz.gui.component.text.style;
+package com.szadowsz.gui.component.text;
 
 /**
  * This class provides an enumeration that is used to control the alignment

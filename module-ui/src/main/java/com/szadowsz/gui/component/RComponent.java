@@ -320,6 +320,10 @@ public abstract class RComponent {
         return size.y;
     }
 
+    public RotomGui getGui(){
+        return gui;
+    }
+
     public PVector getPosition() {
         return pos.copy();
     }
@@ -462,6 +466,11 @@ public abstract class RComponent {
      * @param mouseY y position
      */
     public void keyChordPressedOver(RKeyEvent keyEvent, float mouseX, float mouseY) {
+        // NOOP
+    }
+
+
+    public void keyTypedOver(RKeyEvent keyEvent, float mouseX, float mouseY) {
         // NOOP
     }
 

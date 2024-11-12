@@ -21,7 +21,7 @@
   Boston, MA  02111-1307  USA
  */
 
-package com.szadowsz.gui.component.text.style;
+package com.szadowsz.gui.component.text;
 
 import com.szadowsz.gui.config.text.RTextConstants;
 import processing.awt.PGraphicsJava2D;
@@ -54,7 +54,7 @@ import java.util.ListIterator;
  * @author Peter Lager
  *
  */
-public final class RString implements Serializable {
+public final class RText implements Serializable {
 
 	private static final long serialVersionUID = -8050839288193585698L;
 
@@ -101,7 +101,7 @@ public final class RString implements Serializable {
 	 * 
 	 * @param startText the initial text for this instance
 	 */
-	public RString(String startText) {
+	public RText(String startText) {
 		plainText = removeSingleSpacingFromPlainText(startText);
 		spacer = getParagraghSpacer(1); // safety
 		// Get rid of any EOLs
@@ -118,7 +118,7 @@ public final class RString implements Serializable {
 	 * @param startText the text to use
 	 * @param wrapWidth the wrap width
 	 */
-	public RString(String startText, int wrapWidth) {
+	public RText(String startText, int wrapWidth) {
 		if (wrapWidth > 0 && wrapWidth < Integer.MAX_VALUE)
 			this.wrapWidth = wrapWidth;
 		plainText = (wrapWidth == Integer.MAX_VALUE) ? removeSingleSpacingFromPlainText(startText)
@@ -175,7 +175,7 @@ public final class RString implements Serializable {
 	 * @param as
 	 * @return the converted string
 	 */
-    public RString convertToSingleLineText() {
+    public RText convertToSingleLineText() {
 		// Make sure we have something to work with.
 		if (styledText == null || plainText == null) {
 			plainText = "";
@@ -922,24 +922,24 @@ public final class RString implements Serializable {
 	 * @param py
 	 * @return
 	 */
-//	TextLayoutHitInfo calculateFromXY(Graphics2D g2d, float px, float py) {
-//		TextHitInfo thi = null;
-//		TextLayoutInfo tli = null;
-//		TextLayoutHitInfo tlhi = null;
-//		if (invalidLayout)
-//			getLines(g2d);
-//		if (px < 0)
-//			px = 0;
-//		if (py < 0)
-//			py = 0;
-//		tli = getTLIforYpos(py);
-//		// Correct py to match layout's upper-left bounds
-//		py -= tli.yPosInPara;
-//		// get hit
-//		thi = tli.layout.hitTestChar(px, py);
-//		tlhi = new TextLayoutHitInfo(tli, thi);
-//		return tlhi;
-//	}
+	TextLayoutHitInfo calculateFromXY(PGraphicsJava2D g2d, float px, float py) {
+		TextHitInfo thi;
+		TextLayoutInfo tli;
+		TextLayoutHitInfo tlhi;
+		if (invalidLayout)
+			getLines(g2d);
+		if (px < 0)
+			px = 0;
+		if (py < 0)
+			py = 0;
+		tli = getTLIforYpos(py);
+		// Correct py to match layout's upper-left bounds
+		py -= tli.yPosInPara;
+		// get hit
+		thi = tli.layout.hitTestChar(px, py);
+		tlhi = new TextLayoutHitInfo(tli, thi);
+		return tlhi;
+	}
 
 	/**
 	 * Get a layout based on line number
@@ -1135,7 +1135,7 @@ public final class RString implements Serializable {
 	 * @param ss    the styled string
 	 * @param fname the filename to use
 	 */
-	public static void save(PApplet papp, RString ss, String fname) {
+	public static void save(PApplet papp, RText ss, String fname) {
 		OutputStream os;
 		ObjectOutputStream oos;
 		try {
@@ -1156,14 +1156,14 @@ public final class RString implements Serializable {
 	 * @param fname the filename of the StyledString
 	 * @return the styled string instance loaded from the file
 	 */
-	public static RString load(PApplet papp, String fname) {
-		RString ss = null;
+	public static RText load(PApplet papp, String fname) {
+		RText ss = null;
 		InputStream is;
 		ObjectInputStream ios;
 		try {
 			is = papp.createInput(fname);
 			ios = new ObjectInputStream(is);
-			ss = (RString) ios.readObject();
+			ss = (RText) ios.readObject();
 			is.close();
 			ios.close();
 		} catch (IOException e) {
@@ -1174,7 +1174,7 @@ public final class RString implements Serializable {
 		return ss;
 	}
 
-	public RString deepCopy() throws Exception {
+	public RText deepCopy() throws Exception {
 		// Serialization of object
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ObjectOutputStream out = new ObjectOutputStream(bos);
@@ -1183,7 +1183,7 @@ public final class RString implements Serializable {
 		// De-serialization of object
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 		ObjectInputStream in = new ObjectInputStream(bis);
-		RString copied = (RString) in.readObject();
+		RText copied = (RText) in.readObject();
 
 		return copied;
 	}

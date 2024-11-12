@@ -962,6 +962,22 @@ public class RWindowPane implements RWindow, RInputListener {
         folder.keyChordPressed(keyEvent, mouseX, mouseY);
     }
 
+    public void keyTyped(RKeyEvent keyEvent) {
+        if (!isVisible()) {
+            return;
+        }
+
+        float mouseX = sketch.mouseX;
+        float mouseY = sketch.mouseY;
+
+        if (isPointInsideTitleBar(mouseX, mouseY)) {
+            folder.keyTypedOver(keyEvent, mouseX, mouseY);
+            return;
+        }
+
+        folder.keyTyped(keyEvent, mouseX, mouseY);
+    }
+
     @Override
     public void mouseMoved(RMouseEvent mouseEvent) {
         if (!isVisible()) {

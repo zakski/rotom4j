@@ -1,5 +1,6 @@
-package com.szadowsz.gui.window.pane;
+package com.szadowsz.gui.component.utils;
 
+import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
@@ -10,11 +11,11 @@ import processing.core.PVector;
 import static com.old.ui.utils.Coordinates.isPointInRect;
 
 /**
- * Vertical Scrollbar for Windows
+ * Vertical/Horizontal Scrollbar for Components
  */
-public class RScrollbar {
+public class RComponentScrollbar {
     private static final float CORNER_RADIUS = 6;
-    private final RWindowPane win;
+    private final RComponent component;
 
     protected float filler = .5f;
 
@@ -48,13 +49,13 @@ public class RScrollbar {
     /**
      * Create the scroll bar
      */
-    protected RScrollbar(RWindowPane win, float xp, float yp, float sw, float sh, float wh, int l) {
-        this.win = win;
+    protected RComponentScrollbar(RComponent component, float xp, float yp, float sw, float sh, float wh, int l) {
+        this.component = component;
         updateValues(xp, yp, sw, sh, wh, l);
     }
 
-    public RScrollbar(RWindowPane rWindowPane, PVector scrollbarStart, PVector scrollbarBounds, float y, int i) {
-        this(rWindowPane,scrollbarStart.x,scrollbarStart.y,scrollbarBounds.x,scrollbarBounds.y,y,i);
+    public RComponentScrollbar(RComponent component, PVector scrollbarStart, PVector scrollbarBounds, float y, int i) {
+        this(component,scrollbarStart.x,scrollbarStart.y,scrollbarBounds.x,scrollbarBounds.y,y,i);
     }
 
     private void updateValues(float xp, float yp, float sw, float sh, float wh, int l) {
@@ -101,14 +102,14 @@ public class RScrollbar {
         pg.popMatrix();
     }
 
-    protected void updateBuffer(float posX, float posY, float windowSizeY, float windowHeight) {
+    protected void updateBuffer(float posX, float posY, float componentSizeY, float componentHeight) {
         this.posX = posX;
         this.posY = posY;
-        float factor = windowSizeY / windowHeight;
+        float factor = componentSizeY / componentHeight;
         if (this.factor != factor || bufferInvalid) {
-            updateValues(posX, posY, width, windowSizeY, windowHeight, loose);
+            updateValues(posX, posY, width, componentSizeY, componentHeight, loose);
 
-            buffer = win.getSketch().createGraphics((int) width, (int) windowSizeY, PApplet.JAVA2D);
+            buffer = component.getGui().getSketch().createGraphics((int) width, (int) componentSizeY, PApplet.JAVA2D);
             buffer.rectMode(PApplet.CORNER);
             buffer.beginDraw();
             // Draw the track
@@ -118,7 +119,7 @@ public class RScrollbar {
                 buffer.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
             }
             buffer.noStroke();
-            buffer.rect(8, 3, width - 8, windowSizeY - 5);
+            buffer.rect(8, 3, width - 8, componentSizeY - 5);
 
             // ****************************************
             buffer.strokeWeight(1);

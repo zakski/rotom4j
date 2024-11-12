@@ -2,7 +2,6 @@ package com.szadowsz.gui.component.text;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.gui.component.text.style.RString;
 import com.szadowsz.gui.config.text.RTextConstants;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import org.slf4j.Logger;
@@ -10,19 +9,18 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.font.TextHitInfo;
 
-public class RTextEditable extends RTextBase {
+public abstract class RTextEditable extends RTextBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(RTextBase.class);
 
-    protected RString promptText = null;
+    protected RText promptText = null;
 
     // Caret position
     protected float caretX, caretY;
-
     protected boolean showCaret;
 
     // Used for identifying selection and cursor position
-    protected RString.TextLayoutHitInfo startTLHI = new RString.TextLayoutHitInfo();
-    protected RString.TextLayoutHitInfo endTLHI = new RString.TextLayoutHitInfo();
+    protected RText.TextLayoutHitInfo startTLHI = new RText.TextLayoutHitInfo();
+    protected RText.TextLayoutHitInfo endTLHI = new RText.TextLayoutHitInfo();
 
     // The width to break a line
     protected int wrapWidth = Integer.MAX_VALUE;
@@ -34,7 +32,7 @@ public class RTextEditable extends RTextBase {
     // Stuff to manage text selections
     protected int endChar = -1;
     protected int startChar = -1;
-    protected int pos = endChar;
+    protected int charPos = endChar;
     protected int nbr;
     protected int adjust;
     protected boolean textChanged = false, selectionChanged = false;
@@ -52,14 +50,16 @@ public class RTextEditable extends RTextBase {
      * @param path         the path in the component tree
      * @param parentFolder the parent component folder reference // TODO consider if needed
      */
-    protected RTextEditable(RotomGui gui, String path, RFolder parentFolder) {
+    protected RTextEditable(RotomGui gui, String path, RFolder parentFolder, int sbPolicy) {
         super(gui, path, parentFolder);
+        scrollbarPolicy = sbPolicy;
 //        scrollbarPolicy = scrollbars;
 //        autoHide = ((scrollbars & SCROLLBARS_AUTOHIDE) == SCROLLBARS_AUTOHIDE);
 //        caretFlasher = new GTimer(theApplet, this, "flashCaret", 400);
 //        caretFlasher.start();
 //        opaque = true;
 //        cursorOver = TEXT;
+
     }
 
     /**
@@ -67,7 +67,7 @@ public class RTextEditable extends RTextBase {
      *
      * @param tlhi
      */
-    protected void calculateCaretPos(RString.TextLayoutHitInfo tlhi) {
+    protected void calculateCaretPos(RText.TextLayoutHitInfo tlhi) {
         float temp[] = tlhi.tli.layout.getCaretInfo(tlhi.thi);
         caretX = temp[0];
         caretY = tlhi.tli.yPosInPara;
@@ -79,7 +79,7 @@ public class RTextEditable extends RTextBase {
      * @param currPos the current position of the caret
      * @return true if caret moved, false otherwise
      */
-    protected boolean moveCaretLeft(RString.TextLayoutHitInfo currPos) {
+    protected boolean moveCaretLeft(RText.TextLayoutHitInfo currPos) {
         TextHitInfo nthi = currPos.tli.layout.getNextLeftHit(currPos.thi);
         if (nthi == null) {
             return false;
@@ -96,7 +96,7 @@ public class RTextEditable extends RTextBase {
      * @param currPos the current position of the caret
      * @return true if caret moved else false
      */
-    protected boolean moveCaretRight(RString.TextLayoutHitInfo currPos) {
+    protected boolean moveCaretRight(RText.TextLayoutHitInfo currPos) {
         TextHitInfo nthi = currPos.tli.layout.getNextRightHit(currPos.thi);
         if (nthi == null) {
             return false;
@@ -112,7 +112,7 @@ public class RTextEditable extends RTextBase {
      * @param currPos the current position of the caret
      * @return true if caret moved else false
      */
-    protected boolean moveCaretStartOfLine(RString.TextLayoutHitInfo currPos) {
+    protected boolean moveCaretStartOfLine(RText.TextLayoutHitInfo currPos) {
         if (currPos.thi.getCharIndex() == 0)
             return false; // already at start of line
         currPos.thi = currPos.tli.layout.getNextLeftHit(1);
@@ -125,7 +125,7 @@ public class RTextEditable extends RTextBase {
      * @param currPos the current position of the caret
      * @return true if caret moved else false
      */
-    protected boolean moveCaretEndOfLine(RString.TextLayoutHitInfo currPos) {
+    protected boolean moveCaretEndOfLine(RText.TextLayoutHitInfo currPos) {
         if (currPos.thi.getCharIndex() == currPos.tli.nbrChars - 1)
             return false; // already at end of line
         currPos.thi = currPos.tli.layout.getNextRightHit(currPos.tli.nbrChars - 1);
@@ -133,21 +133,16 @@ public class RTextEditable extends RTextBase {
     }
 
     /**
-     * TODO
+     * Update fields when text has changed
      *
-     * @param keyEvent TODO
+     * @return
      */
-    protected void keyPressedProcess(RKeyEvent keyEvent) {
-    }
-
-
-        // Only executed if text has changed
     protected boolean changeText() {
         stext.removeConsecutiveBlankLines();
-        RString.TextLayoutInfo tli;
+        RText.TextLayoutInfo tli;
         TextHitInfo thi = null, thiRight = null;
 
-        pos += adjust;
+        charPos += adjust;
         // Force layouts to be updated
         String pt = stext.getPlainText();
         if (pt.contains("\n\n\n")) {
@@ -156,7 +151,7 @@ public class RTextEditable extends RTextBase {
         stext.getLines(buffer.getNative());
 
         // Try to get text layout info for the current position
-        tli = stext.getTLIforCharNo(pos);
+        tli = stext.getTLIforCharNo(charPos);
         if (tli == null) {
             // If unable to get a layout for pos then reset everything
             endTLHI = null;
@@ -166,7 +161,7 @@ public class RTextEditable extends RTextBase {
         }
         // We have a text layout so we can do something
         // First find the position in line
-        int posInLine = pos - tli.startCharIndex;
+        int posInLine = charPos - tli.startCharIndex;
 
         // Get some hit info so we can see what is happening
         try {
@@ -209,8 +204,8 @@ public class RTextEditable extends RTextBase {
         if (!hasSelection()) {
             return "";
         }
-        RString.TextLayoutHitInfo startSelTLHI;
-        RString.TextLayoutHitInfo endSelTLHI;
+        RText.TextLayoutHitInfo startSelTLHI;
+        RText.TextLayoutHitInfo endSelTLHI;
         if (endTLHI.compareTo(startTLHI) == -1) {
             startSelTLHI = endTLHI;
             endSelTLHI = startTLHI;
@@ -282,7 +277,7 @@ public class RTextEditable extends RTextBase {
         if (ptext == null || ptext.isEmpty())
             promptText = null;
         else {
-            promptText = new RString(ptext, wrapWidth);
+            promptText = new RText(ptext, wrapWidth);
             promptText.addAttribute(RTextConstants.POSTURE, RTextConstants.POSTURE_OBLIQUE);
         }
         if (stext == null || stext.getPlainText().isEmpty()) {
@@ -315,33 +310,11 @@ public class RTextEditable extends RTextBase {
 
     @Override
     public void keyPressedFocused(RKeyEvent keyEvent) {
-        if (!isVisible || !isEditEnabled) {
+        if (!isVisible || !isEditEnabled || !isFocused) {
             return;
-        }
-
-        if (endTLHI != null) {
-            textChanged = false;
-
-            int startPos = pos, startNbr = nbr;
-
-            // Get selection details
-            endChar = endTLHI.tli.startCharIndex + endTLHI.thi.getInsertionIndex();
-            startChar = (startTLHI != null) ? startTLHI.tli.startCharIndex + startTLHI.thi.getInsertionIndex()
-                    : endChar;
-            pos = endChar;
-            nbr = 0;
-            adjust = 0;
-
-            if (endChar != startChar) { // Have we some text selected?
-                if (startChar < endChar) { // Forward selection
-                    pos = startChar;
-                    nbr = endChar - pos;
-                } else if (startChar > endChar) { // Backward selection
-                    pos = endChar;
-                    nbr = startChar - pos;
-                }
-            }
-            keyPressedProcess(keyEvent);
+        } else {
+            // Key Presses are only cared about for chords so we just eat the event
+            keyEvent.consume();
             if (textChanged) {
                 changeText();
             }
@@ -353,29 +326,6 @@ public class RTextEditable extends RTextBase {
         keyPressedFocused(keyEvent);
     }
 
-    //    public void keyEvent(KeyEvent e) {
-//        if (focusIsWith == this && endTLHI != null) {
-//            int keyID = e.getAction();
-//
-//            if (startPos >= 0) {
-//                if (startPos != pos || startNbr != nbr)
-//                    fireEvent(this, GEvent.SELECTION_CHANGED);
-//            }
-//            // Select either keyPressedProcess or keyTypeProcess. These two methods are
-//            // overridden in child classes
-//            if (keyID == KeyEvent.PRESS) {
-//                keyPressedProcess(keyCode, keyChar, shiftDown, ctrlDown);
-//                setScrollbarValues(ptx, pty);
-//            } else if (keyID == KeyEvent.TYPE) { // && e.getKey() != KeyEvent.CHAR_UNDEFINED && !ctrlDown){
-//                keyTypedProcess(keyCode, keyChar, shiftDown, ctrlDown);
-//                setScrollbarValues(ptx, pty);
-//            }
-//            if (textChanged) {
-//                changeText();
-//                fireEvent(this, GEvent.CHANGED);
-//            }
-//        }
-//    }
 //
 //    /**
 //     * Give the focus to this component but only after allowing the current

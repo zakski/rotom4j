@@ -2,6 +2,9 @@ package com.szadowsz.gui.input.keys;
 
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -25,6 +28,14 @@ public class RKeyChord {
      */
     public boolean contains(int nkey) {
         return Arrays.binarySearch(this.keys, nkey) > 0;
+    }
+
+    public boolean containedBy(Set<Integer> heldKeys) {
+       return Arrays.stream(keys).allMatch(heldKeys::contains);
+    }
+
+    public boolean containedBy(Map<Integer, Long> heldKeys) {
+        return containedBy(heldKeys.keySet());
     }
 
     /**

@@ -60,6 +60,15 @@ public final class RTextBuffer {
         return buffer;
     }
 
+    public int getWidth() {
+        return buffer.width;
+    }
+
+    public int getHeight() {
+        return buffer.height;
+    }
+
+
     public synchronized PGraphics draw(){
         redrawIfNecessary();
         return buffer;

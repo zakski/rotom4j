@@ -165,7 +165,7 @@ public abstract class RGroup extends RComponent {
                 case null -> {
                 }// NOOP
                 case RGroup g -> g.keyPressed(keyEvent, mouseX, mouseY);
-                case RComponent c -> keyPressedFocused(keyEvent);
+                case RComponent c -> c.keyPressedFocused(keyEvent);
             }
         } else {
             RComponent underMouse = findComponentAt(mouseX, mouseY);
@@ -173,7 +173,7 @@ public abstract class RGroup extends RComponent {
                 case null -> {
                 }// NOOP
                 case RGroup g -> g.keyPressed(keyEvent, mouseX, mouseY);
-                case RComponent c -> keyPressedOver(keyEvent, mouseX, mouseY);
+                case RComponent c -> c.keyPressedOver(keyEvent, mouseX, mouseY);
             }
         }
     }
@@ -192,8 +192,21 @@ public abstract class RGroup extends RComponent {
         RComponent underMouse = findComponentAt(mouseX, mouseY);
         switch (underMouse){
             case null -> {}// NOOP
-            case RGroup g -> g.keyChordPressedOver(keyEvent,mouseX,mouseY);
-            case RComponent c -> keyChordPressedOver(keyEvent, mouseX, mouseY);
+            case RGroup g -> g.keyChordPressed(keyEvent,mouseX,mouseY);
+            case RComponent c -> c.keyChordPressedOver(keyEvent, mouseX, mouseY);
+        }
+    }
+
+
+    public void keyTyped(RKeyEvent keyEvent, float mouseX, float mouseY) {
+        if (!isVisible()) {
+            return;
+        }
+        RComponent underMouse = findComponentAt(mouseX, mouseY);
+        switch (underMouse){
+            case null -> {}// NOOP
+            case RGroup g -> g.keyTyped(keyEvent,mouseX,mouseY);
+            case RComponent c -> c.keyTypedOver(keyEvent, mouseX, mouseY);
         }
     }
 
@@ -240,6 +253,4 @@ public abstract class RGroup extends RComponent {
             default -> Float.compare(o1.getPosY(), o2.getPosY());
         });
     }
-
-
 }

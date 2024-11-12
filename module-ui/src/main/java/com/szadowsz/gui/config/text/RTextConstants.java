@@ -7,6 +7,11 @@ public class RTextConstants {
 
     private RTextConstants() {}
 
+    // used to filter in GTextField
+    public final static int INTEGER 		= 0;
+    public final static int DECIMAL 		= 1;
+    public final static int EXPONENT 		= 2;
+
     // Font style
     public final static int PLAIN 	= Font.PLAIN;
     public final static int BOLD 	= Font.BOLD;

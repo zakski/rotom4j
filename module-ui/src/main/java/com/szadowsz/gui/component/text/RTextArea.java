@@ -21,6 +21,6 @@ public class RTextArea extends RTextEditable {
      * @param parentFolder the parent component folder reference // TODO consider if needed
      */
     protected RTextArea(RotomGui gui, String path, RFolder parentFolder) {
-        super(gui, path, parentFolder);
+        super(gui, path, parentFolder, 0);
     }
 }
