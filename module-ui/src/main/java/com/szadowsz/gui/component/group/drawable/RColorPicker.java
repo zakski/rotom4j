@@ -192,16 +192,6 @@ public class RColorPicker extends RGroupDrawable {
         }
     }
 
-    @Override
-    public boolean canChangeLayout() {
-        return false;
-    }
-
-    @Override
-    public void setLayout(RLayoutBase layout) {
-        LOGGER.warn("Cannot change layout for RColorPicker at Path: {}", path);
-    }
-
     /**
      * Reload the individual RGB values into the display nodes from the current Color
      */
@@ -238,4 +228,45 @@ public class RColorPicker extends RGroupDrawable {
     public String getHexString() {
         return String.format("%06X", 0xFFFFFF & color.getRGB());
     }
+
+    public float getRed() {
+        return color.getRed();
+    }
+
+    public float getGreen() {
+        return color.getGreen();
+    }
+
+    public float getBlue() {
+        return color.getBlue();
+    }
+
+    @Override
+    public boolean canChangeLayout() {
+        return false;
+    }
+
+    @Override
+    public void setLayout(RLayoutBase layout) {
+        LOGGER.warn("Cannot change layout for RColorPicker at Path: {}", path);
+    }
+
+    public void setRed(int red) {
+        color = new Color(red, color.getGreen(), color.getBlue(),color.getAlpha());
+        setSliderValue(R_NODE_NAME, red);
+        setPreviewColor();
+    }
+
+    public void setGreen(int green) {
+        color = new Color(color.getRed(), green, color.getBlue(),color.getAlpha());
+        setSliderValue(G_NODE_NAME, green);
+        setPreviewColor();
+    }
+
+    public void setBlue(int blue) {
+        color = new Color(color.getRed(), color.getGreen(), blue,color.getAlpha());
+        setSliderValue(B_NODE_NAME, blue);
+        setPreviewColor();
+    }
+
 }

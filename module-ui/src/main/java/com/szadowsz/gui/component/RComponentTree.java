@@ -57,6 +57,25 @@ public class RComponentTree {
         return result;
     }
 
+    public <T extends RComponent> List<T> getComponents(Class<T> clazz) {
+        List<T> result = new ArrayList<>();
+        Queue<RComponent> queue = new LinkedList<>();
+        queue.offer(root);
+        while (!queue.isEmpty()) {
+            RComponent node = queue.poll();
+            try {
+                result.add(clazz.cast(node));
+            } catch (ClassCastException ignored) {
+            }
+            if (node instanceof RGroup group) {
+                for (RComponent child : group.getChildren()) {
+                    queue.offer(child);
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * Finds Component By Path
      *

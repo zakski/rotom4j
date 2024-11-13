@@ -510,8 +510,16 @@ public class RSlider extends RComponent {
         updateNumpad();
     }
 
+    public float getValueAsFloat() {
+        return value;
+    }
+
     @Override
     public String getValueAsString() {
         return getDisplayValue();
+    }
+
+    public void setValueFromParent(float value) {
+        this.value = value;
     }
 }

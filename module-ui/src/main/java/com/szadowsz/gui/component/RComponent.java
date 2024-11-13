@@ -93,6 +93,13 @@ public abstract class RComponent {
         return ((int)(minimumHeight / RLayoutStore.getCell())) + ((minimumHeight % RLayoutStore.getCell() != 0) ? 1 : 0);
     }
 
+    protected void onValueChange() {
+        if(parent != null){
+            // go up the parent chain recursively and keep notifying of a change until the root is reached
+            parent.onValueChange();
+        }
+    }
+
     protected void onValueChangeEnd() { // TODO LazyGui
         if(parent != null){
             // go up the parent chain recursively and keep notifying of a change until the root is reached

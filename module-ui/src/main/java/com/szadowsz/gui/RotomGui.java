@@ -3,6 +3,7 @@ package com.szadowsz.gui;
 import com.jogamp.newt.opengl.GLWindow;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.RComponentTree;
+import com.szadowsz.gui.component.RPaths;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
@@ -84,7 +85,7 @@ public class RotomGui {
      * @param sketch   main processing sketch class to display the GUI on and use keyboard and mouse input from
      * @param settings settings to apply
      */
-    RotomGui(PApplet sketch, RotomGuiSettings settings) {
+    protected RotomGui(PApplet sketch, RotomGuiSettings settings) {
         app = sketch;
         appWindow = (GLWindow) app.getSurface().getNative();
 
@@ -222,6 +223,15 @@ public class RotomGui {
         return null;
     }
 
+    protected void setFolder(String folder){
+        pathPrefix.clear();
+        if (folder != null && !folder.isEmpty()){
+            String[] split = RPaths.splitByUnescapedSlashes(folder);
+            for (int i = split.length-1; i >=0;i--){
+                pathPrefix.add(split[i]);
+            }
+        }
+    }
     protected StringBuilder pushPathToStack(String folderName) {
         String slashSafeFolderName = folderName;
         if (slashSafeFolderName.startsWith("/")) {
