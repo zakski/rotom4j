@@ -1090,10 +1090,9 @@ public class RWindowPane implements RWindow, RInputListener {
                     contentBuffer.invalidateBuffer();
                 }
                 child.mouseReleased(mouseEvent, mouseY, isReleased);
-                if (mouseEvent.isConsumed()){
-                    RMouseHiding.tryRevealMouseAfterDragging(sketch);
-                    break;
-                }
+            }
+            if (mouseEvent.isConsumed()){
+                RMouseHiding.tryRevealMouseAfterDragging(sketch);
             }
         }
     }

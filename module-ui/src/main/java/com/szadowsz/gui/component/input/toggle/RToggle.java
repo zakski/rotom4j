@@ -13,7 +13,6 @@ import static processing.core.PConstants.CENTER;
  *  Variant component for binary user input controls, that is also known as an Option, or a Switch.
  */
 public class RToggle extends RToggleBase {
-    // TODO Component Stub : WIP
 
     /**
      * Default Constructor

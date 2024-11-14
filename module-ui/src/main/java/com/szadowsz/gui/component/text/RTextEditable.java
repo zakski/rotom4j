@@ -8,9 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.font.TextHitInfo;
+import java.util.LinkedList;
 
 public abstract class RTextEditable extends RTextBase {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RTextBase.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RTextEditable.class);
 
     protected RText promptText = null;
 
@@ -39,7 +40,6 @@ public abstract class RTextEditable extends RTextBase {
 
     /* Is the component enabled to generate mouse and keyboard events */
     protected boolean isEditEnabled = true;
-    protected boolean isFocused;
 
     /**
      * Default Constructor
@@ -143,6 +143,7 @@ public abstract class RTextEditable extends RTextBase {
         TextHitInfo thi = null, thiRight = null;
 
         charPos += adjust;
+        LOGGER.info("{} charPos adjusted to {}",name,charPos);
         // Force layouts to be updated
         String pt = stext.getPlainText();
         if (pt.contains("\n\n\n")) {
@@ -257,7 +258,7 @@ public abstract class RTextEditable extends RTextBase {
     public void setEditEnabled(boolean enableTextEdit) {
         // If we are disabling this then make sure it does not have focus
         if (!enableTextEdit && isFocused) {
-            isFocused = false;
+            setFocus(false);
         }
         isEditEnabled = enableTextEdit;
     }
@@ -344,35 +345,30 @@ public abstract class RTextEditable extends RTextBase {
 //        }
 //        focusIsWith = this;
 //    }
-//
-//    /**
-//     * Determines whether this component is to have focus or not. <br>
-//     */
-//    public void setFocus(boolean focus) {
-//        if (!focus) {
-//            loseFocus(parent);
-//            return;
-//        }
-//        // Only do something if we don't have the focus
-//        if (focusIsWith != this) {
-//            dragging = false;
-//            // Make sure we have some text
-//            if (stext == null || stext.length() == 0)
-//                stext.setText(" ", wrapWidth);
-//            LinkedList<StyledString.TextLayoutInfo> lines = stext.getLines(buffer.g2);
-//            startTLHI = new StyledString.TextLayoutHitInfo(lines.getFirst(), null);
-//            startTLHI.thi = startTLHI.tli.layout.getNextLeftHit(1);
-//
-//            endTLHI = new StyledString.TextLayoutHitInfo(lines.getLast(), null);
-//            int lastChar = endTLHI.tli.layout.getCharacterCount();
-//            endTLHI.thi = startTLHI.tli.layout.getNextRightHit(lastChar - 1);
-//
-//            calculateCaretPos(endTLHI);
-//            buffer.invalidateBuffer();
-//        }
-//        keepCursorInView = true;
-//        takeFocus();
-//    }
+
+    /**
+     * Determines whether this component is to have focus or not. <br>
+     */
+    public void setFocus(boolean focus) {
+        // Only do something if we don't have the focus
+        if (!isFocused && focus) {
+            isDragged = false;
+            // Make sure we have some text
+            if (stext == null || stext.length() == 0)
+                stext.setText(" ", wrapWidth);
+            LinkedList<RText.TextLayoutInfo> lines = stext.getLines(buffer.getNative());
+            startTLHI = new RText.TextLayoutHitInfo(lines.getFirst(), null);
+            startTLHI.thi = startTLHI.tli.layout.getNextLeftHit(1);
+
+            endTLHI = new RText.TextLayoutHitInfo(lines.getLast(), null);
+            int lastChar = endTLHI.tli.layout.getCharacterCount();
+            endTLHI.thi = startTLHI.tli.layout.getNextRightHit(lastChar - 1);
+
+            calculateCaretPos(endTLHI);
+            buffer.invalidateBuffer();
+        }
+        super.setFocus(focus);
+    }
 //
 //    /**
 //     * Adds the text attribute to a range of characters on a particular line. If
@@ -538,13 +534,6 @@ public abstract class RTextEditable extends RTextBase {
 //            vsb.setLocalColorScheme(localColorScheme);
 //    }
 //
-//    // Enable polymorphism.
-//    protected void keyPressedProcess(int keyCode, char keyChar, boolean shiftDown, boolean ctrlDown) {
-//    }
-//
-//    protected void keyTypedProcess(int keyCode, char keyChar, boolean shiftDown, boolean ctrlDown) {
-//    }
-//
 //    /*
 //     * Do not call this directly. A timer calls this method as and when required.
 //     */
@@ -573,15 +562,6 @@ public abstract class RTextEditable extends RTextBase {
 //    }
 //
 //    /**
-//     * Remove from its tab manager before disposing.
-//     */
-//    public void dispose() {
-//        if (tabManager != null)
-//            tabManager.removeControl(this);
-//        super.dispose();
-//    }
-//
-//    /**
 //     * Get the amount to scroll the text per frame when scrolling text to keep the
 //     * insertion point on screen.
 //     *
@@ -594,76 +574,4 @@ public abstract class RTextEditable extends RTextBase {
 //        return f;
 //    }
 //}
-//
-///**
-// * Class to keep track of the last'n' number of key presses. Yhe purpose to to
-// * provide both aesthic scrolling of text when the type rate is slow but faster
-// * scrolling to keep the the insertion point on screen at faster tying rates.
-// *
-// * @author Peter Lager
-// *
-// */
-//final class KeySpeedMeasurer {
-//    KeyLog[] kts;
-//    int next = 0;
-//
-//    KeySpeedMeasurer(int s) {
-//        kts = new KeyLog[s];
-//        next = 0;
-//        long tstart = System.currentTimeMillis() - s * 1000;
-//        for (int i = 0; i < s + 2; i++) {
-//            logKey(1, tstart + i * 1004);
-//        }
-//    }
-//
-//    void logKey(int nbrKeys) {
-//        kts[next++] = new KeyLog(nbrKeys, System.currentTimeMillis());
-//        next %= kts.length;
-//    }
-//
-//    void logKey(int nbrKeys, long time) {
-//        kts[next++] = new KeyLog(nbrKeys, time);
-//        next %= kts.length;
-//    }
-//
-//    float calcCPS() {
-//        long currentTime = System.currentTimeMillis();
-//        int idx = (next + 1) % kts.length;
-//        int nks = 0;
-//        long interval = 0;
-//        while (idx != next) {
-//            // Ignore any logs over 5 seconds old
-//            if (currentTime - kts[idx].timeTyped < 1000) {
-//                int prev = (idx - 1 + kts.length) % kts.length;
-//                interval += kts[idx].timeTyped - kts[prev].timeTyped;
-//                nks += kts[idx].nbrTyped;
-//            }
-//            idx = (idx + 1) % kts.length;
-//        }
-//        if (interval > 0)
-//            return ((float) nks * 1000) / interval;
-//        else
-//            return 0;
-//    }
-//}
-//
-///**
-// * Used internally to represent a key being typed. It is also when a block of
-// * text is inserted,
-// *
-// * @author Peter Lager
-// *
-// */
-//final class KeyLog {
-//    int nbrTyped = 1; // default value
-//    long timeTyped = 0;
-//
-//    KeyLog(int nt, long tt) {
-//        nbrTyped = nt;
-//        timeTyped = tt;
-//    }
-//
-//    public String toString() {
-//        return "  " + nbrTyped + "\t" + timeTyped;
-//    }
 }

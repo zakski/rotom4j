@@ -202,18 +202,31 @@ public abstract class RTextBase extends RComponent {
 
 
     void display(PGraphicsJava2D buffer) {
+        fillForeground(buffer);
+
+        // Get Height Alignment
         float textY = alignHeight();
+
+        buffer.pushMatrix();
+
+        // Make sure font is set
+        buffer.textFont(RFontStore.getSideFont());
+
+        // Break Text into lines
         LinkedList<RText.TextLayoutInfo> lines = stext.getLines(buffer);
+
+        buffer.textAlign(LEFT, CENTER); // consistent alignment just for Processing's sake
 
         buffer.translate(0, textY); // translate to text start position
         for (RText.TextLayoutInfo lineInfo : lines) {
             TextLayout layout = lineInfo.layout;
-            buffer.translate(0, layout.getAscent());
+            buffer.translate(0, layout.getAscent()); // move the recommended distance above the baseline for singled spaced text.
             float textX = alignWidth(layout);
-            fillForeground(buffer);
+            strokeForeground(buffer);
             layout.draw(buffer.g2, textX, 0);
             buffer.translate(0, layout.getDescent() + layout.getLeading());
         }
+        buffer.popMatrix();
     }
 
     @Override

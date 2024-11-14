@@ -53,12 +53,14 @@ public abstract class RComponent {
     protected RLayoutConfig layoutConfig = new RLayoutConfig() {
     };
 
-    protected boolean isDraggable = true; // TODO LazyGui
+    // Component Config
+    protected boolean isDraggable = true; // Is the component able to be dragged
+    protected boolean isVisible = true; // Is the component visible? (Not Parent Aware)
 
-    protected boolean isDragged = false; // TODO LazyGui & G4P // Set to true when mouse is dragging, set to false on mouse released
-    protected boolean isMouseOver = false; // TODO LazyGui // TODO Difference between mouse over and has focus
-    // Is the component visible? (Not Parent Aware)
-    protected boolean isVisible = true; // TODO LazyGui & G4P
+    // Component State
+    protected boolean isDragged = false; // Set to true when mouse is dragging, set to false on mouse released
+    protected boolean isFocused = false; // TODO Difference between mouse over and has focus
+    protected boolean isMouseOver = false; // TODO Difference between mouse over and has focus
 
     /**
      * Default Constructor
@@ -414,8 +416,18 @@ public abstract class RComponent {
      * @return TODO
      */
     public boolean hasFocus() {
-        return false;
+        return isFocused;
     }
+
+    /**
+     * TODO
+     *
+     * @param focused TODO
+     */
+    public void setFocus(boolean focused) {
+        isFocused = focused;
+    }
+
 
     /**
      * Set the Height of The Window, modified by only being set in whole cells.
@@ -511,6 +523,7 @@ public abstract class RComponent {
      */
     public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float mouseY) {
         if(isDragged){
+            setFocus(false);
             mouseEvent.consume();
         }
         isDragged = false;
@@ -524,6 +537,7 @@ public abstract class RComponent {
      */
     public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float mouseY) {
         if(isDragged){
+            setFocus(true);
             mouseEvent.consume();
         }
         isDragged = false;

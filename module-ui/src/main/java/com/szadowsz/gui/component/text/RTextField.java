@@ -3,6 +3,7 @@ package com.szadowsz.gui.component.text;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
+import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.text.RTextConstants;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
@@ -10,12 +11,17 @@ import com.szadowsz.gui.input.clip.RClipboard;
 import com.szadowsz.gui.input.keys.RKeyChord;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.awt.PGraphicsJava2D;
 import processing.core.PGraphics;
 
+import java.awt.font.TextLayout;
 import java.util.LinkedList;
 
 import static java.awt.event.KeyEvent.*;
+import static processing.core.PConstants.CENTER;
+import static processing.core.PConstants.LEFT;
 
 /**
  * Standard text field component.
@@ -23,6 +29,7 @@ import static java.awt.event.KeyEvent.*;
  * It allows the user to enter and edit a single line of text.
  */
 public class RTextField extends RTextEditable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RTextField.class);
 
 
     // <0 any text : 0 = integer : >0 float
@@ -79,17 +86,27 @@ public class RTextField extends RTextEditable {
      * @param ascii UTF8 code
      * @return true if the character can be displayed
      */
-    protected boolean isDisplayable(int ascii) {
+    protected boolean isDisplayable(int ascii) { // TODO
         return !(ascii < 32 || ascii == 127);
     }
 
-    protected void beforeKeyEvent() {
+    @Override
+    protected boolean changeText() {
+        if (!super.changeText())
+            return false;
+        startTLHI.copyFrom(endTLHI);
+        return true;
+    }
+
+    protected void beforeKeyTypedEvent() {
         textChanged = false;
 
         // Get selection details
         endChar = endTLHI.tli.startCharIndex + endTLHI.thi.getInsertionIndex();
         startChar = (startTLHI != null) ? startTLHI.tli.startCharIndex + startTLHI.thi.getInsertionIndex()
                 : endChar;
+        LOGGER.info("text field {} selection info [{},{}]",name,startChar,endChar);
+
         charPos = endChar;
         nbr = 0;
         adjust = 0;
@@ -104,9 +121,13 @@ public class RTextField extends RTextEditable {
         }
     }
 
-    protected void afterKeyEvent() {
+    protected void afterKeyTypedEvent() {
         if (textChanged) {
             changeText();
+            LOGGER.info("invalidated text field {} buffer",name);
+            buffer.invalidateBuffer();
+            getParentFolder().getWindow().redrawBuffer();
+            textChanged = false;
         }
     }
 
@@ -159,11 +180,6 @@ public class RTextField extends RTextEditable {
                 pg.line(x_left, Math.max(0, y_top), x_left, Math.min(size.y, y_bot));
             }
         }
-    }
-
-    @Override
-    void display(PGraphicsJava2D buffer) {
-        super.display(buffer);
     }
 
     /**
@@ -303,11 +319,12 @@ public class RTextField extends RTextEditable {
 
     @Override
     public void keyChordPressedOver(RKeyEvent keyEvent, float mouseX, float mouseY) {
-        if (!isVisible || !isEditEnabled || !isFocused) {
+        LOGGER.info("text field {} Chord Check",name);
+        if (!isVisible || !isEditEnabled || !isFocused || endTLHI == null) {
             return;
         }
 
-        beforeKeyEvent();
+        beforeKeyTypedEvent();
 
         switch (keyEvent.getKeyCode()) {
             case VK_LEFT:
@@ -365,17 +382,19 @@ public class RTextField extends RTextEditable {
         if (keyEvent.isConsumed()) {
             startTLHI.copyFrom(endTLHI);
             buffer.invalidateBuffer();
-            afterKeyEvent();
+            afterKeyTypedEvent();
         }
     }
 
     @Override
     public void keyTypedOver(RKeyEvent keyEvent, float mouseX, float mouseY) {
-        beforeKeyEvent();
+        LOGGER.info("text field {} Typed Check",name);
+        beforeKeyTypedEvent();
         if (isDisplayable(keyEvent.getKey())) {
             if (hasSelection()) {
                 stext.deleteCharacters(charPos, nbr);
             }
+            LOGGER.info("text field {} Insert Char {} at {}",name,keyEvent.getKey(),charPos);
             stext.insertCharacters("" + keyEvent.getKey(), charPos);
             adjust = 1;
             textChanged = true;
@@ -401,7 +420,7 @@ public class RTextField extends RTextEditable {
                     }
                 case VK_ENTER:
                     //case VK_RETURN:
-                    isFocused = false;
+                    setFocus(false);
             }
         }
         // If we have emptied the text then recreate a one character string (space)
@@ -410,15 +429,16 @@ public class RTextField extends RTextEditable {
             adjust++;
             textChanged = true;
         }
-        afterKeyEvent();
+        afterKeyTypedEvent();
     }
 
     @Override
     public void mousePressed(RMouseEvent mouseEvent, float mouseY) {
         super.mousePressed(mouseEvent, mouseY);
         // If there is just a space then select it so it gets deleted on first key press
-        if (stext.getPlainText().isEmpty())
+        if (stext.getPlainText().isEmpty()) {
             stext.setText(" ");
+        }
         if (stext.getPlainText().equals(" ")) {
             LinkedList<RText.TextLayoutInfo> lines = stext.getLines(buffer.getNative());
             startTLHI = new RText.TextLayoutHitInfo(lines.getFirst(), null);
@@ -452,5 +472,38 @@ public class RTextField extends RTextEditable {
     @Override
     public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float mouseY) {
         super.mouseReleasedOverComponent(mouseEvent, mouseY);
+    }
+
+    @Override
+    void display(PGraphicsJava2D buffer) {
+        LOGGER.debug("{} [{},{}]",name,getPosX(),getPosY());
+        fillForeground(buffer);
+
+        // Get Height Alignment
+        float textY = alignHeight();
+
+        buffer.pushMatrix();
+
+        // Make sure font is set
+        buffer.textFont(RFontStore.getSideFont());
+
+        // Break Text into lines
+        LinkedList<RText.TextLayoutInfo> lines = stext.getLines(buffer);
+
+        buffer.textAlign(LEFT, CENTER); // consistent alignment just for Processing's sake
+
+        LOGGER.debug("{} align with {}[{}]",name,textAlignV,getPosY()+textY);
+        buffer.translate(0, textY); // translate to text start position
+        for (RText.TextLayoutInfo lineInfo : lines) {
+            TextLayout layout = lineInfo.layout;
+            LOGGER.debug("{} ascent [{}]",name,layout.getAscent());
+            buffer.translate(0, layout.getAscent()); // move the recommended distance above the baseline for singled spaced text.
+            float textX = alignWidth(layout);
+            strokeForeground(buffer);
+            layout.draw(buffer.g2, textX, 0);
+            LOGGER.debug("{} descent + leading [{}]",name,layout.getDescent() + layout.getLeading());
+            buffer.translate(0, layout.getDescent() + layout.getLeading());
+        }
+        buffer.popMatrix();
     }
 }

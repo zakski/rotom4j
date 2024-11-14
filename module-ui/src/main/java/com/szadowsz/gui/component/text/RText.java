@@ -24,6 +24,8 @@
 package com.szadowsz.gui.component.text;
 
 import com.szadowsz.gui.config.text.RTextConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.awt.PGraphicsJava2D;
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -47,14 +49,11 @@ import java.util.ListIterator;
  * Most font features can be modified all except the text background which is
  * transparent. There is a feature to highlight part of the string by having a
  * different background colour but this is used for highlighting selected text
- * in GTextField and GTextArea components. <br>
- * 
- * It is also used for all controls that use text.
- * 
- * @author Peter Lager
  *
+ * @author Peter Lager
  */
 public final class RText implements Serializable {
+	private static final Logger LOGGER = LoggerFactory.getLogger(RText.class);
 
 	private static final long serialVersionUID = -8050839288193585698L;
 
@@ -69,9 +68,9 @@ public final class RText implements Serializable {
 	// The plain text to be styled
 	private String plainText = "";
 	// List of attribute runs to match font
-	private LinkedList<AttributeRun> baseStyle = new LinkedList<AttributeRun>();
+	private final LinkedList<AttributeRun> baseStyle = new LinkedList<>();
 	// List of attribute runs to be applied over the base style
-	private LinkedList<AttributeRun> atrun = new LinkedList<AttributeRun>();
+	private final LinkedList<AttributeRun> atrun = new LinkedList<>();
 
 	// The width to break a line
 	private int wrapWidth = Integer.MAX_VALUE;
@@ -119,13 +118,17 @@ public final class RText implements Serializable {
 	 * @param wrapWidth the wrap width
 	 */
 	public RText(String startText, int wrapWidth) {
-		if (wrapWidth > 0 && wrapWidth < Integer.MAX_VALUE)
+		if (wrapWidth > 0 && wrapWidth < Integer.MAX_VALUE) {
 			this.wrapWidth = wrapWidth;
+		}
+
 		plainText = (wrapWidth == Integer.MAX_VALUE) ? removeSingleSpacingFromPlainText(startText)
 				: removeDoubleSpacingFromPlainText(startText);
+
 		spacer = getParagraghSpacer(this.wrapWidth);
-		styledText = new AttributedString(plainText);
-		styledText = insertParagraphMarkers(plainText, styledText);
+
+		styledText = insertParagraphMarkers(plainText, new AttributedString(plainText));
+
 		clearAttributes();
 		applyAttributes();
 		invalidText = true;
@@ -157,8 +160,7 @@ public final class RText implements Serializable {
 			} else {
 				plainText = removeDoubleSpacingFromPlainText(text);
 				spacer = getParagraghSpacer(this.wrapWidth);
-				styledText = new AttributedString(plainText);
-				styledText = insertParagraphMarkers(plainText, styledText);
+				styledText = insertParagraphMarkers(plainText, new AttributedString(plainText));
 			}
 			clearAttributes();
 			applyAttributes();
@@ -171,8 +173,6 @@ public final class RText implements Serializable {
 	 * Converts this StyledString from multi-line to single-line by replacing all
 	 * EOL characters with the space character for paragraphs
 	 * 
-	 * @param ptext
-	 * @param as
 	 * @return the converted string
 	 */
     public RText convertToSingleLineText() {
@@ -240,8 +240,9 @@ public final class RText implements Serializable {
 	}
 
 	private Point getPlainTextLinePosImpl(int lineNo, Point loc) {
-		if (lineNo < 0)
+		if (lineNo < 0) {
 			return null;
+		}
 		int pos = 0, p0 = 0, count = lineNo;
 		// Find start of line
 		while (count > 0 && pos < plainText.length()) {
@@ -314,8 +315,9 @@ public final class RText implements Serializable {
 	 * @return the styled string with paragraph marker images embedded
 	 */
 	private AttributedString insertParagraphMarkers(String ptext, AttributedString as) {
-		if (ptext != null && ptext.length() > 0)
+		if (ptext != null && !ptext.isEmpty()) {
 			plainText = ptext;
+		}
 		int fromIndex = ptext.indexOf('\n', 0);
 		while (fromIndex >= 0) {
 			try { // if text == "\n" then an exception is thrown
@@ -398,7 +400,7 @@ public final class RText implements Serializable {
 		AttributeRun ar = new AttributeRun(type, value, beginIdx, endIdx);
 		// If we already have attributes try and rationalize the number by merging
 		// runs if possible and removing runs that no longer have a visible effect.
-		if (atrun.size() > 0) {
+		if (!atrun.isEmpty()) {
 			ListIterator<AttributeRun> iter = atrun.listIterator(atrun.size());
 			while (iter.hasPrevious()) {
 				AttributeRun a = iter.previous();
@@ -518,7 +520,7 @@ public final class RText implements Serializable {
 	 * Must call this method to apply
 	 */
 	private void applyAttributes() {
-		if (plainText.length() > 0) {
+		if (!plainText.isEmpty()) {
 			for (AttributeRun bsar : baseStyle)
 				styledText.addAttribute(bsar.atype, bsar.value);
 			Iterator<AttributeRun> iter = atrun.iterator();
@@ -533,8 +535,7 @@ public final class RText implements Serializable {
 					try {
 						styledText.addAttribute(ar.atype, ar.value, ar.start, ar.end);
 					} catch (Exception excp) {
-						System.out.println("Dumping " + ar);
-						excp.printStackTrace();
+                        LOGGER.warn("Dumping {}", ar, excp);
 						iter.remove();
 					}
 				}
@@ -647,15 +648,15 @@ public final class RText implements Serializable {
 	 */
 	private String makeStringSafeForInsert(String chars) {
 		// Get rid of single / double line spacing
-		if (chars.length() > 0) {
+		if (!chars.isEmpty()) {
 			if (wrapWidth == Integer.MAX_VALUE) // no wrapping remove all
 				chars = removeSingleSpacingFromPlainText(chars);
 			else {
 				chars = removeDoubleSpacingFromPlainText(chars); // wrapping remove double spacing
 				// no remove EOL at ends of string
-				while (chars.length() > 0 && chars.charAt(0) == '\n')
+				while (!chars.isEmpty() && chars.charAt(0) == '\n')
 					chars = chars.substring(1);
-				while (chars.length() > 0 && chars.charAt(chars.length() - 1) == '\n')
+				while (!chars.isEmpty() && chars.charAt(chars.length() - 1) == '\n')
 					chars = chars.substring(0, chars.length() - 1);
 			}
 		}
@@ -721,7 +722,7 @@ public final class RText implements Serializable {
 		else
 			plainText = plainText.substring(fromPos + nbrToRemove);
 		// For wrappable text make sure we have not created
-		if (plainText.length() == 0) {
+		if (plainText.isEmpty()) {
 			atrun.clear();
 			styledText = null;
 		} else {
@@ -1068,7 +1069,7 @@ public final class RText implements Serializable {
 	 * @return with double blank lines removed.
 	 */
 	private String removeTripleSpacingFromPlainText(String chars) {
-		while (chars.indexOf("\n\n\n") >= 0) {
+		while (chars.contains("\n\n\n")) {
 			invalidText = true;
 			chars = chars.replaceAll("\n\n\n", "\n\n");
 		}
@@ -1084,7 +1085,7 @@ public final class RText implements Serializable {
 	 * @return with blank lines removed.
 	 */
 	private String removeDoubleSpacingFromPlainText(String chars) {
-		while (chars.indexOf("\n\n") >= 0) {
+		while (chars.contains("\n\n")) {
 			invalidText = true;
 			chars = chars.replaceAll("\n\n", "\n");
 		}
@@ -1099,7 +1100,7 @@ public final class RText implements Serializable {
 	 * @return the string with all EOLs removed
 	 */
 	private String removeSingleSpacingFromPlainText(String chars) {
-		while (chars.indexOf("\n") >= 0) {
+		while (chars.contains("\n")) {
 			invalidText = true;
 			chars = chars.replaceAll("\n", "");
 		}
@@ -1113,8 +1114,9 @@ public final class RText implements Serializable {
 	 * @return a blank image to manage paragraph ends.
 	 */
 	private ImageGraphicAttribute getParagraghSpacer(int ww) {
-		if (ww == Integer.MAX_VALUE)
+		if (ww == Integer.MAX_VALUE) {
 			ww = 1;
+		}
 		BufferedImage img = new BufferedImage(ww, 10, BufferedImage.TYPE_INT_ARGB);
 		Graphics g = img.getGraphics();
 		g.setColor(new Color(255, 255, 255, 0));
@@ -1145,7 +1147,7 @@ public final class RText implements Serializable {
 			os.close();
 			oos.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.error(e.getLocalizedMessage(),e);
 		}
 	}
 
@@ -1166,12 +1168,10 @@ public final class RText implements Serializable {
 			ss = (RText) ios.readObject();
 			is.close();
 			ios.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+		} catch (IOException | ClassNotFoundException e) {
+			LOGGER.error(e.getLocalizedMessage(),e);
 		}
-		return ss;
+        return ss;
 	}
 
 	public RText deepCopy() throws Exception {
@@ -1192,9 +1192,8 @@ public final class RText implements Serializable {
 		ois.defaultReadObject();
 		// Recreate transient elements
 		spacer = getParagraghSpacer(wrapWidth);
-		styledText = new AttributedString(plainText);
-		styledText = insertParagraphMarkers(plainText, styledText);
-		linesInfo = new LinkedList<TextLayoutInfo>();
+		styledText = insertParagraphMarkers(plainText, new AttributedString(plainText));
+		linesInfo = new LinkedList<>();
 		applyAttributes();
 	}
 
@@ -1306,7 +1305,7 @@ public final class RText implements Serializable {
 		public String toString() {
 			StringBuilder s = new StringBuilder(tli.toString());
 			s.append("  Hit char = " + thi.getCharIndex());
-			return new String(s);
+			return s.toString();
 		}
 	}
 
@@ -1402,8 +1401,6 @@ public final class RText implements Serializable {
 		 * and size in the text then the intersection mode will be MM_SURROUNDS rather
 		 * than MM_SURROUNDED because 'this' is the attribute being added.
 		 * 
-		 * @param m
-		 * @param s
 		 * @return
 		 */
 		private int intersectionWith(AttributeRun ar) {
@@ -1437,8 +1434,7 @@ public final class RText implements Serializable {
 		}
 
 		public String toString() {
-			String s = atype.toString() + "  value = " + value.toString() + "  from " + start + "   to " + end;
-			return s;
+            return atype.toString() + "  value = " + value.toString() + "  from " + start + "   to " + end;
 		}
 
 	} // End of AttributeRun class
