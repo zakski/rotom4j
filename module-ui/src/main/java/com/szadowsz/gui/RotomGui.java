@@ -12,6 +12,7 @@ import com.szadowsz.gui.component.input.slider.RSlider;
 import com.szadowsz.gui.component.input.slider.RSliderInt;
 import com.szadowsz.gui.component.input.toggle.RCheckbox;
 import com.szadowsz.gui.component.input.toggle.RToggle;
+import com.szadowsz.gui.component.text.RTextArea;
 import com.szadowsz.gui.component.text.RTextField;
 import com.szadowsz.gui.component.text.RTextLabel;
 import com.szadowsz.gui.config.theme.RColorConverter;
@@ -465,6 +466,20 @@ public class RotomGui {
         return (RDropdownMenu) tree.getComponent(builder.toString());
     }
 
+    public RTextArea area(String path) {
+        String fullPath = getCurrentPath() + path;
+        if (tree.isPathTakenByUnexpectedType(fullPath, RTextField.class)) {
+            return null;
+        }
+        RTextArea component = (RTextArea) tree.getComponent(fullPath);
+        if (component == null) {
+            RFolder folder = tree.getParentFolder(fullPath);
+            component = new RTextArea(this, fullPath, folder);
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
     /**
      * Gets a button component at the specified location. Initializes the button if needed.
      *
@@ -521,7 +536,7 @@ public class RotomGui {
         return component;
     }
 
-    public RTextField field(String path, String content) {
+    public RTextField field(String path) {
         String fullPath = getCurrentPath() + path;
         if (tree.isPathTakenByUnexpectedType(fullPath, RTextField.class)) {
             return null;

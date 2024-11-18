@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.awt.PGraphicsJava2D;
 import processing.core.PGraphics;
+import processing.core.PVector;
 
 import java.awt.font.TextLayout;
 import java.util.LinkedList;
@@ -65,6 +66,7 @@ public class RTextField extends RTextEditable {
     protected RTextField(RotomGui gui, String path, RFolder parentFolder, int maxLength, int sbPolicy) {
         super(gui, path, parentFolder, sbPolicy);
         this.maxLength = maxLength;
+        hsb = new RComponentScrollbar(this, new PVector(0, getHeight()), size.copy(), 0, 0);
     }
 
     /**
@@ -80,55 +82,12 @@ public class RTextField extends RTextEditable {
         this(gui, path, parentFolder, Integer.MAX_VALUE, 0);
     }
 
-    /**
-     * Support UTF8 encoding
-     *
-     * @param ascii UTF8 code
-     * @return true if the character can be displayed
-     */
-    protected boolean isDisplayable(int ascii) { // TODO
-        return !(ascii < 32 || ascii == 127);
-    }
-
     @Override
     protected boolean changeText() {
         if (!super.changeText())
             return false;
         startTLHI.copyFrom(endTLHI);
         return true;
-    }
-
-    protected void beforeKeyTypedEvent() {
-        textChanged = false;
-
-        // Get selection details
-        endChar = endTLHI.tli.startCharIndex + endTLHI.thi.getInsertionIndex();
-        startChar = (startTLHI != null) ? startTLHI.tli.startCharIndex + startTLHI.thi.getInsertionIndex()
-                : endChar;
-        LOGGER.info("text field {} selection info [{},{}]",name,startChar,endChar);
-
-        charPos = endChar;
-        nbr = 0;
-        adjust = 0;
-        if (endChar != startChar) { // Have we some text selected?
-            if (startChar < endChar) { // Forward selection
-                charPos = startChar;
-                nbr = endChar - charPos;
-            } else if (startChar > endChar) { // Backward selection
-                charPos = endChar;
-                nbr = startChar - charPos;
-            }
-        }
-    }
-
-    protected void afterKeyTypedEvent() {
-        if (textChanged) {
-            changeText();
-            LOGGER.info("invalidated text field {} buffer",name);
-            buffer.invalidateBuffer();
-            getParentFolder().getWindow().redrawBuffer();
-            textChanged = false;
-        }
     }
 
     /**
@@ -325,6 +284,7 @@ public class RTextField extends RTextEditable {
         }
 
         beforeKeyTypedEvent();
+        boolean moveCursor = true;
 
         switch (keyEvent.getKeyCode()) {
             case VK_LEFT:
@@ -350,6 +310,7 @@ public class RTextField extends RTextEditable {
                     moveCaretEndOfLine(endTLHI);
                     // Make shift down so that the start caret position is not
                     // moved to match end caret position.
+                    moveCursor = false;
                     keyEvent.consume();
                     buffer.invalidateBuffer();
                 }
@@ -380,7 +341,9 @@ public class RTextField extends RTextEditable {
         }
         calculateCaretPos(endTLHI);
         if (keyEvent.isConsumed()) {
-            startTLHI.copyFrom(endTLHI);
+            if (moveCursor) {
+                startTLHI.copyFrom(endTLHI);
+            }
             buffer.invalidateBuffer();
             afterKeyTypedEvent();
         }

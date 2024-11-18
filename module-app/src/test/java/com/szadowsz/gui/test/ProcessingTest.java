@@ -65,7 +65,8 @@ public class ProcessingTest extends PApplet {
         gui.slider("slider2",125.0f,0.0f,255.0f);
         gui.pushFolder("text test");
         gui.label("test label", "THIS IS A TEST LABEL");
-        gui.field("test field", "THIS IS A TEST FIELD");
+        gui.field("test field");
+        gui.area("test area");
         gui.popWindow();
         gui.popWindow();
 

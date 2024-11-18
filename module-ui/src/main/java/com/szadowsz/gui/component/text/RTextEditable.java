@@ -13,6 +13,12 @@ import java.util.LinkedList;
 public abstract class RTextEditable extends RTextBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(RTextEditable.class);
 
+    // Padding for text controls
+    protected static final int TPAD2	= 2;
+    protected static final int TPAD4	= 4;
+    protected static final int TPAD6	= 6;
+    protected static final int TPAD8	= 8;
+
     protected RText promptText = null;
 
     // Caret position
@@ -60,6 +66,16 @@ public abstract class RTextEditable extends RTextBase {
 //        opaque = true;
 //        cursorOver = TEXT;
 
+    }
+
+    /**
+     * Support UTF8 encoding
+     *
+     * @param ascii UTF8 code
+     * @return true if the character can be displayed
+     */
+    protected boolean isDisplayable(int ascii) { // TODO
+        return !(ascii < 32 || ascii == 127);
     }
 
     /**
@@ -187,6 +203,39 @@ public abstract class RTextEditable extends RTextBase {
         return true;
     }
 
+    protected void beforeKeyTypedEvent() {
+        textChanged = false;
+
+        // Get selection details
+        endChar = endTLHI.tli.startCharIndex + endTLHI.thi.getInsertionIndex();
+        startChar = (startTLHI != null) ? startTLHI.tli.startCharIndex + startTLHI.thi.getInsertionIndex()
+                : endChar;
+        LOGGER.info("text field {} selection info [{},{}]",name,startChar,endChar);
+
+        charPos = endChar;
+        nbr = 0;
+        adjust = 0;
+        if (endChar != startChar) { // Have we some text selected?
+            if (startChar < endChar) { // Forward selection
+                charPos = startChar;
+                nbr = endChar - charPos;
+            } else if (startChar > endChar) { // Backward selection
+                charPos = endChar;
+                nbr = startChar - charPos;
+            }
+        }
+    }
+
+    protected void afterKeyTypedEvent() {
+        if (textChanged) {
+            changeText();
+            LOGGER.info("invalidated text field {} buffer",name);
+            buffer.invalidateBuffer();
+            getParentFolder().getWindow().redrawBuffer();
+            textChanged = false;
+        }
+    }
+
     /**
      * Get the prompt text used in this control.
      *
@@ -282,6 +331,19 @@ public abstract class RTextEditable extends RTextBase {
             promptText.addAttribute(RTextConstants.POSTURE, RTextConstants.POSTURE_OBLIQUE);
         }
         if (stext == null || stext.getPlainText().isEmpty()) {
+            buffer.invalidateBuffer();
+        }
+    }
+
+    /**
+     * Allows the user to provide their own styled text for this component
+     *
+     * @param ss the styled string to display
+     */
+    public void setStyledText(RText ss) {
+        if (ss != null) {
+            stext = ss;
+            stext.setWrapWidth((int) size.x - TPAD4);
             buffer.invalidateBuffer();
         }
     }
