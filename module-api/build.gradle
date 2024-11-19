@@ -8,7 +8,7 @@ plugins {
 
 group = 'com.szadowsz'
 version = '0.10-ALPHA'
-description = 'nds4j-api'
+description = 'rotom4j-api'
 
 repositories {
     mavenLocal()

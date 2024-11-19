@@ -1,12 +1,10 @@
 package com.szadowsz.gui.component.binary;
 
 
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.BinaryData;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.EmptyBinaryData;
-import com.szadowsz.gui.component.binary.basic.*;
+import com.szadowsz.binary.BinaryData;
+import com.szadowsz.binary.EmptyBinaryData;
 import com.szadowsz.gui.component.binary.capability.SelectionCapable;
 import com.szadowsz.gui.component.binary.swing.CodeAreaCommandHandler;
-import com.szadowsz.gui.component.text.RTextBase;
 
 import javax.accessibility.*;
 import javax.swing.event.ChangeListener;
@@ -17,8 +15,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.sun.java.accessibility.util.AWTEventMonitor.addFocusListener;
 
 /**
  * Binary data viewer/editor component.

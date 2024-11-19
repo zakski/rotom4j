@@ -15,7 +15,7 @@
  */
 package com.szadowsz.gui.component.binary;
 
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.BinaryData;
+import com.szadowsz.binary.BinaryData;
 
 /**
  * Data provider.

@@ -18,7 +18,7 @@ package com.szadowsz.gui.component.binary.swing;
 import java.nio.charset.Charset;
 import com.szadowsz.gui.component.binary.CodeAreaSection;
 import com.szadowsz.gui.component.binary.CodeAreaSelection;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.BinaryData;
+import com.szadowsz.binary.BinaryData;
 import com.szadowsz.gui.component.binary.basic.color.CodeAreaColorsProfile;
 
 /**

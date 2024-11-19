@@ -16,7 +16,7 @@
 package com.szadowsz.gui.component.binary.operation.swing.command;
 
 import com.szadowsz.gui.component.binary.RCodeAreaCore;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.BinaryData;
+import com.szadowsz.binary.BinaryData;
 import com.szadowsz.gui.component.binary.capability.CaretCapable;
 import com.szadowsz.gui.component.binary.operation.swing.InsertDataOperation;
 /**

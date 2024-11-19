@@ -18,7 +18,7 @@ package com.szadowsz.gui.component.binary;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Objects;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.EditableBinaryData;
+import com.szadowsz.binary.EditableBinaryData;
 
 /**
  * Binary editor utilities.

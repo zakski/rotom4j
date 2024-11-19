@@ -17,7 +17,7 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.20.0'
     implementation group: 'net.java.dev.jna', name: 'jna', version: '5.14.0'
     implementation group: 'net.java.dev.jna', name: 'jna-platform', version: '5.14.0'
-
+    implementation project(':module-api-core')
 }
 
 shadowJar {

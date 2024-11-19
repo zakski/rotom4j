@@ -38,6 +38,7 @@ import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+import com.szadowsz.binary.array.ByteArrayEditableData;
 import com.szadowsz.gui.component.binary.RCodeArea;
 import com.szadowsz.gui.component.binary.EditMode;
 import com.szadowsz.gui.component.binary.EditOperation;
@@ -47,8 +48,7 @@ import com.szadowsz.gui.component.binary.capability.SelectionCapable;
 import com.szadowsz.gui.component.binary.operation.swing.CodeAreaOperationCommandHandler;
 import com.szadowsz.gui.component.binary.operation.swing.CodeAreaUndoRedo;
 import com.szadowsz.gui.component.binary.swing.CodeAreaCommandHandler;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.ByteArrayEditableData;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.EditableBinaryData;
+import com.szadowsz.binary.EditableBinaryData;
 import com.szadowsz.gui.component.binary.CodeAreaCaretPosition;
 import com.szadowsz.gui.component.binary.CodeAreaUtils;
 import com.szadowsz.gui.component.binary.CodeCharactersCase;

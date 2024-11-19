@@ -38,7 +38,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JViewport;
 
 import com.szadowsz.gui.component.binary.*;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.BinaryData;
+import com.szadowsz.binary.BinaryData;
 import com.szadowsz.gui.component.binary.basic.*;
 import com.szadowsz.gui.component.binary.PositionCodeType;
 import com.szadowsz.gui.component.binary.basic.BasicCodeAreaScrolling;

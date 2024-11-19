@@ -18,7 +18,7 @@ package com.szadowsz.gui.component.binary.operation.swing;
 import java.nio.charset.Charset;
 import com.szadowsz.gui.component.binary.CodeAreaUtils;
 import com.szadowsz.gui.component.binary.RCodeAreaCore;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.EditableBinaryData;
+import com.szadowsz.binary.EditableBinaryData;
 import com.szadowsz.gui.component.binary.capability.CaretCapable;
 import com.szadowsz.gui.component.binary.capability.CharsetCapable;
 import com.szadowsz.gui.component.binary.capability.SelectionCapable;

@@ -33,7 +33,7 @@ import com.szadowsz.gui.component.binary.CodeCharactersCase;
 import com.szadowsz.gui.component.binary.CodeType;
 import com.szadowsz.gui.component.binary.ScrollBarVisibility;
 import com.szadowsz.gui.component.binary.CharsetStreamTranslator;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.BinaryData;
+import com.szadowsz.binary.BinaryData;
 import com.szadowsz.gui.component.binary.capability.CharAssessorPainterCapable;
 import com.szadowsz.gui.component.binary.capability.ColorAssessorPainterCapable;
 

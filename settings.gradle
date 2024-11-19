@@ -3,4 +3,4 @@
  */
 
 rootProject.name = 'rotom4j'
-include("module-api","module-app","module-ui")
+include("module-api-core","module-api","module-app","module-ui")

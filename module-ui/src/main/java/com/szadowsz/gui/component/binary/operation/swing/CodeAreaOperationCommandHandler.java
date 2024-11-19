@@ -15,11 +15,11 @@
  */
 package com.szadowsz.gui.component.binary.operation.swing;
 
+import com.szadowsz.binary.array.ByteArrayData;
+import com.szadowsz.binary.array.ByteArrayEditableData;
+import com.szadowsz.binary.paged.PagedData;
 import com.szadowsz.gui.component.binary.*;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.BinaryData;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.ByteArrayData;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.ByteArrayEditableData;
-import com.szadowsz.gui.component.binary.auxiliary.binary_data.paged.PagedData;
+import com.szadowsz.binary.BinaryData;
 import com.szadowsz.gui.component.binary.basic.*;
 import com.szadowsz.gui.component.binary.capability.*;
 import com.szadowsz.gui.component.binary.operation.swing.command.*;
