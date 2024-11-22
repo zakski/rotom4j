@@ -2,17 +2,19 @@ package com.szadowsz.gui.component.bined;
 
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.binary.*;
-import com.szadowsz.gui.component.binary.basic.*;
-import com.szadowsz.gui.component.binary.basic.color.BasicCodeAreaColorsProfile;
-import com.szadowsz.gui.component.binary.basic.color.BasicColorsCapableCodeAreaPainter;
-import com.szadowsz.gui.component.binary.swing.CodeAreaPainter;
-import com.szadowsz.gui.component.binary.swing.CodeAreaSwingUtils;
-import com.szadowsz.gui.component.binary.swing.basic.AntialiasingMode;
-import com.szadowsz.gui.component.binary.swing.basic.DefaultCodeAreaCaret;
-import com.szadowsz.gui.component.bined.basic.DefaultCodeArea;
+import com.szadowsz.gui.component.bined.basic.*;
+import com.szadowsz.gui.component.bined.colors.BasicCodeAreaColorsProfile;
+import com.szadowsz.gui.component.bined.colors.BasicColorsCapableCodeAreaPainter;
 import com.szadowsz.gui.component.bined.command.CodeAreaCommandHandler;
+import com.szadowsz.gui.component.bined.listeners.CodeAreaCaretListener;
+import com.szadowsz.gui.component.bined.listeners.EditModeChangedListener;
+import com.szadowsz.gui.component.bined.listeners.ScrollingListener;
+import com.szadowsz.gui.component.bined.listeners.SelectionChangedListener;
+import com.szadowsz.gui.component.bined.settings.*;
+import com.szadowsz.gui.component.bined.swing.*;
 import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.config.text.RFontStore;
+import processing.core.PGraphics;
 
 import java.awt.*;
 import java.nio.charset.Charset;
@@ -23,7 +25,7 @@ import java.util.Optional;
 /**
  * Binary data viewer/editor component.
  */
-public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // TODO Determine Exact Relationship
+public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea, CodeAreaSwingControl { // TODO Determine Exact Relationship
 
     // Listeners TODO, neccessary in my ui?
     private final List<CodeAreaCaretListener> caretMovedListeners = new ArrayList<>();
@@ -67,7 +69,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
     protected EditOperation editOperation = EditOperation.OVERWRITE;
 
     // Cursor Caret
-    protected final DefaultCodeAreaCaret codeAreaCaret;
+    protected final SwingCodeAreaCaret codeAreaCaret;
     protected boolean showMirrorCursor = true;
 
 
@@ -82,7 +84,50 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
      */
     protected RBinedArea(RotomGui gui, String path, RFolder parentFolder, CodeAreaCommandHandler.CodeAreaCommandHandlerFactory commandHandlerFactory) {
         super(gui, path, parentFolder,commandHandlerFactory);
-        codeAreaCaret = new DefaultCodeAreaCaret(this::notifyCaretChanged);
+        codeAreaCaret = new SwingCodeAreaCaret(this::notifyCaretChanged);
+    }
+
+    protected void notifyCaretChanged() { // TODO consider if needed
+        if (painter != null) {
+            painter.resetCaret();
+        }
+        buffer.invalidateBuffer();
+    }
+
+    protected void notifyCaretMoved() { // TODO consider if needed
+        caretMovedListeners.forEach((caretMovedListener) -> {
+            caretMovedListener.caretMoved(codeAreaCaret.getCaretPosition());
+        });
+    }
+
+    protected void notifyScrolled() { // TODO consider if needed
+        painter.resetLayout();
+        scrollingListeners.forEach(ScrollingListener::scrolled);
+    }
+
+    protected void notifySelectionChanged() { // TODO consider if needed
+        selectionChangedListeners.forEach(SelectionChangedListener::selectionChanged);
+    }
+
+    protected void updateScrollBars() {
+        painter.updateScrollBars();
+        buffer.invalidateBuffer();
+    }
+
+    protected void validateCaret() {
+        boolean moved = false;
+        if (codeAreaCaret.getDataPosition() > getDataSize()) {
+            codeAreaCaret.setDataPosition(getDataSize());
+            moved = true;
+        }
+        if (codeAreaCaret.getSection() == BasicCodeAreaSection.CODE_MATRIX && codeAreaCaret.getCodeOffset() >= codeType.getMaxDigitsForByte()) {
+            codeAreaCaret.setCodeOffset(codeType.getMaxDigitsForByte() - 1);
+            moved = true;
+        }
+
+        if (moved) {
+            notifyCaretMoved();
+        }
     }
 
     @Override
@@ -150,7 +195,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
 
     @Override
     public Font getCodeFont() {
-        return codeFont == null ? super.getFont() : codeFont;
+        return codeFont == null ? (Font) RFontStore.getMainFont().getNative() : codeFont;
     }
 
     @Override
@@ -248,6 +293,10 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
         return wrappingBytesGroupSize;
     }
 
+    public boolean isInitialized() {
+        return painter.isInitialized();
+    }
+
     @Override
     public boolean isShowMirrorCursor() {
         return showMirrorCursor;
@@ -276,7 +325,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
     public void setAntialiasingMode(AntialiasingMode antialiasingMode) {
         this.antialiasingMode = antialiasingMode;
         reset();
-        repaint();
+        buffer.invalidateBuffer();
     }
 
     @Override
@@ -296,7 +345,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
     public void setCharset(Charset charset) {
         this.charset = CodeAreaUtils.requireNonNull(charset);;
         reset();
-        repaint();
+         buffer.invalidateBuffer();
     }
 
     @Override
@@ -314,7 +363,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
     public void setCodeFont(Font codeFont) {
         this.codeFont = codeFont;
         painter.resetFont();
-        repaint();
+         buffer.invalidateBuffer();
     }
 
     @Override
@@ -334,7 +383,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
             });
             codeAreaCaret.resetBlink();
             notifyCaretChanged();
-            repaint();
+             buffer.invalidateBuffer();
         }
     }
 
@@ -350,14 +399,14 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
             });
             codeAreaCaret.resetBlink();
             notifyCaretChanged();
-            repaint();
+             buffer.invalidateBuffer();
         }
     }
 
     @Override
     public void setHorizontalScrollBarVisibility(ScrollBarVisibility horizontalScrollBarVisibility) {
         this.horizontalScrollBarVisibility = horizontalScrollBarVisibility;
-        resetPainter();
+        reset();
         updateScrollBars();
     }
 
@@ -368,7 +417,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
         if (horizontalScrollUnit == HorizontalScrollUnit.CHARACTER) {
             scrollPosition.setCharOffset(0);
         }
-        resetPainter();
+        reset();
         scrollPosition.setCharPosition(charPosition);
         updateScrollBars();
         notifyScrolled();
@@ -409,17 +458,17 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
     }
 
     @Override
-    public void setSelection(SelectionRange selection) {
+    public void setSelection(SelectionRange selectionRange) {
         this.selection.setRange(CodeAreaUtils.requireNonNull(selectionRange));
         notifySelectionChanged();
-        repaint();
+         buffer.invalidateBuffer();
     }
 
     @Override
     public void setSelection(long start, long end) {
         this.selection.setSelection(start, end);
         notifySelectionChanged();
-        repaint();
+         buffer.invalidateBuffer();
     }
 
     @Override
@@ -431,7 +480,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
     @Override
     public void setVerticalScrollBarVisibility(ScrollBarVisibility verticalScrollBarVisibility) {
         this.verticalScrollBarVisibility = verticalScrollBarVisibility;
-        resetPainter();
+        reset();
         updateScrollBars();
     }
 
@@ -442,7 +491,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
         if (verticalScrollUnit == VerticalScrollUnit.ROW) {
             scrollPosition.setRowOffset(0);
         }
-        resetPainter();
+        reset();
         scrollPosition.setRowPosition(rowPosition);
         updateScrollBars();
         notifyScrolled();
@@ -551,7 +600,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
     }
 
     @Override
-    public CodeAreaScrollPosition computeScrolling(CodeAreaScrollPosition startPosition, ScrollingDirection direction) {
+    public CodeAreaScrollPosition computeScrolling(CodeAreaScrollPosition startPosition, ScrollingDirection scrollingShift) {
         return painter.computeScrolling(startPosition, scrollingShift);
     }
 
@@ -563,5 +612,41 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea { // T
     @Override
     public CodeAreaCaretPosition mousePositionToClosestCaretPosition(int positionX, int positionY, CaretOverlapMode overflowMode) {
         return painter.mousePositionToClosestCaretPosition(positionX, positionY, overflowMode);
+    }
+
+    @Override
+    public void updateLayout() {
+        if (painter != null) {
+            painter.resetLayout();
+        }
+        buffer.invalidateBuffer();
+    }
+
+    @Override
+    public void updateScrollPosition(CodeAreaScrollPosition scrollPosition) {
+        if (!scrollPosition.equals(this.scrollPosition)) {
+            this.scrollPosition.setScrollPosition(scrollPosition);
+            buffer.invalidateBuffer();
+            notifyScrolled();
+        }
+    }
+
+    @Override
+    public void reset() {
+        painter.reset();
+    }
+
+    @Override
+    public void resetColors() {
+        painter.resetColors();
+        buffer.invalidateBuffer();
+    }
+
+    @Override
+    protected void drawForeground(PGraphics pg, String name) { // TODO Wrong
+        pg.pushMatrix();
+        painter.paintComponent(buffer.getNative().g2);
+        pg.image(buffer.draw(),0,0);
+        pg.popMatrix();
     }
 }

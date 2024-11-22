@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.listeners;
 
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.settings.EditMode;
+import com.szadowsz.gui.component.bined.settings.EditOperation;
 
 /**
- * Code area default component interface.
+ * Interface for edit mode change listener.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface EditModeChangedListener {
+
+    /**
+     * Fires notification each time edit mode is changed.
+     *
+     * @param editMode new edit mode
+     * @param editOperation new active edit operation type
+     */
+    void editModeChanged(EditMode editMode, EditOperation editOperation);
 }

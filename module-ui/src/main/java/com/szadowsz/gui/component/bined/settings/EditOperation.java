@@ -13,17 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
-
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Code area default component interface.
+ * Enumeration of edit operations.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public enum EditOperation {
+
+    /**
+     * Data are inserted at cursor position.
+     * <p>
+     * Document is extended by size of the inserted data, data at cursor
+     * position moved forward to provide space and then inserted data are stored
+     * in this new space.
+     */
+    INSERT,
+    /**
+     * Data are replaced at cursor position.
+     * <p>
+     * If size of data is greater than size of the document and edit is not in
+     * "overwrite only" mode, document is extended so that inserted data will
+     * fit in.
+     */
+    OVERWRITE
 }

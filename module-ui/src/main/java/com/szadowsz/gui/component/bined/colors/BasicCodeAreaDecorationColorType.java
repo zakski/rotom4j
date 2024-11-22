@@ -13,17 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.colors;
 
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+import java.util.Optional;
 
 /**
- * Code area default component interface.
+ * Enumeration of unprintable color types.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public enum BasicCodeAreaDecorationColorType implements CodeAreaColorType {
+
+    LINE("decoration.line", null);
+
+    private final String typeId;
+    private final CodeAreaColorGroup group;
+
+    BasicCodeAreaDecorationColorType(String typeId, CodeAreaColorGroup group) {
+        this.typeId = typeId;
+        this.group = group;
+    }
+
+    @Override
+    public String getId() {
+        return typeId;
+    }
+
+    @Override
+    public Optional<CodeAreaColorGroup> getGroup() {
+        return Optional.ofNullable(group);
+    }
 }

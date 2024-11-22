@@ -13,17 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.command.operation;
 
 
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.command.BinaryDataOperationType;
 
 /**
- * Code area default component interface.
+ * Operation type enumeration.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public enum CodeAreaOperationType implements BinaryDataOperationType {
+
+    /**
+     * Insert data operation.
+     */
+    INSERT_DATA,
+    /**
+     * Remove data operation.
+     */
+    REMOVE_DATA,
+    /**
+     * Modify data operation.
+     */
+    MODIFY_DATA,
+    /**
+     * Move data operation.
+     */
+    MOVE_DATA,
+    /**
+     * Edit data operation.
+     */
+    EDIT_DATA,
+    /**
+     * Compound operation.
+     */
+    COMPOUND;
 }

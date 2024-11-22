@@ -13,17 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.capabilities;
 
 
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.settings.CodeType;
 
 /**
- * Code area default component interface.
+ * Support for code type capability.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface CodeTypeCapable {
+
+    /**
+     * Returns current code type.
+     *
+     * @return code type
+     */
+    CodeType getCodeType();
+
+    /**
+     * Sets current code type.
+     *
+     * @param codeType code type
+     */
+    void setCodeType(CodeType codeType);
 }

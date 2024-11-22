@@ -13,17 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
-
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Code area default component interface.
+ * Enumeration of possible visibility states of caret position relative to
+ * scrolling area.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public enum PositionScrollVisibility {
+
+    /**
+     * Given position is fully visible in current scroll window.
+     */
+    VISIBLE,
+    /**
+     * Given position is partially visible in current scroll window.
+     */
+    PARTIAL,
+    /**
+     * Given position is not visible in current scroll window.
+     */
+    NOT_VISIBLE
 }

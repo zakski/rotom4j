@@ -13,17 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
-
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+package com.szadowsz.gui.component.bined.colors;
 
 /**
- * Code area default component interface.
+ * Capability of painter to handle basic colors setting.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface BasicColorsCapableCodeAreaPainter {
+
+    /**
+     * Returns basic profile for colors.
+     *
+     * @return colors profile
+     */
+    BasicCodeAreaColorsProfile getBasicColors();
+
+    /**
+     * Sets basic profile for colors.
+     *
+     * @param colorsProfile colors profile
+     */
+    void setBasicColors(BasicCodeAreaColorsProfile colorsProfile);
 }

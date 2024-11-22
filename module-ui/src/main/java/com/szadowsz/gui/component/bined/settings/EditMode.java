@@ -13,17 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
-
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Code area default component interface.
+ * Enumeration of edit modes.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public enum EditMode {
+
+    /**
+     * Document cannot be changed.
+     */
+    READ_ONLY,
+    /**
+     * Default mode expanding data when necessary.
+     * <p>
+     * Document is extended by size of the inserted data or when replacing data
+     * overflows end of the file.
+     */
+    EXPANDING,
+    /**
+     * Data are inserted and replaced, but size of the file remains the same
+     * cutting out excessive data.
+     */
+    CAPPED,
+    /**
+     * Only overwrite edit mode is allowed and size of document cannot be
+     * changed.
+     */
+    INPLACE
 }

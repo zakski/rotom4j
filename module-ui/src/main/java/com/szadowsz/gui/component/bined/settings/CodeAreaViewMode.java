@@ -13,17 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
-
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Code area default component interface.
+ * Enumeration of supported view modes.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public enum CodeAreaViewMode {
+
+    /**
+     * Show both numerical codes and textual preview.
+     */
+    DUAL,
+    /**
+     * Show numerical codes only.
+     */
+    CODE_MATRIX,
+    /**
+     * Show textual preview only.
+     */
+    TEXT_PREVIEW
 }

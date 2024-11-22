@@ -13,17 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.capabilities;
 
 
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.swing.CodeAreaCharAssessor;
 
 /**
- * Code area default component interface.
+ * Painter support for character assessor capability.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface CharAssessorPainterCapable {
+
+    /**
+     * Returns character assessor.
+     *
+     * @return character assessor
+     */
+    CodeAreaCharAssessor getCharAssessor();
+
+    /**
+     * Sets character assessor.
+     *
+     * @param charAssessor character assessor
+     */
+    void setCharAssessor(CodeAreaCharAssessor charAssessor);
 }

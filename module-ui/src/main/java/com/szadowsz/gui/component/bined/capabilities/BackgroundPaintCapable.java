@@ -13,17 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.capabilities;
 
 
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.settings.BasicBackgroundPaintMode;
 
 /**
- * Code area default component interface.
+ * Support for background paint mode capability.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface BackgroundPaintCapable {
+
+    /**
+     * Returns current background paint mode.
+     *
+     * @return background paint mode
+     */
+    BasicBackgroundPaintMode getBackgroundPaintMode();
+
+    /**
+     * Sets current background paint mode.
+     *
+     * @param borderPaintMode background paint mode
+     */
+    void setBackgroundPaintMode(BasicBackgroundPaintMode borderPaintMode);
 }

@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.capabilities;
 
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+import java.awt.*;
 
 /**
- * Code area default component interface.
+ * Support for font capability.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface FontCapable {
+
+    /**
+     * Returns font used for text painting.
+     *
+     * @return font
+     */
+    Font getCodeFont();
+
+    /**
+     * Sets font used for text painting.
+     *
+     * @param codeFont font
+     */
+    void setCodeFont(Font codeFont);
 }

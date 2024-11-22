@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.swing;
 
-
-import com.szadowsz.gui.component.bined.capabilities.*;
 
 /**
- * Code area default component interface.
+ * Code area paint assessor.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface CodeAreaPaintAssessor {
+
+    /**
+     * Reports start of the paint operation.
+     *
+     * @param codeAreaPaintState paint state
+     */
+    void startPaint(CodeAreaPaintState codeAreaPaintState);
 }

@@ -5,10 +5,14 @@ import com.szadowsz.binary.BinaryData;
 import com.szadowsz.binary.EmptyBinaryData;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.binary.CodeAreaUtils;
-import com.szadowsz.gui.component.binary.capability.SelectionCapable;
+import com.szadowsz.gui.component.binary.DataChangedListener;
+import com.szadowsz.gui.component.bined.capabilities.SelectionCapable;
 import com.szadowsz.gui.component.bined.command.CodeAreaCommandHandler;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.text.RTextArea;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Binary data viewer/editor component.
@@ -19,6 +23,8 @@ public class RBinedAreaCore extends RTextArea implements DataProvider { // TODO 
     protected BinaryData contentData = EmptyBinaryData.INSTANCE;
 
     protected CodeAreaCommandHandler commandHandler;
+
+    protected final List<DataChangedListener> dataChangedListeners = new ArrayList<>();
 
     /**
      * Default Constructor
@@ -137,5 +143,12 @@ public class RBinedAreaCore extends RTextArea implements DataProvider { // TODO 
      */
     public void clearSelection() {
         commandHandler.clearSelection();
+    }
+
+    /**
+     * Notifies component, that the internal data was changed.
+     */
+    public void notifyDataChanged() {
+        dataChangedListeners.forEach(DataChangedListener::dataChanged);
     }
 }

@@ -13,17 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.command;
 
 
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.RBinedAreaCore;
 
 /**
- * Code area default component interface.
+ * Command for editing data in text mode.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public abstract class EditDataCommand extends CodeAreaCommand {
+
+    public EditDataCommand(RBinedAreaCore codeArea) {
+        super(codeArea);
+    }
+
+    @Override
+    public CodeAreaCommandType getType() {
+        return CodeAreaCommandType.DATA_EDITED;
+    }
+
+    public abstract EditOperationType getEditOperationType();
+
+    public enum EditOperationType {
+        INSERT, OVERWRITE, DELETE
+    }
 }

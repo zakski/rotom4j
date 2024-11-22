@@ -13,17 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
-
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Code area default component interface.
+ * Enumeration of modes for tab key handling.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public enum TabKeyHandlingMode {
+    /**
+     * Handle enter using java platform detection (default).
+     */
+    PLATFORM_SPECIFIC,
+    /**
+     * Insert tab character \t.
+     */
+    INSERT_TAB,
+    /**
+     * Insert space characters.
+     */
+    INSERT_SPACES,
+    /**
+     * Jump to next code area section.
+     */
+    CYCLE_TO_NEXT_SECTION,
+    /**
+     * Jump to previous code area section.
+     */
+    CYCLE_TO_PREVIOUS_SECTION,
+    /**
+     * Don't handle tab key.
+     */
+    IGNORE;
 }

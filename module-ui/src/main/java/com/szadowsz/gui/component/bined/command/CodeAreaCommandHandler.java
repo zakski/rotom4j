@@ -15,7 +15,6 @@
  */
 package com.szadowsz.gui.component.bined.command;
 
-import com.szadowsz.gui.component.binary.RCodeAreaCore;
 import com.szadowsz.gui.component.bined.RBinedAreaCore;
 
 import java.awt.event.KeyEvent;

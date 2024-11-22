@@ -13,17 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.command.operation.undo;
 
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.command.BinaryDataCommand;
 
 /**
- * Code area default component interface.
+ * Interface for code area command.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface BinaryDataUndoableCommand extends BinaryDataCommand {
+
+    /**
+     * Performs redo on given document.
+     */
+    void redo();
+
+    /**
+     * Performs undo operation on given document.
+     */
+    void undo();
 }

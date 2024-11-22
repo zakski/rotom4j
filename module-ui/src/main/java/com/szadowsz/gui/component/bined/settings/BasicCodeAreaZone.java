@@ -13,17 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.settings;
 
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.binary.CodeAreaZone;
 
 /**
- * Code area default component interface.
+ * Enumeration of basic code area zones.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public enum BasicCodeAreaZone implements CodeAreaZone {
+
+    UNKNOWN,
+    HEADER,
+    ROW_POSITIONS,
+    CODE_AREA,
+    HORIZONTAL_SCROLLBAR,
+    VERTICAL_SCROLLBAR,
+    SCROLLBAR_CORNER,
+    TOP_LEFT_CORNER,
+    BOTTOM_LEFT_CORNER
 }

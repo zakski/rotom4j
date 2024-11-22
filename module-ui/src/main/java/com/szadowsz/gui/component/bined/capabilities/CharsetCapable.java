@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.capabilities;
 
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+import java.nio.charset.Charset;
 
 /**
- * Code area default component interface.
+ * Support for charset capability.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface CharsetCapable {
+
+    /**
+     * Returns currently used charset.
+     *
+     * @return charset
+     */
+    Charset getCharset();
+
+    /**
+     * Sets charset to use for characters decoding.
+     *
+     * @param charset charset
+     */
+    void setCharset(Charset charset);
 }

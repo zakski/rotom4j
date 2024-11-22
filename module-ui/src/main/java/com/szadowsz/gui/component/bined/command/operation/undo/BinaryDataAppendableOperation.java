@@ -13,17 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.command.operation.undo;
 
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.command.BinaryDataOperation;
 
 /**
- * Code area default component interface.
+ * Interface for appendable binary data operation.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface BinaryDataAppendableOperation {
+
+    /**
+     * Attempts to append an operation.
+     *
+     * @param operation operation
+     * @return true if sucessfully appended
+     */
+    boolean appendOperation(BinaryDataOperation operation);
 }

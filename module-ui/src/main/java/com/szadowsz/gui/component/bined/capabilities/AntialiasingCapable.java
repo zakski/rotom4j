@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.capabilities;
 
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.swing.AntialiasingMode;
 
 /**
- * Code area default component interface.
+ * Support for anti-aliasing capability.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface AntialiasingCapable {
+
+    /**
+     * Returns antialiasing mode for text painting.
+     *
+     * @return antialiasing mode
+     */
+    AntialiasingMode getAntialiasingMode();
+
+    /**
+     * Sets antialiasing mode for text painting.
+     *
+     * @param antialiasingMode antialiasing mode
+     */
+    void setAntialiasingMode(AntialiasingMode antialiasingMode);
 }

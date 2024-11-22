@@ -13,17 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.command;
 
 
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.RBinedAreaCore;
+import com.szadowsz.gui.component.bined.command.operation.RemoveDataOperation;
 
 /**
- * Code area default component interface.
+ * Command for deleting data.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public class RemoveDataCommand extends OpCodeAreaCommand {
+
+    public RemoveDataCommand(RBinedAreaCore codeArea, long position, int codeOffset, long size) {
+        super(codeArea);
+        super.setOperation(new RemoveDataOperation(codeArea, position, codeOffset, size));
+    }
+
+    @Override
+    public CodeAreaCommandType getType() {
+        return CodeAreaCommandType.DATA_REMOVED;
+    }
 }

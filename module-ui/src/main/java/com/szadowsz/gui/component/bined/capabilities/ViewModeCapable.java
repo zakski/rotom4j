@@ -13,17 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.basic;
+package com.szadowsz.gui.component.bined.capabilities;
 
 
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.settings.CodeAreaViewMode;
 
 /**
- * Code area default component interface.
+ * Support for view mode capability.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public interface ViewModeCapable {
+
+    /**
+     * Returns curret view mode.
+     *
+     * @return view mode
+     */
+    CodeAreaViewMode getViewMode();
+
+    /**
+     * Sets current view mode.
+     *
+     * @param viewMode view mode
+     */
+    void setViewMode(CodeAreaViewMode viewMode);
 }

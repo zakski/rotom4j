@@ -15,15 +15,21 @@
  */
 package com.szadowsz.gui.component.bined.basic;
 
-
-import com.szadowsz.gui.component.bined.capabilities.*;
+import com.szadowsz.gui.component.bined.CodeAreaSection;
 
 /**
- * Code area default component interface.
+ * Enumeration of basic cursor position section.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface DefaultCodeArea extends SelectionCapable, CaretCapable, BasicScrollingCapable, ScrollingCapable, ViewModeCapable,
-        CodeTypeCapable, EditModeCapable, CharsetCapable, CodeCharactersCaseCapable, FontCapable,
-        BackgroundPaintCapable, RowWrappingCapable, ClipboardCapable, BasicColorsCapable, AntialiasingCapable {
+public enum BasicCodeAreaSection implements CodeAreaSection {
+
+    /**
+     * Section of code area with codes for binary data representation.
+     */
+    CODE_MATRIX,
+    /**
+     * Section of code area with textual preview characters.
+     */
+    TEXT_PREVIEW
 }
