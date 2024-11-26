@@ -40,7 +40,6 @@ import static java.awt.event.KeyEvent.*;
  * It allows the user to enter and edit multiple lines of text.
  */
 public class RTextArea extends RTextEditable {
-    // TODO Component Stub : WIP
 
     private static final char EOL = '\n';
 

@@ -15,11 +15,8 @@
  */
 package com.szadowsz.gui.component.bined.colors;
 
-import com.szadowsz.gui.component.binary.CodeAreaUtils;
-import com.szadowsz.gui.component.binary.color.BasicCodeAreaDecorationColorType;
-import com.szadowsz.gui.component.binary.color.CodeAreaBasicColors;
-import com.szadowsz.gui.component.binary.color.CodeAreaColorType;
-import com.szadowsz.gui.component.binary.swing.CodeAreaSwingUtils;
+import com.szadowsz.gui.component.bined.CodeAreaUtils;
+import com.szadowsz.gui.component.bined.swing.CodeAreaSwingUtils;
 
 import javax.swing.*;
 import java.awt.*;

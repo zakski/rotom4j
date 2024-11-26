@@ -13,36 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.colors;
-
-import java.awt.*;
+package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Colors profile.
+ * Enumeration of vertical scaling modes.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface CodeAreaColorsProfile {
-
+public enum ScrollBarVerticalScale {
     /**
-     * Returns color of the specified type.
-     *
-     * @param colorType color type
-     * @return color or null if not defined
+     * Normal ratio 1 on 1.
      */
-    Color getColor(CodeAreaColorType colorType);
-
+    NORMAL,
     /**
-     * Returns color of the specified type.
-     *
-     * @param colorType color type
-     * @param basicAltColor basic color type used as fallback
-     * @return color or null if not defined
+     * Height is more than available range/precission of the scrollbar and must
+     * be scaled.
      */
-    Color getColor(CodeAreaColorType colorType, CodeAreaBasicColors basicAltColor);
-
-    /**
-     * Reinitialize colors.
-     */
-    void reinitialize();
+    SCALED
 }

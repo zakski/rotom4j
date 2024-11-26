@@ -97,7 +97,7 @@ public class DeleteCodeEditDataOperation extends CodeEditDataOperation {
             }
         }
         ((CaretCapable) codeArea).setActiveCaretPosition(position);
-        codeArea.repaint();
+        codeArea.invalidateBuffer();
 
         if (withUndo) {
             undoOperation = new UndoOperation(codeArea, position, 0, undoData, value);

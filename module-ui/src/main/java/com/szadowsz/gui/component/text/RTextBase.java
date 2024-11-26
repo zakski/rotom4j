@@ -345,4 +345,12 @@ public abstract class RTextBase extends RComponent {
         super.updateCoordinates(bX, bY, rX, rY, w, h);
         buffer.resetBuffer();
     }
+
+    public void invalidateBuffer(){
+        buffer.invalidateBuffer();
+    }
+
+    public void resetBuffer(){
+        buffer.resetBuffer();
+    }
 }

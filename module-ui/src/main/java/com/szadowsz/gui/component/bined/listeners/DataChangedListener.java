@@ -13,36 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.colors;
-
-import java.awt.*;
+package com.szadowsz.gui.component.bined.listeners;
 
 /**
- * Colors profile.
+ * Interface for data change listener.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public interface CodeAreaColorsProfile {
+public interface DataChangedListener {
 
     /**
-     * Returns color of the specified type.
-     *
-     * @param colorType color type
-     * @return color or null if not defined
+     * Fires notification each time data is modified.
      */
-    Color getColor(CodeAreaColorType colorType);
-
-    /**
-     * Returns color of the specified type.
-     *
-     * @param colorType color type
-     * @param basicAltColor basic color type used as fallback
-     * @return color or null if not defined
-     */
-    Color getColor(CodeAreaColorType colorType, CodeAreaBasicColors basicAltColor);
-
-    /**
-     * Reinitialize colors.
-     */
-    void reinitialize();
+    void dataChanged();
 }

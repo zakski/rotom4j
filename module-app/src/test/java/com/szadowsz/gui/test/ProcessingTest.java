@@ -67,6 +67,7 @@ public class ProcessingTest extends PApplet {
         gui.label("test label", "THIS IS A TEST LABEL");
         gui.field("test field");
         gui.area("test area");
+        gui.code("test code");
         gui.popWindow();
         gui.popWindow();
 

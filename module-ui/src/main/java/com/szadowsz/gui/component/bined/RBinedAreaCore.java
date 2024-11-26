@@ -18,7 +18,6 @@ import java.util.List;
  * Binary data viewer/editor component.
  */
 public class RBinedAreaCore extends RTextArea implements DataProvider { // TODO Determine Exact Relationship
-    // TODO Component Stub : WIP
 
     protected BinaryData contentData = EmptyBinaryData.INSTANCE;
 
@@ -45,7 +44,7 @@ public class RBinedAreaCore extends RTextArea implements DataProvider { // TODO 
         return commandHandlerFactory.createCommandHandler(this);
     }
 
-    protected void init() {
+    private void init() {
 //        enableEvents(AWTEvent.KEY_EVENT_MASK);
 //        setName("CodeArea");
 //        setCaret(new RCodeAreaCore.SimulatedCaret());

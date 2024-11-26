@@ -100,7 +100,7 @@ public class SwingCodeAreaCommandHandler implements CodeAreaCommandHandler {
 
     @Override
     public void keyPressed(KeyEvent keyEvent) {
-        if (!codeArea.isEnabled()) {
+        if (!codeArea.isEditEnabled()) {
             return;
         }
 
@@ -792,7 +792,7 @@ public class SwingCodeAreaCommandHandler implements CodeAreaCommandHandler {
         updateSelection(selecting, caretPosition);
 
         sequenceBreak();
-        codeArea.repaint();
+        codeArea.invalidateBuffer();
     }
 
     public void move(SelectingMode selectingMode, MovementDirection direction) {
@@ -811,7 +811,7 @@ public class SwingCodeAreaCommandHandler implements CodeAreaCommandHandler {
         CodeAreaScrollPosition scrollPosition = ((ScrollingCapable) codeArea).computeScrolling(sourcePosition, direction);
         if (!sourcePosition.equals(scrollPosition)) {
             ((ScrollingCapable) codeArea).setScrollPosition(scrollPosition);
-            codeArea.resetPainter();
+            codeArea.resetBuffer();
         }
     }
 
@@ -879,12 +879,12 @@ public class SwingCodeAreaCommandHandler implements CodeAreaCommandHandler {
 
     private void revealCursor() {
         ((ScrollingCapable) codeArea).revealCursor();
-        codeArea.repaint();
+        codeArea.invalidateBuffer();
     }
 
     @Override
     public boolean checkEditAllowed() {
-        return codeArea.isEditable();
+        return codeArea.isEditEnabled();
     }
 
     private static SelectingMode isSelectingMode(KeyEvent keyEvent) {

@@ -16,7 +16,9 @@ import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.text.RFontStore;
 import processing.core.PGraphics;
 
+import javax.swing.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,8 +84,28 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea, CodeA
      * @param path         the path in the component tree
      * @param parentFolder the parent component folder reference // TODO consider if needed
      */
-    protected RBinedArea(RotomGui gui, String path, RFolder parentFolder, CodeAreaCommandHandler.CodeAreaCommandHandlerFactory commandHandlerFactory) {
+    public RBinedArea(RotomGui gui, String path, RFolder parentFolder, CodeAreaCommandHandler.CodeAreaCommandHandlerFactory commandHandlerFactory) {
         super(gui, path, parentFolder,commandHandlerFactory);
+        painter = new SwingCodeAreaPainter(this);
+        codeAreaCaret = new SwingCodeAreaCaret(this::notifyCaretChanged);
+        painter.attach();
+        init();
+    }
+
+    private void init() {
+        codeAreaCaret.setSection(BasicCodeAreaSection.CODE_MATRIX);
+    }
+    /**
+     * Default Constructor
+     * <p>
+     * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
+     *
+     * @param gui          the gui for the window that the component is drawn under
+     * @param path         the path in the component tree
+     * @param parentFolder the parent component folder reference // TODO consider if needed
+     */
+    public RBinedArea(RotomGui gui, String path, RFolder parentFolder) {
+        super(gui, path, parentFolder, SwingCodeAreaCommandHandler.createDefaultCodeAreaCommandHandlerFactory());
         codeAreaCaret = new SwingCodeAreaCaret(this::notifyCaretChanged);
     }
 
@@ -644,9 +666,9 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea, CodeA
 
     @Override
     protected void drawForeground(PGraphics pg, String name) { // TODO Wrong
-        pg.pushMatrix();
-        painter.paintComponent(buffer.getNative().g2);
-        pg.image(buffer.draw(),0,0);
-        pg.popMatrix();
+//        pg.pushMatrix();
+//        painter.paintComponent(buffer.getNative().g2);
+//        pg.image(buffer.draw(),0,0);
+//        pg.popMatrix();
     }
 }
