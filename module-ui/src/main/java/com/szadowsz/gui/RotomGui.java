@@ -5,7 +5,7 @@ import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.RComponentTree;
 import com.szadowsz.gui.component.RPaths;
 import com.szadowsz.gui.component.action.RButton;
-import com.szadowsz.gui.component.bined.RBinedArea;
+import com.szadowsz.gui.component.oldbined.RBinedArea;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
 import com.szadowsz.gui.component.group.folder.*;

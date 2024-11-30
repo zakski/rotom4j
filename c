@@ -1,5 +1,5 @@
 java.lang.NullPointerException: Cannot read field "g2" because the return value of "com.szadowsz.gui.component.text.RTextBuffer.getNative()" is null
-	at com.szadowsz.gui.component.bined.RBinedArea.drawForeground(RBinedArea.java:662)
+	at com.szadowsz.gui.component.oldbined.RBinedArea.drawForeground(RBinedArea.java:662)
 	at com.szadowsz.gui.component.RComponent.draw(RComponent.java:589)
 	at com.szadowsz.gui.window.pane.RContentBuffer.drawChildComponent(RContentBuffer.java:78)
 	at com.szadowsz.gui.window.pane.RContentBuffer.drawChildren(RContentBuffer.java:136)

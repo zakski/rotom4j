@@ -203,4 +203,12 @@ public class RComponentScrollbar {
         invalidateBuffer();
         value = Math.min(Math.max(value + (float) mouseEvent.getRotation() / (float) loose, 0), 1);
     }
+
+    public int getHeight() {
+        return 0; // TODO
+    }
+
+    public int getWidth() {
+        return 0; // TODO
+    }
 }

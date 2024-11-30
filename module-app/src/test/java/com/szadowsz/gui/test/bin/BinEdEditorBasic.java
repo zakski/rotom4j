@@ -39,23 +39,23 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.szadowsz.binary.array.ByteArrayEditableData;
-import com.szadowsz.gui.component.binary.RCodeArea;
-import com.szadowsz.gui.component.binary.EditMode;
-import com.szadowsz.gui.component.binary.EditOperation;
-import com.szadowsz.gui.component.binary.capability.CaretCapable;
-import com.szadowsz.gui.component.binary.capability.CharsetCapable;
-import com.szadowsz.gui.component.binary.capability.SelectionCapable;
-import com.szadowsz.gui.component.binary.operation.swing.CodeAreaOperationCommandHandler;
-import com.szadowsz.gui.component.binary.operation.swing.CodeAreaUndoRedo;
-import com.szadowsz.gui.component.binary.swing.CodeAreaCommandHandler;
+import com.szadowsz.gui.component.oldbinary.RCodeArea;
+import com.szadowsz.gui.component.oldbinary.EditMode;
+import com.szadowsz.gui.component.oldbinary.EditOperation;
+import com.szadowsz.gui.component.oldbinary.capability.CaretCapable;
+import com.szadowsz.gui.component.oldbinary.capability.CharsetCapable;
+import com.szadowsz.gui.component.oldbinary.capability.SelectionCapable;
+import com.szadowsz.gui.component.oldbinary.operation.swing.CodeAreaOperationCommandHandler;
+import com.szadowsz.gui.component.oldbinary.operation.swing.CodeAreaUndoRedo;
+import com.szadowsz.gui.component.oldbinary.swing.CodeAreaCommandHandler;
 import com.szadowsz.binary.EditableBinaryData;
-import com.szadowsz.gui.component.binary.CodeAreaCaretPosition;
-import com.szadowsz.gui.component.binary.CodeAreaUtils;
-import com.szadowsz.gui.component.binary.CodeCharactersCase;
-import com.szadowsz.gui.component.binary.CodeType;
-import com.szadowsz.gui.component.binary.swing.CodeAreaSwingUtils;
-import com.szadowsz.gui.component.binary.capability.EditModeCapable;
-import com.szadowsz.gui.component.binary.operation.undo.BinaryDataUndoRedoChangeListener;
+import com.szadowsz.gui.component.oldbinary.CodeAreaCaretPosition;
+import com.szadowsz.gui.component.oldbinary.CodeAreaUtils;
+import com.szadowsz.gui.component.oldbinary.CodeCharactersCase;
+import com.szadowsz.gui.component.oldbinary.CodeType;
+import com.szadowsz.gui.component.oldbinary.swing.CodeAreaSwingUtils;
+import com.szadowsz.gui.component.oldbinary.capability.EditModeCapable;
+import com.szadowsz.gui.component.oldbinary.operation.undo.BinaryDataUndoRedoChangeListener;
 
 /**
  * Basic single jar swing version of BinEd binary/hex editor.

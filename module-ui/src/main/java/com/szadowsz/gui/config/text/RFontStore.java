@@ -1,5 +1,6 @@
 package com.szadowsz.gui.config.text;
 
+import com.szadowsz.gui.component.oldbined.swing.CharsetStreamTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -38,6 +39,8 @@ public class RFontStore {
     // Loaded Font Info
     private static PFont mainFont = null;
     private static PFont sideFont = null;
+
+    public static final String DEFAULT_ENCODING = CharsetStreamTranslator.DEFAULT_ENCODING;
 
     private RFontStore(){
         // NOOP // TODO consider if Per Window Font Config is wanted

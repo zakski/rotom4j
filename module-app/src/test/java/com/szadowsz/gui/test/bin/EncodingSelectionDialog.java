@@ -25,7 +25,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
-import com.szadowsz.gui.component.binary.swing.CodeAreaSwingUtils;
+import com.szadowsz.gui.component.oldbinary.swing.CodeAreaSwingUtils;
 
 /**
  * Basic encoding selection dialog.
