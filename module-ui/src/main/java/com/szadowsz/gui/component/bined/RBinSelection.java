@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.oldbined;
+package com.szadowsz.gui.component.bined;
+
+import com.szadowsz.gui.component.oldbined.SelectionRange;
 
 /**
  * Selection between two positions where begin represents origin point and end
@@ -21,7 +23,7 @@ package com.szadowsz.gui.component.oldbined;
  *
  * @author ExBin Project (https://exbin.org)
  */
-public class CodeAreaSelection {
+public class RBinSelection {
 
     private long start;
     private long end;
@@ -29,7 +31,7 @@ public class CodeAreaSelection {
     /**
      * Creates empty selection range.
      */
-    public CodeAreaSelection() {
+    public RBinSelection() {
         this(0, 0);
     }
 
@@ -40,12 +42,12 @@ public class CodeAreaSelection {
      * @param start selection start position
      * @param end selection end position without actual end position itself
      */
-    public CodeAreaSelection(long start, long end) {
-        CodeAreaSelection.this.setStart(start);
-        CodeAreaSelection.this.setEnd(end);
+    public RBinSelection(long start, long end) {
+        RBinSelection.this.setStart(start);
+        RBinSelection.this.setEnd(end);
     }
 
-    public CodeAreaSelection(SelectionRange selectionRange) {
+    public RBinSelection(SelectionRange selectionRange) {
         if (selectionRange == null) {
             start = end = 0;
         } else {

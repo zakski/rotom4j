@@ -1,8 +1,10 @@
 package com.szadowsz.gui.component.bined.utils;
 
 
-import com.szadowsz.gui.component.bined.settings.EditMode;
+import com.szadowsz.gui.component.bined.settings.CodeCharactersCase;
+import com.szadowsz.gui.component.bined.settings.CodeType;
 
+import java.awt.*;
 import java.util.Objects;
 
 public class RBinUtils {
@@ -29,5 +31,14 @@ public class RBinUtils {
 
     public static IllegalStateException getInvalidTypeException(Enum<?> enumObject) {
         return new IllegalStateException("Unexpected " + enumObject.getDeclaringClass().getName() + " value " + enumObject.name());
+    }
+
+    public static boolean areSameColors(Color color, Color renderColor) {
+    }
+
+    public static void longToBaseCode(char[] headerChars, int codePos, long index, int base, int i, boolean b, CodeCharactersCase codeCharactersCase) {
+    }
+
+    public static void byteToCharsCode(byte dataByte, CodeType codeType, char[] rowCharacters, int byteRowPos, CodeCharactersCase codeCharactersCase) {
     }
 }

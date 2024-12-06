@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.oldbined.settings;
+package com.szadowsz.gui.component.bined.settings;
 
 /**
  * Border paint modes for basic painter.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum BasicBackgroundPaintMode {
+public enum BackgroundPaintMode {
     /**
      * Border is not painted.
      */

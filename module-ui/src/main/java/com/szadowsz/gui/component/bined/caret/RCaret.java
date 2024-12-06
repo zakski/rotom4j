@@ -2,7 +2,7 @@ package com.szadowsz.gui.component.bined.caret;
 
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.bined.settings.CodeAreaSection;
-import com.szadowsz.gui.component.oldbinary.CodeAreaCaretPosition;
+import com.szadowsz.gui.component.oldbinary.swing.basic.DefaultCodeAreaCaret;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
@@ -34,6 +34,18 @@ public class RCaret {
         privateSetBlinkRate(DEFAULT_BLINK_RATE);
     }
 
+    public static int getCursorThickness(CursorShape cursorShape, int characterWidth, int lineHeight) {
+        switch (cursorShape) {
+            case INSERT:
+                return DOUBLE_CURSOR_WIDTH;
+            case OVERWRITE:
+            case MIRROR:
+                return characterWidth;
+        }
+
+        return -1;
+    }
+
     private void privateSetBlinkRate(int blinkRate) {
         if (blinkRate < 0) {
             throw new IllegalArgumentException("Blink rate cannot be negative");
@@ -62,6 +74,10 @@ public class RCaret {
         }
     }
 
+    public int getBlinkRate() {
+        return rate;
+    }
+
     /**
      * Returns caret position.
      * <p>
@@ -81,8 +97,20 @@ public class RCaret {
         return caretPosition.getDataPosition();
     }
 
+    public int getDot() {
+        return dot;
+    }
+
     public PVector getMagicCaretPosition() {
         return magicCaretPosition;
+    }
+
+    public int getMark() {
+        return 0;
+    }
+
+    public CursorRenderingMode getRenderingMode() {
+        return renderingMode;
     }
 
     /**
@@ -100,6 +128,10 @@ public class RCaret {
 
     public boolean isVisible() {
         return visible;
+    }
+
+    public void setBlinkRate(int rate) {
+        this.rate = rate;
     }
 
     /**
@@ -157,6 +189,10 @@ public class RCaret {
         resetBlink();
     }
 
+    public void setDot(int dot) {
+        this.dot = dot;
+    }
+
     public void setMagicCaretPosition(PVector magicCaretPosition) {
         this.magicCaretPosition = magicCaretPosition;
     }
@@ -175,27 +211,6 @@ public class RCaret {
     }
 
     public void draw(PGraphics g) {
-    }
-
-
-    public void setBlinkRate(int rate) {
-        this.rate = rate;
-    }
-
-    public int getBlinkRate() {
-        return rate;
-    }
-
-    public int getDot() {
-        return dot;
-    }
-
-    public int getMark() {
-        return 0;
-    }
-
-    public void setDot(int dot) {
-        this.dot = dot;
     }
 
     public void moveDot(int dot) {

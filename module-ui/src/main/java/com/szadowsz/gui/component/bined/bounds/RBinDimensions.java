@@ -1,35 +1,177 @@
 package com.szadowsz.gui.component.bined.bounds;
 
-import processing.core.PVector;
+import com.szadowsz.gui.component.bined.RBinMetrics;
+import com.szadowsz.gui.component.bined.RBinRect;
 
 public class RBinDimensions {
 
-    protected final PVector scrollPanelRectangle = new PVector();
+    protected final RBinRect componentRectangle = new RBinRect();
+    protected final RBinRect mainAreaRectangle = new RBinRect();
+    protected final RBinRect headerAreaRectangle = new RBinRect();
+    protected final RBinRect rowPositionAreaRectangle = new RBinRect();
+    protected final RBinRect scrollPanelRectangle = new RBinRect();
+    protected final RBinRect dataViewRectangle = new RBinRect();
 
+    protected int charactersPerRect;
     protected int charactersPerPage;
+
+    protected int scrollPanelX;
+    protected int scrollPanelY;
+
+    protected int scrollPanelWidth;
+    protected int scrollPanelHeight;
 
     protected int dataViewWidth;
     protected int dataViewHeight;
 
     protected int rowsPerPage;
+    protected int rowsPerRect;
+
+    protected int rowPositionAreaWidth;
+    protected int headerAreaHeight;
+
+    protected int lastCharOffset;
+    protected int lastRowOffset;
+
+    protected int verticalScrollBarSize;
+    protected int horizontalScrollBarSize;
+
+    private int computeCharactersPerRectangle(RBinMetrics metrics) {
+        int characterWidth = metrics.getCharacterWidth();
+        return characterWidth == 0 ? 0 : Math.round((dataViewWidth + characterWidth - 1) / characterWidth);
+    }
+
+    private int computeCharactersPerPage(RBinMetrics metrics) {
+        int characterWidth = metrics.getCharacterWidth();
+        return characterWidth == 0 ? 0 : Math.round(dataViewWidth / characterWidth);
+    }
+
+    private int computeRowsPerRectangle(RBinMetrics metrics) {
+        int rowHeight = metrics.getRowHeight();
+        return rowHeight == 0 ? 0 : Math.round((dataViewHeight + rowHeight - 1) / rowHeight);
+    }
+
+    private int computeRowsPerPage(RBinMetrics metrics) {
+        int rowHeight = metrics.getRowHeight();
+        return rowHeight == 0 ? 0 : Math.round(dataViewHeight / rowHeight);
+    }
 
     public int getCharactersPerPage() {
         return charactersPerPage;
     }
 
-    public int getDataViewWidth() {
+    public RBinRect getComponentRectangle() {
+        return componentRectangle;
+    }
+    
+    public float getDataViewWidth() {
         return dataViewWidth;
     }
 
-    public int getDataViewHeight() {
+    public float getDataViewHeight() {
         return dataViewHeight;
+    }
+
+    public RBinRect getDataViewRectangle() {
+        return dataViewRectangle;
+    }
+
+    public int getHeaderAreaHeight() {
+        return headerAreaHeight;
+    }
+
+    public RBinRect getHeaderAreaRectangle() {
+        return headerAreaRectangle;
+    }
+
+    public int getHorizontalScrollBarSize() {
+        return horizontalScrollBarSize;
+    }
+
+    public Object getLastCharOffset() {
+        return lastCharOffset;
+    }
+
+    public Object getLastRowOffset() {
+        return lastRowOffset;
+    }
+
+    public RBinRect getMainAreaRectangle() {
+        return mainAreaRectangle;
     }
 
     public int getRowsPerPage() {
         return rowsPerPage;
     }
 
-    public PVector getScrollPanelRectangle() {
+    public int getRowsPerRect() {
+        return rowsPerRect;
+    }
+
+    public RBinRect getRowPositionAreaRectangle() {
+        return rowPositionAreaRectangle;
+    }
+
+    public int getRowPositionAreaWidth() {
+        return rowPositionAreaWidth;
+    }
+
+    public RBinRect getScrollPanelRectangle() {
         return scrollPanelRectangle;
+    }
+
+    public float getScrollPanelX() {
+        return scrollPanelX;
+    }
+
+    public float getScrollPanelY() {
+        return scrollPanelY;
+    }
+
+    public int getVerticalScrollBarSize() {
+        return verticalScrollBarSize;
+    }
+
+    public void recomputeSizes(RBinMetrics metrics, float componentX, float componentY, float componentWidth, float componentHeight, int rowPositionLength, int verticalScrollBarSize, int horizontalScrollBarSize) {
+        componentRectangle.setBounds(componentX, componentY, componentWidth, componentHeight);
+        this.verticalScrollBarSize = verticalScrollBarSize;
+        this.horizontalScrollBarSize = horizontalScrollBarSize;
+        rowPositionAreaWidth = metrics.getCharacterWidth() * (rowPositionLength + 1);
+        headerAreaHeight = metrics.getFontHeight() + metrics.getFontHeight() / 4;
+
+        scrollPanelX = componentX + rowPositionAreaWidth;
+        scrollPanelY = componentY + headerAreaHeight;
+        scrollPanelWidth = componentWidth - rowPositionAreaWidth;
+        scrollPanelHeight = componentHeight - headerAreaHeight;
+        dataViewWidth = scrollPanelWidth - verticalScrollBarSize;
+        dataViewHeight = scrollPanelHeight - horizontalScrollBarSize;
+        charactersPerRect = computeCharactersPerRectangle(metrics);
+        charactersPerPage = computeCharactersPerPage(metrics);
+        rowsPerRect = computeRowsPerRectangle(metrics);
+        rowsPerPage = computeRowsPerPage(metrics);
+        lastCharOffset = metrics.isInitialized() ? dataViewWidth % metrics.getCharacterWidth() : 0;
+        lastRowOffset = metrics.isInitialized() ? dataViewHeight % metrics.getRowHeight() : 0;
+
+        boolean availableWidth = rowPositionAreaWidth + verticalScrollBarSize <= componentWidth;
+        boolean availableHeight = scrollPanelY + horizontalScrollBarSize <= componentHeight;
+
+        if (availableWidth && availableHeight) {
+            mainAreaRectangle.setBounds(componentX + rowPositionAreaWidth, scrollPanelY, componentWidth - rowPositionAreaWidth - getVerticalScrollBarSize(), componentHeight - scrollPanelY - getHorizontalScrollBarSize());
+        } else {
+            mainAreaRectangle.setBounds(0, 0, 0, 0);
+        }
+        if (availableWidth) {
+            headerAreaRectangle.setBounds(componentX + rowPositionAreaWidth, componentY, componentWidth - rowPositionAreaWidth - getVerticalScrollBarSize(), headerAreaHeight);
+        } else {
+            headerAreaRectangle.setBounds(0, 0, 0, 0);
+        }
+        if (availableHeight) {
+            rowPositionAreaRectangle.setBounds(componentX, scrollPanelY, rowPositionAreaWidth, componentHeight - scrollPanelY - getHorizontalScrollBarSize());
+        } else {
+            rowPositionAreaRectangle.setBounds(0, 0, 0, 0);
+        }
+
+        scrollPanelRectangle.setBounds(scrollPanelX, scrollPanelY, scrollPanelWidth, scrollPanelHeight);
+        dataViewRectangle.setBounds(scrollPanelX, scrollPanelY, Math.max(dataViewWidth, 0), Math.max(dataViewHeight, 0));
     }
 }

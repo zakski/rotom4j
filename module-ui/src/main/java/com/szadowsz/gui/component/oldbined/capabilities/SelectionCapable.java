@@ -15,7 +15,7 @@
  */
 package com.szadowsz.gui.component.oldbined.capabilities;
 
-import com.szadowsz.gui.component.oldbined.CodeAreaSelection;
+import com.szadowsz.gui.component.bined.RBinSelection;
 import com.szadowsz.gui.component.oldbined.SelectionRange;
 import com.szadowsz.gui.component.oldbined.listeners.SelectionChangedListener;
 
@@ -66,7 +66,7 @@ public interface SelectionCapable {
      *
      * @return code area selection handler
      */
-    CodeAreaSelection getSelectionHandler();
+    RBinSelection getSelectionHandler();
 
     /**
      * Adds selection change listener.

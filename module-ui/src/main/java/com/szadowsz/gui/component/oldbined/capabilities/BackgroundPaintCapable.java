@@ -16,7 +16,7 @@
 package com.szadowsz.gui.component.oldbined.capabilities;
 
 
-import com.szadowsz.gui.component.oldbined.settings.BasicBackgroundPaintMode;
+import com.szadowsz.gui.component.bined.settings.BackgroundPaintMode;
 
 /**
  * Support for background paint mode capability.
@@ -30,12 +30,12 @@ public interface BackgroundPaintCapable {
      *
      * @return background paint mode
      */
-    BasicBackgroundPaintMode getBackgroundPaintMode();
+    BackgroundPaintMode getBackgroundPaintMode();
 
     /**
      * Sets current background paint mode.
      *
      * @param borderPaintMode background paint mode
      */
-    void setBackgroundPaintMode(BasicBackgroundPaintMode borderPaintMode);
+    void setBackgroundPaintMode(BackgroundPaintMode borderPaintMode);
 }

@@ -140,62 +140,19 @@ public class RBinScrolling {
     }
 
     public Optional<RBinScrollPos> computeRevealScrollPosition(long rowPosition, int charsPosition, int bytesPerRow, int rowsPerPage, int charsPerPage, int charOffset, int rowOffset, int characterWidth, int rowHeight) {
-        RBinScrollPos targetScrollPosition = new RBinScrollPos();
-        targetScrollPosition.setScrollPosition(scrollPosition);
-
-        boolean scrolled = false;
-        if (checkBottomScrollVisibility(rowPosition, rowsPerPage, rowOffset, rowHeight) != PositionScrollVisibility.VISIBLE) {
-            int bottomRowOffset;
-            if (verticalScrollUnit != VerticalScrollUnit.PIXEL) {
-                bottomRowOffset = 0;
-            } else {
-                if (rowsPerPage == 0) {
-                    bottomRowOffset = 0;
-                } else {
-                    bottomRowOffset = rowHeight - rowOffset;
-                }
-            }
-
-            long targetRowPosition = rowPosition - rowsPerPage;
-            if (verticalScrollUnit == VerticalScrollUnit.ROW && rowOffset > 0) {
-                targetRowPosition++;
-            }
-            targetScrollPosition.setRowPosition(targetRowPosition);
-            targetScrollPosition.setRowOffset(bottomRowOffset);
-            scrolled = true;
-        }
-
-        if (checkTopScrollVisibility(rowPosition) != PositionScrollVisibility.VISIBLE) {
-            targetScrollPosition.setRowPosition(rowPosition);
-            targetScrollPosition.setRowOffset(0);
-            scrolled = true;
-        }
-
-        if (checkRightScrollVisibility(charsPosition, charsPerPage, charOffset, characterWidth) != PositionScrollVisibility.VISIBLE) {
-            int rightCharOffset;
-            if (horizontalScrollUnit != HorizontalScrollUnit.PIXEL) {
-                rightCharOffset = 0;
-            } else {
-                if (charsPerPage < 1) {
-                    rightCharOffset = 0;
-                } else {
-                    rightCharOffset = characterWidth - (charOffset % characterWidth);
-                }
-            }
-
-            // Scroll character right
-            setHorizontalScrollPosition(targetScrollPosition, charsPosition - charsPerPage, rightCharOffset, characterWidth);
-            scrolled = true;
-        }
-
-        if (checkLeftScrollVisibility(charsPosition) != PositionScrollVisibility.VISIBLE) {
-            setHorizontalScrollPosition(targetScrollPosition, charsPosition, 0, characterWidth);
-            scrolled = true;
-        }
-
-        return scrolled ? Optional.of(targetScrollPosition) : Optional.empty();
+        return null;
     }
 
     public void updateCache(RBinEditor editor, int horizontalScrollBarSize, int verticalScrollBarSize) {
+    }
+
+    public RBinScrollPos getScrollPosition() {
+    }
+
+    public void updateMaximumScrollPosition(long rowsPerDocument, int rowsPerPage, int charactersPerRow, int charactersPerPage, Object lastCharOffset, Object lastRowOffset) {
+    }
+
+    public int getHorizontalScrollX(int characterWidth) {
+        return 0;
     }
 }

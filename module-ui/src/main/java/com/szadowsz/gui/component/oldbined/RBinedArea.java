@@ -2,6 +2,7 @@ package com.szadowsz.gui.component.oldbined;
 
 
 import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.bined.RBinSelection;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.oldbined.basic.BasicCodeAreaSection;
 import com.szadowsz.gui.component.oldbined.basic.CodeAreaScrollPosition;
@@ -52,14 +53,14 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea, CodeA
     protected RowWrappingMode rowWrapping = RowWrappingMode.NO_WRAPPING;
 
     // TODO name this section
-    protected final CodeAreaSelection selection = new CodeAreaSelection();
+    protected final RBinSelection selection = new RBinSelection();
     protected final CodeAreaScrollPosition scrollPosition = new CodeAreaScrollPosition();
     protected ClipboardHandlingMode clipboardHandlingMode = ClipboardHandlingMode.PROCESS;
 
     // Drawing Config
     protected AntialiasingMode antialiasingMode = AntialiasingMode.AUTO;
     protected CodeAreaPainter painter;
-    protected BasicBackgroundPaintMode backgroundPaintMode = BasicBackgroundPaintMode.STRIPED;
+    protected BackgroundPaintMode backgroundPaintMode = BackgroundPaintMode.STRIPED;
 
     // Scrollbar Config
     protected ScrollBarVisibility verticalScrollBarVisibility = ScrollBarVisibility.IF_NEEDED;
@@ -184,7 +185,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea, CodeA
     }
 
     @Override
-    public BasicBackgroundPaintMode getBackgroundPaintMode() {
+    public BackgroundPaintMode getBackgroundPaintMode() {
         return backgroundPaintMode;
     }
 
@@ -292,7 +293,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea, CodeA
     }
 
     @Override
-    public CodeAreaSelection getSelectionHandler() {
+    public RBinSelection getSelectionHandler() {
         return selection;
     }
 
@@ -352,7 +353,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea, CodeA
     }
 
     @Override
-    public void setBackgroundPaintMode(BasicBackgroundPaintMode borderPaintMode) {
+    public void setBackgroundPaintMode(BackgroundPaintMode borderPaintMode) {
         this.backgroundPaintMode = backgroundPaintMode;
         updateLayout();
     }

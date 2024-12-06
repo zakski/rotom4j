@@ -10,11 +10,12 @@ import com.szadowsz.gui.component.bined.scroll.RBinScrollPos;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.bined.utils.RBinUtils;
 import com.szadowsz.gui.component.group.RGroup;
+import com.szadowsz.gui.component.oldbinary.CodeAreaSelection;
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
 import com.szadowsz.gui.config.text.RFontStore;
+import processing.core.PFont;
 import processing.core.PGraphics;
 
-import java.awt.*;
 import java.nio.charset.Charset;
 import java.util.Optional;
 
@@ -28,6 +29,8 @@ public class RBinEditor extends RComponent {
 
     // How to Display
     protected CodeAreaViewMode viewMode = CodeAreaViewMode.DUAL;
+    protected AntialiasingMode antialiasingMode = AntialiasingMode.AUTO;
+    protected BackgroundPaintMode backgroundPaintMode = BackgroundPaintMode.STRIPED;
 
     // Display
     protected RBinDraw display;
@@ -36,7 +39,7 @@ public class RBinEditor extends RComponent {
     protected Charset charset = Charset.forName(RFontStore.DEFAULT_ENCODING);
     protected CodeCharactersCase codeCharactersCase = CodeCharactersCase.UPPER;
     protected CodeType codeType = CodeType.HEXADECIMAL;
-    protected Font codeFont;
+    protected PFont codeFont;
 
     // Row Layout Config
     protected int maxBytesPerRow = 16;
@@ -59,6 +62,8 @@ public class RBinEditor extends RComponent {
     // Cursor Caret
     protected RCaret caret;
     protected boolean showMirrorCursor = true;
+
+    protected final RBinSelection selection = new RBinSelection();
 
     /**
      * Default Constructor
@@ -163,8 +168,8 @@ public class RBinEditor extends RComponent {
      *
      * @return font
      */
-    public Font getCodeFont() {
-        return codeFont == null ? (Font) RFontStore.getMainFont().getNative() : codeFont;
+    public PFont getCodeFont() {
+        return codeFont == null ? RFontStore.getMainFont() : codeFont;
     }
 
     /**
@@ -174,6 +179,15 @@ public class RBinEditor extends RComponent {
      */
     public int getCodeOffset() {
         return caret.getCodeOffset();
+    }
+
+    /**
+     * Returns data or null.
+     *
+     * @return binary data
+     */
+    public BinaryData getContentData() {
+        return contentData;
     }
 
     /**
@@ -233,6 +247,24 @@ public class RBinEditor extends RComponent {
     }
 
     /**
+     * Returns antialiasing mode for text painting.
+     *
+     * @return antialiasing mode
+     */
+    public AntialiasingMode getAntialiasingMode() {
+        return antialiasingMode;
+    }
+
+    /**
+     * Returns current background paint mode.
+     *
+     * @return background paint mode
+     */
+    public BackgroundPaintMode getBackgroundPaintMode() {
+        return backgroundPaintMode;
+    }
+
+    /**
      * Returns currently enforced edit operation.
      *
      * @return edit operation
@@ -257,6 +289,10 @@ public class RBinEditor extends RComponent {
      */
     public HorizontalScrollUnit getHorizontalScrollUnit() {
         return horizontalScrollUnit;
+    }
+
+    public RComponentScrollbar getHorizontalScrollBar() {
+        return null; // TODO
     }
 
     /**
@@ -286,17 +322,35 @@ public class RBinEditor extends RComponent {
         return minRowPositionLength;
     }
 
+    public RBinDraw getPainter() {
+        return display;
+    }
+
     /**
      * Returns row wrapping mode.
      *
      * @return row wrapping mode
      */
-    RowWrappingMode getRowWrapping() {
+    public RowWrappingMode getRowWrapping() {
         return rowWrapping;
     }
 
+    /**
+     * Returns current scrolling position.
+     *
+     * @return scroll position
+     */
     public RBinScrollPos getScrollPosition() {
         return scrollPosition;
+    }
+
+    /**
+     * Returns selection handler.
+     *
+     * @return code area selection handler
+     */
+    public RBinSelection getSelectionHandler() {
+        return selection;
     }
 
     /**
@@ -315,6 +369,10 @@ public class RBinEditor extends RComponent {
      */
     public VerticalScrollUnit getVerticalScrollUnit() {
         return verticalScrollUnit;
+    }
+
+    public RComponentScrollbar getVerticalScrollBar() {
+        return null; // TODO
     }
 
     /**
@@ -341,6 +399,15 @@ public class RBinEditor extends RComponent {
 
     public boolean isInitialized() {
         return display.isInitialized();
+    }
+
+    /**
+     * Returns if cursor should be visible in other sections.
+     *
+     * @return true if cursor should be mirrored
+     */
+    public boolean isShowMirrorCursor() {
+        return showMirrorCursor;
     }
 
     /**
@@ -396,7 +463,7 @@ public class RBinEditor extends RComponent {
      *
      * @param codeFont font
      */
-    public void setCodeFont(Font codeFont) {
+    public void setCodeFont(PFont codeFont) {
         this.codeFont = codeFont;
         reset();
     }
@@ -524,6 +591,16 @@ public class RBinEditor extends RComponent {
     }
 
     /**
+     * Sets if cursor should be visible in other sections.
+     *
+     * @param showMirrorCursor true if cursor should be mirrored
+     */
+    public void setShowMirrorCursor(boolean showMirrorCursor) {
+        this.showMirrorCursor = showMirrorCursor;
+        reset();
+    }
+
+    /**
      * Sets vertical scrollbar visibility mode.
      *
      * @param verticalScrollBarVisibility scrollbar visibility mode
@@ -608,15 +685,6 @@ public class RBinEditor extends RComponent {
     }
 
     public void updateScrollBars() {
-        display.updateScrollBars();
-        redraw();
-    }
 
-    public RComponentScrollbar getHorizontalScrollBar() {
-        return null; // TODO
-    }
-
-    public RComponentScrollbar getVerticalScrollBar() {
-        return null; // TODO
     }
 }

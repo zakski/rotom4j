@@ -15,7 +15,7 @@
  */
 package com.szadowsz.gui.component.oldbined.capabilities;
 
-import com.szadowsz.gui.component.oldbined.swing.AntialiasingMode;
+import com.szadowsz.gui.component.bined.settings.AntialiasingMode;
 
 /**
  * Support for anti-aliasing capability.

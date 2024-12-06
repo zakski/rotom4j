@@ -1,11 +1,19 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.gui.component.oldbinary.CharsetStreamTranslator;
+
+import java.awt.FontMetrics;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+
 /**
  * Basic code area component dimensions.
  *
  * @author ExBin Project (https://exbin.org)
  */
 public class RBinMetrics {
+
+    protected FontMetrics fontMetrics;
 
     protected int rowHeight;
     protected int characterWidth;
@@ -37,4 +45,40 @@ public class RBinMetrics {
         return rowHeight != 0 && characterWidth != 0;
     }
 
+    public int getCharWidth(char drawnChar) {
+        return fontMetrics.charWidth(drawnChar);
+    }
+
+    public boolean hasUniformLineMetrics() {
+        return fontMetrics.hasUniformLineMetrics();
+    }
+
+    public int getCharsWidth(char[] data, int offset, int length) {
+        return fontMetrics.charsWidth(data, offset, length);
+    }
+
+    public void recomputeMetrics(FontMetrics fontMetrics, Charset charset) {
+        this.fontMetrics = fontMetrics;
+        if (fontMetrics == null) {
+            characterWidth = 0;
+            fontHeight = 0;
+        } else {
+            fontHeight = fontMetrics.getHeight();
+            rowHeight = fontHeight;
+
+            /*
+             * Use small 'm' character to guess normal font width.
+             */
+            characterWidth = fontMetrics.charWidth('m');
+            int fontSize = fontMetrics.getFont().getSize();
+            subFontSpace = rowHeight - fontSize;
+        }
+
+        try {
+            CharsetEncoder encoder = charset.newEncoder();
+            maxBytesPerChar = (int) encoder.maxBytesPerChar();
+        } catch (UnsupportedOperationException ex) {
+            maxBytesPerChar = CharsetStreamTranslator.DEFAULT_MAX_BYTES_PER_CHAR;
+        }
+    }
 }

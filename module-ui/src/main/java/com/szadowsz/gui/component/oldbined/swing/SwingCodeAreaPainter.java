@@ -16,6 +16,7 @@
 package com.szadowsz.gui.component.oldbined.swing;
 
 import com.szadowsz.binary.BinaryData;
+import com.szadowsz.gui.component.bined.RBinSelection;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.oldbined.*;
 import com.szadowsz.gui.component.oldbined.CodeAreaSection;
@@ -68,7 +69,7 @@ public class SwingCodeAreaPainter implements CodeAreaPainter, BasicColorsCapable
 
     protected CodeCharactersCase codeCharactersCase;
     protected EditOperation editOperation;
-    protected BasicBackgroundPaintMode backgroundPaintMode;
+    protected BackgroundPaintMode backgroundPaintMode;
     protected ScrollViewDimension viewDimension;
     protected boolean showMirrorCursor;
     protected AntialiasingMode antialiasingMode = AntialiasingMode.AUTO;
@@ -233,7 +234,7 @@ public class SwingCodeAreaPainter implements CodeAreaPainter, BasicColorsCapable
     }
 
     private void validateSelection() {
-        CodeAreaSelection selectionHandler = ((SelectionCapable) codeArea).getSelectionHandler();
+        RBinSelection selectionHandler = ((SelectionCapable) codeArea).getSelectionHandler();
         if (!selectionHandler.isEmpty()) {
             long dataSize = codeArea.getDataSize();
             if (dataSize == 0) {
@@ -473,7 +474,7 @@ public class SwingCodeAreaPainter implements CodeAreaPainter, BasicColorsCapable
         g.fillRect(rowPosRectangle.x, rowPosRectangle.y, rowPosRectangle.width, rowPosRectangle.height);
 
         CodeAreaScrollPosition scrollPosition = scrolling.getScrollPosition();
-        if (backgroundPaintMode == BasicBackgroundPaintMode.STRIPED) {
+        if (backgroundPaintMode == BackgroundPaintMode.STRIPED) {
             long dataPosition = scrollPosition.getRowPosition() * bytesPerRow + ((scrollPosition.getRowPosition() & 1) > 0 ? 0 : bytesPerRow);
             int stripePositionY = rowPosRectangle.y - scrollPosition.getRowOffset() + ((scrollPosition.getRowPosition() & 1) > 0 ? 0 : rowHeight);
             g.setColor(colorsProfile.getAlternateBackground());
@@ -584,11 +585,11 @@ public class SwingCodeAreaPainter implements CodeAreaPainter, BasicColorsCapable
         CodeAreaScrollPosition scrollPosition = scrolling.getScrollPosition();
 
         g.setColor(colorsProfile.getTextBackground());
-        if (backgroundPaintMode != BasicBackgroundPaintMode.TRANSPARENT) {
+        if (backgroundPaintMode != BackgroundPaintMode.TRANSPARENT) {
             g.fillRect(dataViewRect.x, dataViewRect.y, dataViewRect.width, dataViewRect.height);
         }
 
-        if (backgroundPaintMode == BasicBackgroundPaintMode.STRIPED) {
+        if (backgroundPaintMode == BackgroundPaintMode.STRIPED) {
             long dataPosition = scrollPosition.getRowPosition() * bytesPerRow + ((scrollPosition.getRowPosition() & 1) > 0 ? 0 : bytesPerRow);
             int stripePositionY = dataViewRect.y - scrollPosition.getRowOffset() + ((scrollPosition.getRowPosition() & 1) > 0 ? 0 : rowHeight);
             g.setColor(colorsProfile.getAlternateBackground());
@@ -715,7 +716,7 @@ public class SwingCodeAreaPainter implements CodeAreaPainter, BasicColorsCapable
         int charactersPerRow = structure.getCharactersPerRow();
         int skipToChar = visibility.getSkipToChar();
         int skipRestFromChar = visibility.getSkipRestFromChar();
-        CodeAreaSelection selectionHandler = ((SelectionCapable) codeArea).getSelectionHandler();
+        RBinSelection selectionHandler = ((SelectionCapable) codeArea).getSelectionHandler();
 
         int renderOffset = skipToChar;
         Color renderColor = null;
@@ -851,7 +852,7 @@ public class SwingCodeAreaPainter implements CodeAreaPainter, BasicColorsCapable
         int rowHeight = metrics.getRowHeight();
         int characterWidth = metrics.getCharacterWidth();
         int subFontSpace = metrics.getSubFontSpace();
-        CodeAreaSelection selectionHandler = ((SelectionCapable) codeArea).getSelectionHandler();
+        RBinSelection selectionHandler = ((SelectionCapable) codeArea).getSelectionHandler();
 
         g.setFont(font);
         int positionY = rowPositionY + rowHeight - subFontSpace;
@@ -1509,7 +1510,7 @@ public class SwingCodeAreaPainter implements CodeAreaPainter, BasicColorsCapable
     }
 
     @Override
-    public CodeAreaSelection getSelectionHandler() {
+    public RBinSelection getSelectionHandler() {
         return ((SelectionCapable) codeArea).getSelectionHandler();
     }
 

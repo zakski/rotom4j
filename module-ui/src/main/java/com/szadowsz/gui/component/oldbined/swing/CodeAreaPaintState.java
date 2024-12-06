@@ -17,7 +17,7 @@ package com.szadowsz.gui.component.oldbined.swing;
 
 import com.szadowsz.binary.BinaryData;
 import com.szadowsz.gui.component.oldbined.CodeAreaSection;
-import com.szadowsz.gui.component.oldbined.CodeAreaSelection;
+import com.szadowsz.gui.component.bined.RBinSelection;
 import com.szadowsz.gui.component.oldbined.colors.CodeAreaColorsProfile;
 
 import java.nio.charset.Charset;
@@ -50,5 +50,5 @@ public interface CodeAreaPaintState {
     // TODO: Replace with row data only?
     BinaryData getContentData();
 
-    CodeAreaSelection getSelectionHandler();
+    RBinSelection getSelectionHandler();
 }
