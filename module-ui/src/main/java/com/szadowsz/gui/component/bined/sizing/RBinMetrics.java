@@ -1,8 +1,9 @@
-package com.szadowsz.gui.component.bined;
+package com.szadowsz.gui.component.bined.sizing;
 
-import com.szadowsz.gui.component.oldbinary.CharsetStreamTranslator;
+import processing.core.PFont;
+import processing.core.PGraphics;
 
-import java.awt.FontMetrics;
+import java.awt.*;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 
@@ -80,5 +81,10 @@ public class RBinMetrics {
         } catch (UnsupportedOperationException ex) {
             maxBytesPerChar = CharsetStreamTranslator.DEFAULT_MAX_BYTES_PER_CHAR;
         }
+    }
+
+    public void recomputeMetrics(PGraphics pg, PFont font, Charset charset) {
+        Object pgNative = pg.getNative();
+        recomputeMetrics(((Graphics2D)pgNative).getFontMetrics((Font) font.getNative()),charset);
     }
 }

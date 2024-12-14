@@ -1,4 +1,4 @@
-package com.szadowsz.nds4j.reader;
+package com.szadowsz.binary.io.reader;
 
 import java.io.*;
 import java.util.Stack;

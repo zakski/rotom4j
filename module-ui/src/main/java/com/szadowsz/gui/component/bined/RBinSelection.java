@@ -15,8 +15,6 @@
  */
 package com.szadowsz.gui.component.bined;
 
-import com.szadowsz.gui.component.oldbined.SelectionRange;
-
 /**
  * Selection between two positions where begin represents origin point and end
  * of the selection can be before or after begin.

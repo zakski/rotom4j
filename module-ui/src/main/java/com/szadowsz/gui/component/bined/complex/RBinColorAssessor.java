@@ -1,4 +1,4 @@
-package com.szadowsz.gui.component.bined;
+package com.szadowsz.gui.component.bined.complex;
 
 import com.szadowsz.gui.component.bined.settings.CodeAreaSection;
 
@@ -9,8 +9,10 @@ public class RBinColorAssessor {
     }
 
     public Color getPositionBackgroundColor(long rowDataPosition, int byteOnRow, int charOnRow, CodeAreaSection section, boolean inSelection) {
+    return null;
     }
 
     public Color getPositionTextColor(long rowDataPosition, int byteOnRow, int charOnRow, CodeAreaSection section, boolean inSelection) {
+    return null;
     }
 }

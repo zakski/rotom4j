@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.oldbinary;
+package com.szadowsz.gui.component.bined.sizing;
 
 import java.io.IOException;
 import java.io.InputStream;

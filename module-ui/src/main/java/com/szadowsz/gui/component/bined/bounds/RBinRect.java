@@ -1,4 +1,4 @@
-package com.szadowsz.gui.component.bined;
+package com.szadowsz.gui.component.bined.bounds;
 
 import processing.core.PVector;
 

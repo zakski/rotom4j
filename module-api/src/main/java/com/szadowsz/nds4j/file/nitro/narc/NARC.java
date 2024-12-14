@@ -29,10 +29,10 @@ import com.szadowsz.nds4j.file.index.LstFile;
 import com.szadowsz.nds4j.file.index.NaixFile;
 import com.szadowsz.nds4j.file.index.ScrFile;
 import com.szadowsz.nds4j.file.nitro.GenericNFSFile;
-import com.szadowsz.nds4j.reader.Buffer;
-import com.szadowsz.nds4j.reader.MemBuf;
+import com.szadowsz.binary.io.reader.Buffer;
+import com.szadowsz.binary.io.reader.MemBuf;
 import com.szadowsz.nds4j.utils.StringFormatter;
-import com.szadowsz.nds4j.writer.BinaryWriter;
+import com.szadowsz.binary.io.writer.BinaryWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

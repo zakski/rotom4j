@@ -1,8 +1,9 @@
-package com.szadowsz.gui.component.bined.bounds;
+package com.szadowsz.gui.component.bined;
 
-import com.szadowsz.gui.component.bined.RBinMetrics;
-import com.szadowsz.gui.component.bined.scroll.RBinScrolling;
+import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
+import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
 import com.szadowsz.gui.component.bined.settings.CodeAreaViewMode;
+import com.szadowsz.gui.component.bined.sizing.RBinStructure;
 
 public class RBinVisibility {
 
@@ -61,17 +62,17 @@ public class RBinVisibility {
         return 0;
     }
 
-    public void recomputeCharPositions(RBinMetrics metrics, RBinStructure structure, RBinDimensions dimensions, RBinLayout layout, RBinScrolling scrolling) {
+    public void recomputeCharPositions(RBinMetrics metrics, RBinStructure structure, RBinDimensions dimensions){//, RBinScrolling scrolling) {
         int bytesPerRow = structure.getBytesPerRow();
         int characterWidth = metrics.getCharacterWidth();
         int charsPerByte = structure.getCodeType().getMaxDigitsForByte() + 1;
 
         CodeAreaViewMode viewMode = structure.getViewMode();
 
-        int invisibleFromLeftX = scrolling.getHorizontalScrollX(characterWidth);
-        int invisibleFromRightX = invisibleFromLeftX + dimensions.getDataViewWidth();
+        int invisibleFromLeftX = 0;//scrolling.getHorizontalScrollX(characterWidth);
+        int invisibleFromRightX = Math.round(invisibleFromLeftX + dimensions.getDataViewWidth());
 
-        charactersPerCodeSection = layout.computeFirstCodeCharacterPos(structure, bytesPerRow);
+        charactersPerCodeSection = structure.computeFirstCodeCharacterPos(bytesPerRow);
 
         // Compute first and last visible character of the code area
         if (viewMode != CodeAreaViewMode.TEXT_PREVIEW) {

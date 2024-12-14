@@ -10,7 +10,7 @@ import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.GenericNFSFile;
 import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
 import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
-import com.szadowsz.nds4j.reader.MemBuf;
+import com.szadowsz.binary.io.reader.MemBuf;
 import com.szadowsz.nds4j.utils.Configuration;
 
 import java.awt.*;

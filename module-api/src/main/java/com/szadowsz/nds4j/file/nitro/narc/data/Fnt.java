@@ -19,9 +19,10 @@
 
 package com.szadowsz.nds4j.file.nitro.narc.data;
 
-import com.szadowsz.nds4j.reader.Buffer;
-import com.szadowsz.nds4j.reader.MemBuf;
-import com.szadowsz.nds4j.writer.BinaryWriter;
+
+import com.szadowsz.binary.io.reader.Buffer;
+import com.szadowsz.binary.io.reader.MemBuf;
+import com.szadowsz.binary.io.writer.BinaryWriter;
 
 import java.io.File;
 import java.io.IOException;

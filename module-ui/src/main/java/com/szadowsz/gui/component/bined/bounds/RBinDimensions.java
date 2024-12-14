@@ -1,7 +1,6 @@
 package com.szadowsz.gui.component.bined.bounds;
 
-import com.szadowsz.gui.component.bined.RBinMetrics;
-import com.szadowsz.gui.component.bined.RBinRect;
+import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
 
 public class RBinDimensions {
 
@@ -15,14 +14,14 @@ public class RBinDimensions {
     protected int charactersPerRect;
     protected int charactersPerPage;
 
-    protected int scrollPanelX;
-    protected int scrollPanelY;
+    protected float scrollPanelX;
+    protected float scrollPanelY;
 
-    protected int scrollPanelWidth;
-    protected int scrollPanelHeight;
+    protected float scrollPanelWidth;
+    protected float scrollPanelHeight;
 
-    protected int dataViewWidth;
-    protected int dataViewHeight;
+    protected float dataViewWidth;
+    protected float dataViewHeight;
 
     protected int rowsPerPage;
     protected int rowsPerRect;
@@ -30,11 +29,11 @@ public class RBinDimensions {
     protected int rowPositionAreaWidth;
     protected int headerAreaHeight;
 
-    protected int lastCharOffset;
-    protected int lastRowOffset;
+    protected float lastCharOffset;
+    protected float lastRowOffset;
 
-    protected int verticalScrollBarSize;
-    protected int horizontalScrollBarSize;
+    protected float verticalScrollBarSize;
+    protected float horizontalScrollBarSize;
 
     private int computeCharactersPerRectangle(RBinMetrics metrics) {
         int characterWidth = metrics.getCharacterWidth();
@@ -84,7 +83,7 @@ public class RBinDimensions {
         return headerAreaRectangle;
     }
 
-    public int getHorizontalScrollBarSize() {
+    public float getHorizontalScrollBarSize() {
         return horizontalScrollBarSize;
     }
 
@@ -128,11 +127,11 @@ public class RBinDimensions {
         return scrollPanelY;
     }
 
-    public int getVerticalScrollBarSize() {
+    public float getVerticalScrollBarSize() {
         return verticalScrollBarSize;
     }
 
-    public void recomputeSizes(RBinMetrics metrics, float componentX, float componentY, float componentWidth, float componentHeight, int rowPositionLength, int verticalScrollBarSize, int horizontalScrollBarSize) {
+    public void recomputeSizes(RBinMetrics metrics, float componentX, float componentY, float componentWidth, float componentHeight, int rowPositionLength, float verticalScrollBarSize, float horizontalScrollBarSize) {
         componentRectangle.setBounds(componentX, componentY, componentWidth, componentHeight);
         this.verticalScrollBarSize = verticalScrollBarSize;
         this.horizontalScrollBarSize = horizontalScrollBarSize;

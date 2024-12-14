@@ -18,6 +18,7 @@ package com.szadowsz.gui.component.oldbinary.operation.swing;
 import com.szadowsz.binary.array.ByteArrayData;
 import com.szadowsz.binary.array.ByteArrayEditableData;
 import com.szadowsz.binary.paged.PagedData;
+import com.szadowsz.gui.component.bined.sizing.CharsetStreamTranslator;
 import com.szadowsz.gui.component.oldbinary.*;
 import com.szadowsz.binary.BinaryData;
 import com.szadowsz.gui.component.oldbinary.basic.*;

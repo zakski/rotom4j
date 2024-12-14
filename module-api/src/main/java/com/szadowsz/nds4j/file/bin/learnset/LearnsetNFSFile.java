@@ -3,8 +3,8 @@ package com.szadowsz.nds4j.file.bin.learnset;
 import com.szadowsz.nds4j.file.bin.BinNFSFile;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.bin.learnset.data.LearnsetEntry;
-import com.szadowsz.nds4j.reader.Buffer;
-import com.szadowsz.nds4j.reader.MemBuf;
+import com.szadowsz.binary.io.reader.Buffer;
+import com.szadowsz.binary.io.reader.MemBuf;
 
 import java.io.File;
 import java.util.ArrayList;

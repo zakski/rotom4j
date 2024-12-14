@@ -3,6 +3,7 @@ package com.szadowsz.gui.component.oldbined;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.bined.RBinSelection;
+import com.szadowsz.gui.component.bined.SelectionRange;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.oldbined.basic.BasicCodeAreaSection;
 import com.szadowsz.gui.component.oldbined.basic.CodeAreaScrollPosition;

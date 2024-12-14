@@ -17,7 +17,7 @@
  * along with Nds4j. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.szadowsz.nds4j.reader;
+package com.szadowsz.binary.io.reader;
 
 import java.io.*;
 import java.nio.file.Path;

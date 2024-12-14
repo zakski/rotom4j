@@ -1,9 +1,10 @@
-package com.szadowsz.gui.component.bined.bounds;
+package com.szadowsz.gui.component.bined.complex.bounds;
 
 
 import com.szadowsz.gui.component.bined.settings.CodeAreaViewMode;
 import com.szadowsz.gui.component.bined.settings.CodeType;
 import com.szadowsz.gui.component.bined.settings.RowWrappingMode;
+import com.szadowsz.gui.component.bined.sizing.RBinStructure;
 
 public class RBinLayout {
 
@@ -11,7 +12,7 @@ public class RBinLayout {
     public int computeBytesPerRow(RBinStructure structure, int charactersPerPage) {
         CodeAreaViewMode viewMode = structure.getViewMode();
         CodeType codeType = structure.getCodeType();
-        int maxBytesPerLine = structure.getMaxBytesPerLine();
+        int maxBytesPerLine = structure.getMaxBytesPerRow();
         int wrappingBytesGroupSize = structure.getWrappingBytesGroupSize();
         RowWrappingMode rowWrapping = structure.getRowWrapping();
         int computedBytesPerRow;

@@ -20,6 +20,7 @@ import com.szadowsz.binary.EditableBinaryData;
 import com.szadowsz.binary.array.ByteArrayData;
 import com.szadowsz.binary.array.ByteArrayEditableData;
 import com.szadowsz.binary.paged.PagedData;
+import com.szadowsz.gui.component.bined.SelectionRange;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.oldbined.*;
 import com.szadowsz.gui.component.oldbined.CodeAreaSection;

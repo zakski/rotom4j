@@ -17,7 +17,7 @@
  * along with Nds4j. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.szadowsz.nds4j.writer;
+package com.szadowsz.binary.io.writer;
 
 import java.io.File;
 import java.io.IOException;

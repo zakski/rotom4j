@@ -1,28 +1,33 @@
 package com.szadowsz.gui.component.bined;
 
-import com.szadowsz.binary.BinaryData;
-import com.szadowsz.binary.EmptyBinaryData;
+import com.szadowsz.binary.io.reader.Buffer;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.bined.caret.RCaret;
+import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
 import com.szadowsz.gui.component.bined.caret.RCaretPos;
-import com.szadowsz.gui.component.bined.scroll.RBinScrollPos;
+import com.szadowsz.gui.component.bined.caret.RCaret;
+import com.szadowsz.gui.component.bined.complex.scroll.RBinScrollPos;
 import com.szadowsz.gui.component.bined.settings.*;
-import com.szadowsz.gui.component.bined.utils.RBinUtils;
+import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
+import com.szadowsz.gui.component.bined.sizing.RBinStructure;
 import com.szadowsz.gui.component.group.RGroup;
-import com.szadowsz.gui.component.oldbinary.CodeAreaSelection;
+import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
 import com.szadowsz.gui.config.text.RFontStore;
+import com.szadowsz.gui.layout.RLayoutBase;
+import com.szadowsz.nds4j.file.bin.core.BinaryData;
+import com.szadowsz.nds4j.file.bin.core.ByteArrayData;
+import com.szadowsz.nds4j.file.bin.core.EmptyBinaryData;
+import processing.core.PConstants;
 import processing.core.PFont;
 import processing.core.PGraphics;
+import processing.core.PVector;
 
 import java.nio.charset.Charset;
-import java.util.Optional;
 
-/**
- * Binary data viewer/editor component.
- */
-public class RBinEditor extends RComponent {
+public class RBinEditor extends RGroupDrawable {
+
+    protected static final String HEADER = "header";
 
     // The Data
     protected BinaryData contentData = EmptyBinaryData.INSTANCE;
@@ -32,9 +37,6 @@ public class RBinEditor extends RComponent {
     protected AntialiasingMode antialiasingMode = AntialiasingMode.AUTO;
     protected BackgroundPaintMode backgroundPaintMode = BackgroundPaintMode.STRIPED;
 
-    // Display
-    protected RBinDraw display;
-
     // Character Config
     protected Charset charset = Charset.forName(RFontStore.DEFAULT_ENCODING);
     protected CodeCharactersCase codeCharactersCase = CodeCharactersCase.UPPER;
@@ -42,28 +44,45 @@ public class RBinEditor extends RComponent {
     protected PFont codeFont;
 
     // Row Layout Config
-    protected int maxBytesPerRow = 16;
-    protected int minRowPositionLength = 0;
-    protected int maxRowPositionLength = 0;
-    protected int wrappingBytesGroupSize = 0;
     protected RowWrappingMode rowWrapping = RowWrappingMode.NO_WRAPPING;
+    protected int rowPositionLength;
+    protected int minRowPositionLength;
+    protected int maxRowPositionLength;
+    protected int maxBytesPerRow = 16;
+    protected int wrappingBytesGroupSize = 0;
 
-    // Scrollbar Config
+    // Edit Op
+    protected EditMode editMode = EditMode.EXPANDING;
+    protected EditOperation editOperation = EditOperation.OVERWRITE;
+
+
+    protected final RBinDimensions dimensions = new RBinDimensions();
+    protected final RBinMetrics metrics = new RBinMetrics();
+    protected final RBinStructure structure = new RBinStructure();
+    protected final RBinVisibility visibility = new RBinVisibility();
+
+    protected RComponentScrollbar horizontalScrollBar = new RComponentScrollbar(this,new PVector(),new PVector(),0,0);
+    protected RComponentScrollbar verticalScrollBar = new RComponentScrollbar(this,new PVector(),new PVector(),0,0);
     protected final RBinScrollPos scrollPosition = new RBinScrollPos();
     protected ScrollBarVisibility verticalScrollBarVisibility = ScrollBarVisibility.IF_NEEDED;
     protected VerticalScrollUnit verticalScrollUnit = VerticalScrollUnit.ROW;
     protected ScrollBarVisibility horizontalScrollBarVisibility = ScrollBarVisibility.IF_NEEDED;
     protected HorizontalScrollUnit horizontalScrollUnit = HorizontalScrollUnit.PIXEL;
 
-    // Edit Op
-    protected EditMode editMode = EditMode.EXPANDING;
-    protected EditOperation editOperation = EditOperation.OVERWRITE;
+    protected RowDataCache rowDataCache = null;
+    //protected CursorDataCache cursorDataCache = null;
 
     // Cursor Caret
     protected RCaret caret;
     protected boolean showMirrorCursor = true;
 
     protected final RBinSelection selection = new RBinSelection();
+
+    protected volatile boolean initialized = false;
+    protected volatile boolean layoutChanged = true;
+    protected volatile boolean fontChanged = false;
+    protected volatile boolean resetColors = true;
+    protected volatile boolean caretChanged = true;
 
     /**
      * Default Constructor
@@ -73,49 +92,151 @@ public class RBinEditor extends RComponent {
      * @param gui    the gui for the window that the component is drawn under
      * @param path   the path in the component tree
      * @param parent the parent component reference
+     * @param filePath
      */
-    protected RBinEditor(RotomGui gui, String path, RGroup parent) {
+    public RBinEditor(RotomGui gui, String path, RGroup parent, String filePath) {
         super(gui, path, parent);
-        init();
+
+        byte[] data = Buffer.readFile(filePath);
+        contentData = new ByteArrayData(data);
+
+        children.add(new RBinHeader(gui, path + "/" + HEADER,this));
     }
 
-    private void init() {
-        caret = new RCaret(this);
-        caret.setSection(CodeAreaSection.CODE_MATRIX);
+    protected float getHorizontalScrollBarHeight() {
+        return horizontalScrollBar.isVisible() ? horizontalScrollBar.getHeight() : 0;
     }
 
-    private void reset() {
-        // TODO
+    protected float getVerticalScrollBarWidth() {
+        return verticalScrollBar.isVisible() ? verticalScrollBar.getWidth() : 0;
     }
 
-    private void redraw() {
-        // TODO
+    protected void computeLayout() {
+        int charactersPerPage = dimensions.getCharactersPerPage();
+        structure.updateCache(this, charactersPerPage);
+//        int rowsPerPage = dimensions.getRowsPerPage();
+//        long rowsPerDocument = structure.getRowsPerDocument();
+//        int charactersPerRow = structure.getCharactersPerRow();
+
+        updateScrollBars();
+
+        layoutChanged = false;
     }
 
-    public void validateCaret() {
-        boolean moved = false;
-        if (caret.getDataPosition() > getDataSize()) {
-            caret.setDataPosition(getDataSize());
-            moved = true;
+    protected int recomputeRowPositionLength() {
+        if (minRowPositionLength > 0 && minRowPositionLength == maxRowPositionLength) {
+            return minRowPositionLength;
         }
-        if (caret.getSection() == CodeAreaSection.CODE_MATRIX && caret.getCodeOffset() >= codeType.getMaxDigitsForByte()) {
-            caret.setCodeOffset(codeType.getMaxDigitsForByte() - 1);
-            moved = true;
+
+        long dataSize = getDataSize();
+        if (dataSize == 0) {
+            return 1;
         }
 
-        if (moved) {
-            // TODO
+        double natLog = Math.log(dataSize == Long.MAX_VALUE ? dataSize : dataSize + 1);
+        int positionLength = (int) Math.ceil(natLog / PositionCodeType.HEXADECIMAL.getBaseLog());
+        if (minRowPositionLength > 0 && positionLength < minRowPositionLength) {
+            positionLength = minRowPositionLength;
         }
+        if (maxRowPositionLength > 0 && positionLength > maxRowPositionLength) {
+            positionLength = maxRowPositionLength;
+        }
+
+        return positionLength == 0 ? 1 : positionLength;
     }
 
-    @Override
-    protected void drawBackground(PGraphics pg) {
-        // TODO
+    protected long recomputeRows(){
+        return contentData.getDataSize()/maxBytesPerRow + ((contentData.getDataSize()%maxBytesPerRow>0)?1:0);
+    }
+
+    protected void recomputeDimensions() {
+        float verticalScrollBarSize = getVerticalScrollBarWidth();
+        float horizontalScrollBarSize = getHorizontalScrollBarHeight();
+        float componentWidth = metrics.getCharacterWidth()*maxBytesPerRow*PositionCodeType.HEXADECIMAL.getMaxDigitsForByte() + verticalScrollBarSize; // TODO
+        float componentHeight = metrics.getRowHeight()*recomputeRows() + horizontalScrollBarSize; // TODO
+        dimensions.recomputeSizes(metrics, 0, 0, componentWidth, componentHeight, rowPositionLength, verticalScrollBarSize, horizontalScrollBarSize);
+    }
+
+    protected void recomputeLayout() {
+        rowPositionLength = recomputeRowPositionLength();
+        recomputeDimensions();
+
+        int charactersPerPage = dimensions.getCharactersPerPage();
+        structure.updateCache(this, charactersPerPage);
+
+//        int rowsPerPage = dimensions.getRowsPerPage();
+//        long rowsPerDocument = structure.getRowsPerDocument();
+//        int charactersPerRow = structure.getCharactersPerRow();
+
+//        if (metrics.isInitialized()) {
+//            scrolling.updateMaximumScrollPosition(rowsPerDocument, rowsPerPage, charactersPerRow, charactersPerPage, dimensions.getLastCharOffset(), dimensions.getLastRowOffset());
+//        }
+
+        updateScrollBars();
+
+        layoutChanged = false;
+    }
+
+
+
+    protected void init(PGraphics pg) {
+        PGraphics fontGraphics = gui.getSketch().createGraphics(800, 600, PConstants.JAVA2D);
+        fontGraphics.beginDraw();
+        fontGraphics.endDraw();
+        metrics.recomputeMetrics(fontGraphics, RFontStore.getMainFont(),charset); // get Font Character sizes
+
+        // we have the maximum of bytes per row, so at this stage we should work out the width we ideally should have to play with
+        // contentData.getDataSize()
+        // structure.getBytesPerRow() vs maxBytesPerRow
+        // long numRows = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow>0?1:0);
+        int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
+        int digitsForByte = codeType.getMaxDigitsForByte(); // Get the number of characters for a byte
+        float width = digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
+
+        long rowsInData = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow > 0 ? 1 : 0);
+        float height = metrics.getRowHeight()*rowsInData;
+
+        float verticalScrollBarWidth = getVerticalScrollBarWidth();
+        float horizontalScrollBarHeight = getHorizontalScrollBarHeight();
+
+        dimensions.recomputeSizes(metrics, 0, 0, width, height, rowPositionLength, verticalScrollBarWidth, horizontalScrollBarHeight);
+
+        int charactersPerPage = dimensions.getCharactersPerPage();
+        structure.updateCache(this, charactersPerPage);
+
+        rowPositionLength = recomputeRowPositionLength();
+        computeLayout(); // use the sizes to figure out the width
+        updateRowDataCache();
+    }
+
+    /**
+     * Draw Child Component
+     *
+     * @param pg    Processing Graphics Context
+     * @param child draw
+     */
+    protected void drawChildComponent(PGraphics pg, RComponent child) {
+        pg.pushMatrix();
+        pg.pushStyle();
+        child.draw(pg);
+        pg.popStyle();
+        pg.popMatrix();
     }
 
     @Override
     protected void drawForeground(PGraphics pg, String name) {
-        // TODO
+        if (!isInitialized()){
+            init(pg);
+        }
+        for (RComponent component : children) {
+            if (!component.isVisible()) {
+                continue;
+            }
+            pg.pushMatrix();
+            pg.translate(component.getRelPosX(), component.getRelPosY());
+            drawChildComponent(pg, component);
+            pg.popMatrix();
+        }
     }
 
     /**
@@ -199,6 +320,10 @@ public class RBinEditor extends RComponent {
         return codeType;
     }
 
+    public CodeCharactersCase getCodeCharacterCase(){
+        return codeCharactersCase;
+    }
+
     /**
      * Returns current caret data position.
      *
@@ -217,6 +342,10 @@ public class RBinEditor extends RComponent {
         return contentData.getDataSize();
     }
 
+    RBinDimensions getDimensions() {
+        return dimensions;
+    }
+
     /**
      * Returns edit mode.
      *
@@ -224,75 +353,6 @@ public class RBinEditor extends RComponent {
      */
     public EditMode getEditMode() {
         return editMode;
-    }
-
-    /**
-     * Returns currently active operation as set or enforced by current edit
-     * mode.
-     *
-     * @return active edit operation
-     */
-    public EditOperation getActiveOperation() {
-        switch (editMode) {
-            case READ_ONLY:
-                return EditOperation.INSERT;
-            case INPLACE:
-                return EditOperation.OVERWRITE;
-            case CAPPED:
-            case EXPANDING:
-                return editOperation;
-            default:
-                throw RBinUtils.getInvalidTypeException(editMode);
-        }
-    }
-
-    /**
-     * Returns antialiasing mode for text painting.
-     *
-     * @return antialiasing mode
-     */
-    public AntialiasingMode getAntialiasingMode() {
-        return antialiasingMode;
-    }
-
-    /**
-     * Returns current background paint mode.
-     *
-     * @return background paint mode
-     */
-    public BackgroundPaintMode getBackgroundPaintMode() {
-        return backgroundPaintMode;
-    }
-
-    /**
-     * Returns currently enforced edit operation.
-     *
-     * @return edit operation
-     */
-    public EditOperation getEditOperation() {
-        return editOperation;
-    }
-
-    /**
-     * Returns horizontal scrollbar visibility mode.
-     *
-     * @return scrollbar visibility mode
-     */
-    public ScrollBarVisibility getHorizontalScrollBarVisibility() {
-        return horizontalScrollBarVisibility;
-    }
-
-    /**
-     * Returns horizontal scrolling unit.
-     *
-     * @return horizontal scrolling unit
-     */
-    public HorizontalScrollUnit getHorizontalScrollUnit() {
-        return horizontalScrollUnit;
-    }
-
-    public RComponentScrollbar getHorizontalScrollBar() {
-        return null; // TODO
     }
 
     /**
@@ -304,26 +364,13 @@ public class RBinEditor extends RComponent {
         return maxBytesPerRow;
     }
 
-    /**
-     * Returns maximum length of position section of the code area.
-     *
-     * @return maximum length
-     */
-    public int getMaxRowPositionLength() {
-        return maxRowPositionLength;
+
+    RBinMetrics getMetrics() {
+        return metrics;
     }
 
-    /**
-     * Returns minimum length of position section of the code area.
-     *
-     * @return minimum length
-     */
-    public int getMinRowPositionLength() {
-        return minRowPositionLength;
-    }
-
-    public RBinDraw getPainter() {
-        return display;
+    public RowDataCache getRowDataCache(){
+        return rowDataCache;
     }
 
     /**
@@ -335,44 +382,14 @@ public class RBinEditor extends RComponent {
         return rowWrapping;
     }
 
-    /**
-     * Returns current scrolling position.
-     *
-     * @return scroll position
-     */
-    public RBinScrollPos getScrollPosition() {
+
+    public RBinScrollPos getScrollPos() {
         return scrollPosition;
     }
 
-    /**
-     * Returns selection handler.
-     *
-     * @return code area selection handler
-     */
-    public RBinSelection getSelectionHandler() {
-        return selection;
-    }
 
-    /**
-     * Returns vertical scrollbar visibility mode.
-     *
-     * @return scrollbar visibility mode
-     */
-    public ScrollBarVisibility getVerticalScrollBarVisibility() {
-        return verticalScrollBarVisibility;
-    }
-
-    /**
-     * Returns vertical scrolling unit.
-     *
-     * @return vertical scrolling unit
-     */
-    public VerticalScrollUnit getVerticalScrollUnit() {
-        return verticalScrollUnit;
-    }
-
-    public RComponentScrollbar getVerticalScrollBar() {
-        return null; // TODO
+    public RBinStructure getStructure() {
+        return structure;
     }
 
     /**
@@ -384,6 +401,10 @@ public class RBinEditor extends RComponent {
         return viewMode;
     }
 
+    public RBinVisibility getVisibility(){
+        return visibility;
+    }
+
     /**
      * Returns size of the byte group.
      *
@@ -393,298 +414,44 @@ public class RBinEditor extends RComponent {
         return wrappingBytesGroupSize;
     }
 
-    public boolean isEditable() {
-        return editMode != EditMode.READ_ONLY;
+    public boolean isInitialized(){
+        return initialized;
     }
 
-    public boolean isInitialized() {
-        return display.isInitialized();
-    }
+    @Override
+    public void setLayout(RLayoutBase layout) {
 
-    /**
-     * Returns if cursor should be visible in other sections.
-     *
-     * @return true if cursor should be mirrored
-     */
-    public boolean isShowMirrorCursor() {
-        return showMirrorCursor;
-    }
-
-    /**
-     * Sets current caret position to given position.
-     *
-     * @param caretPosition caret position
-     */
-    public void setActiveCaretPosition(RCaretPos caretPosition) {
-        caret.setCaretPosition(caretPosition);
-    }
-
-    /**
-     * Sets current caret position to given data position.
-     *
-     * @param dataPosition data position
-     */
-    public void setActiveCaretPosition(long dataPosition) {
-        caret.setCaretPosition(dataPosition);
-    }
-
-    /**
-     * Sets current caret position to given data position and offset.
-     *
-     * @param dataPosition data position
-     * @param codeOffset code offset
-     */
-    public void setActiveCaretPosition(long dataPosition, int codeOffset) {
-        caret.setCaretPosition(dataPosition, codeOffset);
-    }
-
-    /**
-     * Sets charset to use for characters decoding.
-     *
-     * @param charset charset
-     */
-    public void setCharset(Charset charset) {
-        this.charset = RBinUtils.requireNonNull(charset);
-        reset();
-    }
-
-    /**
-     * Sets current code characters case.
-     *
-     * @param codeCharactersCase code characters case
-     */
-    public void setCodeCharactersCase(CodeCharactersCase codeCharactersCase) {
-        this.codeCharactersCase = codeCharactersCase;
-        redraw();
-    }
-
-    /**
-     * Sets font used for text painting.
-     *
-     * @param codeFont font
-     */
-    public void setCodeFont(PFont codeFont) {
-        this.codeFont = codeFont;
-        reset();
-    }
-
-    /**
-     * Sets current code type.
-     *
-     * @param codeType code type
-     */
-    public void setCodeType(CodeType codeType) {
-        this.codeType = codeType;
-        validateCaret();
-        reset();
-    }
-
-    /**
-     * Sets edit mode.
-     *
-     * @param editMode edit mode
-     */
-    public void setEditMode(EditMode editMode) {
-        boolean changed = editMode != this.editMode;
-        this.editMode = editMode;
-        if (changed) {
-            caret.resetBlink();
-            redraw();
-        }
-    }
-
-    /**
-     * Sets currently enforced edit operation.
-     *
-     * @param editOperation edit operation
-     */
-    public void setEditOperation(EditOperation editOperation) {
-        EditOperation previousOperation = getActiveOperation();
-        this.editOperation = editOperation;
-        EditOperation currentOperation = getActiveOperation();
-        boolean changed = previousOperation != currentOperation;
-        if (changed) {
-            caret.resetBlink();
-            redraw();
-        }
-    }
-
-    /**
-     * Sets horizotal scrollbar visibility mode.
-     *
-     * @param horizontalScrollBarVisibility scrollbar visibility mode
-     */
-    public void setHorizontalScrollBarVisibility(ScrollBarVisibility horizontalScrollBarVisibility) {
-        this.horizontalScrollBarVisibility = horizontalScrollBarVisibility;
-        redraw();
-        updateScrollBars();
-    }
-
-    /**
-     * Sets horizontal scrolling unit.
-     *
-     * @param horizontalScrollUnit horizontal scrolling unit
-     */
-    public void setHorizontalScrollUnit(HorizontalScrollUnit horizontalScrollUnit) {
-        this.horizontalScrollUnit = horizontalScrollUnit;
-        int charPosition = scrollPosition.getCharPosition();
-        if (horizontalScrollUnit == HorizontalScrollUnit.CHARACTER) {
-            scrollPosition.setCharOffset(0);
-        }
-        redraw();
-        scrollPosition.setCharPosition(charPosition);
-        updateScrollBars();
-    }
-
-    /**
-     * Sets maximum number of bytes per row.
-     *
-     * @param maxBytesPerRow bytes per row
-     */
-    public void setMaxBytesPerRow(int maxBytesPerRow) {
-        this.maxBytesPerRow = maxBytesPerRow;
-        redraw();
-    }
-
-
-    /**
-     * Sets maximum length of position section of the code area.
-     *
-     * @param maxRowPositionLength maximum length
-     */
-    public void setMaxRowPositionLength(int maxRowPositionLength) {
-        this.maxRowPositionLength = maxRowPositionLength;
-        redraw();
-    }
-
-    /**
-     * Sets minimum length of position section of the code area.
-     *
-     * @param minRowPositionLength minimum length
-     */
-    public void setMinRowPositionLength(int minRowPositionLength) {
-        this.minRowPositionLength = minRowPositionLength;
-        redraw();
-    }
-
-    /**
-     * Sets row wrapping mode.
-     *
-     * @param rowWrapping row wrapping mode
-     */
-    public void setRowWrapping(RowWrappingMode rowWrapping) {
-        this.rowWrapping = rowWrapping;
-        redraw();
-    }
-
-    /**
-     * Sets current scrolling position.
-     *
-     * @param scrollPosition scrolling position
-     */
-    public void setScrollPosition(RBinScrollPos scrollPosition) {
-        if (!scrollPosition.equals(this.scrollPosition)) {
-            this.scrollPosition.setScrollPosition(scrollPosition);
-            display.scrollPositionModified();
-            updateScrollBars();
-        }
-    }
-
-    /**
-     * Sets if cursor should be visible in other sections.
-     *
-     * @param showMirrorCursor true if cursor should be mirrored
-     */
-    public void setShowMirrorCursor(boolean showMirrorCursor) {
-        this.showMirrorCursor = showMirrorCursor;
-        reset();
-    }
-
-    /**
-     * Sets vertical scrollbar visibility mode.
-     *
-     * @param verticalScrollBarVisibility scrollbar visibility mode
-     */
-    public void setVerticalScrollBarVisibility(ScrollBarVisibility verticalScrollBarVisibility) {
-        this.verticalScrollBarVisibility = verticalScrollBarVisibility;
-        reset();
-        updateScrollBars();
-    }
-
-    public void setVerticalScrollUnit(VerticalScrollUnit verticalScrollUnit) {
-        this.verticalScrollUnit = verticalScrollUnit;
-        long rowPosition = scrollPosition.getRowPosition();
-        if (verticalScrollUnit == VerticalScrollUnit.ROW) {
-            scrollPosition.setRowOffset(0);
-        }
-        reset();
-        scrollPosition.setRowPosition(rowPosition);
-        updateScrollBars();
-    }
-
-    /**
-     * Sets current view mode.
-     *
-     * @param viewMode view mode
-     */
-    public void setViewMode(CodeAreaViewMode viewMode) {
-        if (viewMode != this.viewMode) {
-            this.viewMode = viewMode;
-            switch (viewMode) {
-                case CODE_MATRIX:
-                    caret.setSection(CodeAreaSection.CODE_MATRIX);
-                    reset();
-                    break;
-
-                case TEXT_PREVIEW:
-                    caret.setSection(CodeAreaSection.TEXT_PREVIEW);
-                    reset();
-                    break;
-                default:
-                    reset();
-                    break;
-            }
-        }
-    }
-
-    /**
-     * Sets size of the byte group.
-     *
-     * @param groupSize size of the byte group
-     */
-    public void setWrappingBytesGroupSize(int groupSize) {
-        wrappingBytesGroupSize = groupSize;
-        redraw();
-    }
-
-    /**
-     * Reveals scrolling area for given caret position.
-     *
-     * @param caretPosition caret position
-     */
-    public void revealPosition(RCaretPos caretPosition) {
-        if (!isInitialized()) {
-            // Silently ignore if painter is not yet initialized
-            return;
-        }
-
-        Optional<RBinScrollPos> revealScrollPosition = display.computeRevealScrollPosition(caretPosition);
-        revealScrollPosition.ifPresent(this::setScrollPosition);
-    }
-
-    /**
-     * Reveals scrolling area for current cursor position.
-     */
-    public void revealCursor() {
-        revealPosition(caret.getCaretPosition());
     }
 
     @Override
     public float suggestWidth() {
-        return 0; // TODO
+        int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
+        int digitsForByte = codeType.getMaxDigitsForByte(); // Get the number of characters for a byte
+        return digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
     }
 
-    public void updateScrollBars() {
+    public void updateScrollBars(){
+        //verticalScrollBar
+        //horizontalScrollBar
+    }
 
+    protected void updateRowDataCache() {
+        if (rowDataCache == null) {
+            rowDataCache = new RowDataCache();
+        }
+
+        rowDataCache.headerChars = new char[visibility.getCharactersPerCodeSection()];
+        rowDataCache.rowData = new byte[structure.getBytesPerRow() + metrics.getMaxBytesPerChar() - 1];
+        rowDataCache.rowPositionCode = new char[rowPositionLength];
+        rowDataCache.rowCharacters = new char[structure.getCharactersPerRow()];
+    }
+
+
+    public static class RowDataCache {
+
+        char[] headerChars;
+        byte[] rowData;
+        char[] rowPositionCode;
+        char[] rowCharacters;
     }
 }

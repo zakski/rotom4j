@@ -2,7 +2,6 @@ package com.szadowsz.gui.component.bined.caret;
 
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.bined.settings.CodeAreaSection;
-import com.szadowsz.gui.component.oldbinary.swing.basic.DefaultCodeAreaCaret;
 import processing.core.PGraphics;
 import processing.core.PVector;
 

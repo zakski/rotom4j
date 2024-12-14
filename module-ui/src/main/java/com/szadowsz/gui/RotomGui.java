@@ -5,6 +5,7 @@ import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.RComponentTree;
 import com.szadowsz.gui.component.RPaths;
 import com.szadowsz.gui.component.action.RButton;
+import com.szadowsz.gui.component.bined.RBinEditor;
 import com.szadowsz.gui.component.oldbined.RBinedArea;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
@@ -523,15 +524,15 @@ public class RotomGui {
         return component;
     }
 
-    public RBinedArea code(String path) {
+    public RBinEditor code(String path, String filePath) {
         String fullPath = getCurrentPath() + path;
         if (tree.isPathTakenByUnexpectedType(fullPath, RTextField.class)) {
             return null;
         }
-        RBinedArea component = (RBinedArea) tree.getComponent(fullPath);
+        RBinEditor component = (RBinEditor) tree.getComponent(fullPath);
         if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            component = new RBinedArea(this, fullPath, folder);
+            component = new RBinEditor(this, fullPath, folder, filePath);
             tree.insertAtPath(component);
         }
         return component;

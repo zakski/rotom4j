@@ -13,8 +13,8 @@ import com.szadowsz.nds4j.file.nitro.ncer.NCER;
 import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
 import com.szadowsz.nds4j.file.nitro.nscr.NSCR;
-import com.szadowsz.nds4j.reader.Buffer;
-import com.szadowsz.nds4j.reader.HexInputStream;
+import com.szadowsz.binary.io.reader.Buffer;
+import com.szadowsz.binary.io.reader.HexInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

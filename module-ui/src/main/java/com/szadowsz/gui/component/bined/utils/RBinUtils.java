@@ -34,6 +34,7 @@ public class RBinUtils {
     }
 
     public static boolean areSameColors(Color color, Color renderColor) {
+        return false;
     }
 
     public static void longToBaseCode(char[] headerChars, int codePos, long index, int base, int i, boolean b, CodeCharactersCase codeCharactersCase) {

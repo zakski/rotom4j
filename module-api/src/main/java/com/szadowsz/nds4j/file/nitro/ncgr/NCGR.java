@@ -12,7 +12,7 @@ import com.szadowsz.nds4j.file.nitro.ncer.cells.CellInfo;
 import com.szadowsz.nds4j.exception.InvalidFileException;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.nitro.ncer.NCER;
-import com.szadowsz.nds4j.reader.MemBuf;
+import com.szadowsz.binary.io.reader.MemBuf;
 import com.szadowsz.nds4j.utils.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

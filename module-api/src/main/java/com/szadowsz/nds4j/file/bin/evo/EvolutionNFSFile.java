@@ -5,8 +5,8 @@ import com.szadowsz.nds4j.ref.PokeDex;
 import com.szadowsz.nds4j.file.bin.BinNFSFile;
 import com.szadowsz.nds4j.file.bin.evo.data.EvoMethod;
 import com.szadowsz.nds4j.file.bin.evo.data.Evolution;
-import com.szadowsz.nds4j.reader.Buffer;
-import com.szadowsz.nds4j.reader.MemBuf;
+import com.szadowsz.binary.io.reader.Buffer;
+import com.szadowsz.binary.io.reader.MemBuf;
 import com.szadowsz.nds4j.exception.NitroException;
 
 import java.io.File;

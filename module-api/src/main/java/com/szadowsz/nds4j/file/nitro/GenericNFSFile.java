@@ -7,8 +7,8 @@ import com.szadowsz.nds4j.file.nitro.data.Endianness;
 import com.szadowsz.nds4j.exception.InvalidDataException;
 import com.szadowsz.nds4j.exception.NitroException;
 import com.szadowsz.nds4j.file.BaseNFSFile;
-import com.szadowsz.nds4j.reader.HexInputStream;
-import com.szadowsz.nds4j.reader.MemBuf;
+import com.szadowsz.binary.io.reader.HexInputStream;
+import com.szadowsz.binary.io.reader.MemBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

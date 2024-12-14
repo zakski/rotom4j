@@ -16,7 +16,7 @@
  */
 package com.szadowsz.gui.component.oldbined.swing;
 
-import com.szadowsz.gui.component.oldbinary.CharsetStreamTranslator;
+import com.szadowsz.gui.component.bined.sizing.CharsetStreamTranslator;
 
 import java.awt.*;
 import java.nio.charset.Charset;

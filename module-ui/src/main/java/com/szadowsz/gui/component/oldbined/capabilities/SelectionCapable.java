@@ -16,7 +16,7 @@
 package com.szadowsz.gui.component.oldbined.capabilities;
 
 import com.szadowsz.gui.component.bined.RBinSelection;
-import com.szadowsz.gui.component.oldbined.SelectionRange;
+import com.szadowsz.gui.component.bined.SelectionRange;
 import com.szadowsz.gui.component.oldbined.listeners.SelectionChangedListener;
 
 /**

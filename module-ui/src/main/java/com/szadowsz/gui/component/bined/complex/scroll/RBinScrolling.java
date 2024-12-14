@@ -1,6 +1,6 @@
-package com.szadowsz.gui.component.bined.scroll;
+package com.szadowsz.gui.component.bined.complex.scroll;
 
-import com.szadowsz.gui.component.bined.RBinEditor;
+import com.szadowsz.gui.component.bined.complex.RBinEditor;
 import com.szadowsz.gui.component.bined.settings.HorizontalScrollUnit;
 import com.szadowsz.gui.component.bined.settings.PositionScrollVisibility;
 import com.szadowsz.gui.component.bined.settings.ScrollBarVisibility;
@@ -139,14 +139,15 @@ public class RBinScrolling {
         lastVerticalScrollingValue = -1;
     }
 
-    public Optional<RBinScrollPos> computeRevealScrollPosition(long rowPosition, int charsPosition, int bytesPerRow, int rowsPerPage, int charsPerPage, int charOffset, int rowOffset, int characterWidth, int rowHeight) {
+    public Optional<RBinScrollPos> computeRevealScrollPosition(long rowPosition, int charsPosition, int bytesPerRow, int rowsPerPage, int charsPerPage, float charOffset, float rowOffset, int characterWidth, int rowHeight) {
         return null;
     }
 
-    public void updateCache(RBinEditor editor, int horizontalScrollBarSize, int verticalScrollBarSize) {
+    public void updateCache(RBinEditor editor, float horizontalScrollBarSize, float verticalScrollBarSize) {
     }
 
     public RBinScrollPos getScrollPosition() {
+        return null;
     }
 
     public void updateMaximumScrollPosition(long rowsPerDocument, int rowsPerPage, int charactersPerRow, int charactersPerPage, Object lastCharOffset, Object lastRowOffset) {

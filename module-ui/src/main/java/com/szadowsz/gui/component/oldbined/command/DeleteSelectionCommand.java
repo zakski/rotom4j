@@ -17,7 +17,7 @@ package com.szadowsz.gui.component.oldbined.command;
 
 
 import com.szadowsz.gui.component.oldbined.RBinedAreaCore;
-import com.szadowsz.gui.component.oldbined.SelectionRange;
+import com.szadowsz.gui.component.bined.SelectionRange;
 import com.szadowsz.gui.component.oldbined.capabilities.CaretCapable;
 import com.szadowsz.gui.component.oldbined.capabilities.ScrollingCapable;
 import com.szadowsz.gui.component.oldbined.capabilities.SelectionCapable;

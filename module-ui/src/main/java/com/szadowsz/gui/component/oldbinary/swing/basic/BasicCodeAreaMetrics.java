@@ -19,7 +19,7 @@ import java.awt.FontMetrics;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.Optional;
-import com.szadowsz.gui.component.oldbinary.CharsetStreamTranslator;
+import com.szadowsz.gui.component.bined.sizing.CharsetStreamTranslator;
 
 /**
  * Basic code area component dimensions.
