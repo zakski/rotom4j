@@ -1,36 +1,23 @@
 package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
 import com.szadowsz.gui.component.bined.bounds.RBinRect;
-import com.szadowsz.gui.component.bined.complex.scroll.RBinScrollPos;
 import com.szadowsz.gui.component.bined.settings.CodeAreaViewMode;
 import com.szadowsz.gui.component.bined.settings.CodeCharactersCase;
 import com.szadowsz.gui.component.bined.settings.CodeType;
-import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
-import com.szadowsz.gui.component.bined.sizing.RBinStructure;
 import com.szadowsz.gui.component.bined.utils.RBinUtils;
-import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
-import processing.core.PFont;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 
 import java.awt.*;
 import java.util.Arrays;
 
-public class RBinHeader extends RComponent {
+public class RBinHeader extends RBinComponent {
 
-    protected RBinEditor editor;
-
-    protected final RBinDimensions dimensions;
-    protected final RBinMetrics metrics;
-    protected final RBinStructure structure;
-    protected final RBinVisibility visibility;
-    protected final RBinScrollPos scrollPosition;
-
-    protected PFont font;
+    private static Logger LOGGER = LoggerFactory.getLogger(RBinHeader.class);
 
     /**
      * Default Constructor
@@ -43,13 +30,6 @@ public class RBinHeader extends RComponent {
      */
     protected RBinHeader(RotomGui gui, String path, RBinEditor editor) {
         super(gui, path, editor);
-        this.editor = editor;
-        dimensions = editor.getDimensions();
-        metrics = editor.getMetrics();
-        structure = editor.getStructure();
-        visibility = editor.getVisibility();
-        scrollPosition = editor.getScrollPos();
-        font = RFontStore.getMainFont();
     }
 
 //    protected void paintHeader(PGraphics g) {
@@ -139,63 +119,6 @@ public class RBinHeader extends RComponent {
 ////        g.setClip(clipBounds);
 //    }
 
-    protected void drawShiftedChars(PGraphics pg, char[] drawnChars, int charOffset, int length, float positionX, float positionY) {
-        pg.text(drawnChars, charOffset, length, positionX, positionY);
-    }
-    /**
-     * Draws characters centering it to cells of the same width.
-     *
-     * @param pg graphics
-     * @param drawnChars array of chars
-     * @param charOffset index of target character in array
-     * @param length number of characters to draw
-     * @param cellWidth width of cell to center into
-     * @param positionX X position of drawing area start
-     * @param positionY Y position of drawing area start
-     */
-    protected void drawCenteredChars(PGraphics pg, char[] drawnChars, int charOffset, int length, int cellWidth, float positionX, float positionY) {
-        int pos = 0;
-        int group = 0;
-        while (pos < length) {
-            char drawnChar = drawnChars[charOffset + pos];
-            int charWidth = metrics.getCharWidth(drawnChar);
-
-            boolean groupable;
-            if (metrics.hasUniformLineMetrics()) {
-                groupable = charWidth == cellWidth;
-            } else {
-                int charsWidth = metrics.getCharsWidth(drawnChars, charOffset + pos - group, group + 1);
-                groupable = charsWidth == cellWidth * (group + 1);
-            }
-
-            switch (Character.getDirectionality(drawnChar)) {
-                case Character.DIRECTIONALITY_UNDEFINED:
-                case Character.DIRECTIONALITY_RIGHT_TO_LEFT:
-                case Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC:
-                case Character.DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING:
-                case Character.DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE:
-                case Character.DIRECTIONALITY_POP_DIRECTIONAL_FORMAT:
-                case Character.DIRECTIONALITY_BOUNDARY_NEUTRAL:
-                case Character.DIRECTIONALITY_OTHER_NEUTRALS:
-                    groupable = false;
-            }
-
-            if (groupable) {
-                group++;
-            } else {
-                if (group > 0) {
-                    drawShiftedChars(pg, drawnChars, charOffset + pos - group, group, positionX + (pos - group) * cellWidth, positionY);
-                    group = 0;
-                }
-                drawShiftedChars(pg, drawnChars, charOffset + pos, 1, positionX + pos * cellWidth + ((cellWidth - charWidth) / 2), positionY);
-            }
-            pos++;
-        }
-        if (group > 0) {
-            drawShiftedChars(pg, drawnChars, charOffset + pos - group, group, positionX + (pos - group) * cellWidth, positionY);
-        }
-    }
-
     @Override
     protected void drawBackground(PGraphics pg) {
 
@@ -216,7 +139,7 @@ public class RBinHeader extends RComponent {
         pg.rect(headerArea.getX(), headerArea.getY(), headerArea.getWidth(), headerArea.getHeight());
 
         CodeAreaViewMode viewMode = structure.getViewMode();
-        CodeCharactersCase codeCharactersCase = editor.getCodeCharacterCase();
+        CodeCharactersCase codeCharactersCase = editor.getCodeCharactersCase();
         RBinEditor.RowDataCache rowDataCache = editor.getRowDataCache();
         if (viewMode == CodeAreaViewMode.DUAL || viewMode == CodeAreaViewMode.CODE_MATRIX) {
             float headerX = dataViewX - scrollPosition.getCharPosition() * characterWidth - scrollPosition.getCharOffset();

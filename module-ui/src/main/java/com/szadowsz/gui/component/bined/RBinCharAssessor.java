@@ -1,4 +1,4 @@
-package com.szadowsz.gui.component.bined.complex;
+package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.component.bined.settings.CodeAreaSection;
 
@@ -7,8 +7,8 @@ public class RBinCharAssessor {
         return 0;
     }
 
-    public void startPaint(RBinDraw rBinDraw) {
-    }
+//    public void startPaint(RBinDraw rBinDraw) {
+//    }
 
     public char getPreviewCursorCharacter(long dataPosition, int byteOnRow, int previewCharPos, byte[] cursorData, int i, CodeAreaSection codeAreaSection) {
         return 0;

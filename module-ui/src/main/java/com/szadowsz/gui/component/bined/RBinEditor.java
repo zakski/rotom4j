@@ -4,9 +4,11 @@ import com.szadowsz.binary.io.reader.Buffer;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
+import com.szadowsz.gui.component.bined.bounds.RBinRect;
+import com.szadowsz.gui.component.bined.caret.CursorShape;
 import com.szadowsz.gui.component.bined.caret.RCaretPos;
 import com.szadowsz.gui.component.bined.caret.RCaret;
-import com.szadowsz.gui.component.bined.complex.scroll.RBinScrollPos;
+import com.szadowsz.gui.component.bined.scroll.RBinScrollPos;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
 import com.szadowsz.gui.component.bined.sizing.RBinStructure;
@@ -14,20 +16,32 @@ import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
 import com.szadowsz.gui.config.text.RFontStore;
+import com.szadowsz.gui.config.theme.RColorType;
+import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.nds4j.file.bin.core.BinaryData;
 import com.szadowsz.nds4j.file.bin.core.ByteArrayData;
 import com.szadowsz.nds4j.file.bin.core.EmptyBinaryData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PConstants;
 import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
+import java.awt.*;
 import java.nio.charset.Charset;
 
 public class RBinEditor extends RGroupDrawable {
 
+    private static Logger LOGGER = LoggerFactory.getLogger(RBinEditor.class);
+
     protected static final String HEADER = "header";
+    protected static final String ROW = "row";
+
+
+    protected RBinColorAssessor colorAssessor = new RBinColorAssessor();
+    protected RBinCharAssessor charAssessor = new RBinCharAssessor();
 
     // The Data
     protected BinaryData contentData = EmptyBinaryData.INSTANCE;
@@ -35,6 +49,7 @@ public class RBinEditor extends RGroupDrawable {
     // How to Display
     protected CodeAreaViewMode viewMode = CodeAreaViewMode.DUAL;
     protected AntialiasingMode antialiasingMode = AntialiasingMode.AUTO;
+
     protected BackgroundPaintMode backgroundPaintMode = BackgroundPaintMode.STRIPED;
 
     // Character Config
@@ -61,8 +76,8 @@ public class RBinEditor extends RGroupDrawable {
     protected final RBinStructure structure = new RBinStructure();
     protected final RBinVisibility visibility = new RBinVisibility();
 
-    protected RComponentScrollbar horizontalScrollBar = new RComponentScrollbar(this,new PVector(),new PVector(),0,0);
-    protected RComponentScrollbar verticalScrollBar = new RComponentScrollbar(this,new PVector(),new PVector(),0,0);
+    protected RComponentScrollbar horizontalScrollBar = new RComponentScrollbar(this, new PVector(), new PVector(), 0, 0);
+    protected RComponentScrollbar verticalScrollBar = new RComponentScrollbar(this, new PVector(), new PVector(), 0, 0);
     protected final RBinScrollPos scrollPosition = new RBinScrollPos();
     protected ScrollBarVisibility verticalScrollBarVisibility = ScrollBarVisibility.IF_NEEDED;
     protected VerticalScrollUnit verticalScrollUnit = VerticalScrollUnit.ROW;
@@ -70,7 +85,7 @@ public class RBinEditor extends RGroupDrawable {
     protected HorizontalScrollUnit horizontalScrollUnit = HorizontalScrollUnit.PIXEL;
 
     protected RowDataCache rowDataCache = null;
-    //protected CursorDataCache cursorDataCache = null;
+    protected CursorDataCache cursorDataCache = null;
 
     // Cursor Caret
     protected RCaret caret;
@@ -89,9 +104,9 @@ public class RBinEditor extends RGroupDrawable {
      * <p>
      * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
      *
-     * @param gui    the gui for the window that the component is drawn under
-     * @param path   the path in the component tree
-     * @param parent the parent component reference
+     * @param gui      the gui for the window that the component is drawn under
+     * @param path     the path in the component tree
+     * @param parent   the parent component reference
      * @param filePath
      */
     public RBinEditor(RotomGui gui, String path, RGroup parent, String filePath) {
@@ -101,6 +116,9 @@ public class RBinEditor extends RGroupDrawable {
         contentData = new ByteArrayData(data);
 
         children.add(new RBinHeader(gui, path + "/" + HEADER,this));
+        // children.add(new RBinRowPosition(gui, path + "/" + ROW,this));
+
+        init();
     }
 
     protected float getHorizontalScrollBarHeight() {
@@ -145,15 +163,15 @@ public class RBinEditor extends RGroupDrawable {
         return positionLength == 0 ? 1 : positionLength;
     }
 
-    protected long recomputeRows(){
-        return contentData.getDataSize()/maxBytesPerRow + ((contentData.getDataSize()%maxBytesPerRow>0)?1:0);
+    protected long recomputeRows() {
+        return contentData.getDataSize() / maxBytesPerRow + ((contentData.getDataSize() % maxBytesPerRow > 0) ? 1 : 0);
     }
 
     protected void recomputeDimensions() {
         float verticalScrollBarSize = getVerticalScrollBarWidth();
         float horizontalScrollBarSize = getHorizontalScrollBarHeight();
-        float componentWidth = metrics.getCharacterWidth()*maxBytesPerRow*PositionCodeType.HEXADECIMAL.getMaxDigitsForByte() + verticalScrollBarSize; // TODO
-        float componentHeight = metrics.getRowHeight()*recomputeRows() + horizontalScrollBarSize; // TODO
+        float componentWidth = metrics.getCharacterWidth() * maxBytesPerRow * PositionCodeType.HEXADECIMAL.getMaxDigitsForByte() + verticalScrollBarSize; // TODO
+        float componentHeight = metrics.getRowHeight() * recomputeRows() + horizontalScrollBarSize; // TODO
         dimensions.recomputeSizes(metrics, 0, 0, componentWidth, componentHeight, rowPositionLength, verticalScrollBarSize, horizontalScrollBarSize);
     }
 
@@ -178,12 +196,11 @@ public class RBinEditor extends RGroupDrawable {
     }
 
 
-
-    protected void init(PGraphics pg) {
+    protected void init() {
         PGraphics fontGraphics = gui.getSketch().createGraphics(800, 600, PConstants.JAVA2D);
         fontGraphics.beginDraw();
         fontGraphics.endDraw();
-        metrics.recomputeMetrics(fontGraphics, RFontStore.getMainFont(),charset); // get Font Character sizes
+        metrics.recomputeMetrics(fontGraphics, RFontStore.getMainFont(), charset); // get Font Character sizes
 
         // we have the maximum of bytes per row, so at this stage we should work out the width we ideally should have to play with
         // contentData.getDataSize()
@@ -191,15 +208,22 @@ public class RBinEditor extends RGroupDrawable {
         // long numRows = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow>0?1:0);
         int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
         int digitsForByte = codeType.getMaxDigitsForByte(); // Get the number of characters for a byte
-        float width = digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
+        size.x = digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
+
+        LOGGER.info("Width of a single Character: {}", characterWidth);
+        LOGGER.info("Maximum Digits For A Byte: {}", digitsForByte);
+        LOGGER.info("Width of Binary Editor: {}", size.x);
 
         long rowsInData = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow > 0 ? 1 : 0);
-        float height = metrics.getRowHeight()*rowsInData;
+        size.y = metrics.getRowHeight() * rowsInData;
+
+        LOGGER.info("Data Rows Count: {}", rowsInData);
+        LOGGER.info("Height of Binary Editor: {}", size.y);
 
         float verticalScrollBarWidth = getVerticalScrollBarWidth();
         float horizontalScrollBarHeight = getHorizontalScrollBarHeight();
 
-        dimensions.recomputeSizes(metrics, 0, 0, width, height, rowPositionLength, verticalScrollBarWidth, horizontalScrollBarHeight);
+        dimensions.recomputeSizes(metrics, 0, 0, size.x, size.y, rowPositionLength, verticalScrollBarWidth, horizontalScrollBarHeight);
 
         int charactersPerPage = dimensions.getCharactersPerPage();
         structure.updateCache(this, charactersPerPage);
@@ -223,11 +247,27 @@ public class RBinEditor extends RGroupDrawable {
         pg.popMatrix();
     }
 
+    protected void paintOutsideArea(PGraphics g) {
+        int headerAreaHeight = dimensions.getHeaderAreaHeight();
+        int rowPositionAreaWidth = dimensions.getRowPositionAreaWidth();
+        RBinRect componentRect = dimensions.getComponentRectangle();
+        int characterWidth = metrics.getCharacterWidth();
+        g.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND)); // g.setColor(colorsProfile.getTextBackground());
+        g.rect(componentRect.getX(), componentRect.getY(), componentRect.getWidth(), headerAreaHeight);
+
+        // Decoration lines
+        g.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); // g.setColor(colorsProfile.getDecorationLine());
+        g.line(componentRect.getX(), componentRect.getY() + headerAreaHeight - 1, componentRect.getX() + rowPositionAreaWidth, componentRect.getY() + headerAreaHeight - 1);
+
+        float lineX = componentRect.getX() + rowPositionAreaWidth - (characterWidth / 2);
+        if (lineX >= componentRect.getX()) {
+            g.line(lineX, componentRect.getY(), lineX, componentRect.getY() + headerAreaHeight);
+        }
+    }
+
     @Override
     protected void drawForeground(PGraphics pg, String name) {
-        if (!isInitialized()){
-            init(pg);
-        }
+        //paintOutsideArea(pg);
         for (RComponent component : children) {
             if (!component.isVisible()) {
                 continue;
@@ -257,6 +297,10 @@ public class RBinEditor extends RGroupDrawable {
         return caret.getSection();
     }
 
+    public BackgroundPaintMode getBackgroundPaintMode() {
+        return backgroundPaintMode;
+    }
+
     /**
      * Returns handler for caret.
      *
@@ -273,6 +317,10 @@ public class RBinEditor extends RGroupDrawable {
      */
     public Charset getCharset() {
         return charset;
+    }
+
+    public RBinCharAssessor getCharAssessor() {
+        return charAssessor;
     }
 
     /**
@@ -320,8 +368,39 @@ public class RBinEditor extends RGroupDrawable {
         return codeType;
     }
 
-    public CodeCharactersCase getCodeCharacterCase(){
-        return codeCharactersCase;
+    public RBinColorAssessor getColorAssessor() {
+        return colorAssessor;
+    }
+
+    public CursorDataCache getCursorDataCache() {
+        if (cursorDataCache == null) {
+            cursorDataCache = new CursorDataCache();
+        }
+        int cursorCharsLength = codeType.getMaxDigitsForByte();
+        if (cursorDataCache.cursorCharsLength != cursorCharsLength) {
+            cursorDataCache.cursorCharsLength = cursorCharsLength;
+            cursorDataCache.cursorChars = new char[cursorCharsLength];
+        }
+        int cursorDataLength = metrics.getMaxBytesPerChar();
+        if (cursorDataCache.cursorDataLength != cursorDataLength) {
+            cursorDataCache.cursorDataLength = cursorDataLength;
+            cursorDataCache.cursorData = new byte[cursorDataLength];
+        }
+        return cursorDataCache;
+    }
+
+    /**
+     * Returns cursor rectangle.
+     *
+     * @param dataPosition data position
+     * @param codeOffset   code offset
+     * @param section      section
+     * @return cursor rectangle or empty rectangle
+     */
+    protected RBinRect getCursorPositionRect(long dataPosition, int codeOffset, CodeAreaSection section) {
+        RBinRect rect = new RBinRect();
+        updateRectToCursorPosition(rect, dataPosition, codeOffset, section);
+        return rect;
     }
 
     /**
@@ -364,13 +443,51 @@ public class RBinEditor extends RGroupDrawable {
         return maxBytesPerRow;
     }
 
-
-    RBinMetrics getMetrics() {
+    public RBinMetrics getMetrics() {
         return metrics;
     }
 
-    public RowDataCache getRowDataCache(){
+    /**
+     * Returns relative cursor position in code area or null if cursor is not
+     * visible.
+     *
+     * @param dataPosition data position
+     * @param codeOffset   code offset
+     * @param section      section
+     * @return cursor position or null
+     */
+    public PVector getPositionPoint(long dataPosition, int codeOffset, CodeAreaSection section) {
+        int bytesPerRow = structure.getBytesPerRow();
+        int rowsPerRect = dimensions.getRowsPerRect();
+        int characterWidth = metrics.getCharacterWidth();
+        int rowHeight = metrics.getRowHeight();
+
+        long row = dataPosition / bytesPerRow - scrollPosition.getRowPosition();
+        if (row < -1 || row > rowsPerRect) {
+            return null;
+        }
+
+        int byteOffset = (int) (dataPosition % bytesPerRow);
+
+        RBinRect dataViewRect = dimensions.getDataViewRectangle();
+        float caretY = (dataViewRect.getY() + row * rowHeight) - scrollPosition.getRowOffset();
+        float caretX;
+        if (section == CodeAreaSection.TEXT_PREVIEW) {
+            caretX = dataViewRect.getX() + visibility.getPreviewRelativeX() + characterWidth * byteOffset;
+        } else {
+            caretX = dataViewRect.getX() + characterWidth * (structure.computeFirstCodeCharacterPos(byteOffset) + codeOffset);
+        }
+        caretX -= scrollPosition.getCharPosition() * characterWidth + scrollPosition.getCharOffset();
+
+        return new PVector(caretX, caretY);
+    }
+
+    public RowDataCache getRowDataCache() {
         return rowDataCache;
+    }
+
+    public int getRowPositionLength() {
+        return rowPositionLength;
     }
 
     /**
@@ -382,11 +499,13 @@ public class RBinEditor extends RGroupDrawable {
         return rowWrapping;
     }
 
-
     public RBinScrollPos getScrollPos() {
         return scrollPosition;
     }
 
+    public RBinSelection getSelectionHandler() {
+        return selection;
+    }
 
     public RBinStructure getStructure() {
         return structure;
@@ -401,7 +520,7 @@ public class RBinEditor extends RGroupDrawable {
         return viewMode;
     }
 
-    public RBinVisibility getVisibility(){
+    public RBinVisibility getVisibility() {
         return visibility;
     }
 
@@ -414,8 +533,12 @@ public class RBinEditor extends RGroupDrawable {
         return wrappingBytesGroupSize;
     }
 
-    public boolean isInitialized(){
+    public boolean isInitialized() {
         return initialized;
+    }
+
+    public boolean isMirrorCursorShowing() {
+        return showMirrorCursor;
     }
 
     @Override
@@ -430,7 +553,7 @@ public class RBinEditor extends RGroupDrawable {
         return digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
     }
 
-    public void updateScrollBars(){
+    public void updateScrollBars() {
         //verticalScrollBar
         //horizontalScrollBar
     }
@@ -446,6 +569,28 @@ public class RBinEditor extends RGroupDrawable {
         rowDataCache.rowCharacters = new char[structure.getCharactersPerRow()];
     }
 
+    protected void updateRectToCursorPosition(RBinRect rect, long dataPosition, int codeOffset, CodeAreaSection section) {
+        int characterWidth = metrics.getCharacterWidth();
+        int rowHeight = metrics.getRowHeight();
+        PVector cursorPoint = getPositionPoint(dataPosition, codeOffset, section);
+        if (cursorPoint == null) {
+            rect.setBounds(0, 0, 0, 0);
+        } else {
+            CursorShape cursorShape = editOperation == EditOperation.INSERT ? CursorShape.INSERT : CursorShape.OVERWRITE;
+            int cursorThickness = RCaret.getCursorThickness(cursorShape, characterWidth, rowHeight);
+            rect.setBounds(cursorPoint.x, cursorPoint.y, cursorThickness, rowHeight);
+        }
+    }
+
+    protected void updateMirrorCursorRect(long dataPosition, CodeAreaSection section) {
+        CodeType codeType = structure.getCodeType();
+        PVector mirrorCursorPoint = getPositionPoint(dataPosition, 0, section == CodeAreaSection.CODE_MATRIX ? CodeAreaSection.TEXT_PREVIEW : CodeAreaSection.CODE_MATRIX);
+        if (mirrorCursorPoint == null) {
+            cursorDataCache.mirrorCursorRect.setSize(0, 0);
+        } else {
+            cursorDataCache.mirrorCursorRect.setBounds(mirrorCursorPoint.x, mirrorCursorPoint.y, metrics.getCharacterWidth() * (section == CodeAreaSection.TEXT_PREVIEW ? codeType.getMaxDigitsForByte() : 1), metrics.getRowHeight());
+        }
+    }
 
     public static class RowDataCache {
 
@@ -453,5 +598,16 @@ public class RBinEditor extends RGroupDrawable {
         byte[] rowData;
         char[] rowPositionCode;
         char[] rowCharacters;
+    }
+
+    public static class CursorDataCache {
+
+        RBinRect caretRect = new RBinRect();
+        RBinRect mirrorCursorRect = new RBinRect();
+        final BasicStroke dashedStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{2}, 0);
+        int cursorCharsLength;
+        char[] cursorChars;
+        int cursorDataLength;
+        byte[] cursorData;
     }
 }

@@ -67,6 +67,8 @@ public class ProcessingTest extends PApplet {
         gui.label("test label", "THIS IS A TEST LABEL");
         gui.field("test field");
         gui.area("test area");
+        gui.popWindow();
+        gui.pushFolder("text code folder");
         gui.code("test code", "C:\\Code\\pokemon\\srcs\\changes\\Gen 4\\prologmon-masters\\pm_dp_ose\\src\\contest\\graphic\\contest_obj\\audience_heart.NCGR");
         gui.popWindow();
         gui.popWindow();
