@@ -1,8 +1,12 @@
 package com.szadowsz.gui.component.bined.bounds;
 
+import com.szadowsz.gui.component.bined.RBinEditor;
 import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RBinDimensions {
+    private static Logger LOGGER = LoggerFactory.getLogger(RBinDimensions.class);
 
     protected final RBinRect componentRectangle = new RBinRect();
     protected final RBinRect mainAreaRectangle = new RBinRect();
@@ -131,12 +135,25 @@ public class RBinDimensions {
         return verticalScrollBarSize;
     }
 
-    public void recomputeSizes(RBinMetrics metrics, float componentX, float componentY, float componentWidth, float componentHeight, int rowPositionLength, float verticalScrollBarSize, float horizontalScrollBarSize) {
+    public void recomputeSizes(RBinMetrics metrics,
+                               float componentX,
+                               float componentY,
+                               float componentWidth,
+                               float componentHeight,
+                               int rowPositionLength,
+                               float verticalScrollBarSize,
+                               float horizontalScrollBarSize) {
         componentRectangle.setBounds(componentX, componentY, componentWidth, componentHeight);
+        LOGGER.info("Editor Rectangle: [{},{},{},{}]", componentRectangle.getX(),componentRectangle.getY(),componentRectangle.getWidth(),componentRectangle.getHeight());
+        LOGGER.info("Editor Row Position Length: [{}]", rowPositionLength);
+
         this.verticalScrollBarSize = verticalScrollBarSize;
         this.horizontalScrollBarSize = horizontalScrollBarSize;
+
         rowPositionAreaWidth = metrics.getCharacterWidth() * (rowPositionLength + 1);
+        LOGGER.info("Editor Row Position Area Width: [{}]", rowPositionAreaWidth);
         headerAreaHeight = metrics.getFontHeight() + metrics.getFontHeight() / 4;
+        LOGGER.info("Editor Header Area Height: [{}]", headerAreaHeight);
 
         scrollPanelX = componentX + rowPositionAreaWidth;
         scrollPanelY = componentY + headerAreaHeight;

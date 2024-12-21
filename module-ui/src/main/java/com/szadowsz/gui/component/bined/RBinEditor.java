@@ -14,6 +14,7 @@ import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
 import com.szadowsz.gui.component.bined.sizing.RBinStructure;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RGroupDrawable;
+import com.szadowsz.gui.component.oldbinary.swing.basic.DefaultCodeAreaCaret;
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.theme.RColorType;
@@ -38,6 +39,7 @@ public class RBinEditor extends RGroupDrawable {
 
     protected static final String HEADER = "header";
     protected static final String ROW = "row";
+    protected static final String MAIN = "main";
 
 
     protected RBinColorAssessor colorAssessor = new RBinColorAssessor();
@@ -114,9 +116,11 @@ public class RBinEditor extends RGroupDrawable {
 
         byte[] data = Buffer.readFile(filePath);
         contentData = new ByteArrayData(data);
+        caret = new RCaret(this);
 
         children.add(new RBinHeader(gui, path + "/" + HEADER,this));
-        // children.add(new RBinRowPosition(gui, path + "/" + ROW,this));
+        children.add(new RBinRowPosition(gui, path + "/" + ROW,this));
+        children.add(new RBinMain(gui, path + "/" + MAIN,this));
 
         init();
     }
@@ -135,6 +139,7 @@ public class RBinEditor extends RGroupDrawable {
 //        int rowsPerPage = dimensions.getRowsPerPage();
 //        long rowsPerDocument = structure.getRowsPerDocument();
 //        int charactersPerRow = structure.getCharactersPerRow();
+        visibility.recomputeCharPositions(metrics,structure,dimensions);
 
         updateScrollBars();
 
@@ -181,6 +186,7 @@ public class RBinEditor extends RGroupDrawable {
 
         int charactersPerPage = dimensions.getCharactersPerPage();
         structure.updateCache(this, charactersPerPage);
+        visibility.recomputeCharPositions(metrics,structure,dimensions);
 
 //        int rowsPerPage = dimensions.getRowsPerPage();
 //        long rowsPerDocument = structure.getRowsPerDocument();
@@ -197,6 +203,7 @@ public class RBinEditor extends RGroupDrawable {
 
 
     protected void init() {
+//        caret.setSection(CodeAreaSection.CODE_MATRIX);
         PGraphics fontGraphics = gui.getSketch().createGraphics(800, 600, PConstants.JAVA2D);
         fontGraphics.beginDraw();
         fontGraphics.endDraw();
@@ -223,12 +230,13 @@ public class RBinEditor extends RGroupDrawable {
         float verticalScrollBarWidth = getVerticalScrollBarWidth();
         float horizontalScrollBarHeight = getHorizontalScrollBarHeight();
 
+        rowPositionLength = getRowPositionLength();
+
         dimensions.recomputeSizes(metrics, 0, 0, size.x, size.y, rowPositionLength, verticalScrollBarWidth, horizontalScrollBarHeight);
 
         int charactersPerPage = dimensions.getCharactersPerPage();
         structure.updateCache(this, charactersPerPage);
 
-        rowPositionLength = recomputeRowPositionLength();
         computeLayout(); // use the sizes to figure out the width
         updateRowDataCache();
     }
@@ -339,6 +347,10 @@ public class RBinEditor extends RGroupDrawable {
      */
     public PFont getCodeFont() {
         return codeFont == null ? RFontStore.getMainFont() : codeFont;
+    }
+
+    public int getCodeLastCharPos() {
+        return visibility.getCodeLastCharPos();
     }
 
     /**

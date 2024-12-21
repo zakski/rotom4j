@@ -2,15 +2,113 @@ package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.component.bined.settings.CodeAreaSection;
 
+import java.nio.charset.Charset;
+
 public class RBinCharAssessor {
-    public char getPreviewCharacter(long dataPosition, int byteOnRow, int previewCharPos, CodeAreaSection codeAreaSection) {
-        return 0;
+
+    protected Charset charMappingCharset = null;
+    protected final char[] charMapping = new char[256];
+
+    protected long dataSize;
+    protected int maxBytesPerChar;
+    protected byte[] rowData;
+    protected Charset charset;
+
+    /**
+     * Precomputes widths for basic ascii characters.
+     *
+     * @param charset character set
+     */
+    private void buildCharMapping(Charset charset) {
+        for (int i = 0; i < 256; i++) {
+            charMapping[i] = new String(new byte[]{(byte) i}, charset).charAt(0);
+        }
+        charMappingCharset = charset;
     }
 
-//    public void startPaint(RBinDraw rBinDraw) {
-//    }
+    /**
+     * Returns preview character for particular position.
+     *
+     * @param rowDataPosition row data position
+     * @param byteOnRow byte on current row
+     * @param charOnRow character on current row
+     * @param section current section
+     * @return color or null for default color
+     */
+    public char getPreviewCharacter(long rowDataPosition, int byteOnRow, int charOnRow, CodeAreaSection section) {
+        if (maxBytesPerChar > 1) {
+            if (rowDataPosition + maxBytesPerChar > dataSize) {
+                maxBytesPerChar = (int) (dataSize - rowDataPosition);
+            }
 
-    public char getPreviewCursorCharacter(long dataPosition, int byteOnRow, int previewCharPos, byte[] cursorData, int i, CodeAreaSection codeAreaSection) {
-        return 0;
+            int charDataLength = maxBytesPerChar;
+            if (byteOnRow + charDataLength > rowData.length) {
+                charDataLength = rowData.length - byteOnRow;
+            }
+            String displayString = new String(rowData, byteOnRow, charDataLength, charset);
+            if (!displayString.isEmpty()) {
+                return displayString.charAt(0);
+            }
+        } else {
+            if (charMappingCharset == null || charMappingCharset != charset) {
+                buildCharMapping(charset);
+            }
+
+            return charMapping[rowData[byteOnRow] & 0xFF];
+        }
+
+//        if (parentCharAssessor != null) {
+//            return parentCharAssessor.getPreviewCharacter(rowDataPosition, byteOnRow, charOnRow, section);
+//        }
+
+        return ' ';
+    }
+
+    /**
+     * Returns preview character for cursor position.
+     *
+     * @param rowDataPosition row data position
+     * @param byteOnRow byte on current row
+     * @param charOnRow character on current row
+     * @param cursorData cursor data
+     * @param cursorDataLength cursor data length
+     * @param section current section
+     * @return color or null for default color
+     */
+    public char getPreviewCursorCharacter(long rowDataPosition, int byteOnRow, int charOnRow, byte[] cursorData, int cursorDataLength, CodeAreaSection section) {
+        if (cursorDataLength == 0) {
+            return ' ';
+        }
+
+        if (maxBytesPerChar > 1) {
+            String displayString = new String(cursorData, 0, cursorDataLength, charset);
+            if (!displayString.isEmpty()) {
+                return displayString.charAt(0);
+            }
+        } else {
+            if (charMappingCharset == null || charMappingCharset != charset) {
+                buildCharMapping(charset);
+            }
+
+            return charMapping[cursorData[0] & 0xFF];
+        }
+
+//        if (parentCharAssessor != null) {
+//            return parentCharAssessor.getPreviewCursorCharacter(rowDataPosition, byteOnRow, charOnRow, cursorData, cursorDataLength, section);
+//        }
+
+        return ' ';
+
+    }
+
+    public void update(RBinEditor editor) {
+        dataSize = editor.getDataSize();
+        charset = editor.getCharset();
+        rowData = editor.getRowDataCache().rowData;
+        maxBytesPerChar = editor.getMetrics().getMaxBytesPerChar();
+
+//        if (parentCharAssessor != null) {
+//            parentCharAssessor.startPaint(editor);
+//        }
     }
 }

@@ -10,17 +10,73 @@ import com.szadowsz.gui.component.bined.utils.RBinUtils;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.nds4j.file.bin.core.BinaryData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 
 import java.awt.*;
 import java.util.Arrays;
 
 public class RBinMain extends RBinComponent {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RBinMain.class);
 
     public RBinMain(RotomGui gui, String path, RBinEditor editor) {
         super(gui, path, editor);
     }
 
+    protected int copyDataFromPos(long dataPosition, int bytesPerRow, long dataSize, int maxBytesPerChar, RBinEditor.RowDataCache rowDataCache) {
+        int rowBytesLimit = bytesPerRow;
+        //int rowStart = 0;
+        if (dataPosition < dataSize) {
+            int rowDataSize = bytesPerRow + maxBytesPerChar - 1;
+            if (dataSize - dataPosition < rowDataSize) {
+                rowDataSize = (int) (dataSize - dataPosition);
+            }
+//            if (dataPosition < 0) {
+//                rowStart = (int) -dataPosition;
+//            }
+            BinaryData data = editor.getContentData();
+            data.copyToArray(dataPosition /*+ rowStart*/, rowDataCache.rowData, 0/*rowStart*/, rowDataSize /*- rowStart*/);
+            if (dataSize - dataPosition < rowBytesLimit) {
+                rowBytesLimit = (int) (dataSize - dataPosition);
+            }
+        } else {
+            rowBytesLimit = 0;
+        }
+        return rowBytesLimit;
+    }
+
+    protected void fillCodes(int rowBytesLimit, RBinEditor.RowDataCache rowDataCache, CodeType codeType, CodeCharactersCase codeCharactersCase, int bytesPerRow) {
+        int skipToCode = visibility.getSkipToCode();
+        int skipRestFromCode = visibility.getSkipRestFromCode();
+        int endCode = Math.min(skipRestFromCode, rowBytesLimit);
+        for (int byteOnRow = Math.max(skipToCode, 0/*rowStart*/); byteOnRow < endCode; byteOnRow++) {
+            byte dataByte = rowDataCache.rowData[byteOnRow];
+
+            int byteRowPos = structure.computeFirstCodeCharacterPos(byteOnRow);
+            if (byteRowPos > 0) {
+                rowDataCache.rowCharacters[byteRowPos - 1] = ' ';
+            }
+            RBinUtils.byteToCharsCode(dataByte, codeType, rowDataCache.rowCharacters, byteRowPos, codeCharactersCase);
+        }
+
+        if (bytesPerRow > rowBytesLimit) {
+            Arrays.fill(rowDataCache.rowCharacters, structure.computeFirstCodeCharacterPos(rowBytesLimit), rowDataCache.rowCharacters.length, ' ');
+        }
+    }
+
+    protected void fillPreviewChars(long dataPosition, int rowBytesLimit, RBinEditor.RowDataCache rowDataCache, int previewCharPos, RBinCharAssessor charAssessor, int bytesPerRow) {
+        int skipToPreview = visibility.getSkipToPreview();
+        int skipRestFromPreview = visibility.getSkipRestFromPreview();
+        int endPreview = Math.min(skipRestFromPreview, rowBytesLimit);
+        for (int byteOnRow = skipToPreview; byteOnRow < endPreview; byteOnRow++) {
+            rowDataCache.rowCharacters[previewCharPos + byteOnRow] = charAssessor.getPreviewCharacter(dataPosition, byteOnRow, previewCharPos, CodeAreaSection.TEXT_PREVIEW);
+        }
+        if (bytesPerRow > rowBytesLimit) {
+            Arrays.fill(rowDataCache.rowCharacters, previewCharPos + rowBytesLimit, previewCharPos + bytesPerRow, ' ');
+        }
+    }
+    
     protected void prepareRowData(long dataPosition) {
         int maxBytesPerChar = metrics.getMaxBytesPerChar();
         int bytesPerRow = structure.getBytesPerRow();
@@ -33,43 +89,11 @@ public class RBinMain extends RBinComponent {
 
         RBinCharAssessor charAssessor = editor.getCharAssessor();
 
-        int rowBytesLimit = bytesPerRow;
-        int rowStart = 0;
-        if (dataPosition < dataSize) {
-            int rowDataSize = bytesPerRow + maxBytesPerChar - 1;
-            if (dataSize - dataPosition < rowDataSize) {
-                rowDataSize = (int) (dataSize - dataPosition);
-            }
-            if (dataPosition < 0) {
-                rowStart = (int) -dataPosition;
-            }
-            BinaryData data = editor.getContentData();
-            data.copyToArray(dataPosition + rowStart, rowDataCache.rowData, rowStart, rowDataSize - rowStart);
-            if (dataSize - dataPosition < rowBytesLimit) {
-                rowBytesLimit = (int) (dataSize - dataPosition);
-            }
-        } else {
-            rowBytesLimit = 0;
-        }
+        int rowBytesLimit = copyDataFromPos(dataPosition, bytesPerRow, dataSize, maxBytesPerChar, rowDataCache);
 
         // Fill codes
         if (viewMode != CodeAreaViewMode.TEXT_PREVIEW) {
-            int skipToCode = visibility.getSkipToCode();
-            int skipRestFromCode = visibility.getSkipRestFromCode();
-            int endCode = Math.min(skipRestFromCode, rowBytesLimit);
-            for (int byteOnRow = Math.max(skipToCode, rowStart); byteOnRow < endCode; byteOnRow++) {
-                byte dataByte = rowDataCache.rowData[byteOnRow];
-
-                int byteRowPos = structure.computeFirstCodeCharacterPos(byteOnRow);
-                if (byteRowPos > 0) {
-                    rowDataCache.rowCharacters[byteRowPos - 1] = ' ';
-                }
-                RBinUtils.byteToCharsCode(dataByte, codeType, rowDataCache.rowCharacters, byteRowPos, codeCharactersCase);
-            }
-
-            if (bytesPerRow > rowBytesLimit) {
-                Arrays.fill(rowDataCache.rowCharacters, structure.computeFirstCodeCharacterPos(rowBytesLimit), rowDataCache.rowCharacters.length, ' ');
-            }
+            fillCodes(rowBytesLimit, rowDataCache, codeType, codeCharactersCase, bytesPerRow);
         }
 
         if (previewCharPos > 0) {
@@ -78,15 +102,7 @@ public class RBinMain extends RBinComponent {
 
         // Fill preview characters
         if (viewMode != CodeAreaViewMode.CODE_MATRIX) {
-            int skipToPreview = visibility.getSkipToPreview();
-            int skipRestFromPreview = visibility.getSkipRestFromPreview();
-            int endPreview = Math.min(skipRestFromPreview, rowBytesLimit);
-            for (int byteOnRow = skipToPreview; byteOnRow < endPreview; byteOnRow++) {
-                rowDataCache.rowCharacters[previewCharPos + byteOnRow] = charAssessor.getPreviewCharacter(dataPosition, byteOnRow, previewCharPos, CodeAreaSection.TEXT_PREVIEW);
-            }
-            if (bytesPerRow > rowBytesLimit) {
-                Arrays.fill(rowDataCache.rowCharacters, previewCharPos + rowBytesLimit, previewCharPos + bytesPerRow, ' ');
-            }
+            fillPreviewChars(dataPosition, rowBytesLimit, rowDataCache, previewCharPos, charAssessor, bytesPerRow);
         }
     }
 
@@ -230,7 +246,7 @@ public class RBinMain extends RBinComponent {
                 }
 
                 if (charOnRow > renderOffset) {
-                    drawCenteredChars(pg, rowDataCache.rowCharacters, renderOffset, charOnRow - renderOffset, characterWidth, rowPositionX + renderOffset * characterWidth, positionY);
+                    drawCenteredChars(pg, rowDataCache.rowCharacters, renderOffset, charOnRow - renderOffset, characterWidth, rowPositionX /* + renderOffset * characterWidth*/, positionY);
                 }
 
                 renderColor = color;
@@ -244,15 +260,15 @@ public class RBinMain extends RBinComponent {
         }
 
         if (renderOffset < charactersPerRow) {
-            if (!RBinUtils.areSameColors(lastColor, renderColor)) {
-                pg.stroke(renderColor.getRGB());
-            }
+//            if (!RBinUtils.areSameColors(lastColor, renderColor)) {
+//                pg.stroke(renderColor.getRGB());
+//            }
 
             drawCenteredChars(pg, rowDataCache.rowCharacters, renderOffset, charactersPerRow - renderOffset, characterWidth, rowPositionX + renderOffset * characterWidth, positionY);
         }
     }
 
-    protected void paintRows(PGraphics pg) {
+    protected void drawRows(PGraphics pg) {
         int bytesPerRow = structure.getBytesPerRow();
         int rowHeight = metrics.getRowHeight();
         float dataViewX = dimensions.getScrollPanelX();
@@ -269,7 +285,7 @@ public class RBinMain extends RBinComponent {
             if (dataPosition > dataSize) {
                 break;
             }
-
+            LOGGER.info("rendering row {} of {} @ [{},{}]",row,rowsPerRect,rowPositionX,rowPositionY);
             prepareRowData(dataPosition);
             paintRowBackground(pg, dataPosition, rowPositionX, rowPositionY);
             paintRowText(pg, dataPosition, rowPositionX, rowPositionY);
@@ -467,8 +483,9 @@ public class RBinMain extends RBinComponent {
 
 //        RBinRect clipBounds = pg.getClipBounds();
 //        pg.setClip(clipBounds != null ? clipBounds.intersection(mainAreaRect) : mainAreaRect);
-//        colorAssessor.startPaint(this);
-//        charAssessor.startPaint(this);
+//        colorAssessor.update(this);
+        editor.getColorAssessor().update(editor);
+        editor.getCharAssessor().update(editor);
 
         // paintBackground(pg);
 
@@ -479,7 +496,7 @@ public class RBinMain extends RBinComponent {
             pg.line(lineX, dataViewRectangle.getY(), lineX, dataViewRectangle.getY() + dataViewRectangle.getHeight());
         }
 
-        paintRows(pg);
+        drawRows(pg);
 //        pg.setClip(clipBounds);
         paintCursor(pg);
 

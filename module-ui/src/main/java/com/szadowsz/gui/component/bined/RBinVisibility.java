@@ -29,6 +29,10 @@ public class RBinVisibility {
         return charactersPerCodeSection;
     }
 
+    public int getCodeLastCharPos() {
+        return codeLastCharPos;
+    }
+
     public int getPreviewCharPos() {
         return previewCharPos;
     }
