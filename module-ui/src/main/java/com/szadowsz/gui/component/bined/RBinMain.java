@@ -2,11 +2,13 @@ package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.bined.bounds.RBinRect;
+import com.szadowsz.gui.component.bined.bounds.RBinSelection;
 import com.szadowsz.gui.component.bined.caret.CursorRenderingMode;
 import com.szadowsz.gui.component.bined.caret.RCaret;
 import com.szadowsz.gui.component.bined.scroll.RBinScrollPos;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.bined.utils.RBinUtils;
+import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.nds4j.file.bin.core.BinaryData;
@@ -285,8 +287,13 @@ public class RBinMain extends RBinComponent {
             if (dataPosition > dataSize) {
                 break;
             }
+            pg.pushMatrix();
             LOGGER.info("rendering row {} of {} @ [{},{}]",row,rowsPerRect,rowPositionX,rowPositionY);
             prepareRowData(dataPosition);
+            LOGGER.info("row characters: {}",editor.getRowDataCache().rowCharacters);
+//            pg.textFont(RFontStore.getMainFont());
+//            pg.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND));
+//            pg.text(Arrays.toString(editor.getRowDataCache().rowCharacters),rowPositionX,rowPositionY);
             paintRowBackground(pg, dataPosition, rowPositionX, rowPositionY);
             paintRowText(pg, dataPosition, rowPositionX, rowPositionY);
 
@@ -296,6 +303,7 @@ public class RBinMain extends RBinComponent {
             } else {
                 dataPosition += bytesPerRow;
             }
+            pg.popMatrix();
         }
     }
 
@@ -385,7 +393,7 @@ public class RBinMain extends RBinComponent {
         }
     }
 
-    protected void paintCursor(PGraphics pg) {
+    protected void drawCursor(PGraphics pg) {
         if (!editor.hasFocus()) {
             return;
         }
@@ -468,37 +476,23 @@ public class RBinMain extends RBinComponent {
 
     @Override
     protected void drawForeground(PGraphics pg, String name) {
-//        if (!initialized) {
-//            reset();
-//        }
-//        if (fontChanged) {
-//            fontChanged(pg);
-//            fontChanged = false;
-//        }
-
-        RBinRect mainAreaRect = dimensions.getMainAreaRectangle();
-        RBinRect dataViewRectangle = dimensions.getDataViewRectangle();
-        int characterWidth = metrics.getCharacterWidth();
-        int previewRelativeX = visibility.getPreviewRelativeX();
-
-//        RBinRect clipBounds = pg.getClipBounds();
-//        pg.setClip(clipBounds != null ? clipBounds.intersection(mainAreaRect) : mainAreaRect);
-//        colorAssessor.update(this);
-        editor.getColorAssessor().update(editor);
-        editor.getCharAssessor().update(editor);
+//        RBinRect mainAreaRect = dimensions.getMainAreaRectangle();
+//        RBinRect dataViewRectangle = dimensions.getDataViewRectangle();
+//        int characterWidth = metrics.getCharacterWidth();
+//        int previewRelativeX = visibility.getPreviewRelativeX();
+        editor.updateAssessors();
 
         // paintBackground(pg);
 
         // Decoration lines
-        pg.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); // pg.setColor(colorsProfile.getDecorationLine());
-        float lineX = dataViewRectangle.getX() + previewRelativeX - scrollPosition.getCharPosition() * characterWidth - scrollPosition.getCharOffset() - characterWidth / 2 - 1;
-        if (lineX >= dataViewRectangle.getX()) {
-            pg.line(lineX, dataViewRectangle.getY(), lineX, dataViewRectangle.getY() + dataViewRectangle.getHeight());
-        }
+//        pg.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); // pg.setColor(colorsProfile.getDecorationLine());
+//        float lineX = dataViewRectangle.getX() + previewRelativeX - scrollPosition.getCharPosition() * characterWidth - scrollPosition.getCharOffset() - characterWidth / 2 - 1;
+//        if (lineX >= dataViewRectangle.getX()) {
+//            pg.line(lineX, dataViewRectangle.getY(), lineX, dataViewRectangle.getY() + dataViewRectangle.getHeight());
+//        }
 
         drawRows(pg);
-//        pg.setClip(clipBounds);
-        paintCursor(pg);
+        drawCursor(pg);
 
 //        paintDebugInfo(pg, mainAreaRect, scrollPosition);
     }

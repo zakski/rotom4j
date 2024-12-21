@@ -15,8 +15,8 @@
  */
 package com.szadowsz.gui.component.oldbined.capabilities;
 
-import com.szadowsz.gui.component.bined.RBinSelection;
-import com.szadowsz.gui.component.bined.SelectionRange;
+import com.szadowsz.gui.component.bined.bounds.RBinSelection;
+import com.szadowsz.gui.component.oldbined.SelectionRange;
 import com.szadowsz.gui.component.oldbined.listeners.SelectionChangedListener;
 
 /**
@@ -31,14 +31,14 @@ public interface SelectionCapable {
      *
      * @return selection range or empty selection range
      */
-    SelectionRange getSelection();
+    RBinSelection getSelection();
 
     /**
      * Sets current selection.
      *
      * @param selection selection range or empty selection range
      */
-    void setSelection(SelectionRange selection);
+    void setSelection(RBinSelection selection);
 
     /**
      * Sets current selection range from start to end including the start and

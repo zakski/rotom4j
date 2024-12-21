@@ -20,7 +20,8 @@ import com.szadowsz.binary.EditableBinaryData;
 import com.szadowsz.binary.array.ByteArrayData;
 import com.szadowsz.binary.array.ByteArrayEditableData;
 import com.szadowsz.binary.paged.PagedData;
-import com.szadowsz.gui.component.bined.SelectionRange;
+import com.szadowsz.gui.component.bined.bounds.RBinSelection;
+import com.szadowsz.gui.component.oldbined.SelectionRange;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.oldbined.*;
 import com.szadowsz.gui.component.oldbined.CodeAreaSection;
@@ -477,7 +478,7 @@ public class SwingCodeAreaCommandHandler implements CodeAreaCommandHandler {
             throw new IllegalStateException("Data is not editable");
         }
 
-        SelectionRange selection = ((SelectionCapable) codeArea).getSelection();
+        RBinSelection selection = ((SelectionCapable) codeArea).getSelection();
         if (selection.isEmpty()) {
             return;
         }
@@ -508,7 +509,7 @@ public class SwingCodeAreaCommandHandler implements CodeAreaCommandHandler {
 
     @Override
     public void copy() {
-        SelectionRange selection = ((SelectionCapable) codeArea).getSelection();
+        RBinSelection selection = ((SelectionCapable) codeArea).getSelection();
         if (!selection.isEmpty()) {
             BinaryData data = codeArea.getContentData();
 
@@ -525,7 +526,7 @@ public class SwingCodeAreaCommandHandler implements CodeAreaCommandHandler {
 
     @Override
     public void copyAsCode() {
-        SelectionRange selection = ((SelectionCapable) codeArea).getSelection();
+        RBinSelection selection = ((SelectionCapable) codeArea).getSelection();
         if (!selection.isEmpty()) {
             long first = selection.getFirst();
             long last = selection.getLast();
@@ -564,7 +565,7 @@ public class SwingCodeAreaCommandHandler implements CodeAreaCommandHandler {
         }
 
         EditMode editMode = ((EditModeCapable) codeArea).getEditMode();
-        SelectionRange selection = ((SelectionCapable) codeArea).getSelection();
+        RBinSelection selection = ((SelectionCapable) codeArea).getSelection();
         if (!selection.isEmpty()) {
             copy();
             if (editMode == EditMode.EXPANDING) {
@@ -776,7 +777,7 @@ public class SwingCodeAreaCommandHandler implements CodeAreaCommandHandler {
 
     public void updateSelection(SelectingMode selectingMode, CodeAreaCaretPosition caretPosition) {
         long dataPosition = ((CaretCapable) codeArea).getDataPosition();
-        SelectionRange selection = ((SelectionCapable) codeArea).getSelection();
+        RBinSelection selection = ((SelectionCapable) codeArea).getSelection();
         if (selectingMode == SelectingMode.SELECTING) {
             ((SelectionCapable) codeArea).setSelection(selection.getStart(), dataPosition);
         } else {

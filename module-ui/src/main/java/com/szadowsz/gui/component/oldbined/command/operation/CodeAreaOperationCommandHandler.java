@@ -19,7 +19,9 @@ import com.szadowsz.binary.BinaryData;
 import com.szadowsz.binary.array.ByteArrayData;
 import com.szadowsz.binary.array.ByteArrayEditableData;
 import com.szadowsz.binary.paged.PagedData;
-import com.szadowsz.gui.component.bined.SelectionRange;
+import com.szadowsz.gui.component.bined.bounds.RBinSelection;
+import com.szadowsz.gui.component.bined.utils.RBinUtils;
+import com.szadowsz.gui.component.oldbined.SelectionRange;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.bined.sizing.CharsetStreamTranslator;
 import com.szadowsz.gui.component.oldbined.*;
@@ -543,7 +545,7 @@ public class CodeAreaOperationCommandHandler implements CodeAreaCommandHandler {
 
     @Override
     public void copy() {
-        SelectionRange selection = ((SelectionCapable) codeArea).getSelection();
+        RBinSelection selection = ((SelectionCapable) codeArea).getSelection();
         if (!selection.isEmpty()) {
             BinaryData data = codeArea.getContentData();
 
@@ -560,7 +562,7 @@ public class CodeAreaOperationCommandHandler implements CodeAreaCommandHandler {
 
     @Override
     public void copyAsCode() {
-        SelectionRange selection = ((SelectionCapable) codeArea).getSelection();
+        RBinSelection selection = ((SelectionCapable) codeArea).getSelection();
         if (!selection.isEmpty()) {
             long first = selection.getFirst();
             long last = selection.getLast();
@@ -599,7 +601,7 @@ public class CodeAreaOperationCommandHandler implements CodeAreaCommandHandler {
         }
 
         EditMode editMode = ((EditModeCapable) codeArea).getEditMode();
-        SelectionRange selection = ((SelectionCapable) codeArea).getSelection();
+        RBinSelection selection = ((SelectionCapable) codeArea).getSelection();
         if (!selection.isEmpty()) {
             copy();
             if (editMode == EditMode.EXPANDING) {
@@ -840,7 +842,7 @@ public class CodeAreaOperationCommandHandler implements CodeAreaCommandHandler {
 
     public void updateSelection(SelectingMode selectingMode, CodeAreaCaretPosition caretPosition) {
         long dataPosition = ((CaretCapable) codeArea).getDataPosition();
-        SelectionRange selection = ((SelectionCapable) codeArea).getSelection();
+        RBinSelection selection = ((SelectionCapable) codeArea).getSelection();
         if (selectingMode == SelectingMode.SELECTING) {
             ((SelectionCapable) codeArea).setSelection(selection.getStart(), dataPosition);
         } else {

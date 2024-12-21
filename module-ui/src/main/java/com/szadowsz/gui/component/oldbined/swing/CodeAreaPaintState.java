@@ -17,7 +17,7 @@ package com.szadowsz.gui.component.oldbined.swing;
 
 import com.szadowsz.binary.BinaryData;
 import com.szadowsz.gui.component.oldbined.CodeAreaSection;
-import com.szadowsz.gui.component.bined.RBinSelection;
+import com.szadowsz.gui.component.bined.bounds.RBinSelection;
 import com.szadowsz.gui.component.oldbined.colors.CodeAreaColorsProfile;
 
 import java.nio.charset.Charset;

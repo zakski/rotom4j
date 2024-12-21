@@ -16,7 +16,7 @@
 package com.szadowsz.gui.component.oldbined.swing;
 
 import com.szadowsz.binary.BinaryData;
-import com.szadowsz.gui.component.bined.RBinSelection;
+import com.szadowsz.gui.component.bined.bounds.RBinSelection;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.oldbined.*;
 import com.szadowsz.gui.component.oldbined.CodeAreaSection;

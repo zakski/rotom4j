@@ -16,8 +16,9 @@
 package com.szadowsz.gui.component.oldbined.command;
 
 
+import com.szadowsz.gui.component.bined.bounds.RBinSelection;
 import com.szadowsz.gui.component.oldbined.RBinedAreaCore;
-import com.szadowsz.gui.component.bined.SelectionRange;
+import com.szadowsz.gui.component.oldbined.SelectionRange;
 import com.szadowsz.gui.component.oldbined.capabilities.CaretCapable;
 import com.szadowsz.gui.component.oldbined.capabilities.ScrollingCapable;
 import com.szadowsz.gui.component.oldbined.capabilities.SelectionCapable;
@@ -35,7 +36,7 @@ public class DeleteSelectionCommand extends CodeAreaCommand {
 
     public DeleteSelectionCommand(RBinedAreaCore coreArea) {
         super(coreArea);
-        SelectionRange selection = ((SelectionCapable) coreArea).getSelection();
+        RBinSelection selection = ((SelectionCapable) coreArea).getSelection();
         position = selection.getFirst();
         size = selection.getLast() - position + 1;
         removeCommand = new RemoveDataCommand(coreArea, position, 0, size);

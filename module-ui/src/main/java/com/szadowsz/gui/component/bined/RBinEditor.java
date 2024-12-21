@@ -5,6 +5,7 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
 import com.szadowsz.gui.component.bined.bounds.RBinRect;
+import com.szadowsz.gui.component.bined.bounds.RBinSelection;
 import com.szadowsz.gui.component.bined.caret.CursorShape;
 import com.szadowsz.gui.component.bined.caret.RCaretPos;
 import com.szadowsz.gui.component.bined.caret.RCaret;
@@ -14,7 +15,6 @@ import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
 import com.szadowsz.gui.component.bined.sizing.RBinStructure;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RGroupDrawable;
-import com.szadowsz.gui.component.oldbinary.swing.basic.DefaultCodeAreaCaret;
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.theme.RColorType;
@@ -602,6 +602,11 @@ public class RBinEditor extends RGroupDrawable {
         } else {
             cursorDataCache.mirrorCursorRect.setBounds(mirrorCursorPoint.x, mirrorCursorPoint.y, metrics.getCharacterWidth() * (section == CodeAreaSection.TEXT_PREVIEW ? codeType.getMaxDigitsForByte() : 1), metrics.getRowHeight());
         }
+    }
+
+    public void updateAssessors() {
+        colorAssessor.update(this);
+        charAssessor.update(this);
     }
 
     public static class RowDataCache {

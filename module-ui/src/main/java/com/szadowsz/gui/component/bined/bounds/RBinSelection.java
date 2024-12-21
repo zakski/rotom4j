@@ -13,35 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined;
-
-import java.util.Objects;
+package com.szadowsz.gui.component.bined.bounds;
 
 /**
- * Selection range is selection between two positions where begin represents
- * origin point and end of the selection can be before or after begin.
+ * Selection between two positions where begin represents origin point and end
+ * of the selection can be before or after begin.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public class SelectionRange {
+public class RBinSelection {
 
-    private final long start;
-    private final long end;
+    private long start;
+    private long end;
 
     /**
      * Creates empty selection range.
      */
-    public SelectionRange() {
+    public RBinSelection() {
         this(0, 0);
-    }
-
-    public SelectionRange(SelectionRange selectionRange) {
-        if (selectionRange == null) {
-            start = end = 0;
-        } else {
-            start = selectionRange.start;
-            end = selectionRange.end;
-        }
     }
 
     /**
@@ -51,17 +40,18 @@ public class SelectionRange {
      * @param start selection start position
      * @param end selection end position without actual end position itself
      */
-    public SelectionRange(long start, long end) {
-        if (start < 0) {
-            throw new IllegalArgumentException("Selection with negative range start (" + start + ") is not allowed");
-        }
+    public RBinSelection(long start, long end) {
+        RBinSelection.this.setStart(start);
+        RBinSelection.this.setEnd(end);
+    }
 
-        if (end < 0) {
-            throw new IllegalArgumentException("Selection with negative range end (" + end + ") is not allowed");
+    public RBinSelection(RBinSelection selectionRange) {
+        if (selectionRange == null) {
+            start = end = 0;
+        } else {
+            start = selectionRange.getStart();
+            end = selectionRange.getEnd();
         }
-
-        this.start = start;
-        this.end = end;
     }
 
     public long getStart() {
@@ -118,26 +108,51 @@ public class SelectionRange {
         return start < end ? position >= start && position < end : position >= end && position < start;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final SelectionRange other = (SelectionRange) obj;
-        if (this.start != other.start) {
-            return false;
-        }
-        return this.end == other.end;
+    /**
+     * Returns selection range.
+     *
+     * @return selection range
+     */
+   public RBinSelection getRange() {
+        return new RBinSelection(start, end);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(start, end);
+    public void setStart(long start) {
+        if (start < 0) {
+            throw new IllegalArgumentException("Selection with negative range start (" + start + ") is not allowed");
+        }
+
+        this.start = start;
+    }
+
+    public void setEnd(long end) {
+        if (start < 0) {
+            throw new IllegalArgumentException("Selection with negative range end (" + end + ") is not allowed");
+        }
+
+        this.end = end;
+    }
+
+    public void setSelection(RBinSelection selectionRange) {
+        if (selectionRange == null) {
+            start = end = 0;
+        } else {
+            setStart(selectionRange.getStart());
+            setEnd(selectionRange.getEnd());
+        }
+    }
+
+    public void setSelection(long start, long end) {
+        setStart(start);
+        setEnd(end);
+    }
+
+    public void clearSelection() {
+        end = start;
+    }
+
+    public void setRange(RBinSelection selectionRange) {
+        start = selectionRange.getStart();
+        end = selectionRange.getEnd();
     }
 }

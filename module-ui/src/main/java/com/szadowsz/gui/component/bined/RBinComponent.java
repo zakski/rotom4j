@@ -94,4 +94,9 @@ public abstract class RBinComponent extends RComponent {
 //            drawShiftedChars(pg, drawnChars, charOffset + pos - group, group, positionX + (pos - group) * cellWidth, positionY);
 //        }
     }
+
+    @Override
+    protected void drawBackground(PGraphics pg) {
+
+    }
 }

@@ -13,24 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined;
+package com.szadowsz.gui.component.oldbined;
+
+import java.util.Objects;
 
 /**
- * Selection between two positions where begin represents origin point and end
- * of the selection can be before or after begin.
+ * Selection range is selection between two positions where begin represents
+ * origin point and end of the selection can be before or after begin.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public class RBinSelection {
+public class SelectionRange {
 
-    private long start;
-    private long end;
+    private final long start;
+    private final long end;
 
     /**
      * Creates empty selection range.
      */
-    public RBinSelection() {
+    public SelectionRange() {
         this(0, 0);
+    }
+
+    public SelectionRange(SelectionRange selectionRange) {
+        if (selectionRange == null) {
+            start = end = 0;
+        } else {
+            start = selectionRange.start;
+            end = selectionRange.end;
+        }
     }
 
     /**
@@ -40,18 +51,17 @@ public class RBinSelection {
      * @param start selection start position
      * @param end selection end position without actual end position itself
      */
-    public RBinSelection(long start, long end) {
-        RBinSelection.this.setStart(start);
-        RBinSelection.this.setEnd(end);
-    }
-
-    public RBinSelection(SelectionRange selectionRange) {
-        if (selectionRange == null) {
-            start = end = 0;
-        } else {
-            start = selectionRange.getStart();
-            end = selectionRange.getEnd();
+    public SelectionRange(long start, long end) {
+        if (start < 0) {
+            throw new IllegalArgumentException("Selection with negative range start (" + start + ") is not allowed");
         }
+
+        if (end < 0) {
+            throw new IllegalArgumentException("Selection with negative range end (" + end + ") is not allowed");
+        }
+
+        this.start = start;
+        this.end = end;
     }
 
     public long getStart() {
@@ -108,51 +118,26 @@ public class RBinSelection {
         return start < end ? position >= start && position < end : position >= end && position < start;
     }
 
-    /**
-     * Returns selection range.
-     *
-     * @return selection range
-     */
-   public SelectionRange getRange() {
-        return new SelectionRange(start, end);
-    }
-
-    public void setStart(long start) {
-        if (start < 0) {
-            throw new IllegalArgumentException("Selection with negative range start (" + start + ") is not allowed");
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
         }
-
-        this.start = start;
-    }
-
-    public void setEnd(long end) {
-        if (start < 0) {
-            throw new IllegalArgumentException("Selection with negative range end (" + end + ") is not allowed");
+        if (obj == null) {
+            return false;
         }
-
-        this.end = end;
-    }
-
-    public void setSelection(SelectionRange selectionRange) {
-        if (selectionRange == null) {
-            start = end = 0;
-        } else {
-            setStart(selectionRange.getStart());
-            setEnd(selectionRange.getEnd());
+        if (getClass() != obj.getClass()) {
+            return false;
         }
+        final SelectionRange other = (SelectionRange) obj;
+        if (this.start != other.start) {
+            return false;
+        }
+        return this.end == other.end;
     }
 
-    public void setSelection(long start, long end) {
-        setStart(start);
-        setEnd(end);
-    }
-
-    public void clearSelection() {
-        end = start;
-    }
-
-    public void setRange(SelectionRange selectionRange) {
-        start = selectionRange.getStart();
-        end = selectionRange.getEnd();
+    @Override
+    public int hashCode() {
+        return Objects.hash(start, end);
     }
 }

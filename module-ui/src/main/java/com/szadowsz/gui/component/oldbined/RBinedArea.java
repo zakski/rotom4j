@@ -2,8 +2,7 @@ package com.szadowsz.gui.component.oldbined;
 
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.bined.RBinSelection;
-import com.szadowsz.gui.component.bined.SelectionRange;
+import com.szadowsz.gui.component.bined.bounds.RBinSelection;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.oldbined.basic.BasicCodeAreaSection;
 import com.szadowsz.gui.component.oldbined.basic.CodeAreaScrollPosition;
@@ -289,7 +288,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea, CodeA
     }
 
     @Override
-    public SelectionRange getSelection() {
+    public RBinSelection getSelection() {
         return selection.getRange();
     }
 
@@ -483,7 +482,7 @@ public class RBinedArea extends RBinedAreaCore implements DefaultCodeArea, CodeA
     }
 
     @Override
-    public void setSelection(SelectionRange selectionRange) {
+    public void setSelection(RBinSelection selectionRange) {
         this.selection.setRange(CodeAreaUtils.requireNonNull(selectionRange));
         notifySelectionChanged();
          buffer.invalidateBuffer();
