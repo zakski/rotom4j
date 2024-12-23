@@ -1,9 +1,7 @@
-package com.szadowsz.gui.component.bined;
+package com.szadowsz.gui.component.bined.sizing;
 
 import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
-import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
 import com.szadowsz.gui.component.bined.settings.CodeAreaViewMode;
-import com.szadowsz.gui.component.bined.sizing.RBinStructure;
 
 public class RBinVisibility {
 

@@ -8,7 +8,6 @@ import com.szadowsz.gui.component.bined.caret.RCaret;
 import com.szadowsz.gui.component.bined.scroll.RBinScrollPos;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.bined.utils.RBinUtils;
-import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.nds4j.file.bin.core.BinaryData;
@@ -78,7 +77,7 @@ public class RBinMain extends RBinComponent {
             Arrays.fill(rowDataCache.rowCharacters, previewCharPos + rowBytesLimit, previewCharPos + bytesPerRow, ' ');
         }
     }
-    
+
     protected void prepareRowData(long dataPosition) {
         int maxBytesPerChar = metrics.getMaxBytesPerChar();
         int bytesPerRow = structure.getBytesPerRow();
@@ -122,10 +121,10 @@ public class RBinMain extends RBinComponent {
     /**
      * Paints row background.
      *
-     * @param pg graphics
+     * @param pg              graphics
      * @param rowDataPosition row data position
-     * @param rowPositionX row position X
-     * @param rowPositionY row position Y
+     * @param rowPositionX    row position X
+     * @param rowPositionY    row position Y
      */
     protected void paintRowBackground(PGraphics pg, long rowDataPosition, float rowPositionX, float rowPositionY) {
         int previewCharPos = visibility.getPreviewCharPos();
@@ -184,12 +183,12 @@ public class RBinMain extends RBinComponent {
     /**
      * Paints row text.
      *
-     * @param pg graphics
+     * @param pg              graphics
      * @param rowDataPosition row data position
-     * @param rowPositionX row position X
-     * @param rowPositionY row position Y
+     * @param rowPositionX    row position X
+     * @param rowPositionY    row position Y
      */
-    protected void paintRowText(PGraphics pg, long rowDataPosition, float rowPositionX, float rowPositionY) {
+    protected void drawRowText(PGraphics pg, long rowDataPosition, float rowPositionX, float rowPositionY) {
         int previewCharPos = visibility.getPreviewCharPos();
         int charactersPerRow = structure.getCharactersPerRow();
         int rowHeight = metrics.getRowHeight();
@@ -243,17 +242,18 @@ public class RBinMain extends RBinComponent {
 
             if (sequenceBreak) {
                 if (!RBinUtils.areSameColors(lastColor, renderColor)) {
-                    pg.stroke(renderColor.getRGB());
+                    pg.fill(renderColor.getRGB());
                     lastColor = renderColor;
                 }
 
                 if (charOnRow > renderOffset) {
-                    drawCenteredChars(pg, rowDataCache.rowCharacters, renderOffset, charOnRow - renderOffset, characterWidth, rowPositionX /* + renderOffset * characterWidth*/, positionY);
+                    LOGGER.info("Center Chars [offset {}, length {}, cellWidth {}, [{},{}] ] ",renderOffset, charOnRow - renderOffset,characterWidth,rowPositionX + renderOffset * characterWidth,positionY);
+                    drawCenteredChars(pg, rowDataCache.rowCharacters, renderOffset, charOnRow - renderOffset, characterWidth, rowPositionX + renderOffset * characterWidth, positionY);
                 }
 
                 renderColor = color;
                 if (!RBinUtils.areSameColors(lastColor, renderColor)) {
-                    pg.stroke(renderColor.getRGB());
+                    pg.fill(renderColor.getRGB());
                     lastColor = renderColor;
                 }
 
@@ -262,10 +262,11 @@ public class RBinMain extends RBinComponent {
         }
 
         if (renderOffset < charactersPerRow) {
-//            if (!RBinUtils.areSameColors(lastColor, renderColor)) {
-//                pg.stroke(renderColor.getRGB());
-//            }
+            if (!RBinUtils.areSameColors(lastColor, renderColor)) {
+                pg.fill(renderColor.getRGB());
+            }
 
+            LOGGER.info("Center Chars [offset {}, length {}, cellWidth {}, [{},{}] ] ",renderOffset, charactersPerRow - renderOffset,characterWidth,rowPositionX + renderOffset * characterWidth,positionY);
             drawCenteredChars(pg, rowDataCache.rowCharacters, renderOffset, charactersPerRow - renderOffset, characterWidth, rowPositionX + renderOffset * characterWidth, positionY);
         }
     }
@@ -282,20 +283,17 @@ public class RBinMain extends RBinComponent {
         float rowPositionX = dataViewX - scrollPosition.getCharPosition() * characterWidth - scrollPosition.getCharOffset();
         float rowPositionY = dataViewY - scrollPosition.getRowOffset();
 
-        pg.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); //  pg.setColor(colorsProfile.getTextColor());
+        pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); //  pg.setColor(colorsProfile.getTextColor());
         for (int row = 0; row <= rowsPerRect; row++) {
             if (dataPosition > dataSize) {
                 break;
             }
             pg.pushMatrix();
-            LOGGER.info("rendering row {} of {} @ [{},{}]",row,rowsPerRect,rowPositionX,rowPositionY);
+            LOGGER.debug("rendering row {} of {} @ [{},{}]", row, rowsPerRect, rowPositionX, rowPositionY);
             prepareRowData(dataPosition);
-            LOGGER.info("row characters: {}",editor.getRowDataCache().rowCharacters);
-//            pg.textFont(RFontStore.getMainFont());
-//            pg.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND));
-//            pg.text(Arrays.toString(editor.getRowDataCache().rowCharacters),rowPositionX,rowPositionY);
-            paintRowBackground(pg, dataPosition, rowPositionX, rowPositionY);
-            paintRowText(pg, dataPosition, rowPositionX, rowPositionY);
+            LOGGER.debug("row characters: {}", editor.getRowDataCache().rowCharacters);
+            //paintRowBackground(pg, dataPosition, rowPositionX, rowPositionY);
+            drawRowText(pg, dataPosition, rowPositionX, rowPositionY);
 
             rowPositionY += rowHeight;
             if (Long.MAX_VALUE - dataPosition < bytesPerRow) {
@@ -443,6 +441,143 @@ public class RBinMain extends RBinComponent {
         //pg.setClip(clipBounds);
     }
 
+    protected void drawHeader(PGraphics pg) {
+        int charactersPerCodeSection = visibility.getCharactersPerCodeSection();
+        RBinRect headerArea = dimensions.getHeaderAreaRectangle();
+        //RBinScrollPos scrollPosition = scrolling.getScrollPosition();
+
+        int characterWidth = metrics.getCharacterWidth();
+        int rowHeight = metrics.getRowHeight();
+        float dataViewX = dimensions.getScrollPanelX();
+
+        pg.textFont(font);
+        pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND)); //  g.setColor(colorsProfile.getTextBackground());
+        pg.rect(headerArea.getX(), headerArea.getY(), headerArea.getWidth(), headerArea.getHeight());
+
+        CodeAreaViewMode viewMode = structure.getViewMode();
+        CodeCharactersCase codeCharactersCase = editor.getCodeCharactersCase();
+        RBinEditor.RowDataCache rowDataCache = editor.getRowDataCache();
+        if (viewMode == CodeAreaViewMode.DUAL || viewMode == CodeAreaViewMode.CODE_MATRIX) {
+            float headerX = dataViewX - scrollPosition.getCharPosition() * characterWidth - scrollPosition.getCharOffset();
+            float headerY = headerArea.getY() + rowHeight - metrics.getSubFontSpace();
+
+            pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); //  g.setColor(colorsProfile.getTextColor());
+            Arrays.fill(rowDataCache.headerChars, ' ');
+
+            boolean interleaving = false;
+            int lastPos = 0;
+            int skipToCode = visibility.getSkipToCode();
+            int skipRestFromCode = visibility.getSkipRestFromCode();
+            for (int index = skipToCode; index < skipRestFromCode; index++) {
+                int codePos = structure.computeFirstCodeCharacterPos(index);
+                if (codePos == lastPos + 2 && !interleaving) {
+                    interleaving = true;
+                } else {
+                    RBinUtils.longToBaseCode(rowDataCache.headerChars, codePos, index, CodeType.HEXADECIMAL.getBase(), 2, true, codeCharactersCase);
+                    lastPos = codePos;
+                    interleaving = false;
+                }
+            }
+
+            int skipToChar = visibility.getSkipToChar();
+            int skipRestFromChar = visibility.getSkipRestFromChar();
+            int codeCharEnd = Math.min(skipRestFromChar, visibility.getCharactersPerCodeSection());
+            int renderOffset = skipToChar;
+            Color renderColor = null;
+            for (int characterOnRow = skipToChar; characterOnRow < codeCharEnd; characterOnRow++) {
+                boolean sequenceBreak = false;
+
+                char currentChar = rowDataCache.headerChars[characterOnRow];
+                if (currentChar == ' ' && renderOffset == characterOnRow) {
+                    renderOffset++;
+                    continue;
+                }
+
+                Color color = RThemeStore.getColor(RColorType.NORMAL_FOREGROUND);//colorsProfile.getTextColor();
+
+                if (!RBinUtils.areSameColors(color, renderColor)) { // || !colorType.equals(renderColorType)
+                    sequenceBreak = true;
+                }
+                if (sequenceBreak) {
+                    if (renderOffset < characterOnRow) {
+                        drawCenteredChars(pg, rowDataCache.headerChars, renderOffset, characterOnRow - renderOffset, characterWidth, headerX + renderOffset * characterWidth, headerY);
+                    }
+
+                    if (!RBinUtils.areSameColors(color, renderColor)) {
+                        renderColor = color;
+                        pg.fill(color.getRGB());
+                    }
+
+                    renderOffset = characterOnRow;
+                }
+            }
+
+            if (renderOffset < charactersPerCodeSection) {
+                drawCenteredChars(pg, rowDataCache.headerChars, renderOffset, charactersPerCodeSection - renderOffset, characterWidth, headerX + renderOffset * characterWidth, headerY);
+            }
+        }
+    }
+
+
+    protected void drawRowPosition(PGraphics pg) {
+        int bytesPerRow = structure.getBytesPerRow();
+        long dataSize = editor.getDataSize();
+        int rowHeight = metrics.getRowHeight();
+        int characterWidth = metrics.getCharacterWidth();
+        int subFontSpace = metrics.getSubFontSpace();
+        int rowsPerRect = dimensions.getRowsPerRect();
+
+        RBinRect rowPosRectangle = dimensions.getRowPositionAreaRectangle();
+        RBinRect dataViewRectangle = dimensions.getDataViewRectangle();
+        RBinEditor.RowDataCache rowDataCache = editor.getRowDataCache();
+        int rowPositionLength = editor.getRowPositionLength();
+        BackgroundPaintMode backgroundPaintMode = editor.getBackgroundPaintMode();
+
+        pg.textFont(font);
+        //pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND)); //  g.setColor(colorsProfile.getTextBackground());
+        //pg.rect(rowPosRectangle.getX(), rowPosRectangle.getY(), rowPosRectangle.getWidth(), rowPosRectangle.getHeight());
+
+        if (backgroundPaintMode == BackgroundPaintMode.STRIPED) {
+            long dataPosition = scrollPosition.getRowPosition() * bytesPerRow + ((scrollPosition.getRowPosition() & 1) > 0 ? 0 : bytesPerRow);
+            float stripePositionY = rowPosRectangle.getY() - scrollPosition.getRowOffset() + ((scrollPosition.getRowPosition() & 1) > 0 ? 0 : rowHeight);
+//            pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_BACKGROUND)); //  g.setColor(colorsProfile.getAlternateBackground());
+            for (int row = 0; row <= rowsPerRect / 2; row++) {
+                if (dataPosition > dataSize) {
+                    break;
+                }
+
+  //              pg.rect(rowPosRectangle.getX(), stripePositionY, rowPosRectangle.getWidth(), rowHeight);
+                stripePositionY += rowHeight * 2;
+                dataPosition += bytesPerRow * 2;
+            }
+        }
+
+        long dataPosition = bytesPerRow * scrollPosition.getRowPosition();
+        float positionY = rowPosRectangle.getY() + rowHeight - subFontSpace - scrollPosition.getRowOffset();
+        pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); //  g.setColor(colorsProfile.getTextColor());
+        for (int row = 0; row <= rowsPerRect; row++) {
+            if (dataPosition > dataSize) {
+                break;
+            }
+
+            RBinUtils.longToBaseCode(rowDataCache.rowPositionCode, 0, dataPosition < 0 ? 0 : dataPosition, CodeType.HEXADECIMAL.getBase(), rowPositionLength, true, editor.getCodeCharactersCase());
+            drawCenteredChars(pg, rowDataCache.rowPositionCode, 0, rowPositionLength, characterWidth, rowPosRectangle.getX(), positionY);
+
+            positionY += rowHeight;
+            dataPosition += bytesPerRow;
+            if (dataPosition < 0) {
+                break;
+            }
+        }
+
+        // Decoration lines
+        pg.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); // g.setColor(colorsProfile.getDecorationLine());
+        float lineX = rowPosRectangle.getX() + rowPosRectangle.getWidth() - (characterWidth / 2);
+        if (lineX >= rowPosRectangle.getX()) {
+            pg.line(lineX, dataViewRectangle.getY(), lineX, dataViewRectangle.getY() + dataViewRectangle.getHeight());
+        }
+        pg.line(dataViewRectangle.getX(), dataViewRectangle.getY() - 1, dataViewRectangle.getX() + dataViewRectangle.getWidth(), dataViewRectangle.getY() - 1);
+    }
 
     @Override
     protected void drawBackground(PGraphics pg) {
@@ -482,7 +617,11 @@ public class RBinMain extends RBinComponent {
 //        int previewRelativeX = visibility.getPreviewRelativeX();
         editor.updateAssessors();
 
-        // paintBackground(pg);
+        //drawBackground(pg);
+        pg.pushStyle();
+        drawHeader(pg);
+        pg.popStyle();
+        drawRowPosition(pg);
 
         // Decoration lines
 //        pg.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); // pg.setColor(colorsProfile.getDecorationLine());
@@ -492,13 +631,13 @@ public class RBinMain extends RBinComponent {
 //        }
 
         drawRows(pg);
-        drawCursor(pg);
+     //   drawCursor(pg);
 
 //        paintDebugInfo(pg, mainAreaRect, scrollPosition);
     }
 
     @Override
     public float suggestWidth() {
-        return 0;
+        return size.x;
     }
 }

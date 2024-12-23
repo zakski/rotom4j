@@ -36,8 +36,8 @@ public class RBinUtils {
         return new IllegalStateException("Unexpected " + enumObject.getDeclaringClass().getName() + " value " + enumObject.name());
     }
 
-    public static boolean areSameColors(Color color, Color renderColor) {
-        return false;
+    public static boolean areSameColors(Color color, Color comparedColor) {
+        return (color == null && comparedColor == null) || (color != null && color.equals(comparedColor));
     }
 
     /**

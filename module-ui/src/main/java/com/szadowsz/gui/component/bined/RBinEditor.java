@@ -6,6 +6,7 @@ import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
 import com.szadowsz.gui.component.bined.bounds.RBinRect;
 import com.szadowsz.gui.component.bined.bounds.RBinSelection;
+import com.szadowsz.gui.component.bined.sizing.RBinVisibility;
 import com.szadowsz.gui.component.bined.caret.CursorShape;
 import com.szadowsz.gui.component.bined.caret.RCaretPos;
 import com.szadowsz.gui.component.bined.caret.RCaret;
@@ -118,11 +119,11 @@ public class RBinEditor extends RGroupDrawable {
         contentData = new ByteArrayData(data);
         caret = new RCaret(this);
 
-        children.add(new RBinHeader(gui, path + "/" + HEADER,this));
-        children.add(new RBinRowPosition(gui, path + "/" + ROW,this));
-        children.add(new RBinMain(gui, path + "/" + MAIN,this));
+       // children.add(new RBinHeader(gui, path + "/" + HEADER,this));
+      //  children.add(new RBinRowPosition(gui, path + "/" + ROW,this));
 
         init();
+        children.add(new RBinMain(gui, path + "/" + MAIN,this));
     }
 
     protected float getHorizontalScrollBarHeight() {
@@ -215,22 +216,21 @@ public class RBinEditor extends RGroupDrawable {
         // long numRows = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow>0?1:0);
         int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
         int digitsForByte = codeType.getMaxDigitsForByte(); // Get the number of characters for a byte
-        size.x = digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
+        rowPositionLength = recomputeRowPositionLength();
+        size.x = characterWidth * (rowPositionLength + 1) + digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
 
         LOGGER.info("Width of a single Character: {}", characterWidth);
         LOGGER.info("Maximum Digits For A Byte: {}", digitsForByte);
         LOGGER.info("Width of Binary Editor: {}", size.x);
 
         long rowsInData = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow > 0 ? 1 : 0);
-        size.y = metrics.getRowHeight() * rowsInData;
+        size.y = metrics.getFontHeight() + metrics.getFontHeight() / 4 + metrics.getRowHeight() * rowsInData;
 
         LOGGER.info("Data Rows Count: {}", rowsInData);
         LOGGER.info("Height of Binary Editor: {}", size.y);
 
         float verticalScrollBarWidth = getVerticalScrollBarWidth();
         float horizontalScrollBarHeight = getHorizontalScrollBarHeight();
-
-        rowPositionLength = getRowPositionLength();
 
         dimensions.recomputeSizes(metrics, 0, 0, size.x, size.y, rowPositionLength, verticalScrollBarWidth, horizontalScrollBarHeight);
 
@@ -239,6 +239,8 @@ public class RBinEditor extends RGroupDrawable {
 
         computeLayout(); // use the sizes to figure out the width
         updateRowDataCache();
+        size.x = dimensions.getComponentRectangle().getWidth();
+        size.y = dimensions.getComponentRectangle().getHeight();
     }
 
     /**
@@ -562,7 +564,7 @@ public class RBinEditor extends RGroupDrawable {
     public float suggestWidth() {
         int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
         int digitsForByte = codeType.getMaxDigitsForByte(); // Get the number of characters for a byte
-        return digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
+        return characterWidth * (rowPositionLength + 1) + digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
     }
 
     public void updateScrollBars() {
