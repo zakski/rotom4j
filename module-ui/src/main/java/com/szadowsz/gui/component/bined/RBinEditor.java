@@ -34,14 +34,14 @@ import processing.core.PVector;
 import java.awt.*;
 import java.nio.charset.Charset;
 
+/**
+ * Editor Level Logic
+ */
 public class RBinEditor extends RGroupDrawable {
 
     private static Logger LOGGER = LoggerFactory.getLogger(RBinEditor.class);
 
-    protected static final String HEADER = "header";
-    protected static final String ROW = "row";
     protected static final String MAIN = "main";
-
 
     protected RBinColorAssessor colorAssessor = new RBinColorAssessor();
     protected RBinCharAssessor charAssessor = new RBinCharAssessor();
@@ -58,7 +58,7 @@ public class RBinEditor extends RGroupDrawable {
     // Character Config
     protected Charset charset = Charset.forName(RFontStore.DEFAULT_ENCODING);
     protected CodeCharactersCase codeCharactersCase = CodeCharactersCase.UPPER;
-    protected CodeType codeType = CodeType.HEXADECIMAL;
+    protected CodeType codeType = CodeType.DECIMAL;
     protected PFont codeFont;
 
     // Row Layout Config
@@ -115,6 +115,7 @@ public class RBinEditor extends RGroupDrawable {
     public RBinEditor(RotomGui gui, String path, RGroup parent, String filePath) {
         super(gui, path, parent);
 
+        LOGGER.info("Loading File \"{}\" for \"{}\" Binary Editor", filePath,name);
         byte[] data = Buffer.readFile(filePath);
         contentData = new ByteArrayData(data);
         caret = new RCaret(this);
@@ -147,6 +148,10 @@ public class RBinEditor extends RGroupDrawable {
         layoutChanged = false;
     }
 
+    protected long computeRowsCount() {
+        return contentData.getDataSize() / maxBytesPerRow + ((contentData.getDataSize() % maxBytesPerRow > 0) ? 1 : 0);
+    }
+
     protected int recomputeRowPositionLength() {
         if (minRowPositionLength > 0 && minRowPositionLength == maxRowPositionLength) {
             return minRowPositionLength;
@@ -169,78 +174,66 @@ public class RBinEditor extends RGroupDrawable {
         return positionLength == 0 ? 1 : positionLength;
     }
 
-    protected long recomputeRows() {
-        return contentData.getDataSize() / maxBytesPerRow + ((contentData.getDataSize() % maxBytesPerRow > 0) ? 1 : 0);
-    }
 
-    protected void recomputeDimensions() {
-        float verticalScrollBarSize = getVerticalScrollBarWidth();
-        float horizontalScrollBarSize = getHorizontalScrollBarHeight();
-        float componentWidth = metrics.getCharacterWidth() * maxBytesPerRow * PositionCodeType.HEXADECIMAL.getMaxDigitsForByte() + verticalScrollBarSize; // TODO
-        float componentHeight = metrics.getRowHeight() * recomputeRows() + horizontalScrollBarSize; // TODO
-        dimensions.recomputeSizes(metrics, 0, 0, componentWidth, componentHeight, rowPositionLength, verticalScrollBarSize, horizontalScrollBarSize);
-    }
+//    protected void recomputeDimensions() {
+//        float verticalScrollBarSize = getVerticalScrollBarWidth();
+//        float horizontalScrollBarSize = getHorizontalScrollBarHeight();
+//        float componentWidth = metrics.getCharacterWidth() * maxBytesPerRow * PositionCodeType.HEXADECIMAL.getMaxDigitsForByte() + verticalScrollBarSize; // TODO
+//        float componentHeight = metrics.getRowHeight() * computeRowsCount() + horizontalScrollBarSize; // TODO
+//        dimensions.recomputeSizes(metrics, 0, 0, componentWidth, componentHeight, rowPositionLength, verticalScrollBarSize, horizontalScrollBarSize);
+//    }
 
-    protected void recomputeLayout() {
-        rowPositionLength = recomputeRowPositionLength();
-        recomputeDimensions();
-
-        int charactersPerPage = dimensions.getCharactersPerPage();
-        structure.updateCache(this, charactersPerPage);
-        visibility.recomputeCharPositions(metrics,structure,dimensions);
-
+//    protected void recomputeLayout() {
+//        rowPositionLength = recomputeRowPositionLength();
+//        recomputeDimensions();
+//
+//        int charactersPerPage = dimensions.getCharactersPerPage();
+//        structure.updateCache(this, charactersPerPage);
+//        visibility.recomputeCharPositions(metrics,structure,dimensions);
+//
 //        int rowsPerPage = dimensions.getRowsPerPage();
 //        long rowsPerDocument = structure.getRowsPerDocument();
 //        int charactersPerRow = structure.getCharactersPerRow();
-
+//
 //        if (metrics.isInitialized()) {
 //            scrolling.updateMaximumScrollPosition(rowsPerDocument, rowsPerPage, charactersPerRow, charactersPerPage, dimensions.getLastCharOffset(), dimensions.getLastRowOffset());
 //        }
-
-        updateScrollBars();
-
-        layoutChanged = false;
-    }
+//
+//        updateScrollBars();
+//
+//        layoutChanged = false;
+//    }
 
 
     protected void init() {
-//        caret.setSection(CodeAreaSection.CODE_MATRIX);
+        LOGGER.info("Initialising \"{}\" Binary Editor", name);
+
+        caret.setSection(CodeAreaSection.CODE_MATRIX);
         PGraphics fontGraphics = gui.getSketch().createGraphics(800, 600, PConstants.JAVA2D);
         fontGraphics.beginDraw();
         fontGraphics.endDraw();
         metrics.recomputeMetrics(fontGraphics, RFontStore.getMainFont(), charset); // get Font Character sizes
+        LOGGER.info("Font Metrics Loaded for \"{}\" Binary Editor", name);
 
-        // we have the maximum of bytes per row, so at this stage we should work out the width we ideally should have to play with
-        // contentData.getDataSize()
-        // structure.getBytesPerRow() vs maxBytesPerRow
-        // long numRows = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow>0?1:0);
-        int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
-        int digitsForByte = codeType.getMaxDigitsForByte(); // Get the number of characters for a byte
+        long rowsCount = computeRowsCount();
+        LOGGER.info("\"{}\" Binary Editor Data Rows Count: {}", name,rowsCount);
         rowPositionLength = recomputeRowPositionLength();
-        size.x = characterWidth * (rowPositionLength + 1) + digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
 
-        LOGGER.info("Width of a single Character: {}", characterWidth);
-        LOGGER.info("Maximum Digits For A Byte: {}", digitsForByte);
-        LOGGER.info("Width of Binary Editor: {}", size.x);
+        dimensions.computeRowDimensions(metrics,rowPositionLength, rowsCount);
 
-        long rowsInData = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow > 0 ? 1 : 0);
-        size.y = metrics.getFontHeight() + metrics.getFontHeight() / 4 + metrics.getRowHeight() * rowsInData;
+        dimensions.computeHeaderAndDataDimensions(metrics,codeType,maxBytesPerRow,rowsCount);
 
-        LOGGER.info("Data Rows Count: {}", rowsInData);
-        LOGGER.info("Height of Binary Editor: {}", size.y);
+        // Relay the size to the proper place // TODO Bodge job
+        size.x = dimensions.getComponentRectangle().getWidth();
+        size.y = dimensions.getComponentRectangle().getHeight();
 
-        float verticalScrollBarWidth = getVerticalScrollBarWidth();
-        float horizontalScrollBarHeight = getHorizontalScrollBarHeight();
-
-        dimensions.recomputeSizes(metrics, 0, 0, size.x, size.y, rowPositionLength, verticalScrollBarWidth, horizontalScrollBarHeight);
+        dimensions.computeOtherMetrics(metrics);
 
         int charactersPerPage = dimensions.getCharactersPerPage();
         structure.updateCache(this, charactersPerPage);
 
         computeLayout(); // use the sizes to figure out the width
         updateRowDataCache();
-        size.x = dimensions.getComponentRectangle().getWidth();
-        size.y = dimensions.getComponentRectangle().getHeight();
     }
 
     /**
@@ -258,8 +251,8 @@ public class RBinEditor extends RGroupDrawable {
     }
 
     protected void paintOutsideArea(PGraphics g) {
-        int headerAreaHeight = dimensions.getHeaderAreaHeight();
-        int rowPositionAreaWidth = dimensions.getRowPositionAreaWidth();
+        float headerAreaHeight = dimensions.getHeaderAreaHeight();
+        float rowPositionAreaWidth = dimensions.getRowPositionAreaWidth();
         RBinRect componentRect = dimensions.getComponentRectangle();
         int characterWidth = metrics.getCharacterWidth();
         g.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND)); // g.setColor(colorsProfile.getTextBackground());
@@ -269,7 +262,7 @@ public class RBinEditor extends RGroupDrawable {
         g.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); // g.setColor(colorsProfile.getDecorationLine());
         g.line(componentRect.getX(), componentRect.getY() + headerAreaHeight - 1, componentRect.getX() + rowPositionAreaWidth, componentRect.getY() + headerAreaHeight - 1);
 
-        float lineX = componentRect.getX() + rowPositionAreaWidth - (characterWidth / 2);
+        float lineX = componentRect.getX() + rowPositionAreaWidth - ((float) characterWidth / 2);
         if (lineX >= componentRect.getX()) {
             g.line(lineX, componentRect.getY(), lineX, componentRect.getY() + headerAreaHeight);
         }
