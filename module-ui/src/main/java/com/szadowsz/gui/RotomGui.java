@@ -6,7 +6,6 @@ import com.szadowsz.gui.component.RComponentTree;
 import com.szadowsz.gui.component.RPaths;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.bined.RBinEditor;
-import com.szadowsz.gui.component.oldbined.RBinedArea;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
 import com.szadowsz.gui.component.group.folder.*;
@@ -23,6 +22,7 @@ import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.RInputHandler;
 import com.szadowsz.gui.input.RInputListener;
+import com.szadowsz.gui.input.keys.RKeyboard;
 import com.szadowsz.gui.layout.RBorderLayout;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.utils.RContextLines;
@@ -66,6 +66,14 @@ public class RotomGui {
     protected int lastFrameCountGuiWasShown = -1;
 
     protected final RInputHandler inputHandler; // TODO LazyGui
+
+    /*
+     * INTERNAL USE ONLY This holds a reference to the Gcontrol that currently has
+     * the focus. A control loses focus when another control takes focus with the
+     * takeFocus() method. The takeFocus method should use focusIsWith.loseFocus()
+     * before setting its value to the new control.
+     */
+    protected RComponent focusIsWith = null;
 
     // Component Stack
     protected final RComponentTree tree;
@@ -310,6 +318,24 @@ public class RotomGui {
 
     public void resetInput() { // TODO Me
         inputHandler.reset();
+    }
+
+   /**
+     * Give the focus to the specified control but only after allowing the current control with focus to release it
+     * gracefully.
+     *
+     * @param component component to gain focus
+     */
+   public void takeFocus(RComponent component) {
+        if (focusIsWith != null && focusIsWith != component) {
+            focusIsWith.loseFocus(component);
+        }
+        focusIsWith = component;
+        setFocus(focusIsWith.getParentFolder().getWindow());
+    }
+
+    public boolean hasFocus(RComponent component) {
+       return focusIsWith == component;
     }
 
     /**

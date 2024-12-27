@@ -18,7 +18,7 @@ package com.szadowsz.gui.component.oldbined.swing;
 import com.szadowsz.gui.component.oldbined.basic.BasicCodeAreaScrolling;
 import com.szadowsz.gui.component.oldbined.basic.BasicCodeAreaStructure;
 import com.szadowsz.gui.component.oldbined.settings.ScrollBarVerticalScale;
-import com.szadowsz.gui.component.oldbined.settings.ScrollingDirection;
+import com.szadowsz.gui.component.bined.settings.ScrollingDirection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

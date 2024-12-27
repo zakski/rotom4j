@@ -19,7 +19,7 @@ import com.szadowsz.gui.component.oldbined.CodeAreaCaret;
 import com.szadowsz.gui.component.oldbined.CodeAreaCaretPosition;
 import com.szadowsz.gui.component.oldbined.CodeAreaSection;
 import com.szadowsz.gui.component.oldbined.settings.CaretOverlapMode;
-import com.szadowsz.gui.component.oldbined.settings.MovementDirection;
+import com.szadowsz.gui.component.bined.settings.MovementDirection;
 import com.szadowsz.gui.component.oldbined.listeners.CodeAreaCaretListener;
 
 /**

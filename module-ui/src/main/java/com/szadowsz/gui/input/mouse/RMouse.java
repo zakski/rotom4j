@@ -118,7 +118,7 @@ public final class RMouse {
 
     public void mouseEvent(MouseEvent event) {
         setPosition(event.getX(), event.getY());
-        RMouseEvent e = new RMouseEvent(current.x, current.y, previous.x, previous.y, event.getButton(), event.getCount());
+        RMouseEvent e = new RMouseEvent(current.x, current.y, previous.x, previous.y, event);
         switch (event.getAction()){
             case MouseEvent.ENTER -> mouseEntered(e);
             case MouseEvent.EXIT -> mouseExited(e);

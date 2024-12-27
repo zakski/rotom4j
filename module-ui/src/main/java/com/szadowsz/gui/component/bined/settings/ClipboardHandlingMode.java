@@ -13,16 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.oldbined.settings;
+package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of supported movement directions.
+ * Enumeration of clipboard handling modes.
+ * <p>
+ * Used to specify what to do with basic clipboard actions like cut, copy, paste
+ * and delete.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum MovementDirection {
-    UP, DOWN, LEFT, RIGHT,
-    PAGE_UP, PAGE_DOWN,
-    ROW_START, ROW_END, DOC_START, DOC_END,
-    SWITCH_SECTION
+public enum ClipboardHandlingMode {
+
+    /**
+     * Ignore clipboard actions.
+     */
+    IGNORE,
+    /**
+     * Process clipboard actions using default operations.
+     */
+    PROCESS
 }

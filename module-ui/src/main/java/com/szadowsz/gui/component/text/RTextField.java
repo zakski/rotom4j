@@ -128,7 +128,7 @@ public class RTextField extends RTextEditable {
         fillBackground(pg);
         pg.image(buffer.draw(),0,0);
         // Draw caret if text display area
-        if (isFocused && showCaret && endTLHI.tli != null) {
+        if (gui.hasFocus(this) && showCaret && endTLHI.tli != null) {
             float[] cinfo = endTLHI.tli.layout.getCaretInfo(endTLHI.thi);
             float x_left = /*-ptx +*/ cinfo[0];
             float y_top = /*-pty +*/ endTLHI.tli.yPosInPara;
@@ -279,7 +279,7 @@ public class RTextField extends RTextEditable {
     @Override
     public void keyChordPressedOver(RKeyEvent keyEvent, float mouseX, float mouseY) {
         LOGGER.info("text field {} Chord Check",name);
-        if (!isVisible || !isEditEnabled || !isFocused || endTLHI == null) {
+        if (!isVisible || !isEditEnabled || !gui.hasFocus(this) || endTLHI == null) {
             return;
         }
 
@@ -420,7 +420,7 @@ public class RTextField extends RTextEditable {
     @Override
     public void mouseDragged(RMouseEvent mouseEvent) {
         super.mouseDragged(mouseEvent);
-        if (isFocused) {
+        if (gui.hasFocus(this)) {
             super.mouseDragged(mouseEvent);
             if (hsb.isDragging()) {
                 hsb.mouseDragged(mouseEvent);

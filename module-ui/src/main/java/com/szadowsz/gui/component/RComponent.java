@@ -59,7 +59,7 @@ public abstract class RComponent {
 
     // Component State
     protected boolean isDragged = false; // Set to true when mouse is dragging, set to false on mouse released
-    protected boolean isFocused = false; // TODO Difference between mouse over and has focus
+    //protected boolean isFocused = false; // TODO Difference between mouse over and has focus
     protected boolean isMouseOver = false; // TODO Difference between mouse over and has focus
 
     /**
@@ -416,7 +416,7 @@ public abstract class RComponent {
      * @return TODO
      */
     public boolean hasFocus() {
-        return isFocused;
+        return gui.hasFocus(this);
     }
 
     /**
@@ -425,7 +425,12 @@ public abstract class RComponent {
      * @param focused TODO
      */
     public void setFocus(boolean focused) {
-        isFocused = focused;
+        if (focused){
+            gui.takeFocus(this);
+        } else if (gui.hasFocus(this)){
+            gui.takeFocus(null);
+            loseFocus(null);
+        }
     }
 
 
@@ -620,4 +625,17 @@ public abstract class RComponent {
     public void updateCoordinates(PVector basePos, PVector relPos, PVector dim) { // TODO LazyGui
         updateCoordinates(basePos.x, basePos.y, relPos.x, relPos.y, dim.x,dim.y);
     }
+
+    /**
+     * For most controls there is nothing to do when they loose focus. Override this
+     * method in classes that need to do something when they loose focus eg
+     * TextField
+     */
+    public void loseFocus(RComponent grabber) {
+        if (isMouseOver){
+            isMouseOver = false;
+        }
+        getParentFolder().getWindow().redrawBuffer();
+    }
+
 }

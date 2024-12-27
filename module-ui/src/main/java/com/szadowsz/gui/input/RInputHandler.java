@@ -1,6 +1,7 @@
 package com.szadowsz.gui.input;
 
 import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.RComponentTree;
 import com.szadowsz.gui.input.keys.RKeyboard;
 import com.szadowsz.gui.input.mouse.RMouse;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ public class RInputHandler {
 
     private final RKeyboard keyboard;
     private final RMouse mouse;
+    private final RotomGui gui;
 
     /**
      * Constructor to Initialise Input Handling Components
@@ -25,6 +27,7 @@ public class RInputHandler {
     public RInputHandler(RotomGui gui) {
         this.keyboard = new RKeyboard(gui,5000L,33L);
         this.mouse = new RMouse(gui,gui.getSketch().mouseX,gui.getSketch().mouseY);
+        this.gui = gui;
     }
 
     /**
@@ -66,9 +69,12 @@ public class RInputHandler {
     }
 
     /**
-     * Reset the keyboard held keys
+     * Reset the keyboard held keys and other input states
      */
     public void reset() {
         keyboard.clear();
+        gui.takeFocus(null);
+        RComponentTree tree = gui.getComponentTree();
+        tree.setAllMouseOverToFalse(tree.getRoot());
     }
 }

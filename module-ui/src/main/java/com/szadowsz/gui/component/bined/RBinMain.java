@@ -391,10 +391,10 @@ public class RBinMain extends RBinComponent {
     }
 
     protected void drawCursor(PGraphics pg) {
-//        if (!editor.hasFocus()) {
-//            LOGGER.info("No Cursor Focus for {}",editor.getName());
-//            return;
-//        }
+        if (!gui.hasFocus(editor)) {
+            LOGGER.info("No Cursor Focus for {}",editor.getName());
+            return;
+        }
 
         int maxBytesPerChar = metrics.getMaxBytesPerChar();
         RBinRect mainAreaRect = dimensions.getMainAreaRectangle();

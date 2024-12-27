@@ -21,7 +21,6 @@ import com.szadowsz.binary.array.ByteArrayData;
 import com.szadowsz.binary.array.ByteArrayEditableData;
 import com.szadowsz.binary.paged.PagedData;
 import com.szadowsz.gui.component.bined.bounds.RBinSelection;
-import com.szadowsz.gui.component.oldbined.SelectionRange;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.oldbined.*;
 import com.szadowsz.gui.component.oldbined.CodeAreaSection;
@@ -29,7 +28,10 @@ import com.szadowsz.gui.component.oldbined.basic.BasicCodeAreaSection;
 import com.szadowsz.gui.component.oldbined.basic.CodeAreaScrollPosition;
 import com.szadowsz.gui.component.oldbined.capabilities.*;
 import com.szadowsz.gui.component.oldbined.command.CodeAreaCommandHandler;
-import com.szadowsz.gui.component.oldbined.settings.*;
+import com.szadowsz.gui.component.oldbined.settings.CaretOverlapMode;
+import com.szadowsz.gui.component.oldbined.settings.ClipboardHandlingMode;
+import com.szadowsz.gui.component.oldbined.settings.EnterKeyHandlingMode;
+import com.szadowsz.gui.component.oldbined.settings.TabKeyHandlingMode;
 
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -42,6 +44,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.szadowsz.gui.component.bined.settings.CodeType.HEXADECIMAL;
 
 /**
  * Default binary editor command handler.

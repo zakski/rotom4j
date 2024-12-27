@@ -293,24 +293,24 @@ public abstract class RTextEditable extends RTextBase {
         return isEditEnabled;
     }
 
-    /**
-     * Determines whether the text can be edited using the keyboard or mouse. It
-     * still allows the text to be modified by the sketch code. <br>
-     * If text editing is being disabled and the control has focus then it is forced
-     * to give up that focus. <br>
-     * This might be useful if you want to use a GTextArea control to display large
-     * amounts of text that needs scrolling (so cannot use a GLabel) but must not
-     * change e.g. a user instruction guide.
-     *
-     * @param enableTextEdit false to disable keyboard input
-     */
-    public void setEditEnabled(boolean enableTextEdit) {
-        // If we are disabling this then make sure it does not have focus
-        if (!enableTextEdit && isFocused) {
-            setFocus(false);
-        }
-        isEditEnabled = enableTextEdit;
-    }
+//    /**
+//     * Determines whether the text can be edited using the keyboard or mouse. It
+//     * still allows the text to be modified by the sketch code. <br>
+//     * If text editing is being disabled and the control has focus then it is forced
+//     * to give up that focus. <br>
+//     * This might be useful if you want to use a GTextArea control to display large
+//     * amounts of text that needs scrolling (so cannot use a GLabel) but must not
+//     * change e.g. a user instruction guide.
+//     *
+//     * @param enableTextEdit false to disable keyboard input
+//     */
+//    public void setEditEnabled(boolean enableTextEdit) {
+//        // If we are disabling this then make sure it does not have focus
+//        if (!enableTextEdit && isFocused) {
+//            setFocus(false);
+//        }
+//        isEditEnabled = enableTextEdit;
+//    }
 
     public void setJustify(boolean justify) {
         stext.setJustify(justify);
@@ -373,7 +373,7 @@ public abstract class RTextEditable extends RTextBase {
 
     @Override
     public void keyPressedFocused(RKeyEvent keyEvent) {
-        if (!isVisible || !isEditEnabled || !isFocused) {
+        if (!isVisible || !isEditEnabled || !hasFocus()) {
             return;
         } else {
             // Key Presses are only cared about for chords so we just eat the event
@@ -413,7 +413,7 @@ public abstract class RTextEditable extends RTextBase {
      */
     public void setFocus(boolean focus) {
         // Only do something if we don't have the focus
-        if (!isFocused && focus) {
+        if (!gui.hasFocus(this) && focus) {
             isDragged = false;
             // Make sure we have some text
             if (stext == null || stext.length() == 0)

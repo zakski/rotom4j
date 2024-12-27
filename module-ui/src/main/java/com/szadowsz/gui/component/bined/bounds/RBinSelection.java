@@ -126,7 +126,7 @@ public class RBinSelection {
     }
 
     public void setEnd(long end) {
-        if (start < 0) {
+        if (end < 0) {
             throw new IllegalArgumentException("Selection with negative range end (" + end + ") is not allowed");
         }
 

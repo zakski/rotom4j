@@ -18,7 +18,7 @@ package com.szadowsz.gui.component.oldbined.capabilities;
 
 import com.szadowsz.gui.component.oldbined.CodeAreaCaretPosition;
 import com.szadowsz.gui.component.oldbined.basic.CodeAreaScrollPosition;
-import com.szadowsz.gui.component.oldbined.settings.ScrollingDirection;
+import com.szadowsz.gui.component.bined.settings.ScrollingDirection;
 import com.szadowsz.gui.component.oldbined.listeners.ScrollingListener;
 
 /**

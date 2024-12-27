@@ -22,7 +22,7 @@ import com.szadowsz.gui.component.oldbined.capabilities.RowWrappingCapable;
 import com.szadowsz.gui.component.oldbined.capabilities.ViewModeCapable;
 import com.szadowsz.gui.component.bined.settings.CodeAreaViewMode;
 import com.szadowsz.gui.component.bined.settings.CodeType;
-import com.szadowsz.gui.component.oldbined.settings.MovementDirection;
+import com.szadowsz.gui.component.bined.settings.MovementDirection;
 import com.szadowsz.gui.component.bined.settings.RowWrappingMode;
 
 /**

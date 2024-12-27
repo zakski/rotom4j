@@ -27,6 +27,7 @@ import com.szadowsz.gui.component.oldbined.colors.BasicColorsCapableCodeAreaPain
 import com.szadowsz.gui.component.oldbined.colors.CodeAreaColorsProfile;
 import com.szadowsz.gui.component.oldbined.listeners.DataChangedListener;
 import com.szadowsz.gui.component.oldbined.settings.*;
+import com.szadowsz.gui.component.oldbined.settings.CaretOverlapMode;
 
 import javax.swing.*;
 import java.awt.*;

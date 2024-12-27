@@ -16,10 +16,7 @@
 package com.szadowsz.gui.component.oldbined.basic;
 
 
-import com.szadowsz.gui.component.bined.settings.HorizontalScrollUnit;
-import com.szadowsz.gui.component.bined.settings.PositionScrollVisibility;
-import com.szadowsz.gui.component.bined.settings.ScrollBarVisibility;
-import com.szadowsz.gui.component.bined.settings.VerticalScrollUnit;
+import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.oldbined.CodeAreaUtils;
 import com.szadowsz.gui.component.oldbined.DataProvider;
 import com.szadowsz.gui.component.oldbined.capabilities.BasicScrollingCapable;

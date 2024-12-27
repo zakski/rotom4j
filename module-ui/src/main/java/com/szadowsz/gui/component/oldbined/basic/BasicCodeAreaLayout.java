@@ -21,7 +21,7 @@ import com.szadowsz.gui.component.oldbined.CodeAreaSection;
 import com.szadowsz.gui.component.oldbined.CodeAreaUtils;
 import com.szadowsz.gui.component.bined.settings.CodeAreaViewMode;
 import com.szadowsz.gui.component.bined.settings.CodeType;
-import com.szadowsz.gui.component.oldbined.settings.MovementDirection;
+import com.szadowsz.gui.component.bined.settings.MovementDirection;
 import com.szadowsz.gui.component.bined.settings.RowWrappingMode;
 import com.szadowsz.gui.component.oldbined.swing.SwingCodeAreaCaretPosition;
 
