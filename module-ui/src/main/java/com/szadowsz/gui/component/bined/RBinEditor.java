@@ -17,14 +17,12 @@ import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
 import com.szadowsz.gui.component.bined.sizing.RBinStructure;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RGroupDrawable;
-import com.szadowsz.gui.component.oldbinary.CodeAreaCaretPosition;
-import com.szadowsz.gui.component.oldbinary.basic.BasicCodeAreaSection;
-import com.szadowsz.gui.component.oldbined.basic.CodeAreaScrollPosition;
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.clip.BinaryDataClipboardData;
+import com.szadowsz.gui.input.clip.ClipboardData;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutBase;
@@ -49,7 +47,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.Optional;
 
 /**
  * Editor Level Logic
@@ -127,6 +124,8 @@ public class RBinEditor extends RGroupDrawable {
     protected volatile boolean caretChanged = true;
 
     protected Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    protected ClipboardHandlingMode clipboardHandlingMode = ClipboardHandlingMode.PROCESS;
+    protected ClipboardData currentClipboardData = null;
     protected DataFlavor binedDataFlavor;
     protected DataFlavor binaryDataFlavor;
 
@@ -164,6 +163,10 @@ public class RBinEditor extends RGroupDrawable {
     }
 
     protected void notifyCaretChanged() { // TODO consider if needed
+        getParentFolder().getWindow().redrawBuffer();
+    }
+
+    protected void notifyScrolled() { // TODO consider if needed
         getParentFolder().getWindow().redrawBuffer();
     }
 
@@ -249,7 +252,7 @@ public class RBinEditor extends RGroupDrawable {
     protected void setScrollPosition(RBinScrollPos scrollPosition) {
         if (!scrollPosition.equals(this.scrollPosition)) {
             this.scrollPosition.setScrollPosition(scrollPosition);
-            scrollPositionModified();
+            //scrollPositionModified();
             updateScrollBars();
             notifyScrolled();
         }
@@ -369,35 +372,35 @@ public class RBinEditor extends RGroupDrawable {
         return structure.computeMovePosition(position, direction, dimensions.getRowsPerPage());
     }
 
-    protected RBinScrollPos computeScrolling(RBinScrollPos startPosition, ScrollingDirection direction) {
-        int rowsPerPage = dimensions.getRowsPerPage();
-        long rowsPerDocument = structure.getRowsPerDocument();
-        return scrolling.computeScrolling(startPosition, direction, rowsPerPage, rowsPerDocument);
-    }
+//    protected RBinScrollPos computeScrolling(RBinScrollPos startPosition, ScrollingDirection direction) {
+//        int rowsPerPage = dimensions.getRowsPerPage();
+//        long rowsPerDocument = structure.getRowsPerDocument();
+//        return scrolling.computeScrolling(startPosition, direction, rowsPerPage, rowsPerDocument);
+//    }
 
-    public Optional<RBinScrollPos> computeRevealScrollPosition(RCaretPos caretPosition) {
-        int bytesPerRow = structure.getBytesPerRow();
-        int previewCharPos = visibility.getPreviewCharPos();
-        int characterWidth = metrics.getCharacterWidth();
-        int rowHeight = metrics.getRowHeight();
-        float dataViewWidth = dimensions.getDataViewWidth();
-        float dataViewHeight = dimensions.getDataViewHeight();
-        int rowsPerPage = dimensions.getRowsPerPage();
-        int charactersPerPage = dimensions.getCharactersPerPage();
-
-        long shiftedPosition = caretPosition.getDataPosition();
-        long rowPosition = shiftedPosition / bytesPerRow;
-        int byteOffset = (int) (shiftedPosition % bytesPerRow);
-        int charPosition;
-        CodeAreaSection section = caretPosition.getSection().orElse(CodeAreaSection.CODE_MATRIX);
-        if (section == CodeAreaSection.TEXT_PREVIEW) {
-            charPosition = previewCharPos + byteOffset;
-        } else {
-            charPosition = structure.computeFirstCodeCharacterPos(byteOffset) + caretPosition.getCodeOffset();
-        }
-
-        return scrolling.computeRevealScrollPosition(rowPosition, charPosition, bytesPerRow, rowsPerPage, charactersPerPage, dataViewWidth % characterWidth, dataViewHeight % rowHeight, characterWidth, rowHeight);
-    }
+//    public Optional<RBinScrollPos> computeRevealScrollPosition(RCaretPos caretPosition) {
+//        int bytesPerRow = structure.getBytesPerRow();
+//        int previewCharPos = visibility.getPreviewCharPos();
+//        int characterWidth = metrics.getCharacterWidth();
+//        int rowHeight = metrics.getRowHeight();
+//        float dataViewWidth = dimensions.getDataViewWidth();
+//        float dataViewHeight = dimensions.getDataViewHeight();
+//        int rowsPerPage = dimensions.getRowsPerPage();
+//        int charactersPerPage = dimensions.getCharactersPerPage();
+//
+//        long shiftedPosition = caretPosition.getDataPosition();
+//        long rowPosition = shiftedPosition / bytesPerRow;
+//        int byteOffset = (int) (shiftedPosition % bytesPerRow);
+//        int charPosition;
+//        CodeAreaSection section = caretPosition.getSection().orElse(CodeAreaSection.CODE_MATRIX);
+//        if (section == CodeAreaSection.TEXT_PREVIEW) {
+//            charPosition = previewCharPos + byteOffset;
+//        } else {
+//            charPosition = structure.computeFirstCodeCharacterPos(byteOffset) + caretPosition.getCodeOffset();
+//        }
+//
+//        return scrolling.computeRevealScrollPosition(rowPosition, charPosition, bytesPerRow, rowsPerPage, charactersPerPage, dataViewWidth % characterWidth, dataViewHeight % rowHeight, characterWidth, rowHeight);
+//    }
 
 
     protected int recomputeRowPositionLength() {
@@ -504,6 +507,24 @@ public class RBinEditor extends RGroupDrawable {
             pg.translate(component.getRelPosX(), component.getRelPosY());
             drawChildComponent(pg, component);
             pg.popMatrix();
+        }
+    }
+
+    protected void setClipboardContent(ClipboardData content) {
+        clearClipboardData();
+        try {
+            currentClipboardData = content;
+            clipboard.setContents(content, content);
+        } catch (IllegalStateException ex) {
+            // Clipboard not available - ignore and clear
+            clearClipboardData();
+        }
+    }
+
+    protected void clearClipboardData() {
+        if (currentClipboardData != null) {
+            currentClipboardData.dispose();
+            currentClipboardData = null;
         }
     }
 
@@ -640,8 +661,8 @@ public class RBinEditor extends RGroupDrawable {
             return;
         }
 
-        Optional<RBinScrollPos> revealScrollPosition = computeRevealScrollPosition(caretPosition);
-        revealScrollPosition.ifPresent(this::setScrollPosition);
+ //       Optional<RBinScrollPos> revealScrollPosition = computeRevealScrollPosition(caretPosition);
+  //      revealScrollPosition.ifPresent(this::setScrollPosition);
     }
 
     protected void revealCursor() {
@@ -651,7 +672,7 @@ public class RBinEditor extends RGroupDrawable {
 
     protected void scroll(ScrollingDirection direction) {
         RBinScrollPos sourcePosition = this.scrollPosition;
-        RBinScrollPos scrollPosition = computeScrolling(sourcePosition, direction);
+       // RBinScrollPos scrollPosition = computeScrolling(sourcePosition, direction);
         if (!sourcePosition.equals(scrollPosition)) {
             setScrollPosition(scrollPosition);
             getParentFolder().getWindow().redrawBuffer();
@@ -1110,7 +1131,7 @@ public class RBinEditor extends RGroupDrawable {
     }
 
     @Override
-    public void keyPressedFocused(RKeyEvent keyEvent) {
+    public void keyPressed(RKeyEvent keyEvent, float mouseX, float mouseY) {
         if (!gui.hasFocus(this)) {
             return;
         }
@@ -1208,7 +1229,7 @@ public class RBinEditor extends RGroupDrawable {
                 break;
             }
             default: {
-                if (getClipboardHandlingMode() == ClipboardHandlingMode.PROCESS) {
+                if (clipboardHandlingMode == ClipboardHandlingMode.PROCESS) {
                     if (keyEvent.isControlDown() && keyEvent.getKeyCode() == KeyEvent.VK_C) {
                         copy();
                         keyEvent.consume();
@@ -1244,7 +1265,7 @@ public class RBinEditor extends RGroupDrawable {
 
     public RCaretPos mousePositionToClosestCaretPosition(float positionX, float positionY, CaretOverlapMode overflowMode) {
         RCaretPos caret = new RCaretPos();
-        CodeAreaScrollPosition scrollPosition = scrolling.getScrollPosition();
+        //RBinScrollPos scrollPosition = scrolling.getScrollPosition();
         int characterWidth = metrics.getCharacterWidth();
         int rowHeight = metrics.getRowHeight();
         float rowPositionAreaWidth = dimensions.getRowPositionAreaWidth();
@@ -1257,7 +1278,7 @@ public class RBinEditor extends RGroupDrawable {
             }
             positionX = rowPositionAreaWidth;
         }
-        int cursorCharX = (positionX - rowPositionAreaWidth + scrollPosition.getCharOffset()) / characterWidth + scrollPosition.getCharPosition() - diffX;
+        int cursorCharX = Math.round(positionX - rowPositionAreaWidth + scrollPosition.getCharOffset()) / characterWidth + scrollPosition.getCharPosition() - diffX;
         if (cursorCharX < 0) {
             cursorCharX = 0;
         }
@@ -1269,7 +1290,7 @@ public class RBinEditor extends RGroupDrawable {
             }
             positionY = headerAreaHeight;
         }
-        long cursorRowY = (positionY - headerAreaHeight + scrollPosition.getRowOffset()) / rowHeight + scrollPosition.getRowPosition() - diffY;
+        long cursorRowY = (Math.round(positionY) - Math.round(headerAreaHeight) + scrollPosition.getRowOffset()) / rowHeight + scrollPosition.getRowPosition() - diffY;
         if (cursorRowY < 0) {
             cursorRowY = 0;
         }

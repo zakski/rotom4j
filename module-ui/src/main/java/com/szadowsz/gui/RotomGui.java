@@ -331,7 +331,9 @@ public class RotomGui {
             focusIsWith.loseFocus(component);
         }
         focusIsWith = component;
-        setFocus(focusIsWith.getParentFolder().getWindow());
+        if (focusIsWith != null) {
+            setFocus(focusIsWith.getParentFolder().getWindow());
+        }
     }
 
     public boolean hasFocus(RComponent component) {
