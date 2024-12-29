@@ -41,6 +41,46 @@ public class RBinUtils {
     }
 
     /**
+     * Returns true if provided character is valid for given code type and
+     * position.
+     *
+     * @param keyValue keyboard key value
+     * @param codeOffset current code offset
+     * @param codeType current code type
+     * @return true if key value value is valid
+     */
+    public static boolean isValidCodeKeyValue(char keyValue, int codeOffset, CodeType codeType) {
+        boolean validKey = false;
+        switch (codeType) {
+            case BINARY: {
+                validKey = keyValue >= '0' && keyValue <= '1';
+                break;
+            }
+            case DECIMAL: {
+                validKey = codeOffset == 0
+                        ? keyValue >= '0' && keyValue <= '2'
+                        : keyValue >= '0' && keyValue <= '9';
+                break;
+            }
+            case OCTAL: {
+                validKey = codeOffset == 0
+                        ? keyValue >= '0' && keyValue <= '3'
+                        : keyValue >= '0' && keyValue <= '7';
+                break;
+            }
+            case HEXADECIMAL: {
+                validKey = (keyValue >= '0' && keyValue <= '9')
+                        || (keyValue >= 'a' && keyValue <= 'f') || (keyValue >= 'A' && keyValue <= 'F');
+                break;
+            }
+            default:
+                throw getInvalidTypeException(codeType);
+        }
+        return validKey;
+    }
+
+
+    /**
      * Converts long value to code of given base and length limit.
      * <p>
      * Optionally fills rest of the value with zeros.
@@ -117,6 +157,86 @@ public class RBinUtils {
             default:
                 throw getInvalidTypeException(codeType);
         }
+    }
+
+    /**
+     * Returns modified byte value after single code value is applied.
+     *
+     * @param byteValue original byte value
+     * @param value code value
+     * @param codeOffset code offset
+     * @param codeType code type
+     * @return modified byte value
+     */
+    public static byte setCodeValue(byte byteValue, int value, int codeOffset, CodeType codeType) {
+        switch (codeType) {
+            case BINARY: {
+                int bitMask = 0x80 >> codeOffset;
+                byteValue = (byte) (byteValue & (0xff - bitMask) | (value << (7 - codeOffset)));
+                break;
+            }
+            case DECIMAL: {
+                int newValue = byteValue & 0xff;
+                switch (codeOffset) {
+                    case 0: {
+                        newValue = (newValue % 100) + value * 100;
+                        if (newValue > 255) {
+                            newValue = 200;
+                        }
+                        break;
+                    }
+                    case 1: {
+                        newValue = (newValue / 100) * 100 + value * 10 + (newValue % 10);
+                        if (newValue > 255) {
+                            newValue -= 200;
+                        }
+                        break;
+                    }
+                    case 2: {
+                        newValue = (newValue / 10) * 10 + value;
+                        if (newValue > 255) {
+                            newValue -= 200;
+                        }
+                        break;
+                    }
+                }
+
+                byteValue = (byte) newValue;
+                break;
+            }
+            case OCTAL: {
+                int newValue = byteValue & 0xff;
+                switch (codeOffset) {
+                    case 0: {
+                        newValue = (newValue % 64) + value * 64;
+                        break;
+                    }
+                    case 1: {
+                        newValue = (newValue / 64) * 64 + value * 8 + (newValue % 8);
+                        break;
+                    }
+                    case 2: {
+                        newValue = (newValue / 8) * 8 + value;
+                        break;
+                    }
+                }
+
+                byteValue = (byte) newValue;
+                break;
+            }
+            case HEXADECIMAL: {
+                if (codeOffset == 1) {
+                    byteValue = (byte) ((byteValue & 0xf0) | value);
+                } else {
+                    byteValue = (byte) ((byteValue & 0xf) | (value << 4));
+                }
+                break;
+            }
+            default:
+                throw getInvalidTypeException(codeType);
+        }
+
+        return byteValue;
     }
 
 }

@@ -21,6 +21,7 @@ public class RKeyEvent {
     private final boolean isShiftDown;
     private final boolean isControlDown;
     private final boolean isAltDown;
+    private final int modifiers;
 
     // If A Component has consumed the event
     private boolean consumed = false;
@@ -33,6 +34,7 @@ public class RKeyEvent {
         this.isAltDown = e.isAltDown();
         this.keyCode = e.getKeyCode();
         this.key = e.getKey();
+        this.modifiers = e.getModifiers();
     }
 
     /**
@@ -92,6 +94,10 @@ public class RKeyEvent {
 
     public boolean hasChord(RKeyChord chord){
         return chord.containedBy(heldKeys);
+    }
+
+    public boolean hasModifiers() {
+        return this.modifiers != 0;
     }
 
 

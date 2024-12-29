@@ -15,6 +15,7 @@ import com.szadowsz.gui.component.bined.scroll.RBinScrollPos;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
 import com.szadowsz.gui.component.bined.sizing.RBinStructure;
+import com.szadowsz.gui.component.bined.utils.RBinUtils;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
@@ -56,6 +57,8 @@ public class RBinEditor extends RGroupDrawable {
     private static Logger LOGGER = LoggerFactory.getLogger(RBinEditor.class);
 
     protected static final String MIME_CHARSET = "charset";
+    protected static final int LAST_CONTROL_CODE = 31;
+    protected static final char DELETE_CHAR = (char) 0x7f;
 
     protected static final String MAIN = "main";
 
@@ -269,6 +272,15 @@ public class RBinEditor extends RGroupDrawable {
         } else {
             selection.setSelection(dataPosition, dataPosition);
         }
+    }
+
+    protected void setCodeValue(int value) {
+        RCaretPos caretPosition = getActiveCaretPosition();
+        long dataPosition = caretPosition.getDataPosition();
+        int codeOffset = caretPosition.getCodeOffset();
+        byte byteValue = contentData.getByte(dataPosition);
+        byte outputValue = RBinUtils.setCodeValue(byteValue, value, codeOffset, codeType);
+        ((com.szadowsz.binary.EditableBinaryData) contentData).setByte(dataPosition, outputValue);
     }
 
     protected void deleteSelection() {
@@ -1252,6 +1264,94 @@ public class RBinEditor extends RGroupDrawable {
         }
     }
 
+    private void pressedCharAsCode(char keyChar) {
+        RCaretPos caretPosition = getActiveCaretPosition();
+        long dataPosition = caretPosition.getDataPosition();
+        int codeOffset = caretPosition.getCodeOffset();
+        CodeType codeType = getCodeType();
+        boolean validKey = RBinUtils.isValidCodeKeyValue(keyChar, codeOffset, codeType);
+        if (validKey) {
+            EditMode editMode = getEditMode();
+            if (hasSelection() && editMode != EditMode.INPLACE) {
+                deleteSelection();
+            }
+
+            int value;
+            if (keyChar >= '0' && keyChar <= '9') {
+                value = keyChar - '0';
+            } else {
+                value = Character.toLowerCase(keyChar) - 'a' + 10;
+            }
+
+            if (editMode == EditMode.EXPANDING && editOperation == EditOperation.INSERT) {
+                if (codeOffset > 0) {
+                    byte byteRest = contentData.getByte(dataPosition);
+                    switch (codeType) {
+                        case BINARY: {
+                            byteRest = (byte) (byteRest & (0xff >> codeOffset));
+                            break;
+                        }
+                        case DECIMAL: {
+                            byteRest = (byte) (byteRest % (codeOffset == 1 ? 100 : 10));
+                            break;
+                        }
+                        case OCTAL: {
+                            byteRest = (byte) (byteRest % (codeOffset == 1 ? 64 : 8));
+                            break;
+                        }
+                        case HEXADECIMAL: {
+                            byteRest = (byte) (byteRest & 0xf);
+                            break;
+                        }
+                        default:
+                            throw RBinUtils.getInvalidTypeException(codeType);
+                    }
+                    if (byteRest > 0) {
+                        ((EditableBinaryData) contentData).insert(dataPosition + 1, 1);
+                        ((EditableBinaryData) contentData).setByte(dataPosition, (byte) (contentData.getByte(dataPosition) - byteRest));
+                        ((EditableBinaryData) contentData).setByte(dataPosition + 1, byteRest);
+                    }
+                } else {
+                    ((EditableBinaryData) contentData).insert(dataPosition, 1);
+                }
+                setCodeValue(value);
+            } else {
+                if (editMode == EditMode.EXPANDING && editOperation == EditOperation.OVERWRITE && dataPosition == getDataSize()) {
+                    ((EditableBinaryData) contentData).insert(dataPosition, 1);
+                }
+                if (editMode != EditMode.INPLACE || dataPosition < getDataSize()) {
+                    setCodeValue(value);
+                }
+            }
+            notifyDataChanged();
+            move(SelectingMode.NONE, MovementDirection.RIGHT);
+            revealCursor();
+        }
+    }
+
+    @Override
+    public void keyTyped(RKeyEvent keyEvent, float mouseX, float mouseY) {
+        char keyValue = keyEvent.getKey();
+        // TODO Add support for high unicode codes
+        if (keyValue == KeyEvent.CHAR_UNDEFINED) {
+            return;
+        }
+        if (!checkEditAllowed()) {
+            return;
+        }
+
+        CodeAreaSection section = getActiveSection();
+        if (section != CodeAreaSection.TEXT_PREVIEW) {
+            if (!keyEvent.hasModifiers() || keyEvent.isShiftDown()) {
+                pressedCharAsCode(keyValue);
+            }
+        } else {
+            if (keyValue > LAST_CONTROL_CODE && keyValue != DELETE_CHAR) {
+                pressedCharInPreview(keyValue);
+            }
+        }
+    }
+
     @Override
     public void mousePressed(RMouseEvent mouseEvent, float mouseY) {
         if (!gui.hasFocus(this)) {
@@ -1264,77 +1364,35 @@ public class RBinEditor extends RGroupDrawable {
     }
 
     public RCaretPos mousePositionToClosestCaretPosition(float positionX, float positionY, CaretOverlapMode overflowMode) {
+        float relativeX = positionX - (pos.x + dimensions.getRowPositionAreaWidth());
+        float relativeY = positionY - (pos.y + dimensions.getHeaderAreaHeight());
         RCaretPos caret = new RCaretPos();
-        //RBinScrollPos scrollPosition = scrolling.getScrollPosition();
-        int characterWidth = metrics.getCharacterWidth();
-        int rowHeight = metrics.getRowHeight();
-        float rowPositionAreaWidth = dimensions.getRowPositionAreaWidth();
-        float headerAreaHeight = dimensions.getHeaderAreaHeight();
 
-        int diffX = 0;
-        if (positionX < rowPositionAreaWidth) {
-            if (overflowMode == CaretOverlapMode.PARTIAL_OVERLAP) {
-                diffX = 1;
-            }
-            positionX = rowPositionAreaWidth;
-        }
-        int cursorCharX = Math.round(positionX - rowPositionAreaWidth + scrollPosition.getCharOffset()) / characterWidth + scrollPosition.getCharPosition() - diffX;
-        if (cursorCharX < 0) {
-            cursorCharX = 0;
+        if (relativeX < 0 || relativeY < 0 || relativeX > dimensions.getDataViewWidth() || relativeY > dimensions.getDataViewHeight()) {
+            return caret;
         }
 
-        int diffY = 0;
-        if (positionY < headerAreaHeight) {
-            if (overflowMode == CaretOverlapMode.PARTIAL_OVERLAP) {
-                diffY = 1;
-            }
-            positionY = headerAreaHeight;
-        }
-        long cursorRowY = (Math.round(positionY) - Math.round(headerAreaHeight) + scrollPosition.getRowOffset()) / rowHeight + scrollPosition.getRowPosition() - diffY;
-        if (cursorRowY < 0) {
-            cursorRowY = 0;
+        int cursorCharX = Math.round(relativeX) / metrics.getCharacterWidth();
+        int cursorDataX = cursorCharX / (codeType.getMaxDigitsForByte()+1);
+        int cursorY = Math.round(relativeY) / metrics.getRowHeight();
+
+        long dataPosition = cursorDataX + (cursorY * structure.getBytesPerRow());
+        int codeOffset = cursorCharX % (codeType.getMaxDigitsForByte()+1);
+
+        if (codeOffset >= codeType.getMaxDigitsForByte()) {
+            codeOffset = codeType.getMaxDigitsForByte()-1;
         }
 
-        CodeAreaViewMode viewMode = structure.getViewMode();
-        int previewCharPos = visibility.getPreviewCharPos();
-        int bytesPerRow = structure.getBytesPerRow();
-        CodeType codeType = structure.getCodeType();
-        long dataSize = getDataSize();
-        long dataPosition;
-        int codeOffset = 0;
-        int byteOnRow;
-        if ((viewMode == CodeAreaViewMode.DUAL && cursorCharX < previewCharPos) || viewMode == CodeAreaViewMode.CODE_MATRIX) {
-            caret.setSection(CodeAreaSection.CODE_MATRIX);
-            byteOnRow = structure.computePositionByte(cursorCharX);
-            if (byteOnRow >= bytesPerRow) {
-                codeOffset = 0;
-            } else {
-                codeOffset = cursorCharX - structure.computeFirstCodeCharacterPos(byteOnRow);
-                if (codeOffset >= codeType.getMaxDigitsForByte()) {
-                    codeOffset = codeType.getMaxDigitsForByte() - 1;
-                }
-            }
-        } else {
-            caret.setSection(CodeAreaSection.TEXT_PREVIEW);
-            byteOnRow = cursorCharX;
-            if (viewMode == CodeAreaViewMode.DUAL) {
-                byteOnRow -= previewCharPos;
-            }
-        }
+        LOGGER.info("Mapping Mouse to Caret [{}/{},{}] = [{},{}]",cursorCharX,cursorDataX,cursorY,dataPosition,codeOffset);
 
-        if (byteOnRow >= bytesPerRow) {
-            byteOnRow = bytesPerRow - 1;
-        }
-
-        dataPosition = byteOnRow + (cursorRowY * bytesPerRow);
         if (dataPosition < 0) {
             dataPosition = 0;
             codeOffset = 0;
         }
 
-        if (dataPosition >= dataSize) {
-            dataPosition = dataSize;
-            codeOffset = 0;
+        if (dataPosition >= contentData.getDataSize()) {
+            dataPosition = contentData.getDataSize()-1;
+            codeOffset = codeType.getMaxDigitsForByte()-1;
         }
 
         caret.setDataPosition(dataPosition);

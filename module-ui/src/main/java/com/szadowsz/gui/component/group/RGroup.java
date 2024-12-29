@@ -162,8 +162,7 @@ public abstract class RGroup extends RComponent {
         RComponent focused = findFocusedComponent();
         if (focused != null){
             switch (focused) {
-                case null -> {
-                }// NOOP
+                // NOOP
                 case RGroup g -> g.keyPressed(keyEvent, mouseX, mouseY);
                 case RComponent c -> c.keyPressedFocused(keyEvent);
             }
@@ -196,7 +195,6 @@ public abstract class RGroup extends RComponent {
             case RComponent c -> c.keyChordPressedOver(keyEvent, mouseX, mouseY);
         }
     }
-
 
     public void keyTyped(RKeyEvent keyEvent, float mouseX, float mouseY) {
         if (!isVisible()) {
