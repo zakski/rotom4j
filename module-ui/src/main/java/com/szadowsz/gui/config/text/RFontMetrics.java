@@ -1,5 +1,6 @@
-package com.szadowsz.gui.component.bined.sizing;
+package com.szadowsz.gui.config.text;
 
+import com.szadowsz.gui.component.bined.utils.CharsetStreamTranslator;
 import processing.core.PFont;
 import processing.core.PGraphics;
 
@@ -8,11 +9,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 
 /**
- * Basic code area component dimensions.
+ * Font dimensions.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public class RBinMetrics {
+public class RFontMetrics {
 
     protected FontMetrics fontMetrics;
 
@@ -42,20 +43,20 @@ public class RBinMetrics {
         return subFontSpace;
     }
 
-    public boolean isInitialized() {
-        return rowHeight != 0 && characterWidth != 0;
-    }
-
     public int getCharWidth(char drawnChar) {
         return fontMetrics.charWidth(drawnChar);
+    }
+
+    public int getCharsWidth(char[] data, int offset, int length) {
+        return fontMetrics.charsWidth(data, offset, length);
     }
 
     public boolean hasUniformLineMetrics() {
         return fontMetrics.hasUniformLineMetrics();
     }
 
-    public int getCharsWidth(char[] data, int offset, int length) {
-        return fontMetrics.charsWidth(data, offset, length);
+    public boolean isInitialized() {
+        return rowHeight != 0 && characterWidth != 0;
     }
 
     public void recomputeMetrics(FontMetrics fontMetrics, Charset charset) {

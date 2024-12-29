@@ -16,33 +16,11 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of modes for tab key handling.
+ * Enumeration of supported scrolling directions.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum TabKeyHandlingMode {
-    /**
-     * Handle enter using java platform detection (default).
-     */
-    PLATFORM_SPECIFIC,
-    /**
-     * Insert tab character \t.
-     */
-    INSERT_TAB,
-    /**
-     * Insert space characters.
-     */
-    INSERT_SPACES,
-    /**
-     * Jump to next code area section.
-     */
-    CYCLE_TO_NEXT_SECTION,
-    /**
-     * Jump to previous code area section.
-     */
-    CYCLE_TO_PREVIOUS_SECTION,
-    /**
-     * Don't handle tab key.
-     */
-    IGNORE;
+public enum RScrollDirection {
+    UP, DOWN, LEFT, RIGHT,
+    PAGE_UP, PAGE_DOWN
 }

@@ -1,6 +1,6 @@
 package com.szadowsz.gui.component.bined;
 
-import com.szadowsz.gui.component.bined.settings.CodeAreaSection;
+import com.szadowsz.gui.component.bined.settings.RCodeAreaSection;
 
 import java.nio.charset.Charset;
 
@@ -35,7 +35,7 @@ public class RBinCharAssessor {
      * @param section current section
      * @return color or null for default color
      */
-    public char getPreviewCharacter(long rowDataPosition, int byteOnRow, int charOnRow, CodeAreaSection section) {
+    public char getPreviewCharacter(long rowDataPosition, int byteOnRow, int charOnRow, RCodeAreaSection section) {
         if (maxBytesPerChar > 1) {
             if (rowDataPosition + maxBytesPerChar > dataSize) {
                 maxBytesPerChar = (int) (dataSize - rowDataPosition);
@@ -56,26 +56,17 @@ public class RBinCharAssessor {
 
             return charMapping[rowData[byteOnRow] & 0xFF];
         }
-
-//        if (parentCharAssessor != null) {
-//            return parentCharAssessor.getPreviewCharacter(rowDataPosition, byteOnRow, charOnRow, section);
-//        }
-
         return ' ';
     }
 
     /**
      * Returns preview character for cursor position.
      *
-     * @param rowDataPosition row data position
-     * @param byteOnRow byte on current row
-     * @param charOnRow character on current row
      * @param cursorData cursor data
      * @param cursorDataLength cursor data length
-     * @param section current section
      * @return color or null for default color
      */
-    public char getPreviewCursorCharacter(long rowDataPosition, int byteOnRow, int charOnRow, byte[] cursorData, int cursorDataLength, CodeAreaSection section) {
+    public char getPreviewCursorCharacter(byte[] cursorData, int cursorDataLength) {
         if (cursorDataLength == 0) {
             return ' ';
         }
@@ -93,10 +84,6 @@ public class RBinCharAssessor {
             return charMapping[cursorData[0] & 0xFF];
         }
 
-//        if (parentCharAssessor != null) {
-//            return parentCharAssessor.getPreviewCursorCharacter(rowDataPosition, byteOnRow, charOnRow, cursorData, cursorDataLength, section);
-//        }
-
         return ' ';
 
     }
@@ -106,9 +93,5 @@ public class RBinCharAssessor {
         charset = editor.getCharset();
         rowData = editor.getRowDataCache().rowData;
         maxBytesPerChar = editor.getMetrics().getMaxBytesPerChar();
-
-//        if (parentCharAssessor != null) {
-//            parentCharAssessor.startPaint(editor);
-//        }
     }
 }

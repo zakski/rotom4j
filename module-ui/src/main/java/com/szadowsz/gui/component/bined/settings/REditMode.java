@@ -16,44 +16,31 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of modes for enter key handling.
+ * Enumeration of edit modes.
  *
  * @author ExBin Project (https://exbin.org)
  */
+public enum REditMode {
 
-public enum EnterKeyHandlingMode {
     /**
-     * Handle enter using java platform detection (default).
+     * Document cannot be changed.
      */
-    PLATFORM_SPECIFIC(""),
+    READ_ONLY,
     /**
-     * Single character 13 (0d).
+     * Default mode expanding data when necessary.
+     * <p>
+     * Document is extended by size of the inserted data or when replacing data
+     * overflows end of the file.
      */
-    CR("\r"),
+    EXPANDING,
     /**
-     * Single character 10 (0a).
+     * Data are inserted and replaced, but size of the file remains the same
+     * cutting out excessive data.
      */
-    LF("\n"),
+    CAPPED,
     /**
-     * Two characters 13 10 (0d0a).
+     * Only overwrite edit mode is allowed and size of document cannot be
+     * changed.
      */
-    CRLF("\r\n"),
-    /**
-     * Don't handle enter key.
-     */
-    IGNORE("");
-
-    private final String sequence;
-
-    private EnterKeyHandlingMode(String sequence) {
-        this.sequence = sequence;
-    }
-
-    public String getSequence() {
-        if (this == PLATFORM_SPECIFIC) {
-            return System.lineSeparator();
-        }
-
-        return sequence;
-    }
+    INPLACE
 }

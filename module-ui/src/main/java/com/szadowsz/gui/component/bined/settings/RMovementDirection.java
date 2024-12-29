@@ -16,23 +16,13 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of possible visibility states of caret position relative to
- * scrolling area.
+ * Enumeration of supported movement directions.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum PositionScrollVisibility {
-
-    /**
-     * Given position is fully visible in current scroll window.
-     */
-    VISIBLE,
-    /**
-     * Given position is partially visible in current scroll window.
-     */
-    PARTIAL,
-    /**
-     * Given position is not visible in current scroll window.
-     */
-    NOT_VISIBLE
+public enum RMovementDirection {
+    UP, DOWN, LEFT, RIGHT,
+    PAGE_UP, PAGE_DOWN,
+    ROW_START, ROW_END, DOC_START, DOC_END,
+    SWITCH_SECTION
 }

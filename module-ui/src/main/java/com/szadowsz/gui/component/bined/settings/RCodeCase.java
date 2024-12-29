@@ -16,31 +16,18 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of edit modes.
+ * Enumeration of code characters case.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum EditMode {
+public enum RCodeCase {
 
     /**
-     * Document cannot be changed.
+     * Lower case, eg. a, b, c, d, e, f.
      */
-    READ_ONLY,
+    LOWER,
     /**
-     * Default mode expanding data when necessary.
-     * <p>
-     * Document is extended by size of the inserted data or when replacing data
-     * overflows end of the file.
+     * Upper case, eg. A, B, C, D, E, F.
      */
-    EXPANDING,
-    /**
-     * Data are inserted and replaced, but size of the file remains the same
-     * cutting out excessive data.
-     */
-    CAPPED,
-    /**
-     * Only overwrite edit mode is allowed and size of document cannot be
-     * changed.
-     */
-    INPLACE
+    UPPER
 }

@@ -20,7 +20,7 @@ package com.szadowsz.gui.component.bined.settings;
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum CodeType {
+public enum RCodeType {
 
     /**
      * Represent code as number in base 2.
@@ -48,10 +48,12 @@ public enum CodeType {
     HEXADECIMAL(16, 2);
 
     private final int base;
+    private final double baseLog;
     private final int maxDigitsForByte;
 
-    CodeType(int base, int maxDigitsForByte) {
+    RCodeType(int base, int maxDigitsForByte) {
         this.base = base;
+        this.baseLog = Math.log(base);
         this.maxDigitsForByte = maxDigitsForByte;
     }
 
@@ -62,6 +64,15 @@ public enum CodeType {
      */
     public int getBase() {
         return base;
+    }
+
+    /**
+     * Returns natural logarithm of the base.
+     *
+     * @return natural logarithm of the base
+     */
+    public double getBaseLog() {
+        return baseLog;
     }
 
     /**

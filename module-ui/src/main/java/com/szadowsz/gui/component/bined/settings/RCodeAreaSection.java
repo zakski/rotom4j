@@ -16,17 +16,19 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of vertical scrolling unit sizes.
+ * Enumeration of basic cursor position section.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum VerticalScrollUnit {
+public enum RCodeAreaSection {
+
     /**
-     * Scroll per whole line.
+     * Section of code area with codes for binary data representation.
      */
-    ROW,
+    CODE_MATRIX,
+
     /**
-     * Scroll per pixel.
+     * Section of code area with textual preview characters.
      */
-    PIXEL
+    TEXT_PREVIEW
 }

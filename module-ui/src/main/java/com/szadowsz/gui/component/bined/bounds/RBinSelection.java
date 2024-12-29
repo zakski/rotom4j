@@ -27,13 +27,6 @@ public class RBinSelection {
     private long end;
 
     /**
-     * Creates empty selection range.
-     */
-    public RBinSelection() {
-        this(0, 0);
-    }
-
-    /**
      * Creates selection range from start to end including the start and not
      * including the end position.
      *
@@ -45,17 +38,11 @@ public class RBinSelection {
         RBinSelection.this.setEnd(end);
     }
 
-    public RBinSelection(RBinSelection selectionRange) {
-        if (selectionRange == null) {
-            start = end = 0;
-        } else {
-            start = selectionRange.getStart();
-            end = selectionRange.getEnd();
-        }
-    }
-
-    public long getStart() {
-        return start;
+    /**
+     * Creates empty selection range.
+     */
+    public RBinSelection() {
+        this(0, 0);
     }
 
     public long getEnd() {
@@ -70,7 +57,6 @@ public class RBinSelection {
     public long getFirst() {
         return Math.min(start, end);
     }
-
     /**
      * Returns last data position of the selection.
      *
@@ -87,6 +73,19 @@ public class RBinSelection {
      */
     public long getLength() {
         return start < end ? end - start : start - end;
+    }
+
+    /**
+     * Returns selection range.
+     *
+     * @return selection range
+     */
+    public RBinSelection getRange() {
+        return new RBinSelection(start, end);
+    }
+
+    public long getStart() {
+        return start;
     }
 
     /**
@@ -108,29 +107,17 @@ public class RBinSelection {
         return start < end ? position >= start && position < end : position >= end && position < start;
     }
 
-    /**
-     * Returns selection range.
-     *
-     * @return selection range
-     */
-   public RBinSelection getRange() {
-        return new RBinSelection(start, end);
-    }
-
-    public void setStart(long start) {
-        if (start < 0) {
-            throw new IllegalArgumentException("Selection with negative range start (" + start + ") is not allowed");
-        }
-
-        this.start = start;
-    }
-
     public void setEnd(long end) {
         if (end < 0) {
             throw new IllegalArgumentException("Selection with negative range end (" + end + ") is not allowed");
         }
 
         this.end = end;
+    }
+
+    public void setRange(RBinSelection selectionRange) {
+        start = selectionRange.getStart();
+        end = selectionRange.getEnd();
     }
 
     public void setSelection(RBinSelection selectionRange) {
@@ -147,12 +134,15 @@ public class RBinSelection {
         setEnd(end);
     }
 
-    public void clearSelection() {
-        end = start;
+    public void setStart(long start) {
+        if (start < 0) {
+            throw new IllegalArgumentException("Selection with negative range start (" + start + ") is not allowed");
+        }
+
+        this.start = start;
     }
 
-    public void setRange(RBinSelection selectionRange) {
-        start = selectionRange.getStart();
-        end = selectionRange.getEnd();
+    public void clearSelection() {
+        end = start;
     }
 }

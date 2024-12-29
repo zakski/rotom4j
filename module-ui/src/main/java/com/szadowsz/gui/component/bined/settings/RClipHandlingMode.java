@@ -16,26 +16,21 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of edit operations.
+ * Enumeration of clipboard handling modes.
+ * <p>
+ * Used to specify what to do with basic clipboard actions like cut, copy, paste
+ * and delete.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum EditOperation {
+public enum RClipHandlingMode {
 
     /**
-     * Data are inserted at cursor position.
-     * <p>
-     * Document is extended by size of the inserted data, data at cursor
-     * position moved forward to provide space and then inserted data are stored
-     * in this new space.
+     * Ignore clipboard actions.
      */
-    INSERT,
+    IGNORE,
     /**
-     * Data are replaced at cursor position.
-     * <p>
-     * If size of data is greater than size of the document and edit is not in
-     * "overwrite only" mode, document is extended so that inserted data will
-     * fit in.
+     * Process clipboard actions using default operations.
      */
-    OVERWRITE
+    PROCESS
 }

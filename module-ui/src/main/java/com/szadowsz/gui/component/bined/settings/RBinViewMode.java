@@ -16,17 +16,22 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of horizontal scrolling unit sizes.
+ * Enumeration of supported view modes.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum HorizontalScrollUnit {
+public enum RBinViewMode {
+
     /**
-     * Scroll per whole character.
+     * Show both numerical codes and textual preview.
      */
-    CHARACTER,
+    DUAL,
     /**
-     * Scroll per pixel.
+     * Show numerical codes only.
      */
-    PIXEL
+    CODE_MATRIX,
+    /**
+     * Show textual preview only.
+     */
+    TEXT_PREVIEW
 }

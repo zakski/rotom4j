@@ -16,22 +16,26 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of supported view modes.
+ * Enumeration of edit operations.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum CodeAreaViewMode {
+public enum REditOperation {
 
     /**
-     * Show both numerical codes and textual preview.
+     * Data are inserted at cursor position.
+     * <p>
+     * Document is extended by size of the inserted data, data at cursor
+     * position moved forward to provide space and then inserted data are stored
+     * in this new space.
      */
-    DUAL,
+    INSERT,
     /**
-     * Show numerical codes only.
+     * Data are replaced at cursor position.
+     * <p>
+     * If size of data is greater than size of the document and edit is not in
+     * "overwrite only" mode, document is extended so that inserted data will
+     * fit in.
      */
-    CODE_MATRIX,
-    /**
-     * Show textual preview only.
-     */
-    TEXT_PREVIEW
+    OVERWRITE
 }

@@ -1,15 +1,14 @@
 package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.bined.bounds.RBinRect;
 import com.szadowsz.gui.component.bined.bounds.RBinSelection;
-import com.szadowsz.gui.component.bined.caret.CursorRenderingMode;
-import com.szadowsz.gui.component.bined.caret.RCaret;
-import com.szadowsz.gui.component.bined.scroll.RBinScrollPos;
+import com.szadowsz.gui.component.bined.cursor.RCaret;
+import com.szadowsz.gui.component.bined.cursor.RCursorRenderingMode;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.bined.utils.RBinUtils;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
+import com.szadowsz.gui.layout.RRect;
 import com.szadowsz.nds4j.file.bin.core.BinaryData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,16 @@ import java.util.Arrays;
 public class RBinMain extends RBinComponent {
     private static final Logger LOGGER = LoggerFactory.getLogger(RBinMain.class);
 
-    public RBinMain(RotomGui gui, String path, RBinEditor editor) {
+    /**
+     * Default Binary Sub-Component Constructor
+     * <p>
+     * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
+     *
+     * @param gui    the gui for the window that the component is drawn under
+     * @param path   the path in the component tree
+     * @param editor the parent editor reference
+     */
+    protected RBinMain(RotomGui gui, String path, RBinEditor editor) {
         super(gui, path, editor);
     }
 
@@ -47,7 +55,7 @@ public class RBinMain extends RBinComponent {
         return rowBytesLimit;
     }
 
-    protected void fillCodes(int rowBytesLimit, RBinEditor.RowDataCache rowDataCache, CodeType codeType, CodeCharactersCase codeCharactersCase, int bytesPerRow) {
+    protected void fillCodes(int rowBytesLimit, RBinEditor.RowDataCache rowDataCache, RCodeType codeType, RCodeCase codeCharactersCase, int bytesPerRow) {
         int skipToCode = visibility.getSkipToCode();
         int skipRestFromCode = visibility.getSkipRestFromCode();
         int endCode = Math.min(skipRestFromCode, rowBytesLimit);
@@ -71,7 +79,7 @@ public class RBinMain extends RBinComponent {
         int skipRestFromPreview = visibility.getSkipRestFromPreview();
         int endPreview = Math.min(skipRestFromPreview, rowBytesLimit);
         for (int byteOnRow = skipToPreview; byteOnRow < endPreview; byteOnRow++) {
-            rowDataCache.rowCharacters[previewCharPos + byteOnRow] = charAssessor.getPreviewCharacter(dataPosition, byteOnRow, previewCharPos, CodeAreaSection.TEXT_PREVIEW);
+            rowDataCache.rowCharacters[previewCharPos + byteOnRow] = charAssessor.getPreviewCharacter(dataPosition, byteOnRow, previewCharPos, RCodeAreaSection.TEXT_PREVIEW);
         }
         if (bytesPerRow > rowBytesLimit) {
             Arrays.fill(rowDataCache.rowCharacters, previewCharPos + rowBytesLimit, previewCharPos + bytesPerRow, ' ');
@@ -83,9 +91,9 @@ public class RBinMain extends RBinComponent {
         int bytesPerRow = structure.getBytesPerRow();
         long dataSize = editor.getDataSize();
         int previewCharPos = visibility.getPreviewCharPos();
-        CodeType codeType = structure.getCodeType();
-        CodeAreaViewMode viewMode = structure.getViewMode();
-        CodeCharactersCase codeCharactersCase = editor.getCodeCharactersCase();
+        RCodeType codeType = editor.getCodeType();
+        RBinViewMode viewMode = editor.getViewMode();
+        RCodeCase codeCharactersCase = editor.getCodeCharactersCase();
         RBinEditor.RowDataCache rowDataCache = editor.getRowDataCache();
 
         RBinCharAssessor charAssessor = editor.getCharAssessor();
@@ -93,7 +101,7 @@ public class RBinMain extends RBinComponent {
         int rowBytesLimit = copyDataFromPos(dataPosition, bytesPerRow, dataSize, maxBytesPerChar, rowDataCache);
 
         // Fill codes
-        if (viewMode != CodeAreaViewMode.TEXT_PREVIEW) {
+        if (viewMode != RBinViewMode.TEXT_PREVIEW) {
             fillCodes(rowBytesLimit, rowDataCache, codeType, codeCharactersCase, bytesPerRow);
         }
 
@@ -102,80 +110,36 @@ public class RBinMain extends RBinComponent {
         }
 
         // Fill preview characters
-        if (viewMode != CodeAreaViewMode.CODE_MATRIX) {
+        if (viewMode != RBinViewMode.CODE_MATRIX) {
             fillPreviewChars(dataPosition, rowBytesLimit, rowDataCache, previewCharPos, charAssessor, bytesPerRow);
         }
     }
 
-    /**
-     * Renders sequence of background rectangles.
-     * <p>
-     * Doesn't include character at offset end.
-     */
-    protected void renderBackgroundSequence(PGraphics pg, int startOffset, int endOffset, float rowPositionX, float positionY) {
-        int characterWidth = metrics.getCharacterWidth();
+    @Override
+    protected void drawBackground(PGraphics pg) {
+        int bytesPerRow = structure.getBytesPerRow();
+        long dataSize = editor.getDataSize();
         int rowHeight = metrics.getRowHeight();
-        pg.rect(rowPositionX + startOffset * characterWidth, positionY, (endOffset - startOffset) * characterWidth, rowHeight);
-    }
+        int rowsPerRect = dimensions.getRowsPerRect();
+        RRect dataViewRect = dimensions.getDataViewRectangle();
 
-    /**
-     * Paints row background.
-     *
-     * @param pg              graphics
-     * @param rowDataPosition row data position
-     * @param rowPositionX    row position X
-     * @param rowPositionY    row position Y
-     */
-    protected void paintRowBackground(PGraphics pg, long rowDataPosition, float rowPositionX, float rowPositionY) {
-        int previewCharPos = visibility.getPreviewCharPos();
-        CodeAreaViewMode viewMode = structure.getViewMode();
-        int charactersPerRow = structure.getCharactersPerRow();
-        int skipToChar = visibility.getSkipToChar();
-        int skipRestFromChar = visibility.getSkipRestFromChar();
-        RBinSelection selectionHandler = editor.getSelectionHandler();
-
-        RBinColorAssessor colorAssessor = editor.getColorAssessor();
-
-        int renderOffset = skipToChar;
-        Color renderColor = null;
-        for (int charOnRow = skipToChar; charOnRow < skipRestFromChar; charOnRow++) {
-            CodeAreaSection section;
-            int byteOnRow;
-            if (charOnRow >= previewCharPos && viewMode != CodeAreaViewMode.CODE_MATRIX) {
-                byteOnRow = charOnRow - previewCharPos;
-                section = CodeAreaSection.TEXT_PREVIEW;
-            } else {
-                byteOnRow = structure.computePositionByte(charOnRow);
-                section = CodeAreaSection.CODE_MATRIX;
-            }
-            boolean sequenceBreak = false;
-
-            boolean inSelection = selectionHandler.isInSelection(rowDataPosition + byteOnRow);
-            Color color = colorAssessor.getPositionBackgroundColor(rowDataPosition, byteOnRow, charOnRow, section, inSelection);
-            if (!RBinUtils.areSameColors(color, renderColor)) {
-                sequenceBreak = true;
-            }
-            if (sequenceBreak) {
-                if (renderOffset < charOnRow) {
-                    if (renderColor != null) {
-                        renderBackgroundSequence(pg, renderOffset, charOnRow, rowPositionX, rowPositionY);
-                    }
-                }
-
-                if (!RBinUtils.areSameColors(color, renderColor)) {
-                    renderColor = color;
-                    if (color != null) {
-                        pg.fill(color.getRGB());
-                    }
-                }
-
-                renderOffset = charOnRow;
-            }
+        pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
+        if (backgroundPaintMode != RBackgroundPaintMode.TRANSPARENT) {
+            pg.rect(dataViewRect.getX(), dataViewRect.getY(), dataViewRect.getWidth(), dataViewRect.getHeight());
         }
 
-        if (renderOffset < charactersPerRow) {
-            if (renderColor != null) {
-                renderBackgroundSequence(pg, renderOffset, charactersPerRow, rowPositionX, rowPositionY);
+        if (backgroundPaintMode == RBackgroundPaintMode.STRIPED) {
+            long dataPosition = bytesPerRow;
+            float stripePositionY = dataViewRect.getY() + rowHeight;
+            pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_BACKGROUND));
+            for (int row = 0; row <= rowsPerRect / 2; row++) {
+                if (dataPosition > dataSize) {
+                    break;
+                }
+
+                pg.rect(dataViewRect.getX(), stripePositionY, dataViewRect.getWidth(), rowHeight);
+                stripePositionY += rowHeight * 2;
+                dataPosition += bytesPerRow * 2L;
             }
         }
     }
@@ -209,14 +173,14 @@ public class RBinMain extends RBinComponent {
         int skipRestFromChar = visibility.getSkipRestFromChar();
         int renderOffset = skipToChar;
         for (int charOnRow = skipToChar; charOnRow < skipRestFromChar; charOnRow++) {
-            CodeAreaSection section;
+            RCodeAreaSection section;
             int byteOnRow;
             if (charOnRow >= previewCharPos) {
                 byteOnRow = charOnRow - previewCharPos;
-                section = CodeAreaSection.TEXT_PREVIEW;
+                section = RCodeAreaSection.TEXT_PREVIEW;
             } else {
                 byteOnRow = structure.computePositionByte(charOnRow);
-                section = CodeAreaSection.CODE_MATRIX;
+                section = RCodeAreaSection.CODE_MATRIX;
             }
 
             char currentChar = rowDataCache.rowCharacters[charOnRow];
@@ -276,10 +240,9 @@ public class RBinMain extends RBinComponent {
         float dataViewY = dimensions.getHeaderAreaHeight();
         int rowsPerRect = dimensions.getRowsPerRect();
         long dataSize = editor.getDataSize();
-        long dataPosition = scrollPosition.getRowPosition() * bytesPerRow;
-        int characterWidth = metrics.getCharacterWidth();
-        float rowPositionX = dataViewX - scrollPosition.getCharPosition() * characterWidth - scrollPosition.getCharOffset();
-        float rowPositionY = dataViewY - scrollPosition.getRowOffset();
+        long dataPosition = 0;
+        float rowPositionX = dataViewX;
+        float rowPositionY = dataViewY;
 
         pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); //  pg.setColor(colorsProfile.getTextColor());
         for (int row = 0; row <= rowsPerRect; row++) {
@@ -303,8 +266,7 @@ public class RBinMain extends RBinComponent {
         }
     }
 
-    private void drawCursorRect(PGraphics pg, float cursorX, float cursorY, float width, float height, CursorRenderingMode renderingMode, RCaret caret) {
-        RBinColorAssessor colorAssessor = editor.getColorAssessor();
+    protected void drawCursorRect(PGraphics pg, float cursorX, float cursorY, float width, float height, RCursorRenderingMode renderingMode, RCaret caret) {
         RBinCharAssessor charAssessor = editor.getCharAssessor();
         RBinEditor.CursorDataCache cursorDataCache = editor.getCursorDataCache();
 
@@ -329,19 +291,21 @@ public class RBinMain extends RBinComponent {
                 float dataViewY = dimensions.getHeaderAreaHeight();
                 int previewRelativeX = visibility.getPreviewRelativeX();
 
-                CodeAreaViewMode viewMode = structure.getViewMode();
-                RBinScrollPos scrollPosition = editor.getScrollPos();
+                RBinViewMode viewMode = editor.getViewMode();
+
                 long dataSize = editor.getDataSize();
-                CodeType codeType = structure.getCodeType();
+                RCodeType codeType = editor.getCodeType();
+
                 pg.rect(cursorX, cursorY, width, height);
                 pg.fill(RThemeStore.getRGBA(RColorType.CURSOR_NEGATIVE)); // g.setColor(colorsProfile.getCursorNegativeColor());
+
                 BinaryData contentData = editor.getContentData();
-                int row = Math.round((cursorY + scrollPosition.getRowOffset() - dataViewY) / rowHeight);
-                float scrolledX = cursorX + scrollPosition.getCharPosition() * characterWidth + scrollPosition.getCharOffset();
+                int row = Math.round((cursorY - dataViewY) / rowHeight);
+                float scrolledX = cursorX;
                 //float posY = dataViewY + (row + 1) * rowHeight - subFontSpace - scrollPosition.getRowOffset();
                 float posY = dataViewY + (row) * rowHeight + (float) (rowHeight - subFontSpace)/2 ;//- scrollPosition.getRowOffset();
                 long dataPosition = caret.getDataPosition();
-                if (viewMode != CodeAreaViewMode.CODE_MATRIX && caret.getSection() == CodeAreaSection.TEXT_PREVIEW) {
+                if (viewMode != RBinViewMode.CODE_MATRIX && caret.getSection() == RCodeAreaSection.TEXT_PREVIEW) {
                     int charPos = Math.round((scrolledX - previewRelativeX) / characterWidth);
                     if (dataPosition >= dataSize) {
                         break;
@@ -351,7 +315,7 @@ public class RBinMain extends RBinComponent {
                     int previewCharPos = visibility.getPreviewCharPos();
 
                     if (contentData.isEmpty()) {
-                        cursorDataCache.cursorChars[0] = charAssessor.getPreviewCursorCharacter(dataPosition, byteOnRow, previewCharPos, cursorDataCache.cursorData, 0, CodeAreaSection.TEXT_PREVIEW);
+                        cursorDataCache.cursorChars[0] = charAssessor.getPreviewCursorCharacter(cursorDataCache.cursorData, 0);
                     } else {
                         if (maxBytesPerChar > 1) {
                             int charDataLength = maxBytesPerChar;
@@ -360,13 +324,13 @@ public class RBinMain extends RBinComponent {
                             }
 
                             contentData.copyToArray(dataPosition, cursorDataCache.cursorData, 0, charDataLength);
-                            cursorDataCache.cursorChars[0] = charAssessor.getPreviewCursorCharacter(dataPosition, byteOnRow, previewCharPos, cursorDataCache.cursorData, charDataLength, CodeAreaSection.TEXT_PREVIEW);
+                            cursorDataCache.cursorChars[0] = charAssessor.getPreviewCursorCharacter(cursorDataCache.cursorData, charDataLength);
                         } else {
                             cursorDataCache.cursorData[0] = contentData.getByte(dataPosition);
-                            cursorDataCache.cursorChars[0] = charAssessor.getPreviewCursorCharacter(dataPosition, byteOnRow, previewCharPos, cursorDataCache.cursorData, 1, CodeAreaSection.TEXT_PREVIEW);
+                            cursorDataCache.cursorChars[0] = charAssessor.getPreviewCursorCharacter(cursorDataCache.cursorData, 1);
                         }
                     }
-                    int posX = previewRelativeX + charPos * characterWidth - scrollPosition.getCharPosition() * characterWidth - scrollPosition.getCharOffset();
+                    int posX = previewRelativeX + charPos * characterWidth;
                     drawCenteredChars(pg, cursorDataCache.cursorChars, 0, 1, characterWidth, posX, posY);
                 } else {
                     int charPos = Math.round((scrolledX - dataViewX) / characterWidth);
@@ -379,7 +343,7 @@ public class RBinMain extends RBinComponent {
                     } else {
                         Arrays.fill(cursorDataCache.cursorChars, ' ');
                     }
-                    float posX = dataViewX + codeCharPos * characterWidth - scrollPosition.getCharPosition() * characterWidth - scrollPosition.getCharOffset();
+                    float posX = dataViewX + codeCharPos * characterWidth;
                     int charsOffset = charPos - codeCharPos;
                     drawCenteredChars(pg, cursorDataCache.cursorChars, charsOffset, 1, characterWidth, posX + (charsOffset * characterWidth), posY);
                 }
@@ -397,32 +361,32 @@ public class RBinMain extends RBinComponent {
         }
 
         int maxBytesPerChar = metrics.getMaxBytesPerChar();
-        RBinRect mainAreaRect = dimensions.getMainAreaRectangle();
-        CodeType codeType = structure.getCodeType();
-        CodeAreaViewMode viewMode = structure.getViewMode();
+        RRect mainAreaRect = dimensions.getMainAreaRectangle();
+        RCodeType codeType = editor.getCodeType();
+        RBinViewMode viewMode = editor.getViewMode();
         RBinEditor.CursorDataCache cursorDataCache = editor.getCursorDataCache();
 
         RCaret caret = editor.getCaret();
-        RBinRect cursorRect = editor.getCursorPositionRect(caret.getDataPosition(), caret.getCodeOffset(), caret.getSection());
+        RRect cursorRect = editor.getCursorPositionRect(caret.getDataPosition(), caret.getCodeOffset(), caret.getSection());
         if (cursorRect.isEmpty()) {
             return;
         }
 
-        RBinRect scrolledCursorRect = new RBinRect(cursorRect.getX(), cursorRect.getY(), cursorRect.getWidth(), cursorRect.getHeight());
-        RBinRect intersection = scrolledCursorRect.intersection(mainAreaRect);
+        RRect scrolledCursorRect = new RRect(cursorRect.getX(), cursorRect.getY(), cursorRect.getWidth(), cursorRect.getHeight());
+        RRect intersection = scrolledCursorRect.intersection(mainAreaRect);
         boolean cursorVisible = caret.isVisible() && !intersection.isEmpty();
 
         if (cursorVisible) {
-            CursorRenderingMode renderingMode = caret.getRenderingMode();
+            RCursorRenderingMode renderingMode = caret.getRenderingMode();
             pg.stroke(RThemeStore.getRGBA(RColorType.CURSOR)); // pg.setColor(colorsProfile.getCursorColor());
 
             drawCursorRect(pg, intersection.getX(), intersection.getY(), intersection.getWidth(), intersection.getHeight(), renderingMode, caret);
         }
 
         // Paint mirror cursor
-        if (viewMode == CodeAreaViewMode.DUAL && editor.isMirrorCursorShowing()) {
+        if (viewMode == RBinViewMode.DUAL && editor.isMirrorCursorShowing()) {
             editor.updateMirrorCursorRect(caret.getDataPosition(), caret.getSection());
-            RBinRect mirrorCursorRect = cursorDataCache.mirrorCursorRect;
+            RRect mirrorCursorRect = cursorDataCache.mirrorCursorRect;
             if (!mirrorCursorRect.isEmpty()) {
                 intersection = mainAreaRect.intersection(mirrorCursorRect);
                 boolean mirrorCursorVisible = !intersection.isEmpty();
@@ -441,25 +405,23 @@ public class RBinMain extends RBinComponent {
 
     protected void drawHeader(PGraphics pg) {
         int charactersPerCodeSection = visibility.getCharactersPerCodeSection();
-        RBinRect headerArea = dimensions.getHeaderAreaRectangle();
-        //RBinScrollPos scrollPosition = scrolling.getScrollPosition();
+        RRect headerArea = dimensions.getHeaderAreaRectangle();
 
         int characterWidth = metrics.getCharacterWidth();
         int rowHeight = metrics.getRowHeight();
-        //float dataViewX = dimensions.getScrollPanelX();
 
         pg.textFont(font);
-        pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND)); //  g.setColor(colorsProfile.getTextBackground());
+        pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
         pg.rect(headerArea.getX(), headerArea.getY(), headerArea.getWidth(), headerArea.getHeight());
 
-        CodeAreaViewMode viewMode = structure.getViewMode();
-        CodeCharactersCase codeCharactersCase = editor.getCodeCharactersCase();
+        RBinViewMode viewMode = editor.getViewMode();
+        RCodeCase codeCharactersCase = editor.getCodeCharactersCase();
         RBinEditor.RowDataCache rowDataCache = editor.getRowDataCache();
-        if (viewMode == CodeAreaViewMode.DUAL || viewMode == CodeAreaViewMode.CODE_MATRIX) {
-            float headerX = dimensions.getRowPositionAreaWidth();//dataViewX - scrollPosition.getCharPosition() * characterWidth - scrollPosition.getCharOffset();
+        if (viewMode == RBinViewMode.DUAL || viewMode == RBinViewMode.CODE_MATRIX) {
+            float headerX = dimensions.getRowPositionAreaWidth();
             float headerY = headerArea.getY() + rowHeight - metrics.getSubFontSpace();
 
-            pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); //  g.setColor(colorsProfile.getTextColor());
+            pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND));
             Arrays.fill(rowDataCache.headerChars, ' ');
 
             boolean interleaving = false;
@@ -471,7 +433,7 @@ public class RBinMain extends RBinComponent {
                 if (codePos == lastPos + 2 && !interleaving) {
                     interleaving = true;
                 } else {
-                    RBinUtils.longToBaseCode(rowDataCache.headerChars, codePos, index, CodeType.HEXADECIMAL.getBase(), 2, true, codeCharactersCase);
+                    RBinUtils.longToBaseCode(rowDataCache.headerChars, codePos, index, RCodeType.HEXADECIMAL.getBase(), 2, true, codeCharactersCase);
                     lastPos = codePos;
                     interleaving = false;
                 }
@@ -498,7 +460,14 @@ public class RBinMain extends RBinComponent {
                 }
                 if (sequenceBreak) {
                     if (renderOffset < characterOnRow) {
-                        drawCenteredChars(pg, rowDataCache.headerChars, renderOffset, characterOnRow - renderOffset, characterWidth, headerX + renderOffset * characterWidth, headerY);
+                        drawCenteredChars(pg,
+                                rowDataCache.headerChars,
+                                renderOffset,
+                                characterOnRow - renderOffset,
+                                characterWidth,
+                                headerX + renderOffset * characterWidth,
+                                headerY
+                        );
                     }
 
                     if (!RBinUtils.areSameColors(color, renderColor)) {
@@ -511,11 +480,18 @@ public class RBinMain extends RBinComponent {
             }
 
             if (renderOffset < charactersPerCodeSection) {
-                drawCenteredChars(pg, rowDataCache.headerChars, renderOffset, charactersPerCodeSection - renderOffset, characterWidth, headerX + renderOffset * characterWidth, headerY);
+                drawCenteredChars(pg,
+                        rowDataCache.headerChars,
+                        renderOffset,
+                        charactersPerCodeSection - renderOffset,
+                        characterWidth,
+                        headerX + renderOffset * characterWidth,
+                        headerY
+                );
             }
         }
-    }
 
+    }
 
     protected void drawRowPosition(PGraphics pg) {
         int bytesPerRow = structure.getBytesPerRow();
@@ -525,19 +501,19 @@ public class RBinMain extends RBinComponent {
         int subFontSpace = metrics.getSubFontSpace();
         int rowsPerRect = dimensions.getRowsPerRect();
 
-        RBinRect rowPosRectangle = dimensions.getRowPositionAreaRectangle();
-        RBinRect dataViewRectangle = dimensions.getDataViewRectangle();
+        RRect rowPosRectangle = dimensions.getRowPositionAreaRectangle();
+        RRect dataViewRectangle = dimensions.getDataViewRectangle();
         RBinEditor.RowDataCache rowDataCache = editor.getRowDataCache();
         int rowPositionLength = editor.getRowPositionLength();
-        BackgroundPaintMode backgroundPaintMode = editor.getBackgroundPaintMode();
+        RBackgroundPaintMode backgroundPaintMode = editor.getBackgroundPaintMode();
 
         pg.textFont(font);
         pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND)); //  g.setColor(colorsProfile.getTextBackground());
         pg.rect(rowPosRectangle.getX(), rowPosRectangle.getY(), rowPosRectangle.getWidth(), rowPosRectangle.getHeight());
 
-        if (backgroundPaintMode == BackgroundPaintMode.STRIPED) {
-            long dataPosition = scrollPosition.getRowPosition() * bytesPerRow + ((scrollPosition.getRowPosition() & 1) > 0 ? 0 : bytesPerRow);
-            float stripePositionY = rowPosRectangle.getY() - scrollPosition.getRowOffset() + ((scrollPosition.getRowPosition() & 1) > 0 ? 0 : rowHeight);
+        if (backgroundPaintMode == RBackgroundPaintMode.STRIPED) {
+            long dataPosition = bytesPerRow;
+            float stripePositionY = rowPosRectangle.getY() + rowHeight;
             pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_BACKGROUND)); //  g.setColor(colorsProfile.getAlternateBackground());
             for (int row = 0; row <= rowsPerRect / 2; row++) {
                 if (dataPosition > dataSize) {
@@ -550,7 +526,7 @@ public class RBinMain extends RBinComponent {
             }
         }
 
-        long dataPosition = bytesPerRow * scrollPosition.getRowPosition();
+        long dataPosition = 0;
         float positionY = rowPosRectangle.getY() + (float) (rowHeight - subFontSpace)/2;// - scrollPosition.getRowOffset();
         pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); //  g.setColor(colorsProfile.getTextColor());
         for (int row = 0; row <= rowsPerRect; row++) {
@@ -558,7 +534,7 @@ public class RBinMain extends RBinComponent {
                 break;
             }
 
-            RBinUtils.longToBaseCode(rowDataCache.rowPositionCode, 0, dataPosition < 0 ? 0 : dataPosition, CodeType.HEXADECIMAL.getBase(), rowPositionLength, true, editor.getCodeCharactersCase());
+            RBinUtils.longToBaseCode(rowDataCache.rowPositionCode, 0, dataPosition < 0 ? 0 : dataPosition, RCodeType.HEXADECIMAL.getBase(), rowPositionLength, true, editor.getCodeCharactersCase());
             drawCenteredChars(pg, rowDataCache.rowPositionCode, 0, rowPositionLength, characterWidth, rowPosRectangle.getX(), positionY);
 
             positionY += rowHeight;
@@ -578,42 +554,7 @@ public class RBinMain extends RBinComponent {
     }
 
     @Override
-    protected void drawBackground(PGraphics pg) {
-        int bytesPerRow = structure.getBytesPerRow();
-        long dataSize = editor.getDataSize();
-        int rowHeight = metrics.getRowHeight();
-        int rowsPerRect = dimensions.getRowsPerRect();
-        RBinRect dataViewRect = dimensions.getDataViewRectangle();
-        BackgroundPaintMode backgroundPaintMode = editor.getBackgroundPaintMode();
-
-        pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND)); //  pg.setColor(colorsProfile.getTextBackground());
-        if (backgroundPaintMode != BackgroundPaintMode.TRANSPARENT) {
-            pg.rect(dataViewRect.getX(), dataViewRect.getY(), dataViewRect.getWidth(), dataViewRect.getHeight());
-        }
-
-        if (backgroundPaintMode == BackgroundPaintMode.STRIPED) {
-            long dataPosition = scrollPosition.getRowPosition() * bytesPerRow + ((scrollPosition.getRowPosition() & 1) > 0 ? 0 : bytesPerRow);
-            float stripePositionY = dataViewRect.getY() - scrollPosition.getRowOffset() + ((scrollPosition.getRowPosition() & 1) > 0 ? 0 : rowHeight);
-            pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_BACKGROUND)); //  pg.setColor(colorsProfile.getAlternateBackground());
-            for (int row = 0; row <= rowsPerRect / 2; row++) {
-                if (dataPosition > dataSize) {
-                    break;
-                }
-
-                pg.rect(dataViewRect.getX(), stripePositionY, dataViewRect.getWidth(), rowHeight);
-                stripePositionY += rowHeight * 2;
-                dataPosition += bytesPerRow * 2;
-            }
-        }
-    }
-
-    @Override
     protected void drawForeground(PGraphics pg, String name) {
-//        RBinRect mainAreaRect = dimensions.getMainAreaRectangle();
-//        RBinRect dataViewRectangle = dimensions.getDataViewRectangle();
-//        int characterWidth = metrics.getCharacterWidth();
-//        int previewRelativeX = visibility.getPreviewRelativeX();
-        editor.updateAssessors();
 
         drawHeader(pg);
         drawRowPosition(pg);
@@ -627,12 +568,10 @@ public class RBinMain extends RBinComponent {
 
         drawRows(pg);
         drawCursor(pg);
-
-//        paintDebugInfo(pg, mainAreaRect, scrollPosition);
     }
 
     @Override
     public float suggestWidth() {
-        return size.x;
+        return dimensions.getComponentRectangle().getWidth();
     }
 }

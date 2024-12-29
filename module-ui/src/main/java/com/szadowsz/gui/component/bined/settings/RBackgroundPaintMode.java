@@ -20,7 +20,7 @@ package com.szadowsz.gui.component.bined.settings;
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum BackgroundPaintMode {
+public enum RBackgroundPaintMode {
     /**
      * Border is not painted.
      */

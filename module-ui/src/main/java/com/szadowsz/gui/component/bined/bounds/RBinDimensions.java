@@ -1,60 +1,68 @@
+/*
+ * Copyright (C) ExBin Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.szadowsz.gui.component.bined.bounds;
 
-import com.szadowsz.gui.component.bined.settings.CodeType;
-import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
+import com.szadowsz.gui.layout.RRect;
+import com.szadowsz.gui.component.bined.settings.RCodeType;
+import com.szadowsz.gui.config.text.RFontMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Binary Editor Component dimensions.
+ *
+ * @author ExBin Project (https://exbin.org)
+ */
 public class RBinDimensions {
     private static Logger LOGGER = LoggerFactory.getLogger(RBinDimensions.class);
 
-    protected final RBinRect componentRectangle = new RBinRect();
-    protected final RBinRect mainAreaRectangle = new RBinRect();
-    protected final RBinRect headerAreaRectangle = new RBinRect();
-    protected final RBinRect rowPositionAreaRectangle = new RBinRect();
-    protected final RBinRect scrollPanelRectangle = new RBinRect();
-    protected final RBinRect dataViewRectangle = new RBinRect();
+    // Overall dimensions, to be fed back to the Editor component
+    protected final RRect componentRectangle = new RRect();
 
-    protected int charactersPerRect;
+    // Drawn By RBinHeader sub-component
+    protected final RRect headerAreaRectangle = new RRect();
+
+    // Drawn By RBinMain sub-component
+    protected final RRect rowPositionAreaRectangle = new RRect();
+    protected final RRect mainAreaRectangle = new RRect();
+
+    // TODO naming
+    protected int charactersPerRectangle;
     protected int charactersPerPage;
 
-    protected float scrollPanelX;
-    protected float scrollPanelY;
-
-    protected float scrollPanelWidth;
-    protected float scrollPanelHeight;
-
-    //protected float dataViewWidth;
-    //protected float dataViewHeight;
-
+    // TODO naming
     protected int rowsPerPage;
     protected int rowsPerRect;
 
-    //protected int rowPositionAreaWidth;
-    //protected int headerAreaHeight;
-
-    protected float lastCharOffset;
-    protected float lastRowOffset;
-
-    protected float verticalScrollBarSize;
-    protected float horizontalScrollBarSize;
-
-    private int computeCharactersPerRectangle(RBinMetrics metrics) {
+    protected int computeCharactersPerRectangle(RFontMetrics metrics) {
         int characterWidth = metrics.getCharacterWidth();
         return characterWidth == 0 ? 0 : Math.round((mainAreaRectangle.getWidth() + characterWidth - 1) / characterWidth);
     }
 
-    private int computeCharactersPerPage(RBinMetrics metrics) {
+    protected int computeCharactersPerPage(RFontMetrics metrics) {
         int characterWidth = metrics.getCharacterWidth();
         return characterWidth == 0 ? 0 : Math.round(mainAreaRectangle.getWidth() / characterWidth);
     }
 
-    private int computeRowsPerRectangle(RBinMetrics metrics) {
+    protected int computeRowsPerRectangle(RFontMetrics metrics) {
         int rowHeight = metrics.getRowHeight();
         return rowHeight == 0 ? 0 : Math.round((mainAreaRectangle.getHeight() + rowHeight - 1) / rowHeight);
     }
 
-    private int computeRowsPerPage(RBinMetrics metrics) {
+    protected int computeRowsPerPage(RFontMetrics metrics) {
         int rowHeight = metrics.getRowHeight();
         return rowHeight == 0 ? 0 : Math.round(mainAreaRectangle.getHeight() / rowHeight);
     }
@@ -63,7 +71,7 @@ public class RBinDimensions {
         return charactersPerPage;
     }
 
-    public RBinRect getComponentRectangle() {
+    public RRect getComponentRectangle() {
         return componentRectangle;
     }
     
@@ -75,31 +83,19 @@ public class RBinDimensions {
         return mainAreaRectangle.getHeight();
     }
 
-    public RBinRect getDataViewRectangle() {
-        return dataViewRectangle;
+    public RRect getDataViewRectangle() {
+        return mainAreaRectangle;
     }
 
     public float getHeaderAreaHeight() {
         return headerAreaRectangle.getHeight();
     }
 
-    public RBinRect getHeaderAreaRectangle() {
+    public RRect getHeaderAreaRectangle() {
         return headerAreaRectangle;
     }
 
-    public float getHorizontalScrollBarSize() {
-        return horizontalScrollBarSize;
-    }
-
-    public Object getLastCharOffset() {
-        return lastCharOffset;
-    }
-
-    public Object getLastRowOffset() {
-        return lastRowOffset;
-    }
-
-    public RBinRect getMainAreaRectangle() {
+    public RRect getMainAreaRectangle() {
         return mainAreaRectangle;
     }
 
@@ -111,7 +107,7 @@ public class RBinDimensions {
         return rowsPerRect;
     }
 
-    public RBinRect getRowPositionAreaRectangle() {
+    public RRect getRowPositionAreaRectangle() {
         return rowPositionAreaRectangle;
     }
 
@@ -119,101 +115,30 @@ public class RBinDimensions {
         return rowPositionAreaRectangle.getWidth();
     }
 
-    public RBinRect getScrollPanelRectangle() {
-        return scrollPanelRectangle;
-    }
-
-    public float getScrollPanelX() {
-        return scrollPanelX;
-    }
-
-    public float getScrollPanelY() {
-        return scrollPanelY;
-    }
-
-    public float getVerticalScrollBarSize() {
-        return verticalScrollBarSize;
-    }
-
-//    public void recomputeSizes(RBinMetrics metrics,
-//                               float componentX,
-//                               float componentY,
-//                               float componentWidth,
-//                               float componentHeight,
-//                               int rowPositionLength,
-//                               float verticalScrollBarSize,
-//                               float horizontalScrollBarSize) {
-//        componentRectangle.setBounds(componentX, componentY, componentWidth, componentHeight);
-//        LOGGER.info("Editor Rectangle: [{},{},{},{}]", componentRectangle.getX(),componentRectangle.getY(),componentRectangle.getWidth(),componentRectangle.getHeight());
-//        LOGGER.info("Editor Row Position Length: [{}]", rowPositionLength);
-//
-//        this.verticalScrollBarSize = verticalScrollBarSize;
-//        this.horizontalScrollBarSize = horizontalScrollBarSize;
-//
-//        float rowPositionAreaWidth = metrics.getCharacterWidth() * (rowPositionLength + 1);
-//        LOGGER.info("Editor Row Position Area Width: [{}]", rowPositionAreaWidth);
-//        float headerAreaHeight = metrics.getFontHeight() + metrics.getFontHeight() / 4;
-//        LOGGER.info("Editor Header Area Height: [{}]", headerAreaHeight);
-//
-//        scrollPanelX = componentX + rowPositionAreaWidth;
-//        scrollPanelY = componentY + headerAreaHeight;
-//        scrollPanelWidth = componentWidth - rowPositionAreaWidth;
-//        scrollPanelHeight = componentHeight - headerAreaHeight;
-//        dataViewWidth = scrollPanelWidth - verticalScrollBarSize;
-//        dataViewHeight = scrollPanelHeight - horizontalScrollBarSize;
-//        charactersPerRect = computeCharactersPerRectangle(metrics);
-//        charactersPerPage = computeCharactersPerPage(metrics);
-//        rowsPerRect = computeRowsPerRectangle(metrics);
-//        rowsPerPage = computeRowsPerPage(metrics);
-//        lastCharOffset = metrics.isInitialized() ? dataViewWidth % metrics.getCharacterWidth() : 0;
-//        lastRowOffset = metrics.isInitialized() ? dataViewHeight % metrics.getRowHeight() : 0;
-//
-//        boolean availableWidth = rowPositionAreaWidth + verticalScrollBarSize <= componentWidth;
-//        boolean availableHeight = scrollPanelY + horizontalScrollBarSize <= componentHeight;
-//
-//        if (availableWidth && availableHeight) {
-//            mainAreaRectangle.setBounds(componentX + rowPositionAreaWidth, scrollPanelY, componentWidth - rowPositionAreaWidth - getVerticalScrollBarSize(), componentHeight - scrollPanelY - getHorizontalScrollBarSize());
-//        } else {
-//            mainAreaRectangle.setBounds(0, 0, 0, 0);
-//        }
-//        if (availableWidth) {
-//            headerAreaRectangle.setBounds(componentX + rowPositionAreaWidth, componentY, componentWidth - rowPositionAreaWidth - getVerticalScrollBarSize(), headerAreaHeight);
-//        } else {
-//            headerAreaRectangle.setBounds(0, 0, 0, 0);
-//        }
-//        if (availableHeight) {
-//            rowPositionAreaRectangle.setBounds(componentX, scrollPanelY, rowPositionAreaWidth, componentHeight - scrollPanelY - getHorizontalScrollBarSize());
-//        } else {
-//            rowPositionAreaRectangle.setBounds(0, 0, 0, 0);
-//        }
-//
-//        scrollPanelRectangle.setBounds(scrollPanelX, scrollPanelY, scrollPanelWidth, scrollPanelHeight);
-//        dataViewRectangle.setBounds(scrollPanelX, scrollPanelY, Math.max(dataViewWidth, 0), Math.max(dataViewHeight, 0));
-//    }
-
     /**
-     * Method to calculate the row position segment bounds
+     * Method to calculate the initial row position segment bounds
      *
      * @param metrics Font Metrics
      * @param rowPositionLength number of expected digits for the position info
      * @param rowsCount number of expected rows
      */
-    public void computeRowDimensions(RBinMetrics metrics, int rowPositionLength, long rowsCount) {
+    public void computeRowDimensions(RFontMetrics metrics, int rowPositionLength, long rowsCount) {
         float rowPositionWidth = metrics.getCharacterWidth() * (rowPositionLength + 1);
         float rowPositionHeight = metrics.getRowHeight() * (rowsCount+1);
         float headerYOffset = metrics.getFontHeight() + (float) metrics.getFontHeight() / 4;
         LOGGER.info("Editor Row Position: Length: {}, Width {}, Height {}, YOffset {}", rowPositionLength, rowPositionWidth, rowPositionHeight, headerYOffset);
-        rowPositionAreaRectangle.setBounds(0, headerYOffset, rowPositionWidth, rowPositionHeight);
+        rowPositionAreaRectangle.setSize(0, headerYOffset, rowPositionWidth, rowPositionHeight);
     }
 
     /**
+     * Method to calculate the initial row position segment bounds
      *
-     * @param metrics
+     * @param metrics Font Metrics
      * @param codeType
      * @param maxBytesPerRow
-     * @param rowsCount
+     * @param rowsCount number of expected rows
      */
-    public void computeHeaderAndDataDimensions(RBinMetrics metrics, CodeType codeType, int maxBytesPerRow, long rowsCount) {
+    public void computeHeaderAndDataDimensions(RFontMetrics metrics, RCodeType codeType, int maxBytesPerRow, long rowsCount) {
         // we have the maximum of bytes per row, so at this stage we should work out the width we ideally should have to play with
         // contentData.getDataSize()
         // structure.getBytesPerRow() vs maxBytesPerRow
@@ -231,19 +156,22 @@ public class RBinDimensions {
                 rowPositionAreaRectangle.getWidth(),
                 headerYOffset);
 
-        // TODO which to use
-        mainAreaRectangle.setBounds(rowPositionAreaRectangle.getWidth(), headerYOffset, contentWidth, rowPositionAreaRectangle.getHeight());
-        dataViewRectangle.setBounds(rowPositionAreaRectangle.getWidth(), headerYOffset, contentWidth, rowPositionAreaRectangle.getHeight());
+        mainAreaRectangle.setSize(rowPositionAreaRectangle.getWidth(), headerYOffset, contentWidth, rowPositionAreaRectangle.getHeight());
 
         LOGGER.info("Editor Header Data: Width {}, Height {}, XOffset {}", mainAreaRectangle.getWidth(), headerYOffset,rowPositionAreaRectangle.getWidth());
-        headerAreaRectangle.setBounds(rowPositionAreaRectangle.getWidth(), 0, mainAreaRectangle.getWidth(), headerYOffset);
+        headerAreaRectangle.setSize(rowPositionAreaRectangle.getWidth(), 0, mainAreaRectangle.getWidth(), headerYOffset);
 
         // At this point we assume that the data fits on the one page and doesn't need scrollbars
-        componentRectangle.setBounds(0,0,rowPositionAreaRectangle.getWidth() +  mainAreaRectangle.getWidth(), headerYOffset + rowPositionAreaRectangle.getHeight());
+        componentRectangle.setSize(0,0,rowPositionAreaRectangle.getWidth() +  mainAreaRectangle.getWidth(), headerYOffset + rowPositionAreaRectangle.getHeight());
     }
 
-    public void computeOtherMetrics(RBinMetrics metrics){
-        charactersPerRect = computeCharactersPerRectangle(metrics);
+    /**
+     * Method to calculate the other initial bounds
+     *
+     * @param metrics Font Metrics
+     */
+    public void computeOtherMetrics(RFontMetrics metrics){
+        charactersPerRectangle = computeCharactersPerRectangle(metrics);
         charactersPerPage = computeCharactersPerPage(metrics);
         rowsPerRect = computeRowsPerRectangle(metrics);
         rowsPerPage = computeRowsPerPage(metrics);

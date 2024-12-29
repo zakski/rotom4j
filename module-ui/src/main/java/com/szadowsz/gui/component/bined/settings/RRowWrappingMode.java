@@ -16,11 +16,18 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of supported scrolling directions.
+ * Row wrapping mode.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum ScrollingDirection {
-    UP, DOWN, LEFT, RIGHT,
-    PAGE_UP, PAGE_DOWN
+public enum RRowWrappingMode {
+
+    /**
+     * Rows are not wrapped to visible area.
+     */
+    NO_WRAPPING,
+    /**
+     * Rows are wrapped to visible area.
+     */
+    WRAPPING
 }

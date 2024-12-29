@@ -1,12 +1,32 @@
+/*
+ * Copyright (C) ExBin Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.szadowsz.gui.component.bined.utils;
 
 
-import com.szadowsz.gui.component.bined.settings.CodeCharactersCase;
-import com.szadowsz.gui.component.bined.settings.CodeType;
+import com.szadowsz.gui.component.bined.settings.RCodeCase;
+import com.szadowsz.gui.component.bined.settings.RCodeType;
 
 import java.awt.*;
 import java.util.Objects;
 
+/**
+ * Binary editor utilities.
+ *
+ * @author ExBin Project (https://exbin.org)
+ */
 public class RBinUtils {
 
     public static final char[] UPPER_HEX_CODES = "0123456789ABCDEF".toCharArray();
@@ -18,26 +38,8 @@ public class RBinUtils {
         // NOOP
     }
 
-    public static <T> T requireNonNull(T object) {
-        return Objects.requireNonNull(object, NULL_FIELD_ERROR);
-    }
-
-    public static <T> T requireNonNull(T object, String message) {
-        return Objects.requireNonNull(object, message);
-    }
-
-    public static void requireNonNull(Object... objects) {
-        for (Object object : objects) {
-            Objects.requireNonNull(object, NULL_FIELD_ERROR);
-        }
-    }
-
     public static IllegalStateException getInvalidTypeException(Enum<?> enumObject) {
         return new IllegalStateException("Unexpected " + enumObject.getDeclaringClass().getName() + " value " + enumObject.name());
-    }
-
-    public static boolean areSameColors(Color color, Color comparedColor) {
-        return (color == null && comparedColor == null) || (color != null && color.equals(comparedColor));
     }
 
     /**
@@ -49,7 +51,7 @@ public class RBinUtils {
      * @param codeType current code type
      * @return true if key value value is valid
      */
-    public static boolean isValidCodeKeyValue(char keyValue, int codeOffset, CodeType codeType) {
+    public static boolean isValidCodeKeyValue(char keyValue, int codeOffset, RCodeType codeType) {
         boolean validKey = false;
         switch (codeType) {
             case BINARY: {
@@ -79,86 +81,6 @@ public class RBinUtils {
         return validKey;
     }
 
-
-    /**
-     * Converts long value to code of given base and length limit.
-     * <p>
-     * Optionally fills rest of the value with zeros.
-     *
-     * @param target        target characters array (output parameter)
-     * @param targetOffset  offset position in target array
-     * @param value         value value
-     * @param base          target numerical base, supported values are 1 to 16
-     * @param lengthLimit   length limit
-     * @param fillZeros     flag if rest of the value should be filled with zeros
-     * @param characterCase upper case for values greater than 9
-     * @return offset of characters position
-     */
-    public static int longToBaseCode(char[] target, int targetOffset, long value, int base, int lengthLimit, boolean fillZeros, CodeCharactersCase characterCase) {
-        char[] codes = characterCase == CodeCharactersCase.UPPER ? UPPER_HEX_CODES : LOWER_HEX_CODES;
-        for (int i = lengthLimit - 1; i >= 0; i--) {
-            target[targetOffset + i] = codes[(int) (value % base)];
-            value = value / base;
-            if (!fillZeros && value == 0) {
-                return i;
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * Converts byte value to sequence of characters of given code type.
-     *
-     * @param dataByte byte value
-     * @param codeType code type
-     * @param targetData target array of characters (output parameter)
-     * @param targetPosition target position in array of characters
-     * @param charCase case type for alphabetical characters
-     */
-    public static void byteToCharsCode(byte dataByte, CodeType codeType, char[] targetData, int targetPosition, CodeCharactersCase charCase) {
-        char[] hexCharacters = charCase == CodeCharactersCase.UPPER ? UPPER_HEX_CODES : LOWER_HEX_CODES;
-        switch (codeType) {
-            case BINARY: {
-                int bitMask = 0x80;
-                for (int i = 0; i < 8; i++) {
-                    int codeValue = (dataByte & bitMask) > 0 ? 1 : 0;
-                    targetData[targetPosition + i] = hexCharacters[codeValue];
-                    bitMask = bitMask >> 1;
-                }
-                break;
-            }
-            case DECIMAL: {
-                int value = dataByte & 0xff;
-                int codeValue0 = value / 100;
-                targetData[targetPosition] = hexCharacters[codeValue0];
-                int codeValue1 = (value / 10) % 10;
-                targetData[targetPosition + 1] = hexCharacters[codeValue1];
-                int codeValue2 = value % 10;
-                targetData[targetPosition + 2] = hexCharacters[codeValue2];
-                break;
-            }
-            case OCTAL: {
-                int value = dataByte & 0xff;
-                int codeValue0 = value / 64;
-                targetData[targetPosition] = hexCharacters[codeValue0];
-                int codeValue1 = (value / 8) & 7;
-                targetData[targetPosition + 1] = hexCharacters[codeValue1];
-                int codeValue2 = value % 8;
-                targetData[targetPosition + 2] = hexCharacters[codeValue2];
-                break;
-            }
-            case HEXADECIMAL: {
-                int codeValue0 = (dataByte >> 4) & 0xf;
-                targetData[targetPosition] = hexCharacters[codeValue0];
-                int codeValue1 = dataByte & 0xf;
-                targetData[targetPosition + 1] = hexCharacters[codeValue1];
-                break;
-            }
-            default:
-                throw getInvalidTypeException(codeType);
-        }
-    }
-
     /**
      * Returns modified byte value after single code value is applied.
      *
@@ -168,7 +90,7 @@ public class RBinUtils {
      * @param codeType code type
      * @return modified byte value
      */
-    public static byte setCodeValue(byte byteValue, int value, int codeOffset, CodeType codeType) {
+    public static byte setCodeValue(byte byteValue, int value, int codeOffset, RCodeType codeType) {
         switch (codeType) {
             case BINARY: {
                 int bitMask = 0x80 >> codeOffset;
@@ -239,4 +161,100 @@ public class RBinUtils {
         return byteValue;
     }
 
+    public static <T> T requireNonNull(T object) {
+        return Objects.requireNonNull(object, NULL_FIELD_ERROR);
+    }
+
+    public static <T> T requireNonNull(T object, String message) {
+        return Objects.requireNonNull(object, message);
+    }
+
+    public static void requireNonNull(Object... objects) {
+        for (Object object : objects) {
+            Objects.requireNonNull(object, NULL_FIELD_ERROR);
+        }
+    }
+
+    public static boolean areSameColors(Color color, Color comparedColor) {
+        return (color == null && comparedColor == null) || (color != null && color.equals(comparedColor));
+    }
+
+    /**
+     * Converts long value to code of given base and length limit.
+     * <p>
+     * Optionally fills rest of the value with zeros.
+     *
+     * @param target        target characters array (output parameter)
+     * @param targetOffset  offset position in target array
+     * @param value         value value
+     * @param base          target numerical base, supported values are 1 to 16
+     * @param lengthLimit   length limit
+     * @param fillZeros     flag if rest of the value should be filled with zeros
+     * @param characterCase upper case for values greater than 9
+     * @return offset of characters position
+     */
+    public static int longToBaseCode(char[] target, int targetOffset, long value, int base, int lengthLimit, boolean fillZeros, RCodeCase characterCase) {
+        char[] codes = characterCase == RCodeCase.UPPER ? UPPER_HEX_CODES : LOWER_HEX_CODES;
+        for (int i = lengthLimit - 1; i >= 0; i--) {
+            target[targetOffset + i] = codes[(int) (value % base)];
+            value = value / base;
+            if (!fillZeros && value == 0) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Converts byte value to sequence of characters of given code type.
+     *
+     * @param dataByte byte value
+     * @param codeType code type
+     * @param targetData target array of characters (output parameter)
+     * @param targetPosition target position in array of characters
+     * @param charCase case type for alphabetical characters
+     */
+    public static void byteToCharsCode(byte dataByte, RCodeType codeType, char[] targetData, int targetPosition, RCodeCase charCase) {
+        char[] hexCharacters = charCase == RCodeCase.UPPER ? UPPER_HEX_CODES : LOWER_HEX_CODES;
+        switch (codeType) {
+            case BINARY: {
+                int bitMask = 0x80;
+                for (int i = 0; i < 8; i++) {
+                    int codeValue = (dataByte & bitMask) > 0 ? 1 : 0;
+                    targetData[targetPosition + i] = hexCharacters[codeValue];
+                    bitMask = bitMask >> 1;
+                }
+                break;
+            }
+            case DECIMAL: {
+                int value = dataByte & 0xff;
+                int codeValue0 = value / 100;
+                targetData[targetPosition] = hexCharacters[codeValue0];
+                int codeValue1 = (value / 10) % 10;
+                targetData[targetPosition + 1] = hexCharacters[codeValue1];
+                int codeValue2 = value % 10;
+                targetData[targetPosition + 2] = hexCharacters[codeValue2];
+                break;
+            }
+            case OCTAL: {
+                int value = dataByte & 0xff;
+                int codeValue0 = value / 64;
+                targetData[targetPosition] = hexCharacters[codeValue0];
+                int codeValue1 = (value / 8) & 7;
+                targetData[targetPosition + 1] = hexCharacters[codeValue1];
+                int codeValue2 = value % 8;
+                targetData[targetPosition + 2] = hexCharacters[codeValue2];
+                break;
+            }
+            case HEXADECIMAL: {
+                int codeValue0 = (dataByte >> 4) & 0xf;
+                targetData[targetPosition] = hexCharacters[codeValue0];
+                int codeValue1 = dataByte & 0xf;
+                targetData[targetPosition + 1] = hexCharacters[codeValue1];
+                break;
+            }
+            default:
+                throw getInvalidTypeException(codeType);
+        }
+    }
 }

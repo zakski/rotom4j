@@ -22,7 +22,6 @@ import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.RInputHandler;
 import com.szadowsz.gui.input.RInputListener;
-import com.szadowsz.gui.input.keys.RKeyboard;
 import com.szadowsz.gui.layout.RBorderLayout;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.utils.RContextLines;

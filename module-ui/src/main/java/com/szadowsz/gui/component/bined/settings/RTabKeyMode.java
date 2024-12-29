@@ -16,18 +16,33 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of code characters case.
+ * Enumeration of modes for tab key handling.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum CodeCharactersCase {
-
+public enum RTabKeyMode {
     /**
-     * Lower case, eg. a, b, c, d, e, f.
+     * Handle enter using java platform detection (default).
      */
-    LOWER,
+    PLATFORM_SPECIFIC,
     /**
-     * Upper case, eg. A, B, C, D, E, F.
+     * Insert tab character \t.
      */
-    UPPER
+    INSERT_TAB,
+    /**
+     * Insert space characters.
+     */
+    INSERT_SPACES,
+    /**
+     * Jump to next code area section.
+     */
+    CYCLE_TO_NEXT_SECTION,
+    /**
+     * Jump to previous code area section.
+     */
+    CYCLE_TO_PREVIOUS_SECTION,
+    /**
+     * Don't handle tab key.
+     */
+    IGNORE;
 }

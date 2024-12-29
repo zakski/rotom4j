@@ -16,21 +16,44 @@
 package com.szadowsz.gui.component.bined.settings;
 
 /**
- * Enumeration of clipboard handling modes.
- * <p>
- * Used to specify what to do with basic clipboard actions like cut, copy, paste
- * and delete.
+ * Enumeration of modes for enter key handling.
  *
  * @author ExBin Project (https://exbin.org)
  */
-public enum ClipboardHandlingMode {
 
+public enum REnterKeyMode {
     /**
-     * Ignore clipboard actions.
+     * Handle enter using java platform detection (default).
      */
-    IGNORE,
+    PLATFORM_SPECIFIC(""),
     /**
-     * Process clipboard actions using default operations.
+     * Single character 13 (0d).
      */
-    PROCESS
+    CR("\r"),
+    /**
+     * Single character 10 (0a).
+     */
+    LF("\n"),
+    /**
+     * Two characters 13 10 (0d0a).
+     */
+    CRLF("\r\n"),
+    /**
+     * Don't handle enter key.
+     */
+    IGNORE("");
+
+    private final String sequence;
+
+    private REnterKeyMode(String sequence) {
+        this.sequence = sequence;
+    }
+
+    public String getSequence() {
+        if (this == PLATFORM_SPECIFIC) {
+            return System.lineSeparator();
+        }
+
+        return sequence;
+    }
 }

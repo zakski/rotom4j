@@ -1,35 +1,51 @@
-package com.szadowsz.gui.component.bined.sizing;
+/*
+ * Copyright (C) ExBin Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.szadowsz.gui.component.bined.bounds;
 
 
 import com.szadowsz.gui.component.bined.RBinEditor;
-import com.szadowsz.gui.component.bined.caret.RCaretPos;
+import com.szadowsz.gui.component.bined.cursor.RCaretPos;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.bined.utils.RBinUtils;
 
+/**
+ * Code area data representation structure for basic variant.
+ *
+ * @author ExBin Project (https://exbin.org)
+ */
 public class RBinStructure {
 
-    private CodeAreaViewMode viewMode = CodeAreaViewMode.DUAL;
-
-    private CodeType codeType = CodeType.HEXADECIMAL;
-
-    private long dataSize;
-
-    private RowWrappingMode rowWrapping = RowWrappingMode.NO_WRAPPING;
-    private int wrappingBytesGroupSize;
+    private RBinEditor editor;
 
     private int bytesPerRow;
-    private int maxBytesPerRow;
     private int charactersPerRow;
+
     private long rowsPerDocument;
 
     protected int computeBytesPerRow(int charactersPerPage) {
+        RBinViewMode viewMode = editor.getViewMode();
+        int maxBytesPerRow = editor.getMaxBytesPerRow();
+        int wrappingBytesGroupSize = editor.getWrappingBytesGroupSize();
         int computedBytesPerRow;
-        if (rowWrapping == RowWrappingMode.WRAPPING) {
+        if (editor.getRowWrapping() == RRowWrappingMode.WRAPPING) {
             int charactersPerByte = 0;
-            if (viewMode != CodeAreaViewMode.TEXT_PREVIEW) {
-                charactersPerByte += codeType.getMaxDigitsForByte() + 1;
+            if (viewMode != RBinViewMode.TEXT_PREVIEW) {
+                charactersPerByte += editor.getCodeType().getMaxDigitsForByte() + 1;
             }
-            if (viewMode != CodeAreaViewMode.CODE_MATRIX) {
+            if (viewMode != RBinViewMode.CODE_MATRIX) {
                 charactersPerByte++;
             }
             computedBytesPerRow = charactersPerPage / charactersPerByte;
@@ -56,13 +72,14 @@ public class RBinStructure {
     }
 
     protected int computeCharactersPerRow() {
+        RBinViewMode viewMode = editor.getViewMode();
         int charsPerRow = 0;
-        if (viewMode != CodeAreaViewMode.TEXT_PREVIEW) {
+        if (viewMode != RBinViewMode.TEXT_PREVIEW) {
             charsPerRow += computeLastCodeCharPos( bytesPerRow - 1) + 1;
         }
-        if (viewMode != CodeAreaViewMode.CODE_MATRIX) {
+        if (viewMode != RBinViewMode.CODE_MATRIX) {
             charsPerRow += bytesPerRow;
-            if (viewMode == CodeAreaViewMode.DUAL) {
+            if (viewMode == RBinViewMode.DUAL) {
                 charsPerRow++;
             }
         }
@@ -70,11 +87,11 @@ public class RBinStructure {
     }
 
     protected int computeLastCodeCharPos(int byteOffset) {
-        return byteOffset * (codeType.getMaxDigitsForByte() + 1) + codeType.getMaxDigitsForByte() - 1;
+        return byteOffset * (editor.getCodeType().getMaxDigitsForByte() + 1) + editor.getCodeType().getMaxDigitsForByte() - 1;
     }
 
     protected long computeRowsPerDocument() {
-         return dataSize / bytesPerRow + (dataSize % bytesPerRow > 0 ? 1 : 0);
+         return editor.getDataSize() / bytesPerRow + (editor.getDataSize() % bytesPerRow > 0 ? 1 : 0);
     }
 
     public int getBytesPerRow() {
@@ -85,48 +102,30 @@ public class RBinStructure {
         return charactersPerRow;
     }
 
-    public CodeType getCodeType() {
-        return codeType;
-    }
-
-    public long getDataSize() {
-        return dataSize;
-    }
-
-    public int getMaxBytesPerRow() {
-        return maxBytesPerRow;
-    }
-
     public long getRowsPerDocument() {
         return rowsPerDocument;
     }
 
-    public RowWrappingMode getRowWrapping() {
-        return rowWrapping;
-    }
-
-    public CodeAreaViewMode getViewMode() {
-        return viewMode;
-    }
-
-    public int getWrappingBytesGroupSize() {
-        return wrappingBytesGroupSize;
+    public void setEditor(RBinEditor editor) {
+        this.editor = editor;
     }
 
     public int computeFirstCodeCharacterPos(int byteOffset) {
-        return byteOffset * (codeType.getMaxDigitsForByte() + 1);
+        return byteOffset * (editor.getCodeType().getMaxDigitsForByte() + 1);
     }
 
     public int computePositionByte(int rowCharPosition) {
-        return rowCharPosition / (codeType.getMaxDigitsForByte() + 1);
+        return rowCharPosition / (editor.getCodeType().getMaxDigitsForByte() + 1);
     }
 
-    public RCaretPos computeMovePosition(RCaretPos position, MovementDirection direction, int rowsPerPage) {
-        CodeAreaSection section = position.getSection().orElse(CodeAreaSection.CODE_MATRIX);
+    public RCaretPos computeMovePosition(RCaretPos position, RMovementDirection direction, int rowsPerPage) {
+        long dataSize = editor.getDataSize();
+        RCodeType codeType = editor.getCodeType();
+        RCodeAreaSection section = position.getSection().orElse(RCodeAreaSection.CODE_MATRIX);
         RCaretPos target = new RCaretPos(position.getDataPosition(), position.getCodeOffset(), section);
         switch (direction) {
             case LEFT: {
-                if (section != CodeAreaSection.TEXT_PREVIEW) {
+                if (section != RCodeAreaSection.TEXT_PREVIEW) {
                     int codeOffset = position.getCodeOffset();
                     if (codeOffset > 0) {
                         target.setCodeOffset(codeOffset - 1);
@@ -140,7 +139,7 @@ public class RBinStructure {
                 break;
             }
             case RIGHT: {
-                if (section != CodeAreaSection.TEXT_PREVIEW) {
+                if (section != RCodeAreaSection.TEXT_PREVIEW) {
                     int codeOffset = position.getCodeOffset();
                     if (position.getDataPosition() < dataSize && codeOffset < codeType.getMaxDigitsForByte() - 1) {
                         target.setCodeOffset(codeOffset + 1);
@@ -180,7 +179,7 @@ public class RBinStructure {
                 } else {
                     target.setDataPosition(dataPosition + increment);
                 }
-                if (section != CodeAreaSection.TEXT_PREVIEW) {
+                if (section != RCodeAreaSection.TEXT_PREVIEW) {
                     if (target.getDataPosition() == dataSize) {
                         target.setCodeOffset(0);
                     } else {
@@ -232,8 +231,8 @@ public class RBinStructure {
                 break;
             }
             case SWITCH_SECTION: {
-                CodeAreaSection activeSection = section == CodeAreaSection.TEXT_PREVIEW ? CodeAreaSection.CODE_MATRIX : CodeAreaSection.TEXT_PREVIEW;
-                if (activeSection == CodeAreaSection.TEXT_PREVIEW) {
+                RCodeAreaSection activeSection = section == RCodeAreaSection.TEXT_PREVIEW ? RCodeAreaSection.CODE_MATRIX : RCodeAreaSection.TEXT_PREVIEW;
+                if (activeSection == RCodeAreaSection.TEXT_PREVIEW) {
                     target.setCodeOffset(0);
                 }
                 target.setSection(activeSection);
@@ -245,14 +244,8 @@ public class RBinStructure {
 
         return target;
     }
-    public void updateCache(RBinEditor editor, int charactersPerPage) {
-        viewMode = editor.getViewMode();
-        codeType = editor.getCodeType();
-        dataSize = editor.getDataSize();
-        rowWrapping = editor.getRowWrapping();
-        maxBytesPerRow = editor.getMaxBytesPerRow();
-        wrappingBytesGroupSize = editor.getWrappingBytesGroupSize();
 
+    public void updateCache(int charactersPerPage) {
         bytesPerRow = computeBytesPerRow(charactersPerPage);
         charactersPerRow = computeCharactersPerRow();
         rowsPerDocument = computeRowsPerDocument();

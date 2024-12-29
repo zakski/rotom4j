@@ -3,41 +3,53 @@ package com.szadowsz.gui.component.bined;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
-import com.szadowsz.gui.component.bined.sizing.RBinVisibility;
-import com.szadowsz.gui.component.bined.scroll.RBinScrollPos;
-import com.szadowsz.gui.component.bined.sizing.RBinMetrics;
-import com.szadowsz.gui.component.bined.sizing.RBinStructure;
+import com.szadowsz.gui.component.bined.bounds.RBinStructure;
+import com.szadowsz.gui.component.bined.bounds.RBinVisibility;
+import com.szadowsz.gui.component.bined.settings.RBackgroundPaintMode;
+import com.szadowsz.gui.config.text.RFontMetrics;
 import com.szadowsz.gui.config.text.RFontStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import processing.core.PConstants;
 import processing.core.PFont;
 import processing.core.PGraphics;
 
 public abstract class RBinComponent extends RComponent {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RBinComponent.class);
 
-    protected final RBinDimensions dimensions;
-    protected final RBinMetrics metrics;
-    protected final RBinStructure structure;
-    protected final RBinVisibility visibility;
-    protected final RBinScrollPos scrollPosition;
-    protected RBinEditor editor;
+    protected final RBinEditor editor;
+
     protected PFont font;
 
-    public RBinComponent(RotomGui gui, String path, RBinEditor editor) {
+    protected final RBinDimensions dimensions;
+    protected final RBinStructure structure;
+    protected final RBinVisibility visibility;
+    protected final RFontMetrics metrics;
+
+    protected RBackgroundPaintMode backgroundPaintMode = RBackgroundPaintMode.STRIPED;
+
+    /**
+     * Default Binary Sub-Component Constructor
+     * <p>
+     * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
+     *
+     * @param gui    the gui for the window that the component is drawn under
+     * @param path   the path in the component tree
+     * @param editor the parent editor reference
+     */
+    protected RBinComponent(RotomGui gui, String path, RBinEditor editor) {
         super(gui, path, editor);
         this.editor = editor;
-        dimensions = editor.getDimensions();
-        metrics = editor.getMetrics();
-        structure = editor.getStructure();
-        visibility = editor.getVisibility();
-        font = RFontStore.getMainFont();
-        scrollPosition = editor.getScrollPos();
+        this.dimensions = this.editor.getDimensions();
+        this.structure = this.editor.getStructure();
+        this.visibility = this.editor.getVisibility();
+        this.metrics = this.editor.getMetrics();
+
+        this.font = RFontStore.getMainFont();
+    }
+
+    @Override
+    protected void drawBackground(PGraphics pg) {
+        // NOOP
     }
 
     protected void drawShiftedChars(PGraphics pg, char[] drawnChars, int charOffset, int length, float positionX, float positionY) {
-        LOGGER.debug("Shifted Chars [offset {}, length {}, [{},{}] ] ",charOffset,length, positionX,positionY);
         pg.text(drawnChars, charOffset, charOffset+length, positionX, positionY);
     }
 
@@ -53,8 +65,6 @@ public abstract class RBinComponent extends RComponent {
      * @param positionY  Y position of drawing area start
      */
     protected void drawCenteredChars(final PGraphics pg, final char[] drawnChars, int charOffset, int length, int cellWidth, float positionX, float positionY) {
-        LOGGER.debug("Center Chars [offset {}, length {}, cellWidth {}, [{},{}] ] ",charOffset,length,cellWidth,positionX,positionY);
-//        pg.text(drawnChars, 0, length, positionX, positionY);
         int pos = 0;
         int group = 0;
         while (pos < length) {
@@ -95,10 +105,5 @@ public abstract class RBinComponent extends RComponent {
         if (group > 0) {
             drawShiftedChars(pg, drawnChars, charOffset + pos - group, group, positionX + (pos - group) * cellWidth, positionY);
         }
-    }
-
-    @Override
-    protected void drawBackground(PGraphics pg) {
-
     }
 }

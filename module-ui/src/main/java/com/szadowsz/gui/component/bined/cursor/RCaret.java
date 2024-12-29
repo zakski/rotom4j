@@ -1,7 +1,7 @@
-package com.szadowsz.gui.component.bined.caret;
+package com.szadowsz.gui.component.bined.cursor;
 
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.bined.settings.CodeAreaSection;
+import com.szadowsz.gui.component.bined.settings.RCodeAreaSection;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
@@ -9,6 +9,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
+/**
+ * Interface for code area caret.
+ *
+ * @author ExBin Project (https://exbin.org)
+ */
 public class RCaret {
     protected static final int DOUBLE_CURSOR_WIDTH = 2;
     protected static final int DEFAULT_BLINK_RATE = 450;
@@ -23,7 +28,7 @@ public class RCaret {
 
     private PVector magicCaretPosition = new PVector();
     private final RCaretPos caretPosition = new RCaretPos();
-    protected CursorRenderingMode renderingMode = CursorRenderingMode.NEGATIVE;
+    protected RCursorRenderingMode renderingMode = RCursorRenderingMode.NEGATIVE;
 
     protected int blinkRate = 0;
     protected Timer blinkTimer = null;
@@ -33,7 +38,7 @@ public class RCaret {
         privateSetBlinkRate(DEFAULT_BLINK_RATE);
     }
 
-    public static int getCursorThickness(CursorShape cursorShape, int characterWidth, int lineHeight) {
+    public static int getCursorThickness(RCursorShape cursorShape, int characterWidth, int lineHeight) {
         switch (cursorShape) {
             case INSERT:
                 return DOUBLE_CURSOR_WIDTH;
@@ -108,7 +113,7 @@ public class RCaret {
         return 0;
     }
 
-    public CursorRenderingMode getRenderingMode() {
+    public RCursorRenderingMode getRenderingMode() {
         return renderingMode;
     }
 
@@ -117,8 +122,8 @@ public class RCaret {
      *
      * @return section
      */
-    public CodeAreaSection getSection() {
-        return caretPosition.getSection().orElse(CodeAreaSection.CODE_MATRIX);
+    public RCodeAreaSection getSection() {
+        return caretPosition.getSection().orElse(RCodeAreaSection.CODE_MATRIX);
     }
 
     public boolean isSelectionVisible() {
@@ -140,7 +145,7 @@ public class RCaret {
      */
     public void setCaretPosition(RCaretPos caretPosition) {
         if (caretPosition != null) {
-            this.caretPosition.setPosition(caretPosition);
+            this.caretPosition.setCaretPosition(caretPosition);
         } else {
             this.caretPosition.reset();
         }
@@ -159,25 +164,6 @@ public class RCaret {
         resetBlink();
     }
 
-    /**
-     * Sets current caret position to given position preserving section.
-     *
-     * @param dataPosition data position
-     * @param codeOffset code offset
-     */
-    public void setCaretPosition(long dataPosition, int codeOffset) {
-        caretPosition.setDataPosition(dataPosition);
-        caretPosition.setCodeOffset(codeOffset);
-        resetBlink();
-    }
-
-    public void setCaretPosition(long dataPosition, int codeOffset, CodeAreaSection section) {
-        caretPosition.setDataPosition(dataPosition);
-        caretPosition.setCodeOffset(codeOffset);
-        caretPosition.setSection(section);
-        resetBlink();
-    }
-
     public void setCodeOffset(int codeOffset) {
         caretPosition.setCodeOffset(codeOffset);
         resetBlink();
@@ -188,21 +174,9 @@ public class RCaret {
         resetBlink();
     }
 
-    public void setDot(int dot) {
-        this.dot = dot;
-    }
-
-    public void setMagicCaretPosition(PVector magicCaretPosition) {
-        this.magicCaretPosition = magicCaretPosition;
-    }
-
-    public void setSection(CodeAreaSection section) {
+    public void setSection(RCodeAreaSection section) {
         caretPosition.setSection(section);
         resetBlink();
-    }
-
-    public void setSelectionVisible(boolean selectionVisible) {
-        this.selectionVisible = selectionVisible;
     }
 
     public void setVisible(boolean visible) {
@@ -210,9 +184,5 @@ public class RCaret {
     }
 
     public void draw(PGraphics g) {
-    }
-
-    public void moveDot(int dot) {
-        this.dot = dot;
     }
 }

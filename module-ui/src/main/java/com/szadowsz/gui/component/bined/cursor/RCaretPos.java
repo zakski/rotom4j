@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.szadowsz.gui.component.bined.caret;
+package com.szadowsz.gui.component.bined.cursor;
 
 
-import com.szadowsz.gui.component.bined.settings.CodeAreaSection;
+import com.szadowsz.gui.component.bined.settings.RCodeAreaSection;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -31,12 +31,12 @@ public final class RCaretPos {
 
     private long dataPosition = 0;
     private int codeOffset = 0;
-    private CodeAreaSection section = null;
+    private RCodeAreaSection section = null;
 
     public RCaretPos() {
     }
 
-    public RCaretPos(long dataPosition, int codeOffset, CodeAreaSection section) {
+    public RCaretPos(long dataPosition, int codeOffset, RCodeAreaSection section) {
         this.dataPosition = dataPosition;
         this.codeOffset = codeOffset;
         this.section = section;
@@ -65,7 +65,7 @@ public final class RCaretPos {
      *
      * @return section
      */
-    public Optional<CodeAreaSection> getSection() {
+    public Optional<RCodeAreaSection> getSection() {
         return Optional.ofNullable(section);
     }
 
@@ -86,7 +86,7 @@ public final class RCaretPos {
         this.dataPosition = dataPosition;
     }
 
-    public void setSection(CodeAreaSection section) {
+    public void setSection(RCodeAreaSection section) {
         this.section = section;
     }
 
@@ -95,7 +95,7 @@ public final class RCaretPos {
      *
      * @param position source position
      */
-    public void setPosition(RCaretPos position) {
+    public void setCaretPosition(RCaretPos position) {
         dataPosition = position.getDataPosition();
         codeOffset = position.getCodeOffset();
         section = position.getSection().orElse(null);

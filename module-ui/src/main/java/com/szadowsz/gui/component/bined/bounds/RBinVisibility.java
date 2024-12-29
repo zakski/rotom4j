@@ -1,7 +1,8 @@
-package com.szadowsz.gui.component.bined.sizing;
+package com.szadowsz.gui.component.bined.bounds;
 
-import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
-import com.szadowsz.gui.component.bined.settings.CodeAreaViewMode;
+import com.szadowsz.gui.component.bined.RBinEditor;
+import com.szadowsz.gui.component.bined.settings.RBinViewMode;
+import com.szadowsz.gui.config.text.RFontMetrics;
 
 public class RBinVisibility {
 
@@ -64,26 +65,28 @@ public class RBinVisibility {
         return 0;
     }
 
-    public void recomputeCharPositions(RBinMetrics metrics, RBinStructure structure, RBinDimensions dimensions){//, RBinScrolling scrolling) {
-        int bytesPerRow = structure.getBytesPerRow();
-        int characterWidth = metrics.getCharacterWidth();
-        int charsPerByte = structure.getCodeType().getMaxDigitsForByte() + 1;
+    public void recomputeCharPositions(RBinEditor editor){//, RBinScrolling scrolling) {
+        RBinStructure structure = editor.getStructure();
 
-        CodeAreaViewMode viewMode = structure.getViewMode();
+        int bytesPerRow = structure.getBytesPerRow();
+        int characterWidth = editor.getMetrics().getCharacterWidth();
+        int charsPerByte = editor.getCodeType().getMaxDigitsForByte() + 1;
+
+        RBinViewMode viewMode = editor.getViewMode();
 
         int invisibleFromLeftX = 0;//scrolling.getHorizontalScrollX(characterWidth);
-        int invisibleFromRightX = Math.round(invisibleFromLeftX + dimensions.getDataViewWidth());
+        int invisibleFromRightX = Math.round(invisibleFromLeftX + editor.getDimensions().getDataViewWidth());
 
         charactersPerCodeSection = structure.computeFirstCodeCharacterPos(bytesPerRow);
 
         // Compute first and last visible character of the code area
-        if (viewMode != CodeAreaViewMode.TEXT_PREVIEW) {
+        if (viewMode != RBinViewMode.TEXT_PREVIEW) {
             codeLastCharPos = bytesPerRow * charsPerByte - 1;
         } else {
             codeLastCharPos = 0;
         }
 
-        if (viewMode == CodeAreaViewMode.DUAL) {
+        if (viewMode == RBinViewMode.DUAL) {
             previewCharPos = bytesPerRow * charsPerByte;
         } else {
             previewCharPos = 0;
@@ -96,10 +99,10 @@ public class RBinVisibility {
         skipRestFromCode = -1;
         skipRestFromChar = -1;
         skipRestFromPreview = -1;
-        codeSectionVisible = viewMode != CodeAreaViewMode.TEXT_PREVIEW;
-        previewSectionVisible = viewMode != CodeAreaViewMode.CODE_MATRIX;
+        codeSectionVisible = viewMode != RBinViewMode.TEXT_PREVIEW;
+        previewSectionVisible = viewMode != RBinViewMode.CODE_MATRIX;
 
-        if (viewMode == CodeAreaViewMode.DUAL || viewMode == CodeAreaViewMode.CODE_MATRIX) {
+        if (viewMode == RBinViewMode.DUAL || viewMode == RBinViewMode.CODE_MATRIX) {
             skipToChar = invisibleFromLeftX / characterWidth;
             if (skipToChar < 0) {
                 skipToChar = 0;
@@ -115,7 +118,7 @@ public class RBinVisibility {
             }
         }
 
-        if (viewMode == CodeAreaViewMode.DUAL || viewMode == CodeAreaViewMode.TEXT_PREVIEW) {
+        if (viewMode == RBinViewMode.DUAL || viewMode == RBinViewMode.TEXT_PREVIEW) {
             skipToPreview = invisibleFromLeftX / characterWidth - previewCharPos;
             if (skipToPreview < 0) {
                 skipToPreview = 0;
