@@ -2,10 +2,20 @@ package com.szadowsz.nds4j.utils;
 
 import java.awt.*;
 
+/**
+ * Utility Class to aid with reading of Colors
+ */
 public class ColorUtils {
 
     private ColorUtils(){}
 
+    /**
+     * Conversion utility to interpret BGR555 as java Color
+     *
+     * @param byte1 first BGR555 byte
+     * @param byte2 second BGR555 byte
+     * @return java Color
+     */
     public static Color bgr555ToColor(byte byte1, byte byte2) {
         int r, b, g;
 
@@ -18,6 +28,12 @@ public class ColorUtils {
         return new Color(r, g, b);
     }
 
+    /**
+     * Conversion utility to interpret java Color as BGR555 bytes
+     *
+     * @param color java Color
+      * @return 2 byte BGR555 array
+     */
     public static byte[] colorToBGR555(Color color) {
         byte[] d = new byte[2];
 

@@ -2,16 +2,16 @@ package com.szadowsz.nds4j.app.nodes.bin.evo;
 
 import com.google.gson.JsonElement;
 
-import com.szadowsz.nds4j.data.evo.EvoMethod;
-import com.szadowsz.nds4j.data.ref.Items;
-import com.szadowsz.nds4j.data.ref.PokeDex;
-import com.szadowsz.nds4j.file.bin.EvolutionNFSFile;
-import com.szadowsz.ui.node.impl.FolderNode;
+import com.szadowsz.nds4j.file.bin.evo.data.EvoMethod;
+import com.szadowsz.nds4j.ref.ItemDex;
+import com.szadowsz.nds4j.ref.PokeDex;
+import com.szadowsz.nds4j.file.bin.evo.EvolutionNFSFile;
+import com.old.ui.node.impl.FolderNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 
-import static com.szadowsz.ui.store.LayoutStore.cell;
+import static com.old.ui.store.LayoutStore.cell;
 
 
 public class EvoFolderNode extends FolderNode {
@@ -68,7 +68,7 @@ public class EvoFolderNode extends FolderNode {
                 return "NONE";
             case EVO_ITEM:
             case EVO_TRADE_ITEM:
-                return Items.getItemNameByNo(getRequirement());
+                return ItemDex.getItemNameByNo(getRequirement());
             default:
                 return getRequirement() + " lvl.";
         }

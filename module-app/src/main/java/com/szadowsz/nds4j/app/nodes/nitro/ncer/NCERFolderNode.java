@@ -1,0 +1,62 @@
+package com.szadowsz.nds4j.app.nodes.nitro.ncer;
+
+import com.szadowsz.nds4j.app.nodes.nitro.NitroCmpFolderNode;
+import com.szadowsz.nds4j.app.nodes.nitro.PreviewNode;
+import com.szadowsz.nds4j.app.nodes.nitro.ncgr.NCGRFolderNode;
+import com.szadowsz.nds4j.exception.NitroException;
+import com.szadowsz.nds4j.file.nitro.ncer.NCER;
+import com.old.ui.node.LayoutType;
+import com.old.ui.node.impl.FolderNode;
+import com.old.ui.node.impl.SliderNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import processing.core.PImage;
+
+
+public class NCERFolderNode extends NitroCmpFolderNode<NCER> {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(NCERFolderNode.class);
+
+    private final String CELL_NODE = "Cell";
+
+    public NCERFolderNode(String path, FolderNode parent, NCER ncer) throws NitroException {
+        super(path, SELECT_NCER_FILE, parent, LayoutType.VERTICAL_1_COL, ncer);
+        children.clear();
+        children.add(new PreviewNode(path + "/" + PREVIEW_NODE, this,ncer));
+        SliderNode cell = new SliderNode(path + "/" + CELL_NODE, this, 0.0f, 0.0f, ncer.getCellsCount()-1, true){
+            @Override
+            protected void onValueFloatChanged() {
+                super.onValueFloatChanged();
+                try {
+                    recolorImage();
+                } catch (NitroException e){
+
+                }
+            }
+        };
+        cell.setPrecisionIndexAndValue(4);
+        children.add(cell);
+
+        children.add(createZoom());
+        children.add(new NCGRFolderNode(path + "/" + IMAGE_NODE_NAME, this,imageable.getNCGR()));
+    }
+
+    public void recolorImage() throws NitroException {
+        super.recolorImage();
+        SliderNode cellNode = (SliderNode) findChildByName(CELL_NODE);
+
+        PImage pImage = resizeImage(imageable.getImage((int) cellNode.valueFloat));
+        ((PreviewNode) findChildByName(imageable.getFileName())).loadImage(pImage);
+
+        this.window.resizeForContents();
+    }
+
+    @Override
+    public float autosuggestWindowWidthForContents() {
+        float suggested = super.autosuggestWindowWidthForContents();
+        if (imageable.getNCGR() != null) {
+            return Math.max(suggested,((PreviewNode) children.get(0)).getImage().width);
+        } else {
+            return suggested;
+        }
+    }
+}

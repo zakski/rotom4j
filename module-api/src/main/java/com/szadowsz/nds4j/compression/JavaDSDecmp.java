@@ -1,7 +1,7 @@
 package com.szadowsz.nds4j.compression;
 
 import com.szadowsz.nds4j.exception.InvalidFileException;
-import com.szadowsz.nds4j.reader.HexInputStream;
+import com.szadowsz.binary.io.reader.HexInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

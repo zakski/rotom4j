@@ -1,5 +1,5 @@
 # NSCR
-Nintendo Screen Resource (NSCR/RCSN)
+Nintendo SCreen Resource (NSCR/RCSN)
 
 ## Header
 - [uses Generic Header](/docs/files/nitro/subsections/Generic%20Header%20Format.md)

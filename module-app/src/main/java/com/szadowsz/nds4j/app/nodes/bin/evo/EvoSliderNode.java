@@ -2,13 +2,13 @@ package com.szadowsz.nds4j.app.nodes.bin.evo;
 
 
 import com.google.gson.JsonElement;
-import com.szadowsz.ui.constants.theme.ThemeColorType;
-import com.szadowsz.ui.constants.theme.ThemeStore;
-import com.szadowsz.ui.input.keys.GuiKeyEvent;
-import com.szadowsz.ui.input.mouse.GuiMouseEvent;
-import com.szadowsz.ui.node.impl.SliderNode;
-import com.szadowsz.ui.store.NormColorStore;
-import com.szadowsz.ui.utils.KeyCodes;
+import com.old.ui.constants.theme.ThemeColorType;
+import com.old.ui.constants.theme.ThemeStore;
+import com.old.ui.input.keys.GuiKeyEvent;
+import com.old.ui.input.mouse.GuiMouseEvent;
+import com.old.ui.node.impl.SliderNode;
+import com.old.ui.store.NormColorStore;
+import com.old.ui.utils.KeyCodes;
 import processing.core.PGraphics;
 
 abstract class EvoSliderNode extends SliderNode {

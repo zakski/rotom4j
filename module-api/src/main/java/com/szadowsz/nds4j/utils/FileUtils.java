@@ -4,6 +4,9 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.FilenameFilter;
 
+/**
+ * Utility Class to aid with processing of Files
+ */
 public class FileUtils {
 
     /**
@@ -54,13 +57,15 @@ public class FileUtils {
             return description + extensions.toString();
         }
     }
-
+    /**
+     * An implementation of <code>FilenameFilter</code> which filters out files which do not have the specified file extensions
+     */
     public static class ExtensionNameFilter implements FilenameFilter {
         private final String[] extensions;
         private final String description;
 
         /**
-         * Creates a new <code>ExtensionFilter</code> which only shows files with the specified extensions
+         * Creates a new <code>ExtensionNameFilter</code> which only shows files with the specified extensions
          *
          * @param description a <code>String</code> containing the description to show for the allowed file types
          * @param extensions  a <code>String[]</code> containing the allowed file types (including the "dot")
@@ -95,6 +100,8 @@ public class FileUtils {
     public static final String[] scrExtensions = {".scr"};
     public static final String[] naixExtensions = {".naix"};
 
+    public static final String[] nanrExtensions = {".NANR"};
+    public static final String[] ncerExtensions = {".NCER"};
     public static final String[] nscrExtensions = {".NSCR"};
     public static final String[] ncgrExtensions = {".NCGR", ".NCBR"};
     public static final String[] nclrExtensions = {".NCLR"};
@@ -110,6 +117,8 @@ public class FileUtils {
     public static final ExtensionFilter scrFilter = new ExtensionFilter("Nintendo .scr File", scrExtensions);
     public static final ExtensionFilter naixFilter = new ExtensionFilter("Nintendo .naix File", naixExtensions);
 
+    public static final ExtensionFilter nanrFilter = new ExtensionFilter("Nintendo .NANR File", nanrExtensions);
+    public static final ExtensionFilter ncerFilter = new ExtensionFilter("Nintendo .NCER File", ncerExtensions);
     public static final ExtensionFilter nscrFilter = new ExtensionFilter("Nintendo DS NSCR", nscrExtensions);
     public static final ExtensionFilter ncgrFilter = new ExtensionFilter("Nintendo DS NCGR", ncgrExtensions);
     public static final ExtensionFilter nclrFilter = new ExtensionFilter("Nintendo DS NCLR", nclrExtensions);
@@ -123,9 +132,10 @@ public class FileUtils {
     public static final ExtensionNameFilter scrNameFilter = new ExtensionNameFilter("Nintendo .scr File", scrExtensions);
     public static final ExtensionNameFilter naixNameFilter = new ExtensionNameFilter("Nintendo .naix File", naixExtensions);
 
+    public static final ExtensionNameFilter nanrNameFilter = new ExtensionNameFilter("Nintendo .NANR File", nanrExtensions);
+    public static final ExtensionNameFilter ncerNameFilter = new ExtensionNameFilter("Nintendo .NCER File", ncerExtensions);
     public static final ExtensionNameFilter nscrNameFilter = new ExtensionNameFilter("Nintendo .NSCR File", nscrExtensions);
     public static final ExtensionNameFilter ncgrNameFilter = new ExtensionNameFilter("Nintendo .NCGR File", ncgrExtensions);
     public static final ExtensionNameFilter nclrNameFilter = new ExtensionNameFilter("Nintendo .NCLR File", nclrExtensions);
     public static final ExtensionNameFilter binNameFilter = new ExtensionNameFilter("Bin File", binExtensions);
-
 }

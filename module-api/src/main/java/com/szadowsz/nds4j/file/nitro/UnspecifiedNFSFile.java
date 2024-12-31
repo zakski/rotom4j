@@ -1,9 +1,9 @@
 package com.szadowsz.nds4j.file.nitro;
 
 import com.szadowsz.nds4j.compression.CompFormat;
-import com.szadowsz.nds4j.data.NFSFormat;
+import com.szadowsz.nds4j.file.NFSFormat;
 import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.reader.MemBuf;
+import com.szadowsz.binary.io.reader.MemBuf;
 
 /**
  * Class to hold the data of Nitro files that are not supported specifically yet

@@ -1,0 +1,27 @@
+package com.szadowsz.gui.config.theme;
+
+/**
+ * Theme Color Types
+ */
+public enum RColorType {
+    WINDOW_BORDER,
+
+    NORMAL_BACKGROUND,
+    NORMAL_FOREGROUND,
+
+    FOCUS_FOREGROUND,
+    FOCUS_BACKGROUND,
+
+    SELECTED_FOREGROUND,
+    SELECTED_BACKGROUND,
+
+    ACTIVE_FOREGROUND,
+    ACTIVE_BACKGROUND,
+
+    DISABLED_BACKGROUND,
+    DISABLED_FOREGROUND,
+
+    CURSOR,
+    CURSOR_NEGATIVE
+
+}
