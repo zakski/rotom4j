@@ -1,5 +1,9 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.binary.BinaryData;
+import com.szadowsz.binary.EditableBinaryData;
+import com.szadowsz.binary.array.ByteArrayData;
+import com.szadowsz.binary.array.ByteArrayEditableData;
 import com.szadowsz.binary.io.reader.Buffer;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
@@ -18,9 +22,6 @@ import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RRect;
-import com.szadowsz.nds4j.file.bin.core.BinaryData;
-import com.szadowsz.nds4j.file.bin.core.ByteArrayData;
-import com.szadowsz.nds4j.file.bin.core.EditableBinaryData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PConstants;
@@ -64,7 +65,6 @@ public class RBinEditor extends RBinEdBase {
         super(gui, path, parent);
         caret = new RCaret(this);
         init();
-        children.add(new RBinHeader(gui, path + "/" + HEADER, this));
         children.add(new RBinMain(gui, path + "/" + MAIN, this));
     }
 
@@ -73,10 +73,9 @@ public class RBinEditor extends RBinEdBase {
 
         LOGGER.info("Loading File \"{}\" for \"{}\" Binary Editor", filePath, name);
         byte[] data = Buffer.readFile(filePath);
-        contentData = new ByteArrayData(data);
+        contentData = new ByteArrayEditableData(data);
         caret = new RCaret(this);
         init();
-      //  children.add(new RBinHeader(gui, path + "/" + HEADER, this));
         children.add(new RBinMain(gui, path + "/" + MAIN, this));
     }
 
@@ -804,6 +803,7 @@ public class RBinEditor extends RBinEdBase {
     @Override
     public void keyTyped(RKeyEvent keyEvent, float mouseX, float mouseY) {
         char keyValue = keyEvent.getKey();
+        LOGGER.info("Bin Editor key {}",keyValue);
         // TODO Add support for high unicode codes
         if (keyValue == KeyEvent.CHAR_UNDEFINED) {
             return;
@@ -814,6 +814,7 @@ public class RBinEditor extends RBinEdBase {
 
         RCodeAreaSection section = getActiveSection();
         if (section != RCodeAreaSection.TEXT_PREVIEW) {
+            LOGGER.info("Process as Code {}",keyValue);
             if (!keyEvent.hasModifiers() || keyEvent.isShiftDown()) {
                 pressedCharAsCode(keyValue);
             }

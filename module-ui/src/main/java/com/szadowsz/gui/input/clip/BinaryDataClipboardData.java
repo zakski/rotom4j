@@ -1,6 +1,7 @@
 package com.szadowsz.gui.input.clip;
 
-import com.szadowsz.nds4j.file.bin.core.BinaryData;
+
+import com.szadowsz.binary.BinaryData;
 
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;

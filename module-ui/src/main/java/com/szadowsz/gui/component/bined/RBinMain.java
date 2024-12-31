@@ -1,5 +1,6 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.binary.BinaryData;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.bined.bounds.RBinSelection;
 import com.szadowsz.gui.component.bined.cursor.RCaret;
@@ -9,7 +10,6 @@ import com.szadowsz.gui.component.bined.utils.RBinUtils;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.layout.RRect;
-import com.szadowsz.nds4j.file.bin.core.BinaryData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;

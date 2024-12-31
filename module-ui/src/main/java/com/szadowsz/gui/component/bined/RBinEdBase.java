@@ -1,5 +1,9 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.binary.BinaryData;
+import com.szadowsz.binary.EditableBinaryData;
+import com.szadowsz.binary.EmptyBinaryData;
+import com.szadowsz.binary.paged.PagedData;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
 import com.szadowsz.gui.component.bined.bounds.RBinSelection;
@@ -14,10 +18,6 @@ import com.szadowsz.gui.config.text.RFontMetrics;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.input.clip.BinaryDataClipboardData;
 import com.szadowsz.gui.input.clip.ClipboardData;
-import com.szadowsz.nds4j.file.bin.core.BinaryData;
-import com.szadowsz.nds4j.file.bin.core.EditableBinaryData;
-import com.szadowsz.nds4j.file.bin.core.EmptyBinaryData;
-import com.szadowsz.nds4j.file.bin.core.paged.PagedData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PFont;
