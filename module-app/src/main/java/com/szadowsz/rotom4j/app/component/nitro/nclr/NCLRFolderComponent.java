@@ -10,9 +10,9 @@ import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RColorConverter;
 import com.szadowsz.gui.input.mouse.RActivateByType;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
-import com.szadowsz.nds4j.app.Processing;
-import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
+import com.szadowsz.rotom4j.app.ProcessingRotom4J;
+import com.szadowsz.rotom4j.exception.NitroException;
+import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
 import com.szadowsz.rotom4j.app.component.nitro.NitroFolderComponent;
 import com.szadowsz.rotom4j.app.component.nitro.NitroPreview;
 import com.szadowsz.rotom4j.app.component.nitro.ncgr.NCGRFolderComponent;
@@ -116,10 +116,10 @@ public class NCLRFolderComponent extends NitroFolderComponent<NCLR> {
     }
 
     protected void selectPalette() {
-        String lastPath = Processing.prefs.get("openNarcPath", System.getProperty("user.dir"));
+        String lastPath = ProcessingRotom4J.prefs.get("openNarcPath", System.getProperty("user.dir"));
         String nclrPath = FileChooser.selectNclrFile(gui.getSketch(), lastPath,SELECT_NCLR_FILE);
         if (nclrPath != null) {
-            Processing.prefs.put("openNarcPath", new File(nclrPath).getParentFile().getAbsolutePath());
+            ProcessingRotom4J.prefs.put("openNarcPath", new File(nclrPath).getParentFile().getAbsolutePath());
             NCLR original = imageable;
             try {
                 LOGGER.debug("Loading NCLR File: " + nclrPath);

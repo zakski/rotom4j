@@ -7,6 +7,8 @@ repositories {
     mavenCentral()
 }
 
+java.sourceCompatibility = JavaVersion.VERSION_21
+
 dependencies {
     implementation(fileTree("../libs") { include("*.jar") })
 

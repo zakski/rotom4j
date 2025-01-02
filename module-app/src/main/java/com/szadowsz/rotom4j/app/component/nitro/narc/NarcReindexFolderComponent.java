@@ -5,7 +5,7 @@ import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.text.RTextField;
 import com.szadowsz.gui.input.mouse.RActivateByType;
-import com.szadowsz.nds4j.file.nitro.narc.NARC;
+import com.szadowsz.rotom4j.file.nitro.narc.NARC;
 
 public class NarcReindexFolderComponent extends RFolder {
     private static final String NAME = "Name";

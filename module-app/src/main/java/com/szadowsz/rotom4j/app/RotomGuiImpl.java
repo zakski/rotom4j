@@ -3,17 +3,17 @@ package com.szadowsz.rotom4j.app;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.RotomGuiSettings;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.bin.evo.EvolutionNFSFile;
-import com.szadowsz.nds4j.file.bin.learnset.LearnsetNFSFile;
-import com.szadowsz.nds4j.file.bin.stats.GrowNFSFile;
-import com.szadowsz.nds4j.file.bin.stats.StatsNFSFile;
-import com.szadowsz.nds4j.file.nitro.nanr.NANR;
-import com.szadowsz.nds4j.file.nitro.narc.NARC;
-import com.szadowsz.nds4j.file.nitro.ncer.NCER;
-import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
-import com.szadowsz.nds4j.file.nitro.nclr.NCLR;
-import com.szadowsz.nds4j.file.nitro.nscr.NSCR;
+import com.szadowsz.rotom4j.exception.NitroException;
+import com.szadowsz.rotom4j.file.data.evo.EvolutionNFSFile;
+import com.szadowsz.rotom4j.file.data.learnset.LearnsetNFSFile;
+import com.szadowsz.rotom4j.file.data.stats.GrowNFSFile;
+import com.szadowsz.rotom4j.file.data.stats.StatsNFSFile;
+import com.szadowsz.rotom4j.file.nitro.nanr.NANR;
+import com.szadowsz.rotom4j.file.nitro.narc.NARC;
+import com.szadowsz.rotom4j.file.nitro.ncer.NCER;
+import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
+import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
+import com.szadowsz.rotom4j.file.nitro.nscr.NSCR;
 import com.szadowsz.rotom4j.app.component.bin.evo.EvoFolderComponent;
 import com.szadowsz.rotom4j.app.component.bin.growth.GrowthFolderComponent;
 import com.szadowsz.rotom4j.app.component.bin.learn.LearnFolderComponent;
@@ -164,7 +164,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public void registerNarcGUI(NARC narc) {
         LOGGER.info("Creating GUI for Narc File: {}", narc.getFileName());
-        setFolder("View/Loaded Files");
+        setFolder("Loaded Files");
         narc(narc.getFileName(), narc);
         setFolder(null);
         LOGGER.info("Created GUI for Narc File: {}", narc.getFileName());
@@ -186,7 +186,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public void registerNanrGUI(NANR nanr) throws NitroException {
         LOGGER.info("Creating GUI for NANR File: {}", nanr.getFileName());
-        setFolder("View/Loaded Files");
+        setFolder("Loaded Files");
         animeRes(nanr.getFileName(), nanr);
         LOGGER.info("Created GUI for NANR File: {}", nanr.getFileName());
         setFolder(null);
@@ -194,7 +194,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public void registerNcerGUI(NCER ncer) throws NitroException {
         LOGGER.info("Creating GUI for NCER File: {}", ncer.getFileName());
-        setFolder("View/Loaded Files");
+        setFolder("Loaded Files");
         cellBank(ncer.getFileName(), ncer);
         LOGGER.info("Created GUI for NCER File: {}", ncer.getFileName());
         setFolder(null);
@@ -202,7 +202,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public void registerNscrGUI(NSCR nscr) {
         LOGGER.info("Creating GUI for NSCR File: {}", nscr.getFileName());
-        setFolder("View/Loaded Files");
+        setFolder("Loaded Files");
         scrRes(nscr.getFileName(), nscr);
         LOGGER.info("Created GUI for NSCR File: {}", nscr.getFileName());
         setFolder(null);
@@ -210,7 +210,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public void registerNcgrGUI(NCGR ncgr) {
         LOGGER.info("Creating GUI for NCGR File: {}", ncgr.getFileName());
-        setFolder("View/Loaded Files");
+        setFolder("Loaded Files");
         image(ncgr.getFileName(), ncgr);
         setFolder(null);
         LOGGER.info("Created GUI for NCGR File: {}", ncgr.getFileName());
@@ -218,7 +218,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public void registerNclrGUI(NCLR nclr) {
         LOGGER.info("Creating GUI for NCLR File: {}", nclr.getFileName());
-        setFolder("View/Loaded Files");
+        setFolder("Loaded Files");
         palette(nclr);
         setFolder(null);
         LOGGER.info("Created GUI for NCLR File: {}", nclr.getFileName());
@@ -226,7 +226,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public void registerEvoGUI(EvolutionNFSFile evo) {
         LOGGER.info("Creating GUI for Evolution Bin File: {}", evo.getFileName());
-        setFolder("View/Loaded Files");
+        setFolder("Loaded Files");
         evolution(evo);
         setFolder(null);
         LOGGER.info("Created GUI for Evolution Bin File: {}", evo.getFileName());
@@ -234,7 +234,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public void registerGrowthGUI(GrowNFSFile grow) {
         LOGGER.info("Creating GUI for Growth Bin File: {}", grow.getFileName());
-        setFolder("View/Loaded Files");
+        setFolder("Loaded Files");
         growth(grow);
         setFolder(null);
         LOGGER.info("Created GUI for Growth Bin File: {}", grow.getFileName());
@@ -243,7 +243,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public void registerStatsGUI(StatsNFSFile stats) {
         LOGGER.info("Creating GUI for Personal Bin File: {}", stats.getFileName());
-        setFolder("View/Loaded Files");
+        setFolder("Loaded Files");
         personal(stats);
         setFolder(null);
         LOGGER.info("Created GUI for Personal Bin File: {}", stats.getFileName());
@@ -251,7 +251,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public void registerLearnGUI(LearnsetNFSFile learn) {
         LOGGER.info("Creating GUI for Learnset Bin File: {}", learn.getFileName());
-        setFolder("View/Loaded Files");
+        setFolder("Loaded Files");
         learnset(learn);
         setFolder(null);
         LOGGER.info("Created GUI for Learnset Bin File: {}", learn.getFileName());

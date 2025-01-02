@@ -2,9 +2,8 @@ package com.szadowsz.rotom4j.app.component.nitro.nanr;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.nitro.nanr.NANR;
-import com.szadowsz.rotom4j.app.RotomGuiImpl;
+import com.szadowsz.rotom4j.exception.NitroException;
+import com.szadowsz.rotom4j.file.nitro.nanr.NANR;
 import com.szadowsz.rotom4j.app.component.nitro.NitroCmpFolderComponent;
 import com.szadowsz.rotom4j.app.component.nitro.NitroPreview;
 import com.szadowsz.rotom4j.app.component.nitro.ncer.NCERFolderComponent;

@@ -276,7 +276,7 @@ public class RComponentTree {
                 n = new RPanel(gui,runningPath, parent);
                 parent.getChildren().add(n);
                 parent = (RGroup) n;
-            } else if (n instanceof RPanel) {
+            } else if (n instanceof RFolder && i < split.length - 1) {
                 parent = (RFolder) n;
             } else {
                 LOGGER.warn("Expected to find or to be able to create a pane at path \"{}\" but found an existing {}. You cannot put any control elements there.", runningPath, n.className);

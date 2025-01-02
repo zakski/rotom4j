@@ -2,11 +2,11 @@ package com.szadowsz.rotom4j.app.component.bin.growth;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.nds4j.file.bin.stats.GrowNFSFile;
+import com.szadowsz.rotom4j.file.data.stats.GrowNFSFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.szadowsz.nds4j.file.bin.stats.GrowNFSFile.LEVELS;
+import static com.szadowsz.rotom4j.file.data.stats.GrowNFSFile.LEVELS;
 
 public class GrowthFolderComponent extends RFolder {
 

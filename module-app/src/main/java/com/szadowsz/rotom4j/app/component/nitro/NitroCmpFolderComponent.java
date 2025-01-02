@@ -2,10 +2,9 @@ package com.szadowsz.rotom4j.app.component.nitro;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.RGroup;
-import com.szadowsz.nds4j.app.nodes.nitro.ncgr.NCGRFolderNode;
-import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.ImageableWithGraphic;
-import com.szadowsz.nds4j.file.nitro.ncgr.NCGR;
+import com.szadowsz.rotom4j.exception.NitroException;
+import com.szadowsz.rotom4j.file.ImageableWithGraphic;
+import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.rotom4j.app.component.nitro.ncgr.NCGRFolderComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

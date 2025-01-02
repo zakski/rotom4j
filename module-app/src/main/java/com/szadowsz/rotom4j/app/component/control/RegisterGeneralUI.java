@@ -6,8 +6,9 @@ import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.input.toggle.RToggle;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.input.mouse.RActivateByType;
-import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.utils.Configuration;
+import com.szadowsz.gui.layout.RBorderLayout;
+import com.szadowsz.rotom4j.exception.NitroException;
+import com.szadowsz.rotom4j.utils.Configuration;
 import com.szadowsz.rotom4j.app.RotomGuiImpl;
 import com.szadowsz.rotom4j.app.component.nitro.NitroImgFolderComponent;
 
@@ -70,13 +71,13 @@ public class RegisterGeneralUI extends ControlConstants {
         gui.popWindow();
     }
 
-    private static void registerOpenFilesView(RotomGuiImpl gui) {
-        // Tier 1bc open
-        RFolder loaded = gui.pushFolder("Loaded Files");
-        gui.getWinManager().uncoverOrCreateWindow(loaded,false, RLayoutStore.getCell(),RLayoutStore.getCell()*2,null);
-        // Tier 1c close
-        gui.popWindow();
-    }
+//    private static void registerOpenFilesView(RotomGuiImpl gui) {
+//        // Tier 1bc open
+//        RFolder loaded = gui.pushPanel("Loaded Files", RBorderLayout.RLocation.LEFT);
+//       // gui.getWinManager().uncoverOrCreateWindow(loaded,false, RLayoutStore.getCell(),RLayoutStore.getCell()*2,null);
+//        // Tier 1c close
+//        gui.popWindow();
+//    }
 
     public static void buildFileDropdown(RotomGuiImpl gui) {
         // Tier 0a open
@@ -90,15 +91,15 @@ public class RegisterGeneralUI extends ControlConstants {
         gui.popWindow();
     }
 
-    public static void buildViewDropdown(RotomGuiImpl gui) {
-        // Tier 0b open
-        gui.pushDropdown("View");
-
-        registerOpenFilesView(gui);
-
-        // Tier 0b close
-        gui.popWindow();
-    }
+//    public static void buildViewDropdown(RotomGuiImpl gui) {
+//        // Tier 0b open
+//        gui.pushDropdown("View");
+//
+//        registerOpenFilesView(gui);
+//
+//        // Tier 0b close
+//        gui.popWindow();
+//    }
 
     public static void buildOptionsDropdown(RotomGuiImpl gui) {
         // Tier 0c open

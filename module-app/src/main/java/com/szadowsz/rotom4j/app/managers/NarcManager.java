@@ -1,7 +1,7 @@
 package com.szadowsz.rotom4j.app.managers;
 
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.nds4j.file.nitro.narc.NARC;
+import com.szadowsz.rotom4j.file.nitro.narc.NARC;
 import com.szadowsz.rotom4j.app.RotomGuiImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

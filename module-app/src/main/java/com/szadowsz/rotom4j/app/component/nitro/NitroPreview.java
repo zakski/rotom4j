@@ -4,9 +4,9 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RLayoutStore;
-import com.szadowsz.nds4j.app.utils.ImageUtils;
-import com.szadowsz.nds4j.file.Imageable;
-import com.szadowsz.nds4j.utils.Configuration;
+import com.szadowsz.rotom4j.app.utils.ImageUtils;
+import com.szadowsz.rotom4j.file.Imageable;
+import com.szadowsz.rotom4j.utils.Configuration;
 import processing.core.PGraphics;
 import processing.core.PImage;
 

@@ -2,10 +2,10 @@ package com.szadowsz.rotom4j.app.component.bin.evo;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.nds4j.file.bin.evo.EvolutionNFSFile;
-import com.szadowsz.nds4j.file.bin.evo.data.EvoMethod;
-import com.szadowsz.nds4j.ref.ItemDex;
-import com.szadowsz.nds4j.ref.PokeDex;
+import com.szadowsz.rotom4j.file.data.evo.EvolutionNFSFile;
+import com.szadowsz.rotom4j.file.data.evo.data.EvoMethod;
+import com.szadowsz.rotom4j.ref.ItemDex;
+import com.szadowsz.rotom4j.ref.PokeDex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;

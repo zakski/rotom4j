@@ -1,7 +1,7 @@
 package com.szadowsz.rotom4j.app.component.nitro.narc;
 
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.nds4j.file.nitro.narc.NARC;
+import com.szadowsz.rotom4j.file.nitro.narc.NARC;
 import com.szadowsz.rotom4j.app.RotomGuiImpl;
 
 public class NarcFolderComponent extends RFolder {

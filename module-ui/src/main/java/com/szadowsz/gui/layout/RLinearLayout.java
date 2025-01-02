@@ -2,7 +2,7 @@ package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
-import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.window.pane.RSizeMode;
@@ -90,13 +90,14 @@ public class RLinearLayout extends RLayoutBase {
      * Creates a {@code LayoutData} for {@code RLinearLayout} that assigns a component to a particular alignment on its
      * counter-axis, meaning the horizontal alignment on vertical {@code RLinearLayout}s and vertical alignment on
      * horizontal {@code RLinearLayout}s.
-     * @param alignment Alignment to store in the {@code LayoutData} object
+     *
+     * @param alignment  Alignment to store in the {@code LayoutData} object
      * @param growPolicy When policy to apply to the component if the parent container has more space available along
      *                   the main axis.
      * @return {@code LayoutData} object created for {@code RLinearLayout}s with the specified alignment
      * @see Alignment
      */
-    public static RLayoutConfig createLayoutData(Alignment alignment, GrowPolicy growPolicy) { // TODO Lanterna
+    public static LinearLayoutData createLayoutData(Alignment alignment, GrowPolicy growPolicy) { // TODO Lanterna
         return new LinearLayoutData(alignment, growPolicy);
     }
 
@@ -105,6 +106,17 @@ public class RLinearLayout extends RLayoutBase {
     private final RDirection direction;
     private int spacing;
     private boolean changed;
+
+    /**
+     * Constructor, creates a {@code RLinearLayout} with a specified direction to position the components on
+
+     * @param direction Direction for this {@code Direction}
+     */
+    public RLinearLayout(RDirection direction) { // TODO Lanterna
+        this.direction = direction;
+        this.spacing = direction == RDirection.HORIZONTAL ? 1 : 0;
+        this.changed = true;
+    }
 
     /**
      * Default Constructor, creates a vertical {@code RLinearLayout}
@@ -125,17 +137,6 @@ public class RLinearLayout extends RLayoutBase {
         this.group = group;
     }
 
-    /**
-     * Constructor, creates a {@code RLinearLayout} with a specified direction to position the components on
-
-     * @param direction Direction for this {@code Direction}
-     */
-    public RLinearLayout(RDirection direction) { // TODO Lanterna
-        this.direction = direction;
-        this.spacing = direction == RDirection.HORIZONTAL ? 1 : 0;
-        this.changed = true;
-    }
-
 
     private void doFlexibleVerticalLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
         float availableVerticalSpace = area.y;
@@ -150,8 +151,8 @@ public class RLinearLayout extends RLayoutBase {
         //LOGGER.debug("{} Expected Width {}",group.getName(),expectedWidth);
 
         for (RComponent component: components) {
-            Alignment alignment = Alignment.BEGINNING;
-            if (component instanceof RGroup) {
+            Alignment alignment = ((LinearLayoutData) group.getCompLayoutConfig()).alignment;
+            if (component instanceof RGroupDrawable) {
                 RLayoutConfig layoutData = component.getCompLayoutConfig();
                 if (layoutData instanceof LinearLayoutData) {
                     alignment = ((LinearLayoutData) layoutData).alignment;
@@ -207,7 +208,7 @@ public class RLinearLayout extends RLayoutBase {
             while (availableVerticalSpace > totalRequiredVerticalSpace) {
                 for(RComponent component: components) {
                     LinearLayoutData layoutData = null;
-                    if (!(component instanceof RFolder) && component instanceof RGroup group) {
+                    if (component instanceof RGroupDrawable group) {
                         RLayoutConfig config = group.getCompLayoutConfig();
                         layoutData = ((LinearLayoutData) config);
                     }
@@ -231,8 +232,8 @@ public class RLinearLayout extends RLayoutBase {
         float topPosition = 0;
         for(RComponent component: components) {
             Alignment alignment = Alignment.BEGINNING;
-            if (component instanceof RGroup) {
-                RLayoutConfig layoutData = ((RGroup) component).getCompLayoutConfig();
+            if (component instanceof RGroupDrawable group) {
+                RLayoutConfig layoutData = group.getCompLayoutConfig();
                 if (layoutData instanceof LinearLayoutData) {
                     alignment = ((LinearLayoutData) layoutData).alignment;
                 }
@@ -371,7 +372,7 @@ public class RLinearLayout extends RLayoutBase {
 
         for (RComponent component: components) {
             Alignment alignment = Alignment.BEGINNING;
-            if (component instanceof RGroup) {
+            if (component instanceof RGroupDrawable) {
                 RLayoutConfig layoutData = component.getCompLayoutConfig();
                 if (layoutData instanceof LinearLayoutData) {
                     alignment = ((LinearLayoutData) layoutData).alignment;
@@ -425,8 +426,8 @@ public class RLinearLayout extends RLayoutBase {
             while (availableHorizontalSpace > totalRequiredHorizontalSpace) {
                 for(RComponent component: components) {
                     LinearLayoutData layoutData = null;
-                    if (component instanceof RGroup) {
-                        layoutData = (LinearLayoutData) ((RGroup) component).getCompLayoutConfig();
+                    if (component instanceof RGroupDrawable) {
+                        layoutData = (LinearLayoutData) component.getCompLayoutConfig();
                     }
                     final PVector currentSize = fittingMap.get(component);
                     if (layoutData != null && layoutData.growPolicy == GrowPolicy.CAN_GROW) {
@@ -448,8 +449,8 @@ public class RLinearLayout extends RLayoutBase {
         float leftPosition = 0;
         for(RComponent component: components) {
             Alignment alignment = Alignment.BEGINNING;
-            if (component instanceof RGroup) {
-                RLayoutConfig layoutData = ((RGroup) component).getCompLayoutConfig();
+            if (component instanceof RGroupDrawable) {
+                RLayoutConfig layoutData = component.getCompLayoutConfig();
                 if (layoutData instanceof LinearLayoutData) {
                     alignment = ((LinearLayoutData) layoutData).alignment;
                 }
@@ -626,7 +627,7 @@ public class RLinearLayout extends RLayoutBase {
 
     @Override
     public RLayoutConfig getLayoutConfig() {
-        return createLayoutData(Alignment.BEGINNING,GrowPolicy.NONE);
+        return createLayoutData(Alignment.FILL,GrowPolicy.NONE);
     }
 
     /**

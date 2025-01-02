@@ -5,9 +5,9 @@ import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.input.slider.RSlider;
 import com.szadowsz.gui.config.RLayoutStore;
-import com.szadowsz.nds4j.app.utils.ImageUtils;
-import com.szadowsz.nds4j.exception.NitroException;
-import com.szadowsz.nds4j.file.Imageable;
+import com.szadowsz.rotom4j.app.utils.ImageUtils;
+import com.szadowsz.rotom4j.exception.NitroException;
+import com.szadowsz.rotom4j.file.Imageable;
 import processing.core.PGraphics;
 import processing.core.PImage;
 

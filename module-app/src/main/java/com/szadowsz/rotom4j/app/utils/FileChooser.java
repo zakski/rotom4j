@@ -1,6 +1,6 @@
 package com.szadowsz.rotom4j.app.utils;
 
-import com.szadowsz.nds4j.file.index.LstFile;
+import com.szadowsz.rotom4j.file.index.LstFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -10,7 +10,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.List;
 
-import static com.szadowsz.nds4j.utils.FileUtils.*;
+import static com.szadowsz.rotom4j.utils.FileUtils.*;
 import static processing.core.PConstants.MACOS;
 
 public class FileChooser {

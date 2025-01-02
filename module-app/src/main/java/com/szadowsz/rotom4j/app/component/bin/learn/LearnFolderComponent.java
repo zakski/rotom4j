@@ -2,8 +2,8 @@ package com.szadowsz.rotom4j.app.component.bin.learn;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.nds4j.file.bin.learnset.LearnsetNFSFile;
-import com.szadowsz.nds4j.ref.MovesDex;
+import com.szadowsz.rotom4j.file.data.learnset.LearnsetNFSFile;
+import com.szadowsz.rotom4j.ref.MovesDex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

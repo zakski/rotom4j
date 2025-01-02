@@ -1,8 +1,9 @@
 package com.szadowsz.rotom4j.app;
 
-import com.old.ui.NDSGuiSettings;
-import com.szadowsz.nds4j.app.NDSGuiImpl;
-import com.szadowsz.nds4j.app.nodes.control.RegisterGeneralUI;
+import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.RotomGuiSettings;
+import com.szadowsz.gui.layout.RBorderLayout;
+import com.szadowsz.rotom4j.app.component.control.RegisterGeneralUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -18,9 +19,8 @@ public class ProcessingRotom4J extends PApplet {
 
     public final static Preferences prefs = Preferences.userNodeForPackage(ProcessingRotom4J.class);
 
-    protected NDSGuiImpl gui;
-    protected NDSGuiSettings settings;
-
+    protected RotomGuiImpl gui;
+    protected RotomGuiSettings settings;
 
     private void setLookAndFeel() {
         try {
@@ -42,14 +42,27 @@ public class ProcessingRotom4J extends PApplet {
 
     @Override
     public void setup() {
-        surface.setTitle("NDS4J");
+        surface.setTitle("Rotom4J");
         surface.setResizable(true);
         surface.setLocation(100,100);
 
-        gui = new NDSGuiImpl(this,settings);
+        gui = RotomGuiManagerImpl.embedGuiImpl(this,settings);
+        gui.startSetup();
+
+        RBorderLayout layout = new RBorderLayout();
+        layout.setSpacing(8,8,8,8);
+        gui.setLayout(layout);
+
+        gui.pushToolbar("Titlebar", RBorderLayout.RLocation.TOP);
         RegisterGeneralUI.buildFileDropdown(gui);
-        RegisterGeneralUI.buildViewDropdown(gui);
+        //RegisterGeneralUI.buildViewDropdown(gui);
         RegisterGeneralUI.buildOptionsDropdown(gui);
+        gui.popWindow();
+
+        gui.pushPanel("Loaded Files", RBorderLayout.RLocation.LEFT);
+        gui.popWindow();
+
+        gui.endSetup();
     }
 
     @Override

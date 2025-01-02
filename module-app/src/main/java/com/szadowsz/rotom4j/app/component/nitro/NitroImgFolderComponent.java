@@ -1,11 +1,8 @@
 package com.szadowsz.rotom4j.app.component.nitro;
 
-import com.old.ui.node.LayoutType;
-import com.old.ui.node.impl.FolderNode;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.RGroup;
-import com.szadowsz.nds4j.app.nodes.nitro.NitroFolderNode;
-import com.szadowsz.nds4j.file.ImageableWithPalette;
+import com.szadowsz.rotom4j.file.ImageableWithPalette;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

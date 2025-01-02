@@ -1,7 +1,7 @@
 package com.szadowsz.rotom4j.app.managers;
 
 
-import com.szadowsz.nds4j.file.bin.stats.StatsNFSFile;
+import com.szadowsz.rotom4j.file.data.stats.StatsNFSFile;
 import com.szadowsz.rotom4j.app.RotomGuiImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -45,6 +45,7 @@ public class RRoot extends RGroup {
     public void insertChild(RComponent child) {
         if (child instanceof RFolder folder) {
             children.add(folder);
+            gui.getWinManager().uncoverOrCreateWindow(folder);
             folder.getWindow().open(false);
         }
     }

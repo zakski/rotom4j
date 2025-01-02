@@ -54,7 +54,7 @@ public class ByteArrayData implements BinaryData {
      *
      * @return byte array
      */
-    byte[] getData() {
+    public byte[] getData() {
         return data;
     }
 
