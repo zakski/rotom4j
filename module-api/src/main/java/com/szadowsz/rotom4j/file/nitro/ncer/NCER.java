@@ -19,19 +19,19 @@
 
 package com.szadowsz.rotom4j.file.nitro.ncer;
 
-import com.szadowsz.binary.array.ByteArrayData;
-import com.szadowsz.binary.array.ByteArrayEditableData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.NFSFactory;
 import com.szadowsz.rotom4j.compression.CompFormat;
-import com.szadowsz.rotom4j.file.ImageableWithGraphic;
-import com.szadowsz.rotom4j.file.NFSFormat;
+import com.szadowsz.rotom4j.file.nitro.ImageableWithGraphic;
+import com.szadowsz.rotom4j.file.RotomFormat;
 import com.szadowsz.rotom4j.file.nitro.ncer.cells.CellInfo;
 import com.szadowsz.rotom4j.file.nitro.ncer.cells.CellPojo;
 import com.szadowsz.rotom4j.exception.NitroException;
-import com.szadowsz.rotom4j.file.nitro.GenericNFSFile;
+import com.szadowsz.rotom4j.file.nitro.BaseNFSFile;
 import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
-import com.szadowsz.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.binary.io.reader.MemBuf;
 import com.szadowsz.rotom4j.utils.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ import java.util.Arrays;
 /**
  * An object representation of an NCER file
  */
-public class NCER extends GenericNFSFile implements ImageableWithGraphic {
+public class NCER extends BaseNFSFile implements ImageableWithGraphic {
     private static final Logger logger = LoggerFactory.getLogger(NCER.class);
 
     public static final int GX_OBJVRAMMODE_CHAR_2D = 0x000000;
@@ -117,18 +117,18 @@ public class NCER extends GenericNFSFile implements ImageableWithGraphic {
         return (NCER) NFSFactory.fromFile(file);
     }
 
-    public NCER(String path, String fileName, CompFormat comp, byte[] compData, byte[] data) throws NitroException {
-        super(NFSFormat.NCER, path, fileName, comp, compData, data);
+    public NCER(String path) throws NitroException {
+        super(RotomFormat.NCER, path);
         MemBuf dataBuf = MemBuf.create(data);
         MemBuf.MemBufReader reader = dataBuf.reader();
         int fileSize = dataBuf.writer().getPosition();
-        logger.debug("\nNCER file, " + fileName + ", initialising with size of " + fileSize + " bytes");
+        logger.debug("\nNCER file, " + fileFullName + ", initialising with size of " + fileSize + " bytes");
 
         readGenericNtrHeader(reader);
 
         File[] ncgrs = new File(path).getParentFile().listFiles(f -> (f.getName().endsWith(".NCGR") ||
                 f.getName().endsWith(".NCBR")) &&
-                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.fileName));
+                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.objName));
         if (ncgrs.length > 0) {
             logger.debug("Found corresponding NCGR file, " + ncgrs[0]);
             this.ncgr = NCGR.fromFile(ncgrs[0]);
@@ -139,23 +139,14 @@ public class NCER extends GenericNFSFile implements ImageableWithGraphic {
         readFile(reader);
     }
 
-    public NCER(String path, String fileName, CompFormat comp, ByteArrayData compData, ByteArrayEditableData data) throws NitroException {
-        super(NFSFormat.NCER, path, fileName, comp, compData, data);
-        MemBuf dataBuf = MemBuf.create(data.getData());
+    public NCER(String name, ByteArrayEditableData compData) throws NitroException {
+        super(RotomFormat.NCER, name, compData);
+        MemBuf dataBuf = MemBuf.create(data);
         MemBuf.MemBufReader reader = dataBuf.reader();
         int fileSize = dataBuf.writer().getPosition();
-        logger.debug("\nNCER file, " + fileName + ", initialising with size of " + fileSize + " bytes");
+        logger.debug("\nNCER obj, " + objName + ", initialising with size of " + fileSize + " bytes");
 
         readGenericNtrHeader(reader);
-
-        File[] ncgrs = new File(path).getParentFile().listFiles(f -> (f.getName().endsWith(".NCGR") ||
-                f.getName().endsWith(".NCBR")) &&
-                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.fileName));
-        if (ncgrs.length > 0) {
-            logger.debug("Found corresponding NCGR file, " + ncgrs[0]);
-            this.ncgr = NCGR.fromFile(ncgrs[0]);
-            logger.debug("Read NCGR file\n");
-        }
 
         // reader position is now 0x10
         readFile(reader);

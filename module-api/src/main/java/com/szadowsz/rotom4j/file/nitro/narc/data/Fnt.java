@@ -20,9 +20,9 @@
 package com.szadowsz.rotom4j.file.nitro.narc.data;
 
 
-import com.szadowsz.binary.io.reader.Buffer;
-import com.szadowsz.binary.io.reader.MemBuf;
-import com.szadowsz.binary.io.writer.BinaryWriter;
+import com.szadowsz.rotom4j.binary.io.reader.Buffer;
+import com.szadowsz.rotom4j.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.binary.io.writer.BinaryWriter;
 
 import java.io.File;
 import java.io.IOException;

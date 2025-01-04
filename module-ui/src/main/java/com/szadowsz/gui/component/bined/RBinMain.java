@@ -1,6 +1,6 @@
 package com.szadowsz.gui.component.bined;
 
-import com.szadowsz.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.bined.bounds.RBinSelection;
 import com.szadowsz.gui.component.bined.cursor.RCaret;

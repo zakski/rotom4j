@@ -1,18 +1,18 @@
 package com.szadowsz.rotom4j.file.nitro.nscr;
 
-import com.szadowsz.binary.array.ByteArrayData;
-import com.szadowsz.binary.array.ByteArrayEditableData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.NFSFactory;
 import com.szadowsz.rotom4j.compression.CompFormat;
-import com.szadowsz.rotom4j.file.ImageableWithGraphic;
-import com.szadowsz.rotom4j.file.NFSFormat;
+import com.szadowsz.rotom4j.file.nitro.ImageableWithGraphic;
+import com.szadowsz.rotom4j.file.RotomFormat;
 import com.szadowsz.rotom4j.file.nitro.nscr.tiles.NTFS;
 import com.szadowsz.rotom4j.exception.InvalidFileException;
 import com.szadowsz.rotom4j.exception.NitroException;
-import com.szadowsz.rotom4j.file.nitro.GenericNFSFile;
+import com.szadowsz.rotom4j.file.nitro.BaseNFSFile;
 import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
 import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
-import com.szadowsz.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.binary.io.reader.MemBuf;
 import com.szadowsz.rotom4j.utils.Configuration;
 
 import java.awt.*;
@@ -23,7 +23,7 @@ import java.util.Arrays;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
-public class NSCR extends GenericNFSFile implements ImageableWithGraphic {
+public class NSCR extends BaseNFSFile implements ImageableWithGraphic {
 
     // Block Header section
     private String id;                   // NRCS = 0x4E524353
@@ -36,17 +36,17 @@ public class NSCR extends GenericNFSFile implements ImageableWithGraphic {
     // Tile Data
     private NCGR ncgr;
     private NTFS[] mapData;
-    private int[] data;
+    private int[] tileData;
     private int tileBase;
     private int highestIndex;
 
     // image info
     private BufferedImage image;
 
-    public NSCR(String path, String fileName, CompFormat comp, byte[] compData, byte[] data) throws NitroException {
-        super(NFSFormat.NSCR, path, fileName, comp, compData, data);
+    public NSCR(String path) throws NitroException {
+        super(RotomFormat.NSCR, path);
 
-        MemBuf buf = MemBuf.create(rawData.getData());
+        MemBuf buf = MemBuf.create(data);
 
         MemBuf.MemBufReader reader = buf.reader();
         readGenericNtrHeader(reader);
@@ -56,7 +56,7 @@ public class NSCR extends GenericNFSFile implements ImageableWithGraphic {
 
         File[] ncgrs = new File(path).getParentFile().listFiles(f -> (f.getName().endsWith(".NCGR") ||
                 f.getName().endsWith(".NCBR")) &&
-                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.fileName));
+                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.objName));
         if (ncgrs.length > 0) {
             this.ncgr = NCGR.fromFile(ncgrs[0]);
         }
@@ -64,23 +64,16 @@ public class NSCR extends GenericNFSFile implements ImageableWithGraphic {
         readFile(reader);
     }
 
-    public NSCR(String path, String fileName, CompFormat comp, ByteArrayData compData, ByteArrayEditableData data) throws NitroException {
-        super(NFSFormat.NSCR, path, fileName, comp, compData, data);
+    public NSCR(String name, ByteArrayEditableData compData) throws NitroException {
+        super(RotomFormat.NSCR, name, compData);
 
-        MemBuf buf = MemBuf.create(rawData.getData());
+        MemBuf buf = MemBuf.create(data);
 
         MemBuf.MemBufReader reader = buf.reader();
         readGenericNtrHeader(reader);
         int headerLength = reader.getPosition();
         reader.setPosition(0);
         this.headerData = reader.readTo(headerLength);
-
-        File[] ncgrs = new File(path).getParentFile().listFiles(f -> (f.getName().endsWith(".NCGR") ||
-                f.getName().endsWith(".NCBR")) &&
-                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.fileName));
-        if (ncgrs.length > 0) {
-            this.ncgr = NCGR.fromFile(ncgrs[0]);
-        }
 
         readFile(reader);
     }
@@ -302,13 +295,13 @@ public class NSCR extends GenericNFSFile implements ImageableWithGraphic {
         this.height = reader.readUInt16(); // *(uint16_t *) (scrn + 0x2);
         this.padding = reader.readUInt32(); //  *(uint32_t *) (scrn + 0x4);
         this.dataSize = reader.readUInt32(); // int tileDataSize = *(uint32_t *) (sChar + 0x10);
-        this.data = new int[(int) dataSize / 2]; // 0xC -> 0xC + dwDataSize
+        this.tileData = new int[(int) dataSize / 2]; // 0xC -> 0xC + dwDataSize
         this.mapData = new NTFS[(int) dataSize / 2]; // better formatted data
 
         // datasize is in bytes, we want them as uint16s so we take two bytes at a time
-        for (int i = 0; i < this.data.length; i++) {
-            this.data[i] = reader.readUInt16();
-            this.mapData[i] = createMapInfo(this.data[i]);
+        for (int i = 0; i < this.tileData.length; i++) {
+            this.tileData[i] = reader.readUInt16();
+            this.mapData[i] = createMapInfo(this.tileData[i]);
         }
         this.highestIndex = computeHighestCharacter();
         if (this.ncgr != null && this.highestIndex >= this.ncgr.getTiles().length) {

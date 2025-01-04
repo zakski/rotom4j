@@ -1,10 +1,13 @@
 package com.szadowsz.rotom4j.file.data.learnset;
 
-import com.szadowsz.rotom4j.file.data.BinNFSFile;
+import com.szadowsz.rotom4j.exception.InvalidDataException;
+import com.szadowsz.rotom4j.exception.InvalidFileException;
+import com.szadowsz.rotom4j.file.data.DataFile;
 import com.szadowsz.rotom4j.exception.NitroException;
+import com.szadowsz.rotom4j.file.data.DataFormat;
 import com.szadowsz.rotom4j.file.data.learnset.data.LearnsetEntry;
-import com.szadowsz.binary.io.reader.Buffer;
-import com.szadowsz.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.binary.io.reader.Buffer;
+import com.szadowsz.rotom4j.binary.io.reader.MemBuf;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -13,20 +16,18 @@ import java.util.ArrayList;
 /**
  * Class to represent binary Learnset data file
  */
-public class LearnsetNFSFile extends BinNFSFile {
+public class LearnsetNFSFile extends DataFile {
 
     // Ways to Evolve
-    protected ArrayList<LearnsetEntry> data = new ArrayList<>();
+    protected ArrayList<LearnsetEntry> moveData = new ArrayList<>();
 
     /**
      * Learnset Data File Constructor
      *
      * @param path  the path of the file
-     * @param name  the name of the file
-     * @param bytes the raw data of the file
      */
-    public LearnsetNFSFile(String path, String name, byte[] bytes) {
-        super(path, name, bytes);
+    public LearnsetNFSFile(String path) throws InvalidFileException, InvalidDataException {
+        super(DataFormat.MOVES, path);
         processEntries();
     }
 
@@ -42,12 +43,12 @@ public class LearnsetNFSFile extends BinNFSFile {
      * Process the raw data into ways to learnset
      */
     protected void processEntries() {
-        MemBuf dataBuf = MemBuf.create(rawData.getData());
+        MemBuf dataBuf = MemBuf.create(data);
         MemBuf.MemBufReader reader = dataBuf.reader();
 
         short combinedValue;
         while ((combinedValue = reader.readShort()) != (short) 0xFFFF) {
-            data.add(new LearnsetEntry(getMoveId(combinedValue), getLevelLearned(combinedValue)));
+            moveData.add(new LearnsetEntry(getMoveId(combinedValue), getLevelLearned(combinedValue)));
         }
     }
 
@@ -57,7 +58,7 @@ public class LearnsetNFSFile extends BinNFSFile {
      * @return Number Of Learnset moves
      */
     public int getNumMoves() {
-        return data.size();
+        return moveData.size();
     }
 
     /**
@@ -67,7 +68,7 @@ public class LearnsetNFSFile extends BinNFSFile {
      * @return move ID
      */
     public int getMove(int index){
-        return data.get(index).getMoveID();
+        return moveData.get(index).getMoveID();
     }
 
     /**
@@ -77,7 +78,7 @@ public class LearnsetNFSFile extends BinNFSFile {
      * @return  move learning level
      */
     public int getLevel(int index){
-        return data.get(index).getLevel();
+        return moveData.get(index).getLevel();
     }
 
     /**
@@ -88,20 +89,7 @@ public class LearnsetNFSFile extends BinNFSFile {
      * @throws NitroException if the read failed
      */
     public static LearnsetNFSFile fromFile(String path) throws NitroException {
-        return fromFile(new File(path));
+        return new LearnsetNFSFile(path);
     }
 
-    /**
-     * Read Learnset Data from File
-     *
-     * @param file File Object to parse
-     * @return Learnset File Data
-     * @throws NitroException if the read failed
-     */
-    public static LearnsetNFSFile fromFile(File file) throws NitroException {
-        String path = file.getAbsolutePath();
-        String fileName = file.getName();
-        byte[] data = Buffer.readFile(path);
-        return new LearnsetNFSFile(path,fileName,data);
-    }
 }

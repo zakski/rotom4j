@@ -18,7 +18,7 @@ package com.szadowsz.gui.component.oldbinary;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Objects;
-import com.szadowsz.binary.EditableBinaryData;
+import com.szadowsz.rotom4j.binary.EditableBinaryData;
 
 /**
  * Binary editor utilities.

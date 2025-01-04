@@ -1,6 +1,6 @@
 package com.szadowsz.rotom4j.file.index;
 
-import com.szadowsz.rotom4j.file.NFSFormat;
+import com.szadowsz.rotom4j.file.RotomFormat;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -28,7 +28,7 @@ public class NaixFile {
                 })
                 .map(l -> {
                     String[] split = l.split("\\.");
-                    String ext = NFSFormat.valueOfExt(split[1])==null?split[1].toUpperCase():split[1];
+                    String ext = RotomFormat.valueOfExt(split[1])==null?split[1].toUpperCase():split[1];
                     return split[0] + "." + ext;
                 })
                 .toList();
@@ -51,7 +51,7 @@ public class NaixFile {
                 })
                 .map(l -> {
                     String[] split = l.split("\\.");
-                    String ext = NFSFormat.valueOfExt(split[1])==null?split[1].toUpperCase():split[1];
+                    String ext = RotomFormat.valueOfExt(split[1])==null?split[1].toUpperCase():split[1];
                     return split[0] + "." + ext;
                 })
                 .toList();

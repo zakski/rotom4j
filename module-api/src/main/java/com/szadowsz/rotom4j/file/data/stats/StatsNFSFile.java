@@ -1,16 +1,18 @@
 package com.szadowsz.rotom4j.file.data.stats;
 
-import com.szadowsz.rotom4j.file.BinFormat;
-import com.szadowsz.rotom4j.file.data.BinNFSFile;
+import com.szadowsz.rotom4j.exception.InvalidDataException;
+import com.szadowsz.rotom4j.exception.InvalidFileException;
+import com.szadowsz.rotom4j.file.data.DataFormat;
+import com.szadowsz.rotom4j.file.data.DataFile;
 import com.szadowsz.rotom4j.file.data.stats.data.BaseStats;
 import com.szadowsz.rotom4j.file.data.stats.data.YieldStats;
 import com.szadowsz.rotom4j.exception.NitroException;
-import com.szadowsz.binary.io.reader.Buffer;
-import com.szadowsz.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.binary.io.reader.Buffer;
+import com.szadowsz.rotom4j.binary.io.reader.MemBuf;
 
 import java.io.File;
 
-public class StatsNFSFile extends BinNFSFile {
+public class StatsNFSFile extends DataFile {
     private static final int NUMBER_TM_HM_BITS = 128;
 
     public static final String[] fields = new String[]{"HP","Attack","Defence","Special Attack","Special Defence","Speed",
@@ -59,10 +61,10 @@ public class StatsNFSFile extends BinNFSFile {
 
     private boolean[] tmCompatibility; // u8[16], each TM is a single bit
 
-    public StatsNFSFile(String path, String name, byte[] bytes) {
-        super(BinFormat.PERSONAL, path, name, bytes);
+    public StatsNFSFile(String path) throws InvalidFileException, InvalidDataException {
+        super(DataFormat.PERSONAL,path);
 
-        MemBuf dataBuf = MemBuf.create(rawData.getData());
+        MemBuf dataBuf = MemBuf.create(data);
         MemBuf.MemBufReader reader = dataBuf.reader();
 
 
@@ -125,9 +127,7 @@ public class StatsNFSFile extends BinNFSFile {
      */
     public static StatsNFSFile fromFile(File file) throws NitroException {
         String path = file.getAbsolutePath();
-        String fileName = file.getName();
-        byte[] data = Buffer.readFile(path);
-        return new StatsNFSFile(path,fileName,data);
+        return new StatsNFSFile(path);
     }
 
     public int getField(String field){

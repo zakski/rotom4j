@@ -1,16 +1,16 @@
 package com.szadowsz.rotom4j.file.nitro.nclr;
 
-import com.szadowsz.binary.array.ByteArrayData;
-import com.szadowsz.binary.array.ByteArrayEditableData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.NFSFactory;
 import com.szadowsz.rotom4j.compression.CompFormat;
-import com.szadowsz.rotom4j.file.Imageable;
-import com.szadowsz.rotom4j.file.NFSFormat;
+import com.szadowsz.rotom4j.file.nitro.Imageable;
+import com.szadowsz.rotom4j.file.RotomFormat;
 import com.szadowsz.rotom4j.file.nitro.nclr.colors.ColorFormat;
 import com.szadowsz.rotom4j.exception.InvalidFileException;
 import com.szadowsz.rotom4j.exception.NitroException;
-import com.szadowsz.rotom4j.file.nitro.GenericNFSFile;
-import com.szadowsz.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.file.nitro.BaseNFSFile;
+import com.szadowsz.rotom4j.binary.io.reader.MemBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +26,7 @@ import static com.szadowsz.rotom4j.utils.ColorUtils.colorToBGR555;
 /**
  * An object representation of an NCLR file
  */
-public class NCLR extends GenericNFSFile implements Imageable {
+public class NCLR extends BaseNFSFile implements Imageable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NCLR.class);
 
@@ -86,7 +86,7 @@ public class NCLR extends GenericNFSFile implements Imageable {
     protected static void generateHeader(MemBuf.MemBufWriter writer, long length) {
         int bom = 0xFEFF;
         int version = 1;
-        writer.writeString(NFSFormat.NCLR.getLabel()[0]);
+        writer.writeString(RotomFormat.NCLR.getLabel()[0]);
         writer.writeShort((short) bom);
         writer.writeShort((short) version);
         writer.writeUInt32(length);
@@ -186,19 +186,15 @@ public class NCLR extends GenericNFSFile implements Imageable {
      * Constructor to Use after decompressing file data and assessing its contents
      *
      * @param path the path of the file
-     * @param name the name of the file
-     * @param comp compression format
-     * @param compData the raw data, compressed
-     * @param data the raw data, uncompressed
      * @throws NitroException NCLR object load failed
      */
-    public NCLR(String path, String name, CompFormat comp, byte[] compData, byte[] data) throws NitroException {
-        super(NFSFormat.NCLR, path, name, comp, compData, data);
+    public NCLR(String path) throws NitroException {
+        super(RotomFormat.NCLR, path);
 
         MemBuf buf = MemBuf.create();
-        buf.writer().write(rawData.getData());
+        buf.writer().write(data);
         int fileSize = buf.writer().getPosition();
-        LOGGER.info("\nNCLR file, " + fileName + ", initialising with size of " + fileSize + " bytes");
+        LOGGER.info("\nNCLR file, " + fileFullName + ", initialising with size of " + fileSize + " bytes");
 
         MemBuf.MemBufReader reader = buf.reader();
         readGenericNtrHeader(reader);
@@ -213,20 +209,17 @@ public class NCLR extends GenericNFSFile implements Imageable {
     /**
      * Constructor to Use after decompressing file data and assessing its contents
      *
-     * @param path the path of the file
      * @param name the name of the file
-     * @param comp compression format
      * @param compData the raw data, compressed
-     * @param data the raw data, uncompressed
      * @throws NitroException NCLR object load failed
      */
-    public NCLR(String path, String name, CompFormat comp, ByteArrayData compData, ByteArrayEditableData data) throws NitroException {
-        super(NFSFormat.NCLR, path, name, comp, compData, data);
+    public NCLR(String name, ByteArrayEditableData compData) throws NitroException {
+        super(RotomFormat.NCLR, name, compData);
 
         MemBuf buf = MemBuf.create();
-        buf.writer().write(rawData.getData());
+        buf.writer().write(data);
         int fileSize = buf.writer().getPosition();
-        LOGGER.info("\nNCLR file, " + fileName + ", initialising with size of " + fileSize + " bytes");
+        LOGGER.info("\nNCLR obj, " + objName + ", initialising with size of " + fileSize + " bytes");
 
         MemBuf.MemBufReader reader = buf.reader();
         readGenericNtrHeader(reader);
@@ -244,7 +237,7 @@ public class NCLR extends GenericNFSFile implements Imageable {
      * @param numColors an <code>int</code>
      */
     protected NCLR(int numColors) throws IOException {
-        super(NFSFormat.NCLR, null, generateData((numColors>16)?16:1,numColors));
+        super(RotomFormat.NCLR, null, new ByteArrayEditableData(generateData((numColors>16)?16:1,numColors)));
     }
 
     @Override

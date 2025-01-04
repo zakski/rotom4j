@@ -1,7 +1,7 @@
 package com.szadowsz.gui.input.clip;
 
 
-import com.szadowsz.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.BinaryData;
 
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;

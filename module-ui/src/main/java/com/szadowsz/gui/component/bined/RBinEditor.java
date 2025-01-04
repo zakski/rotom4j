@@ -1,10 +1,10 @@
 package com.szadowsz.gui.component.bined;
 
-import com.szadowsz.binary.BinaryData;
-import com.szadowsz.binary.EditableBinaryData;
-import com.szadowsz.binary.array.ByteArrayData;
-import com.szadowsz.binary.array.ByteArrayEditableData;
-import com.szadowsz.binary.io.reader.Buffer;
+import com.szadowsz.rotom4j.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.EditableBinaryData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
+import com.szadowsz.rotom4j.binary.io.reader.Buffer;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.bined.cursor.RCaretPos;
@@ -162,7 +162,7 @@ public class RBinEditor extends RBinEdBase {
         int codeOffset = caretPosition.getCodeOffset();
         byte byteValue = contentData.getByte(dataPosition);
         byte outputValue = RBinUtils.setCodeValue(byteValue, value, codeOffset, codeType);
-        ((com.szadowsz.binary.EditableBinaryData) contentData).setByte(dataPosition, outputValue);
+        ((EditableBinaryData) contentData).setByte(dataPosition, outputValue);
     }
 
     protected void setEditOperation(REditOperation editOperation) {

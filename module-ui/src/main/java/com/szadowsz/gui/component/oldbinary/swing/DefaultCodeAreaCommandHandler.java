@@ -27,12 +27,12 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.szadowsz.binary.array.ByteArrayData;
-import com.szadowsz.binary.array.ByteArrayEditableData;
-import com.szadowsz.binary.paged.PagedData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
+import com.szadowsz.rotom4j.binary.paged.PagedData;
 import com.szadowsz.gui.component.oldbinary.*;
-import com.szadowsz.binary.BinaryData;
-import com.szadowsz.binary.EditableBinaryData;
+import com.szadowsz.rotom4j.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.gui.component.oldbinary.basic.BasicCodeAreaSection;
 import com.szadowsz.gui.component.oldbinary.basic.CodeAreaViewMode;
 import com.szadowsz.gui.component.oldbinary.basic.CodeAreaScrollPosition;

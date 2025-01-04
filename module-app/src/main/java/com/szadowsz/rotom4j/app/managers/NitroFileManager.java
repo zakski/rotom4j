@@ -2,7 +2,7 @@ package com.szadowsz.rotom4j.app.managers;
 
 
 import com.szadowsz.rotom4j.exception.NitroException;
-import com.szadowsz.rotom4j.file.nitro.GenericNFSFile;
+import com.szadowsz.rotom4j.file.nitro.BaseNFSFile;
 import com.szadowsz.rotom4j.file.nitro.nanr.NANR;
 import com.szadowsz.rotom4j.file.nitro.ncer.NCER;
 import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
@@ -20,7 +20,7 @@ public class NitroFileManager {
 
     private static NitroFileManager singleton;
 
-    private final Map<String, GenericNFSFile> nitroFileMap = new ConcurrentHashMap<>();
+    private final Map<String, BaseNFSFile> nitroFileMap = new ConcurrentHashMap<>();
 
     private NitroFileManager() {
     }

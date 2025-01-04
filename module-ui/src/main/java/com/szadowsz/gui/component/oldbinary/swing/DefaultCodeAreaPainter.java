@@ -38,7 +38,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JViewport;
 
 import com.szadowsz.gui.component.oldbinary.*;
-import com.szadowsz.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.gui.component.oldbinary.basic.*;
 import com.szadowsz.gui.component.oldbinary.capability.BackgroundPaintCapable;
 import com.szadowsz.gui.component.oldbinary.capability.CaretCapable;

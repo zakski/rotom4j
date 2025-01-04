@@ -1,7 +1,7 @@
 package com.szadowsz.rotom4j.compression;
 
 import com.szadowsz.rotom4j.exception.InvalidFileException;
-import com.szadowsz.binary.io.reader.HexInputStream;
+import com.szadowsz.rotom4j.binary.io.reader.HexInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

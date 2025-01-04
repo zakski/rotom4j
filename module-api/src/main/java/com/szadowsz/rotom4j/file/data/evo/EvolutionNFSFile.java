@@ -1,12 +1,15 @@
 package com.szadowsz.rotom4j.file.data.evo;
 
+import com.szadowsz.rotom4j.exception.InvalidDataException;
+import com.szadowsz.rotom4j.exception.InvalidFileException;
+import com.szadowsz.rotom4j.file.data.DataFormat;
 import com.szadowsz.rotom4j.ref.ItemDex;
 import com.szadowsz.rotom4j.ref.PokeDex;
-import com.szadowsz.rotom4j.file.data.BinNFSFile;
+import com.szadowsz.rotom4j.file.data.DataFile;
 import com.szadowsz.rotom4j.file.data.evo.data.EvoMethod;
 import com.szadowsz.rotom4j.file.data.evo.data.Evolution;
-import com.szadowsz.binary.io.reader.Buffer;
-import com.szadowsz.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.binary.io.reader.Buffer;
+import com.szadowsz.rotom4j.binary.io.reader.MemBuf;
 import com.szadowsz.rotom4j.exception.NitroException;
 
 import java.io.File;
@@ -16,20 +19,18 @@ import java.util.ArrayList;
 /**
  * Class to represent binary evolution data file
  */
-public class EvolutionNFSFile extends BinNFSFile {
+public class EvolutionNFSFile extends DataFile {
 
     // Ways to Evolve
-    protected ArrayList<Evolution> data = new ArrayList<>();
+    protected ArrayList<Evolution> evoData = new ArrayList<>();
 
     /**
      * Evolution Data File Constructor
      *
      * @param path  the path of the file
-     * @param name  the name of the file
-     * @param bytes the raw data of the file
      */
-    public EvolutionNFSFile(String path, String name, byte[] bytes) {
-        super(path, name, bytes);
+    public EvolutionNFSFile(String path) throws InvalidFileException, InvalidDataException {
+        super(DataFormat.EVOLUTION,path);
         processEntries();
     }
 
@@ -37,11 +38,11 @@ public class EvolutionNFSFile extends BinNFSFile {
      * Process the raw data into ways to evolve
      */
     protected void processEntries() {
-        MemBuf dataBuf = MemBuf.create(rawData.getData());
+        MemBuf dataBuf = MemBuf.create(data);
         MemBuf.MemBufReader reader = dataBuf.reader();
 
-        for (int i = 0; i < rawData.getDataSize() / 6; i++) {
-            data.add(new Evolution(reader.readShort(), reader.readShort(), reader.readShort()));
+        for (int i = 0; i < getDataSize() / 6; i++) {
+            evoData.add(new Evolution(reader.readShort(), reader.readShort(), reader.readShort()));
         }
     }
 
@@ -51,7 +52,7 @@ public class EvolutionNFSFile extends BinNFSFile {
      * @return number of ways to evolve
      */
     public int getNumEvolutions(){
-        return data.size();
+        return evoData.size();
     }
 
     /**
@@ -61,7 +62,7 @@ public class EvolutionNFSFile extends BinNFSFile {
      * @return way to evolve
      */
     public EvoMethod getMethod(int index){
-        return data.get(index).getMethod();
+        return evoData.get(index).getMethod();
     }
 
     /**
@@ -71,7 +72,7 @@ public class EvolutionNFSFile extends BinNFSFile {
      * @return index of requirement to evolve
      */
     public int getRequirement(int index){
-        return data.get(index).getRequirement();
+        return evoData.get(index).getRequirement();
     }
 
     /**
@@ -95,7 +96,7 @@ public class EvolutionNFSFile extends BinNFSFile {
      * @return species number
      */
     public int getSpecies(int index){
-        return data.get(index).getSpecies();
+        return evoData.get(index).getSpecies();
     }
 
     /**
@@ -116,20 +117,6 @@ public class EvolutionNFSFile extends BinNFSFile {
      * @throws NitroException if the read failed
      */
     public static EvolutionNFSFile fromFile(String path) throws NitroException {
-        return fromFile(new File(path));
-    }
-
-    /**
-     * Read Evolution Data from File
-     *
-     * @param file File Object to parse
-     * @return Evolution File Data
-     * @throws NitroException if the read failed
-     */
-    public static EvolutionNFSFile fromFile(File file) throws NitroException {
-        String path = file.getAbsolutePath();
-        String fileName = file.getName();
-        byte[] data = Buffer.readFile(path);
-        return new EvolutionNFSFile(path,fileName,data);
+        return new EvolutionNFSFile(path);
     }
 }

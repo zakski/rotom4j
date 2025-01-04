@@ -1,8 +1,8 @@
 package com.szadowsz.gui.component.oldbinary;
 
 
-import com.szadowsz.binary.BinaryData;
-import com.szadowsz.binary.EmptyBinaryData;
+import com.szadowsz.rotom4j.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.EmptyBinaryData;
 import com.szadowsz.gui.component.oldbinary.capability.SelectionCapable;
 import com.szadowsz.gui.component.oldbinary.swing.CodeAreaCommandHandler;
 

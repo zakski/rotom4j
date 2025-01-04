@@ -18,7 +18,7 @@ package com.szadowsz.gui.component.oldbinary.swing;
 import java.nio.charset.Charset;
 import com.szadowsz.gui.component.oldbinary.CodeAreaSection;
 import com.szadowsz.gui.component.oldbinary.CodeAreaSelection;
-import com.szadowsz.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.gui.component.oldbinary.basic.color.CodeAreaColorsProfile;
 
 /**

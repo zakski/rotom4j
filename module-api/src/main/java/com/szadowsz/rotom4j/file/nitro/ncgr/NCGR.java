@@ -1,20 +1,20 @@
 package com.szadowsz.rotom4j.file.nitro.ncgr;
 
-import com.szadowsz.binary.array.ByteArrayData;
-import com.szadowsz.binary.array.ByteArrayEditableData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.NFSFactory;
 import com.szadowsz.rotom4j.compression.CompFormat;
-import com.szadowsz.rotom4j.file.NFSFormat;
-import com.szadowsz.rotom4j.file.ImageableWithPalette;
+import com.szadowsz.rotom4j.file.RotomFormat;
+import com.szadowsz.rotom4j.file.nitro.ImageableWithPalette;
 import com.szadowsz.rotom4j.file.nitro.nclr.colors.ColorFormat;
 import com.szadowsz.rotom4j.file.nitro.ncgr.tiles.TileForm;
-import com.szadowsz.rotom4j.file.nitro.GenericNFSFile;
+import com.szadowsz.rotom4j.file.nitro.BaseNFSFile;
 import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
 import com.szadowsz.rotom4j.file.nitro.ncer.cells.CellInfo;
 import com.szadowsz.rotom4j.exception.InvalidFileException;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.nitro.ncer.NCER;
-import com.szadowsz.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.binary.io.reader.MemBuf;
 import com.szadowsz.rotom4j.utils.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
  * An object representation of an NCGR file. <p>
  * An NCGR file is a Nintendo proprietary DS format used for storing graphics (images).
  */
-public class NCGR extends GenericNFSFile implements ImageableWithPalette {
+public class NCGR extends BaseNFSFile implements ImageableWithPalette {
     private static final Logger logger = LoggerFactory.getLogger(NCGR.class);
 
     /**
@@ -107,40 +107,12 @@ public class NCGR extends GenericNFSFile implements ImageableWithPalette {
         return (NCGR) NFSFactory.fromFile(file);
     }
 
-    public NCGR(int height, int width, int bitDepth, NCLR palette) throws NitroException {
-        super(NFSFormat.NCGR, (String) null, (String) null, CompFormat.NONE, (byte[]) null, (byte[]) null);
-        if (height % 8 != 0)
-            throw new NitroException(String.format("%d was provided for image height, but a multiple of 8 is required.", height));
+    public NCGR(String name, ByteArrayEditableData compData) throws NitroException {
+        super(RotomFormat.NCGR, name, compData);
 
-        if (width % 8 != 0)
-            throw new NitroException(String.format("%d was provided for image width, but a multiple of 8 is required.", width));
-
-        this.height = height;
-        this.charTilesHeight = height / 8;
-        this.width = width;
-        this.charTilesWidth = width / 8;
-
-        if (bitDepth != 4 && bitDepth != 8)
-            bitDepth = 4;
-        this.charBitDepth = ColorFormat.valueOf(bitDepth);
-
-        charTiledataSize = (long) charTilesWidth * charTilesHeight;
-        charTiledData = new byte[charTilesWidth * charTilesHeight][];
-        charData = new byte[(int) charTiledataSize];
-
-        this.palette = palette;
-
-
-        image = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_RGB);
-        setImagePixels();
-    }
-
-    public NCGR(String path, String name, CompFormat comp, byte[] compData, byte[] data) throws NitroException {
-        super(NFSFormat.NCGR, path, name, comp, compData, data);
-
-        MemBuf buf = MemBuf.create(rawData.getData());
+        MemBuf buf = MemBuf.create(data);
         int fileSize = buf.writer().getPosition();
-        logger.info("\nNCGR file, " + fileName + ", initialising with size of " + fileSize + " bytes");
+        logger.info("\nNCGR obj, " + objName + ", initialising with size of " + fileSize + " bytes");
 
         MemBuf.MemBufReader reader = buf.reader();
         readGenericNtrHeader(reader);
@@ -148,25 +120,17 @@ public class NCGR extends GenericNFSFile implements ImageableWithPalette {
         reader.setPosition(0);
         this.headerData = reader.readTo(headerLength);
 
-        File[] palettes = new File(path).getParentFile().listFiles(f -> f.getName().endsWith(".NCLR") &&
-                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.fileName));
-        if (palettes.length > 0) {
-            logger.info("Found corresponding NCLR file, " + palettes[0]);
-            this.palette = NCLR.fromFile(palettes[0]);
-            logger.info("Read NCLR file\n");
-        } else {
-            this.palette = NCLR.DEFAULT;
-        }
+        this.palette = NCLR.DEFAULT;
         logger.info("Reading NCGR file data");
         readFile(reader);
     }
 
-    public NCGR(String path, String name, CompFormat comp, ByteArrayData compData, ByteArrayEditableData data) throws NitroException {
-        super(NFSFormat.NCGR, path, name, comp, compData, data);
+    public NCGR(String path) throws NitroException {
+        super(RotomFormat.NCGR, path);
 
-        MemBuf buf = MemBuf.create(rawData.getData());
+        MemBuf buf = MemBuf.create(data);
         int fileSize = buf.writer().getPosition();
-        logger.info("\nNCGR file, " + fileName + ", initialising with size of " + fileSize + " bytes");
+        logger.info("\nNCGR file, " + fileFullName + ", initialising with size of " + fileSize + " bytes");
 
         MemBuf.MemBufReader reader = buf.reader();
         readGenericNtrHeader(reader);
@@ -175,7 +139,7 @@ public class NCGR extends GenericNFSFile implements ImageableWithPalette {
         this.headerData = reader.readTo(headerLength);
 
         File[] palettes = new File(path).getParentFile().listFiles(f -> f.getName().endsWith(".NCLR") &&
-                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.fileName));
+                f.getName().substring(0, f.getName().lastIndexOf('.')).equals(this.objName));
         if (palettes.length > 0) {
             logger.info("Found corresponding NCLR file, " + palettes[0]);
             this.palette = NCLR.fromFile(palettes[0]);

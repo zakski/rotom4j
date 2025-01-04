@@ -1,21 +1,21 @@
 package com.szadowsz.rotom4j.file.data;
 
-import com.szadowsz.rotom4j.file.BinFormat;
-import com.szadowsz.rotom4j.file.NFSFormat;
+import com.szadowsz.rotom4j.exception.InvalidDataException;
+import com.szadowsz.rotom4j.exception.InvalidFileException;
+import com.szadowsz.rotom4j.file.RotomFormat;
 
 /**
  * Class to represent an empty file that exists in the Narc
  */
-public class PlaceholderNFSFile extends BinNFSFile {
+public class PlaceholderNFSFile extends DataFile {
 
     /**
      * Placeholder File Constructor
      *
      * @param path path of the file
-     * @param name name of the file
      */
-    public PlaceholderNFSFile(String path, String name) {
-        super(BinFormat.PLACEHOLDER,path,name, new byte[0]);
+    public PlaceholderNFSFile(String path) throws InvalidFileException, InvalidDataException {
+        super(DataFormat.PLACEHOLDER, path);
     }
 
     /**
@@ -28,14 +28,15 @@ public class PlaceholderNFSFile extends BinNFSFile {
     @Override
     public void setFileName(String fileName) {
         int pos = fileName.lastIndexOf(".");
-        String ext = fileName.substring(pos+1);
-        NFSFormat byExt = NFSFormat.valueOfExt(ext);
-        this.fileName = stripExtFromFileName(fileName);
-        for (int i = 0; i < byExt.getExt().length;i++){
-            if (byExt.getExt()[i].equals(ext)){
+        String ext = fileName.substring(pos + 1);
+        RotomFormat byExt = RotomFormat.valueOfExt(ext);
+        this.objName = stripExtFromFileName(fileName);
+        for (int i = 0; i < byExt.getExt().length; i++) {
+            if (byExt.getExt()[i].equals(ext)) {
                 this.extIndex = i;
             }
         }
-       this.magic = byExt;
+        this.magic = byExt;
+        this.fileFullName = getFileName();
     }
 }

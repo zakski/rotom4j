@@ -15,12 +15,12 @@
  */
 package com.szadowsz.gui.component.oldbinary.operation.swing;
 
-import com.szadowsz.binary.array.ByteArrayData;
-import com.szadowsz.binary.array.ByteArrayEditableData;
-import com.szadowsz.binary.paged.PagedData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
+import com.szadowsz.rotom4j.binary.paged.PagedData;
 import com.szadowsz.gui.component.bined.utils.CharsetStreamTranslator;
 import com.szadowsz.gui.component.oldbinary.*;
-import com.szadowsz.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.gui.component.oldbinary.basic.*;
 import com.szadowsz.gui.component.oldbinary.capability.*;
 import com.szadowsz.gui.component.oldbinary.operation.swing.command.*;

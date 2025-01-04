@@ -17,8 +17,8 @@ package com.szadowsz.gui.component.oldbinary.operation.swing;
 
 import com.szadowsz.gui.component.oldbinary.CodeAreaUtils;
 import com.szadowsz.gui.component.oldbinary.RCodeAreaCore;
-import com.szadowsz.binary.BinaryData;
-import com.szadowsz.binary.EditableBinaryData;
+import com.szadowsz.rotom4j.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.gui.component.oldbinary.operation.undo.BinaryDataUndoableOperation;
 
 /**

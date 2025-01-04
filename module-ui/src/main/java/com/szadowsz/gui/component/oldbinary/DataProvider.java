@@ -15,7 +15,7 @@
  */
 package com.szadowsz.gui.component.oldbinary;
 
-import com.szadowsz.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.BinaryData;
 
 /**
  * Data provider.

@@ -1,9 +1,12 @@
 package com.szadowsz.rotom4j.file.data.stats;
 
+import com.szadowsz.rotom4j.exception.InvalidDataException;
+import com.szadowsz.rotom4j.exception.InvalidFileException;
 import com.szadowsz.rotom4j.exception.NitroException;
-import com.szadowsz.rotom4j.file.data.BinNFSFile;
-import com.szadowsz.binary.io.reader.Buffer;
-import com.szadowsz.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.file.data.DataFile;
+import com.szadowsz.rotom4j.binary.io.reader.Buffer;
+import com.szadowsz.rotom4j.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.file.data.DataFormat;
 
 import java.io.File;
 
@@ -11,7 +14,7 @@ import java.io.File;
 /**
  * Class to represent binary Growth data file
  */
-public class GrowNFSFile extends BinNFSFile {
+public class GrowNFSFile extends DataFile {
 
     public static final int LEVELS = 100;
 
@@ -22,11 +25,9 @@ public class GrowNFSFile extends BinNFSFile {
      * Growth Data File Constructor
      *
      * @param path  the path of the file
-     * @param name  the name of the file
-     * @param bytes the raw data of the file
      */
-    public GrowNFSFile(String path, String name, byte[] bytes) {
-        super(path, name, bytes);
+    public GrowNFSFile(String path) throws InvalidFileException, InvalidDataException {
+        super(DataFormat.LEVEL_UP, path);
         processEntries();
     }
 
@@ -42,7 +43,7 @@ public class GrowNFSFile extends BinNFSFile {
      * Process the raw data into XP Required for Levels
      */
     protected void processEntries() {
-        MemBuf dataBuf = MemBuf.create(rawData.getData());
+        MemBuf dataBuf = MemBuf.create(data);
         MemBuf.MemBufReader reader = dataBuf.reader();
         reader.skip(8);
         xp[0]=0;
@@ -68,20 +69,6 @@ public class GrowNFSFile extends BinNFSFile {
      * @throws NitroException if the read failed
      */
     public static GrowNFSFile fromFile(String path) throws NitroException {
-        return fromFile(new File(path));
-    }
-
-    /**
-     * Read Learnset Data from File
-     *
-     * @param file File Object to parse
-     * @return Learnset File Data
-     * @throws NitroException if the read failed
-     */
-    public static GrowNFSFile fromFile(File file) throws NitroException {
-        String path = file.getAbsolutePath();
-        String fileName = file.getName();
-        byte[] data = Buffer.readFile(path);
-        return new GrowNFSFile(path,fileName,data);
+        return new GrowNFSFile(path);
     }
 }

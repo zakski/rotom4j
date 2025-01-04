@@ -21,18 +21,18 @@ package com.szadowsz.rotom4j.file.nitro.narc;
 
 import com.szadowsz.rotom4j.NFSFactory;
 import com.szadowsz.rotom4j.exception.NitroException;
-import com.szadowsz.rotom4j.file.NFSFormat;
+import com.szadowsz.rotom4j.file.RotomFile;
+import com.szadowsz.rotom4j.file.RotomFormat;
 import com.szadowsz.rotom4j.file.nitro.narc.data.Fnt;
-import com.szadowsz.rotom4j.file.BaseNFSFile;
+import com.szadowsz.rotom4j.file.nitro.BaseNFSFile;
 import com.szadowsz.rotom4j.file.index.DefHeaderFile;
 import com.szadowsz.rotom4j.file.index.LstFile;
 import com.szadowsz.rotom4j.file.index.NaixFile;
 import com.szadowsz.rotom4j.file.index.ScrFile;
-import com.szadowsz.rotom4j.file.nitro.GenericNFSFile;
-import com.szadowsz.binary.io.reader.Buffer;
-import com.szadowsz.binary.io.reader.MemBuf;
+import com.szadowsz.rotom4j.binary.io.reader.Buffer;
+import com.szadowsz.rotom4j.binary.io.reader.MemBuf;
 import com.szadowsz.rotom4j.utils.StringFormatter;
-import com.szadowsz.binary.io.writer.BinaryWriter;
+import com.szadowsz.rotom4j.binary.io.writer.BinaryWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ import java.util.Objects;
 /**
  * An object representation of a NARC file (Nitro-Archive)
  */
-public class NARC extends GenericNFSFile {
+public class NARC extends BaseNFSFile {
     static Logger LOGGER = LoggerFactory.getLogger(NARC.class);
 
     public static final int FATB_HEADER_SIZE = 0x0C;
@@ -55,20 +55,19 @@ public class NARC extends GenericNFSFile {
     public static final int FNTB_HEADER_SIZE = 8;
     protected Fnt.Folder filenames; // represents the root folder of the filesystem
     protected ArrayList<byte[]> rawFiles;
-    protected ArrayList<BaseNFSFile> files;
+    protected ArrayList<RotomFile> files;
 
     /**
      * Read NARC data, and create a filename table and a list of files.
      *
-     * @param file file obj information
-     * @param data byte[] representation of a Narc
+     * @param path file path
      * @throws IOException if there are issues reading the data/file
      */
-    public NARC(File file, byte[] data) throws IOException {
-        super(NFSFormat.NARC, (file!=null)?file.getName():"",data);
-        MemBuf buf = MemBuf.create(rawData.getData());
+    public NARC(String path) throws IOException {
+        super(RotomFormat.NARC, path);
+        MemBuf buf = MemBuf.create(data);
         MemBuf.MemBufReader reader = buf.reader();
-        readGenericNtrHeader(NFSFormat.NARC,reader);
+        readGenericNtrHeader(RotomFormat.NARC,reader);
         readFile(reader);
     }
 
@@ -144,20 +143,11 @@ public class NARC extends GenericNFSFile {
 
     /**
      * Load a NARC archive from a filesystem file
-     * @param file a String containing the path to a NARC file on disk
+     * @param path a String containing the path to a NARC file on disk
      * @return a Narc object
      */
-    public static NARC fromFile(String file) throws IOException {
-        return fromFile(new File(file));
-    }
-
-    /**
-     * Load a NARC archive from a file on disk
-     * @param file a File object representing the path to a NARC file on disk
-     * @return a Narc object
-     */
-    public static NARC fromFile(File file) throws IOException {
-        return new NARC(file, Buffer.readFile(file.getAbsolutePath()));
+    public static NARC fromFile(String path) throws IOException {
+        return new NARC(path);
     }
 
     /**
@@ -231,7 +221,7 @@ public class NARC extends GenericNFSFile {
 
         for (int i = 0; i < files.size(); i++) {
             System.out.println(StringFormatter.formatOutputString(i, files.size(), "", ""));
-            BinaryWriter.writeFile(Paths.get(dir.getAbsolutePath(),files.get(i).getFileName())+".bin", files.get(i).getCompressedData());
+            BinaryWriter.writeFile(Paths.get(dir.getAbsolutePath(),files.get(i).getFileName())+".bin", files.get(i).getCompressedData().getData());
         }
     }
 
@@ -241,7 +231,7 @@ public class NARC extends GenericNFSFile {
      * @return String List of the filenames
      */
     public List<String> getFilenames() {
-        return files.stream().map(BaseNFSFile::getFileName).toList();
+        return files.stream().map(RotomFile::getFileName).toList();
     }
 
     /**
@@ -249,7 +239,7 @@ public class NARC extends GenericNFSFile {
      *
      * @return String List of the files
      */
-    public List<BaseNFSFile> getFiles() {
+    public List<RotomFile> getFiles() {
         return files;
     }
 
@@ -349,7 +339,7 @@ public class NARC extends GenericNFSFile {
      */
     public void applyNaix(String naixPath) throws IOException {
         if (naixPath != null) {
-            NaixFile scrFile = new NaixFile(fileName,naixPath);
+            NaixFile scrFile = new NaixFile(objName,naixPath);
             List<String> def = scrFile.getFileNames();
             if (def.size() != files.size()) {
                 throw new RuntimeException("NAIX DOES NOT MATCH NARC FILE LIST IN SIZE");

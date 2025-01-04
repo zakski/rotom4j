@@ -1,9 +1,9 @@
 package com.szadowsz.gui.component.bined;
 
-import com.szadowsz.binary.BinaryData;
-import com.szadowsz.binary.EditableBinaryData;
-import com.szadowsz.binary.EmptyBinaryData;
-import com.szadowsz.binary.paged.PagedData;
+import com.szadowsz.rotom4j.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.EditableBinaryData;
+import com.szadowsz.rotom4j.binary.EmptyBinaryData;
+import com.szadowsz.rotom4j.binary.paged.PagedData;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
 import com.szadowsz.gui.component.bined.bounds.RBinSelection;

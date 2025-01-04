@@ -1,9 +1,8 @@
 package com.szadowsz.rotom4j.app;
 
-import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.RotomGuiSettings;
 import com.szadowsz.gui.layout.RBorderLayout;
-import com.szadowsz.rotom4j.app.component.control.RegisterGeneralUI;
+import com.szadowsz.rotom4j.component.control.RegisterGeneralUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
