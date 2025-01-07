@@ -190,6 +190,11 @@ public class RBorderLayout extends RLayoutBase {
     }
 
     @Override
+    public void setCompLayout(PVector windowStart, PVector start, PVector area, List<RComponent> components) {
+        setCompLayout(start, area, components);
+    }
+
+    @Override
     public void setCompLayout(PVector start, PVector area, List<RComponent> components) {
         EnumMap<RLocation, RComponent> layout = makeCompLookupMap(components);
         float availableHorizontalSpace = area.x;

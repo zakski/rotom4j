@@ -100,7 +100,7 @@ public class RWindowTemp extends RWindowPane {
      * @return true if it is inside the parent window, false otherwise
      */
     public boolean isInParentWindow(float x, float y){
-        return folder.getParentFolder() != null && folder.getParentFolder().getWindow().isPointInsideWindow(x,y);
+        return folder.getParentFolder() != null && folder.getParentWindow().isPointInsideWindow(x,y);
     }
 
     /**

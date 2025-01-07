@@ -4,7 +4,7 @@ import com.szadowsz.rotom4j.binary.array.ByteArrayData;
 import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.NFSFactory;
 import com.szadowsz.rotom4j.compression.CompFormat;
-import com.szadowsz.rotom4j.file.nitro.ImageableWithGraphic;
+import com.szadowsz.rotom4j.file.nitro.DrawableWithGraphic;
 import com.szadowsz.rotom4j.file.RotomFormat;
 import com.szadowsz.rotom4j.file.nitro.nanr.anime.AnimeSequence;
 import com.szadowsz.rotom4j.file.nitro.nanr.anime.FrameData;
@@ -24,7 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
-public class NANR extends BaseNFSFile implements ImageableWithGraphic {
+public class NANR extends BaseNFSFile implements DrawableWithGraphic {
     private static final Logger logger = LoggerFactory.getLogger(NANR.class);
 
     protected static final int BACKGROUND_WIDTH = 512;

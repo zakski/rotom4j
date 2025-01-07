@@ -52,6 +52,18 @@ public abstract class RLayoutBase {
      * This method will call {@code setPosition(..)} and {@code setSize(..)} on the Components.
      *
      * @param area Size available to this layout manager to lay out the components on
+     * @param components List of components to lay out
+     */
+    public abstract void setCompLayout(PVector windowStart, PVector start, PVector area, List<RComponent> components);
+
+
+    /**
+     * Given a size constraint, update the location and size of each component in the component list by laying them out
+     * in the available area.
+     * <p>
+     * This method will call {@code setPosition(..)} and {@code setSize(..)} on the Components.
+     *
+     * @param area Size available to this layout manager to lay out the components on
      * @param windows List of windows to lay out
      */
     public abstract void setWinLayout(PVector area, List<RWindowPane> windows);

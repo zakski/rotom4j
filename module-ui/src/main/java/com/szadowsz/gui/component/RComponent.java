@@ -11,6 +11,7 @@ import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutConfig;
+import com.szadowsz.gui.window.pane.RWindowPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
@@ -43,7 +44,7 @@ public abstract class RComponent {
 
     // Top left position of component in pixels (absolute)
     protected final PVector pos = new PVector(); // TODO LazyGui & G4P
-    // Top left position of component in pixels (relative)
+    // Top left position of component in pixels (relative to the window)
     protected final PVector relPos = new PVector();
     // Width and height of component in pixels
     protected final PVector size = new PVector(); // TODO LazyGui & G4P
@@ -284,6 +285,10 @@ public abstract class RComponent {
         return (RFolder) p;
     }
 
+    public RWindowPane getParentWindow() {
+        return getParentFolder().getWindow();
+    }
+
     /**
      * Get X Coordinate of the Component Start Position
      *
@@ -333,13 +338,23 @@ public abstract class RComponent {
         return gui;
     }
 
+
+    public String getPath() {
+        return path;
+    }
+
+
     public PVector getPosition() {
         return pos.copy();
     }
 
-    public PVector getRelPosition() {
-        return new PVector(relPos.x,relPos.y);
-    }
+//    public PVector getRelPosition() {
+//        return new PVector(relPos.x,relPos.y);
+//    }
+//
+//    public PVector getRelPosTo(RGroupDrawable group) {
+//        return new PVector(pos.x - group.getPosX(),pos.y - group.getPosY());
+//    }
 
     /**
      * Get the preferred size characteristics
@@ -348,6 +363,15 @@ public abstract class RComponent {
      */
     public PVector getPreferredSize(){
         return new PVector(suggestWidth(),getHeight());
+    }
+
+    /**
+     * Get the size characteristics
+     *
+     * @return width and height in a PVector
+     */
+    public PVector getSize(){
+        return new PVector(getWidth(),getHeight());
     }
 
     public RLayoutConfig getCompLayoutConfig() {
@@ -601,12 +625,14 @@ public abstract class RComponent {
     /**
      * The components must know its absolute position and size, so it can respond to user input events
      *
-     * @param rX relative screen x
-     * @param rX relative screen y
+     * @param bX base window x
+     * @param bY base window y
+     * @param rX relative x
+     * @param rX relative y
      * @param w absolute screen width
      * @param h absolute screen height
      */
-    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) { // TODO LazyGui
+    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
         pos.x = bX + rX;
         pos.y = bY + rY;
         relPos.x = rX;
@@ -622,8 +648,14 @@ public abstract class RComponent {
      * @param relPos relative position from base
      * @param dim allowed width and height
      */
-    public void updateCoordinates(PVector basePos, PVector relPos, PVector dim) { // TODO LazyGui
-        updateCoordinates(basePos.x, basePos.y, relPos.x, relPos.y, dim.x,dim.y);
+    public void updateCoordinates(PVector winPos, PVector basePos, PVector relPos, PVector dim) { // TODO LazyGui
+        if (winPos.x == basePos.x && winPos.y == basePos.y){
+            updateCoordinates(winPos.x, winPos.y, relPos.x, relPos.y, dim.x,dim.y);
+        } else {
+            float x = basePos.x - winPos.x;
+            float y = basePos.y - winPos.y;
+            updateCoordinates(winPos.x, winPos.y, x + relPos.x, y + relPos.y, dim.x,dim.y);
+        }
     }
 
     /**
@@ -635,7 +667,6 @@ public abstract class RComponent {
         if (isMouseOver){
             isMouseOver = false;
         }
-        getParentFolder().getWindow().redrawBuffer();
+        getParentWindow().redrawBuffer();
     }
-
 }

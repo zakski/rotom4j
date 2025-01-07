@@ -18,30 +18,30 @@ public class NSCRFolderComponent extends NitroCmpFolderComponent<NSCR> {
     public NSCRFolderComponent(RotomGui gui, String path, RFolder parent, NSCR nscr) {
         super(gui, path, parent, nscr, SELECT_NSCR_FILE);
         children.clear();
-        children.add(new NitroPreview(gui, path + "/" + imageable.getFileName(), this, imageable));
+        children.add(new NitroPreview(gui, path + "/" + drawable.getFileName(), this, drawable));
 
         children.add(createZoom());
 
-        children.add(new NCGRFolderComponent(gui, path + "/" + IMAGE_NODE_NAME, this, imageable.getNCGR()));
+        children.add(new NCGRFolderComponent(gui, path + "/" + IMAGE_NODE_NAME, this, drawable.getNCGR()));
     }
 
     @Override
     public void recolorImage() throws NitroException {
         super.recolorImage();
-        imageable.recolorImage();
+        drawable.recolorImage();
 
-        PImage pImage = resizeImage(imageable.getImage());
-        ((NitroPreview) findChildByName(imageable.getFileName())).loadImage(pImage);
+        PImage pImage = resizeImage(drawable.getImage());
+        ((NitroPreview) findChildByName(drawable.getFileName())).loadImage(pImage);
 
         this.window.resizeForContents(true);
     }
 
     @Override
     public float autosuggestWindowWidthForContents() {
-        if (imageable.getNCGR() != null) {
+        if (drawable.getNCGR() != null) {
             return ((NitroPreview) children.get(0)).getImage().width;
         } else {
-            return imageable.getWidth();
+            return drawable.getWidth();
         }
     }
 }

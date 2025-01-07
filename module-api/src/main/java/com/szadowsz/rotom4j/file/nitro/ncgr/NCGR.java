@@ -5,7 +5,7 @@ import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.NFSFactory;
 import com.szadowsz.rotom4j.compression.CompFormat;
 import com.szadowsz.rotom4j.file.RotomFormat;
-import com.szadowsz.rotom4j.file.nitro.ImageableWithPalette;
+import com.szadowsz.rotom4j.file.nitro.DrawableWithPalette;
 import com.szadowsz.rotom4j.file.nitro.nclr.colors.ColorFormat;
 import com.szadowsz.rotom4j.file.nitro.ncgr.tiles.TileForm;
 import com.szadowsz.rotom4j.file.nitro.BaseNFSFile;
@@ -30,7 +30,7 @@ import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
  * An object representation of an NCGR file. <p>
  * An NCGR file is a Nintendo proprietary DS format used for storing graphics (images).
  */
-public class NCGR extends BaseNFSFile implements ImageableWithPalette {
+public class NCGR extends BaseNFSFile implements DrawableWithPalette {
     private static final Logger logger = LoggerFactory.getLogger(NCGR.class);
 
     /**

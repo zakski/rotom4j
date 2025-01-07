@@ -1,12 +1,14 @@
 package com.szadowsz.rotom4j.app;
 
 import com.szadowsz.gui.RotomGuiSettings;
+import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.layout.RBorderLayout;
 import com.szadowsz.rotom4j.component.control.RegisterGeneralUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PGraphics;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,6 +22,8 @@ public class ProcessingRotom4J extends PApplet {
 
     protected RotomGuiImpl gui;
     protected RotomGuiSettings settings;
+//    private PGraphics buffer0;
+//    private PGraphics buffer1;
 
     private void setLookAndFeel() {
         try {
@@ -44,7 +48,11 @@ public class ProcessingRotom4J extends PApplet {
         surface.setTitle("Rotom4J");
         surface.setResizable(true);
         surface.setLocation(100,100);
-
+//        RFontStore.init(this);
+//
+//
+//        buffer0 = createGraphics(500,500, PConstants.P2D);
+//        buffer1 = createGraphics(300,300, PConstants.P2D);
         gui = RotomGuiManagerImpl.embedGuiImpl(this,settings);
         gui.startSetup();
 
@@ -67,6 +75,25 @@ public class ProcessingRotom4J extends PApplet {
     @Override
     public void draw() {
         background(30,40,189);
+//        fill(255);
+//        textFont(RFontStore.getMainFont());
+//        text("Pickle 0",100,100);
+//        buffer1.beginDraw();
+//        buffer1.clear();
+//        buffer1.background(255);
+//        buffer1.fill(0);
+//        buffer1.textFont(RFontStore.getMainFont());
+//        buffer1.text("Pickle 1",100,100);
+//        buffer1.endDraw();
+//        buffer0.beginDraw();
+//        buffer0.clear();
+//        buffer0.background(0);
+//        buffer0.fill(255);
+//        buffer0.textFont(RFontStore.getMainFont());
+//        buffer0.text("Pickle 1",100,100);
+//        buffer0.image(buffer1,125,150);
+//        buffer0.endDraw();
+//        image(buffer0, 100, 150);
     }
 
 

@@ -231,7 +231,7 @@ public abstract class RTextEditable extends RTextBase {
             changeText();
             LOGGER.info("invalidated text field {} buffer",name);
             buffer.invalidateBuffer();
-            getParentFolder().getWindow().redrawBuffer();
+            getParentWindow().redrawBuffer();
             textChanged = false;
         }
     }

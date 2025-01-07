@@ -35,15 +35,15 @@ public class NCERFolderComponent extends NitroCmpFolderComponent<NCER> {
         children.add(cell);
 
         children.add(createZoom());
-        children.add(new NCGRFolderComponent(gui, path + "/" + IMAGE_NODE_NAME, this, imageable.getNCGR()));
+        children.add(new NCGRFolderComponent(gui, path + "/" + IMAGE_NODE_NAME, this, drawable.getNCGR()));
     }
 
     public void recolorImage() throws NitroException {
         super.recolorImage();
         RSliderInt cellNode = (RSliderInt) findChildByName(CELL_NODE);
 
-        PImage pImage = resizeImage(imageable.getImage((int) cellNode.getValueAsInt()));
-        ((NitroPreview) findChildByName(imageable.getFileName())).loadImage(pImage);
+        PImage pImage = resizeImage(drawable.getImage((int) cellNode.getValueAsInt()));
+        ((NitroPreview) findChildByName(drawable.getFileName())).loadImage(pImage);
 
         this.window.resizeForContents(true);
     }
@@ -51,7 +51,7 @@ public class NCERFolderComponent extends NitroCmpFolderComponent<NCER> {
     @Override
     public float autosuggestWindowWidthForContents() {
         float suggested = super.autosuggestWindowWidthForContents();
-        if (imageable.getNCGR() != null) {
+        if (drawable.getNCGR() != null) {
             return Math.max(suggested, ((NitroPreview) children.get(0)).getImage().width);
         } else {
             return suggested;

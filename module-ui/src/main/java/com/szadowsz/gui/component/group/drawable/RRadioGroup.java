@@ -1,7 +1,6 @@
 package com.szadowsz.gui.component.group.drawable;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
@@ -45,10 +44,5 @@ public class RRadioGroup extends RGroupDrawable {
     @Override
     public void setLayout(RLayoutBase layout) {
 
-    }
-
-    @Override
-    public float suggestWidth() {
-        return 0;
     }
 }

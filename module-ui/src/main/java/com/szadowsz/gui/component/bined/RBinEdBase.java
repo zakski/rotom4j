@@ -1,5 +1,6 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.gui.layout.RRect;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.rotom4j.binary.EmptyBinaryData;
@@ -13,7 +14,7 @@ import com.szadowsz.gui.component.bined.cursor.RCaretPos;
 import com.szadowsz.gui.component.bined.settings.*;
 import com.szadowsz.gui.component.bined.utils.CharsetStreamTranslator;
 import com.szadowsz.gui.component.group.RGroup;
-import com.szadowsz.gui.component.group.RGroupDrawable;
+import com.szadowsz.gui.component.group.drawable.RGroupDrawable;
 import com.szadowsz.gui.config.text.RFontMetrics;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.input.clip.BinaryDataClipboardData;
@@ -21,6 +22,7 @@ import com.szadowsz.gui.input.clip.ClipboardData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PFont;
+import processing.core.PVector;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -59,6 +61,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
     protected int minRowPositionLength;
     protected int maxRowPositionLength;
     protected int maxBytesPerRow = 16;
+    protected int maxRowsPerPage = 16;
     protected int wrappingBytesGroupSize = 0;
 
     // Current User Selection
@@ -189,7 +192,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
     }
 
     protected void notifyDataChanged() {
-        getParentFolder().getWindow().reinitialiseBuffer();
+        getParentWindow().reinitialiseBuffer();
     }
 
     /**
@@ -297,10 +300,6 @@ public abstract class RBinEdBase extends RGroupDrawable {
         }
     }
 
-    protected void redrawBuffer(){
-        getParentFolder().getWindow().redrawBuffer();
-    }
-
     /**
      * Returns currently used charset.
      *
@@ -381,6 +380,14 @@ public abstract class RBinEdBase extends RGroupDrawable {
         return maxBytesPerRow;
     }
 
+    /**
+     * Returns maximum number of rows per page.
+     *
+     * @return bytes per row
+     */
+    public int getMaxRowsPerPage() {
+        return maxRowsPerPage;
+    }
 
     /**
      * get current Font Metrics
@@ -389,6 +396,12 @@ public abstract class RBinEdBase extends RGroupDrawable {
      */
     public RFontMetrics getMetrics() {
         return metrics;
+    }
+
+    @Override
+    public PVector getPreferredSize(){
+        RRect rectangle = dimensions.getDisplayRectangle();
+        return new PVector(rectangle.getWidth(), rectangle.getHeight());
     }
 
     /**

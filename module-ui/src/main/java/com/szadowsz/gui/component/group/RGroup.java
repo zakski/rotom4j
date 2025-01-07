@@ -94,6 +94,14 @@ public abstract class RGroup extends RComponent {
      */
     public abstract void setLayout(RLayoutBase layout);
 
+    public void drawBuffer(){
+        for (RComponent component : children) {
+            if (component instanceof RGroup group) {
+                group.drawBuffer();
+            }
+        }
+    }
+
     /**
      * Find a node by its name
      *

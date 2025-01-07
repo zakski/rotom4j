@@ -5,13 +5,13 @@ import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.input.mouse.RActivateByType;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.rotom4j.app.ProcessingRotom4J;
 import com.szadowsz.rotom4j.component.nitro.NitroCmpFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.NitroImgFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.NitroPreview;
-import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolderComponent;
 import com.szadowsz.rotom4j.app.utils.FileChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,13 +37,13 @@ public class NCGRFolderComponent extends NitroImgFolderComponent<NCGR> {
     }
 
     protected void initNode() {
-        if (imageable == null) {
+        if (drawable == null) {
             return;
         }
         children.clear();
-        children.add(new NitroPreview(gui, path + "/" + PREVIEW_NODE, this, imageable));
+        children.add(new NitroPreview(gui, path + "/" + PREVIEW_NODE, this, drawable));
         children.add(createZoom());
-        children.add(new NCLRFolderComponent(gui, path + "/" + PALETTE_NODE_NAME, this, imageable.getNCLR()));
+        children.add(new NCLRFolder(gui, path + "/" + PALETTE_NODE_NAME, this, drawable.getNCLR()));
         if (cmpFolder != null) {
             RButton reset = new RButton(gui, path + "/" + RESET_NODE, this);
             reset.registerAction(RActivateByType.RELEASE, this::resetImage);
@@ -52,10 +52,10 @@ public class NCGRFolderComponent extends NitroImgFolderComponent<NCGR> {
     }
 
     protected void resetImage() {
-        NCGR original = imageable;
+        NCGR original = drawable;
         try {
             LOGGER.debug("Resetting NCGR File: " + original.getFileName());
-            imageable = null;
+            drawable = null;
             LOGGER.info("Reset NCGR File to Default: " + original.getFileName());
             //recolorImage();
             if (cmpFolder != null) {
@@ -65,7 +65,7 @@ public class NCGRFolderComponent extends NitroImgFolderComponent<NCGR> {
         } catch (IOException e) {
             LOGGER.error("NCLR Load Failed", e);
             try {
-                imageable = original;
+                drawable = original;
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }
@@ -79,7 +79,7 @@ public class NCGRFolderComponent extends NitroImgFolderComponent<NCGR> {
             ProcessingRotom4J.prefs.put("openNarcPath", new File(ncgrPath).getParentFile().getAbsolutePath());
             try {
                 LOGGER.debug("Loading NCGR File: " + ncgrPath);
-                imageable = NCGR.fromFile(ncgrPath);
+                drawable = NCGR.fromFile(ncgrPath);
                 initNode();
                 recolorImage();
                 LOGGER.info("Loaded NCGR File: " + ncgrPath);
@@ -100,12 +100,12 @@ public class NCGRFolderComponent extends NitroImgFolderComponent<NCGR> {
 
     @Override
     public void recolorImage() throws NitroException {
-        imageable.setNCLR(((NCLRFolderComponent) findChildByName(PALETTE_NODE_NAME)).getImageable());
-        imageable.recolorImage();
+        drawable.setNCLR(((NCLRFolder) findChildByName(PALETTE_NODE_NAME)).getObj());
+        drawable.recolorImage();
 
-        PImage pImage = resizeImage(imageable.getImage());
+        PImage pImage = resizeImage(drawable.getImage());
 
-        ((NitroPreview) findChildByName(imageable.getFileName())).loadImage(pImage);
+        ((NitroPreview) findChildByName(drawable.getFileName())).loadImage(pImage);
 
         if (this.window != null) {
             this.window.resizeForContents(true);

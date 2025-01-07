@@ -2,20 +2,15 @@ package com.szadowsz.gui.component.group.drawable;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.group.RGroupDrawable;
-import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.gui.component.input.color.RColorHex;
+import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.input.color.RColorPreview;
 import com.szadowsz.gui.component.input.color.RColorSlider;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RThemeStore;
-import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
-import com.szadowsz.gui.layout.RLinearLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
-import processing.core.PVector;
 
 import java.awt.*;
 
@@ -24,7 +19,7 @@ import static processing.core.PConstants.SQUARE;
 
 
 /**
- * Overall grouping of components (ColorPreview, ColorSLiders, etc.) that make up user color selection controls
+ * Overall grouping of components (ColorPreview, ColorSliders, etc.) that make up user color selection controls
  */
 public class RColorPicker extends RGroupDrawable {
     private static final Logger LOGGER = LoggerFactory.getLogger(RColorPicker.class);
@@ -46,10 +41,10 @@ public class RColorPicker extends RGroupDrawable {
      *
      * @param gui          the gui for the window that the component is drawn under
      * @param path         the path in the component tree
-     * @param parentFolder the parent component folder reference // TODO consider if needed
+     * @param parent       the parent component reference // TODO consider if needed
      */
-    public RColorPicker(RotomGui gui, String path, RFolder parentFolder, Color c, boolean showAlpha) {
-        super(gui, path, parentFolder);
+    public RColorPicker(RotomGui gui, String path, RGroup parent, Color c, boolean showAlpha) {
+        super(gui, path, parent);
         this.color = c;
         this.showAlpha = showAlpha;
         initNodes();
@@ -81,7 +76,7 @@ public class RColorPicker extends RGroupDrawable {
             a.initSliderBackgroundShader();
             children.add(a);
         }
-        children.add(new RColorHex(gui, path + "/" + HEX_NODE, this));
+        //children.add(new RColorHex(gui, path + "/" + HEX_NODE, this));
     }
 
     /**
@@ -166,30 +161,7 @@ public class RColorPicker extends RGroupDrawable {
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         LOGGER.debug("Drawing ColorPicker Group {} [{}, {}]", name, size.x, size.y);
-        int index = 0;
-        for (RComponent component : children) {
-            if (!component.isVisible()) {
-                index++;
-                continue;
-            }
-            pg.pushMatrix();
-            pg.translate(component.getRelPosX(), component.getRelPosY());
-            drawChildComponent(pg, component);
-            if (index > 0) { // TODO if as to kind of separator to draw
-                // separator
-                if (layout instanceof RLinearLayout linear) {
-                    pg.pushStyle();
-                    if (linear.getDirection() == RDirection.VERTICAL) {
-                        drawHorizontalSeparator(pg, (int) size.x);
-                    } else {
-                        drawVerticalSeparator(pg);
-                    }
-                    pg.popStyle();
-                }
-            }
-            index++;
-            pg.popMatrix();
-        }
+        super.drawForeground(pg, name);
     }
 
     /**
@@ -207,17 +179,12 @@ public class RColorPicker extends RGroupDrawable {
                     getSliderValue(B_NODE_NAME));
         }
         setPreviewColor();
-        getParentFolder().getWindow().redrawBuffer();
+        getParentWindow().redrawBuffer();
     }
 
     @Override
     public float suggestWidth() {
         return getPreferredSize().x;
-    }
-
-    @Override
-    public PVector getPreferredSize() {
-        return layout.calcPreferredSize(getParentFolder().getName(), children);
     }
 
     /**

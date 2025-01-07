@@ -1,9 +1,9 @@
-package com.szadowsz.gui.window.pane;
+package com.szadowsz.gui.component.group;
 
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.gui.config.text.RFontStore;
+import com.szadowsz.gui.component.group.drawable.RGroupDrawable;
 import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
@@ -19,10 +19,10 @@ import java.util.List;
 import static com.szadowsz.gui.config.theme.RColorType.WINDOW_BORDER;
 import static processing.core.PConstants.*;
 
-public final class RContentBuffer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RContentBuffer.class);
+public final class RGroupBuffer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RGroupBuffer.class);
 
-    private final RWindowPane win;
+    private final RGroupDrawable group;
 
     private PGraphics buffer = null;
 
@@ -32,8 +32,8 @@ public final class RContentBuffer {
     private int sizeX;
     private int sizeY;
 
-    public RContentBuffer(RWindowPane win) {
-        this.win = win;
+    public RGroupBuffer(RGroupDrawable group) {
+        this.group = group;
     }
 
     private void createBuffer(float sizeX, float sizeY) {
@@ -41,31 +41,13 @@ public final class RContentBuffer {
     }
 
     private void createBuffer(int sizeX, int sizeY) {
-        LOGGER.trace("{} Content Buffer Init - Old Size: [{},{}], New Size: [{},{}]",win.getFolder().getName(),this.sizeX,this.sizeY,sizeX,sizeY);
+        LOGGER.trace("{} Content Buffer Init - Old Size: [{},{}], New Size: [{},{}]",group.getName(),this.sizeX,this.sizeY,sizeX,sizeY);
         this.sizeX = sizeX;
         this.sizeY = sizeY;
-        buffer = win.getSketch().createGraphics(sizeX, sizeY, PConstants.P2D);
+        buffer = group.getGui().getSketch().createGraphics(sizeX, sizeY, PConstants.P2D);
         buffer.beginDraw();
         buffer.endDraw();
     }
-
-//    private float calcColWidth(List<RComponent> children, int col) {
-//        float spaceForName = 0;
-//        float spaceForValue = 0;
-//
-//        for (RComponent child : children) {
-//            if (col != child.getColumn())
-//                continue;
-//
-//            float nameTextWidth = child.calcNameTextWidth();
-//            float valueTextWidth = child.findValueTextWidthRoundedUpToWholeCells();
-//
-//            spaceForName = Math.max(spaceForName, nameTextWidth);
-//            spaceForValue = Math.max(spaceForValue, valueTextWidth);
-//        }
-//
-//        return spaceForName + spaceForValue;
-//    }
 
     /**
      * Draw Child Component
@@ -78,15 +60,6 @@ public final class RContentBuffer {
         child.draw(buffer);
         buffer.popStyle();
         buffer.popMatrix();
-    }
-
-    /**
-     * Draw A Horizontal separator between two nodes
-     *
-     * @param pg Processing Graphics Context
-     */
-    private void drawHorizontalSeparator(PGraphics pg) {
-        drawHorizontalSeparator(pg, pg.width);
     }
 
     /**
@@ -122,8 +95,8 @@ public final class RContentBuffer {
         // }
     }
 
-    private void drawChildren(RFolder folder, float width) {
-        List<RComponent> children = folder.getChildren();
+    private void drawChildren(RGroupDrawable group, float width) {
+        List<RComponent> children = group.getChildren();
 
         int index = 0;
         for (RComponent component : children) {
@@ -136,7 +109,7 @@ public final class RContentBuffer {
             drawChildComponent(component);
             if (index > 0) { // TODO if as to kind of separator to draw
                 // separator
-                if (folder.getLayout() instanceof RLinearLayout linear) {
+                if (group.getLayout() instanceof RLinearLayout linear) {
                     buffer.pushStyle();
                     if (linear.getDirection() == RDirection.VERTICAL) {
                         drawHorizontalSeparator(buffer, (int) width);
@@ -154,35 +127,36 @@ public final class RContentBuffer {
     /**
      * Draw The Content of The Window
      *
-     * @param folder Container of UI Nodes
+     * @param group Container of UI Nodes
      */
-    private void drawContent(RFolder folder) {
+    private void drawContent(RGroupDrawable group) {
         long time = System.currentTimeMillis();
-        if (!folder.getChildren().isEmpty()) {
+        if (!group.getChildren().isEmpty()) {
             buffer.beginDraw();
             buffer.clear();
 
             buffer.textFont(RFontStore.getMainFont());
             buffer.textAlign(LEFT, CENTER);
-            RLayoutBase layout = folder.getLayout();
-            LOGGER.debug("{} Content Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
-            PVector pos = folder.getWindow().getContentStart();
-            LOGGER.debug("{} Layout [{},{}]",folder.getName(),folder.getWindow().contentSize.x,folder.getWindow().contentSize.y);
-            layout.setCompLayout(pos,folder.getWindow().contentSize, folder.getChildren());
-            drawChildren(folder, buffer.width);
+            RLayoutBase layout = group.getLayout();
+            LOGGER.debug("{} Group Buffer [{},{}] Layout {}",group.getName(),buffer.width,buffer.height,layout);
+            PVector pos = group.getParentWindow().getContentStart();
+            LOGGER.debug("{} Layout [{},{}]",group.getName(),group.getBufferSize().x,group.getBufferSize().y);
+            layout.setCompLayout(pos,group.getPosition(), group.getBufferSize(), group.getChildren());
+            drawChildren(group, buffer.width);
 
             buffer.endDraw();
         }
-        LOGGER.debug("{} Content Buffer [{},{}] Draw Duration {}", folder.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
+        LOGGER.debug("{} Content Buffer [{},{}] Draw Duration {}", group.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
     }
 
     private synchronized void redrawIfNecessary(){
         if (isReInitRequired){
-            createBuffer(win.getContentWidth(), win.getContentHeight());
+            PVector bufferSize = group.getBufferSize();
+            createBuffer(bufferSize.x, bufferSize.y);
             isReInitRequired = false;
         }
         if (isBufferInvalid) {
-            drawContent(win.getFolder());
+            drawContent(group);
             isBufferInvalid = false;
         }
     }
