@@ -499,7 +499,7 @@ public class RSlider extends RComponent {
             LOGGER.debug("Mouse DeltaX for Slider {} [{} = {} - {}]", name, mouseDeltaX, mouseEvent.getPrevX(), mouseEvent.getX());
         }
         mouseEvent.consume();
-        getParentFolder().getWindow().redrawBuffer();
+        getParentWindow().redrawBuffer();
     }
 
     @Override

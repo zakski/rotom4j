@@ -123,18 +123,17 @@ public class RLinearLayout extends RLayoutBase {
      * <p>
      * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
      */
-    public RLinearLayout() {
-        this(RDirection.VERTICAL);
+    public RLinearLayout(RGroup group, RDirection direction) {
+        this(direction);
+        this.group = group;
     }
-
     /**
      * Default Constructor, creates a vertical {@code RLinearLayout}
      * <p>
      * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
      */
     public RLinearLayout(RGroup group) {
-        this(RDirection.VERTICAL);
-        this.group = group;
+        this(group, RDirection.VERTICAL);
     }
 
 

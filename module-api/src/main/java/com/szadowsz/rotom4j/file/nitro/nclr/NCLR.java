@@ -178,7 +178,7 @@ public class NCLR extends BaseNFSFile implements Imageable {
         try {
             return new NCLR(numColors);
         } catch (IOException e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
     }
 

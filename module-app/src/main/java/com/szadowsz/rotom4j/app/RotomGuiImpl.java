@@ -3,6 +3,7 @@ package com.szadowsz.rotom4j.app;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.RotomGuiSettings;
 import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.data.evo.EvolutionNFSFile;
 import com.szadowsz.rotom4j.file.data.learnset.LearnsetNFSFile;
@@ -92,15 +93,15 @@ public class RotomGuiImpl extends RotomGui {
         return node;
     }
 
-    public NCLRFolderComponent palette(NCLR nclr) {
+    public NCLRFolder palette(NCLR nclr) {
         String fullPath = getCurrentPath() + nclr.getFileName();
         if (tree.isPathTakenByUnexpectedType(fullPath, NCLRFolderComponent.class)) {
             return null;
         }
-        NCLRFolderComponent node = (NCLRFolderComponent) tree.getComponent(fullPath);
+        NCLRFolder node = (NCLRFolder) tree.getComponent(fullPath);
         if (node == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            node = new NCLRFolderComponent(this, fullPath, folder, nclr);
+            node = new NCLRFolder(this, fullPath, folder, nclr);
             tree.insertAtPath(node);
         }
         return node;

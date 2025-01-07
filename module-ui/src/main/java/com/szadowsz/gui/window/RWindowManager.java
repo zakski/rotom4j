@@ -66,7 +66,7 @@ public class RWindowManager {
     public void uncoverOrCreateTempWindow(RDropdownMenu folder, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
         PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
         if (folder.getParentFolder() != null) {
-            RWindowPane parentWindow = folder.getParentFolder().getWindow();
+            RWindowPane parentWindow = folder.getParentWindow();
             if (parentWindow != null) {
                 pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
             }
@@ -101,7 +101,7 @@ public class RWindowManager {
     public void uncoverOrCreateToolbar(RToolbar folder, boolean setFocus, Float nullablePosY) {
         PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
         if (folder.getParentFolder() != null) {
-            RWindowPane parentWindow = folder.getParentFolder().getWindow();
+            RWindowPane parentWindow = folder.getParentWindow();
             if (parentWindow != null) {
                 pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
             }
@@ -136,7 +136,7 @@ public class RWindowManager {
     public void uncoverOrCreateWindow(RFolder folder, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
         PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
         if (folder.getParentFolder() != null) {
-            RWindowPane parentWindow = folder.getParentFolder().getWindow();
+            RWindowPane parentWindow = folder.getParentWindow();
             if (parentWindow != null) {
                 pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
             }
@@ -177,7 +177,7 @@ public class RWindowManager {
     public void uncoverOrCreatePanel(RPanel panel, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
         PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
         if (panel.getParentFolder() != null) {
-            RWindowPane parentWindow = panel.getParentFolder().getWindow();
+            RWindowPane parentWindow = panel.getParentWindow();
             if (parentWindow != null) {
                 pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
             }

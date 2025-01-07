@@ -11,6 +11,8 @@ import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutConfig;
+import com.szadowsz.gui.window.RWindow;
+import com.szadowsz.gui.window.pane.RWindowPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
@@ -284,6 +286,10 @@ public abstract class RComponent {
         return (RFolder) p;
     }
 
+    public RWindowPane getParentWindow() {
+        return getParentFolder().getWindow();
+    }
+
     /**
      * Get X Coordinate of the Component Start Position
      *
@@ -333,6 +339,12 @@ public abstract class RComponent {
         return gui;
     }
 
+
+    public String getPath() {
+        return path;
+    }
+
+
     public PVector getPosition() {
         return pos.copy();
     }
@@ -348,6 +360,15 @@ public abstract class RComponent {
      */
     public PVector getPreferredSize(){
         return new PVector(suggestWidth(),getHeight());
+    }
+
+    /**
+     * Get the size characteristics
+     *
+     * @return width and height in a PVector
+     */
+    public PVector getSize(){
+        return new PVector(getWidth(),getHeight());
     }
 
     public RLayoutConfig getCompLayoutConfig() {
@@ -635,7 +656,6 @@ public abstract class RComponent {
         if (isMouseOver){
             isMouseOver = false;
         }
-        getParentFolder().getWindow().redrawBuffer();
+        getParentWindow().redrawBuffer();
     }
-
 }

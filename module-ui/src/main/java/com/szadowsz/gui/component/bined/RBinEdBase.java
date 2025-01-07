@@ -189,7 +189,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
     }
 
     protected void notifyDataChanged() {
-        getParentFolder().getWindow().reinitialiseBuffer();
+        getParentWindow().reinitialiseBuffer();
     }
 
     /**
@@ -297,8 +297,8 @@ public abstract class RBinEdBase extends RGroupDrawable {
         }
     }
 
-    protected void redrawBuffer(){
-        getParentFolder().getWindow().redrawBuffer();
+    protected void redrawWinBuffer(){
+        getParentWindow().redrawBuffer();
     }
 
     /**

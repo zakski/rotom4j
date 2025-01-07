@@ -29,7 +29,7 @@ public class RBinMain extends RBinComponent {
      * @param path   the path in the component tree
      * @param editor the parent editor reference
      */
-    protected RBinMain(RotomGui gui, String path, RBinEditor editor) {
+    public RBinMain(RotomGui gui, String path, RBinEditor editor) {
         super(gui, path, editor);
     }
 

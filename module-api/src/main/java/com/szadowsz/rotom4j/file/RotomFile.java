@@ -30,7 +30,7 @@ public abstract class RotomFile extends ByteArrayCompressibleData {
         super(compData);
         this.objName = name;
         String ext = new String (Arrays.copyOf(data,4));
-        this.magic = RotomFormat.valueOfExt(ext);
+        this.magic = RotomFormat.valueOfLabel(ext);
         if (this.magic == null) {
             this.magic = RotomFormat.BINARY;
         }
@@ -116,6 +116,10 @@ public abstract class RotomFile extends ByteArrayCompressibleData {
      */
     public RotomFormat getMagic() {
         return magic;
+    }
+
+    public boolean isCompressed() {
+        return compression != CompFormat.NONE;
     }
 
     /**

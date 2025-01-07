@@ -46,9 +46,4 @@ public class RRadioGroup extends RGroupDrawable {
     public void setLayout(RLayoutBase layout) {
 
     }
-
-    @Override
-    public float suggestWidth() {
-        return 0;
-    }
 }

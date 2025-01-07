@@ -6,6 +6,7 @@ import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import processing.core.PVector;
 
 /**
  * Sub-Class for Groups that draw their children
@@ -24,6 +25,15 @@ public abstract class RGroupDrawable extends RGroup {
      */
     protected RGroupDrawable(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
+    }
+
+    /**
+     * Get the preferred size characteristics
+     *
+     * @return width and height in a PVector
+     */
+    public PVector getPreferredSize(){
+        return layout.calcPreferredSize(getParentFolder().getName(),children);
     }
 
     @Override
@@ -88,7 +98,7 @@ public abstract class RGroupDrawable extends RGroup {
         RComponent node = findComponentAt(mouseEvent.getX(), adjustedMouseY);
         if (node != null) {
             LOGGER.debug("Mouse Pressed for node {} [{}, {}, {}, {}, {}, {}]", node.getName(),mouseEvent.getX(),adjustedMouseY,node.getPosX(),node.getPosY(),node.getWidth(),node.getHeight());
-            this.getParentFolder().getWindow().redrawBuffer();
+            this.getParentWindow().redrawBuffer();
             node.mousePressed(mouseEvent,adjustedMouseY);
         }
     }
@@ -110,9 +120,21 @@ public abstract class RGroupDrawable extends RGroup {
     }
 
     @Override
+    public float suggestWidth() {
+        return getPreferredSize().x;
+    }
+
+    @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
         LOGGER.debug("Update Coordinates for Drawable Group [{}, {}, {}, {}, {}, {}]", bX,bY,rX,rY,w,h);
         super.updateCoordinates(bX, bY, rX, rY, w, h);
         layout.setCompLayout(pos,size,children);
+    }
+
+    public void redrawBuffer() {
+        children.stream()
+                .filter(c -> c instanceof RGroupDrawable)
+                .map(RGroupDrawable.class::cast)
+                .forEach(RGroupDrawable::redrawBuffer);
     }
 }

@@ -3,6 +3,8 @@ package com.szadowsz.gui.window.pane;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RPaths;
+import com.szadowsz.gui.component.group.RGroupDrawable;
+import com.szadowsz.gui.component.group.RRoot;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
@@ -48,7 +50,7 @@ public class RWindowPane implements RWindow, RInputListener {
     protected final String title;
 
     // Window Content Buffer
-    protected final RContentBuffer contentBuffer;
+    protected final RWinBuffer contentBuffer;
 
     // Vertical Scrollbar
     protected Optional<RScrollbar> vsb = Optional.empty();
@@ -96,7 +98,7 @@ public class RWindowPane implements RWindow, RInputListener {
         this.contentSize = new PVector(size.x, size.y);
         initDimensions();
         LOGGER.debug("{} Window [{},{},{},{}] Post-Dimension Init", title, pos.x, pos.y, this.size.x, this.size.y);
-        contentBuffer = new RContentBuffer(this);
+        contentBuffer = new RWinBuffer(this);
     }
 
     /**
@@ -311,7 +313,7 @@ public class RWindowPane implements RWindow, RInputListener {
     }
 
     protected boolean isRoot() {
-        return false;
+        return folder.getParent() instanceof RRoot;
     }
 
     /**
@@ -1141,6 +1143,10 @@ public class RWindowPane implements RWindow, RInputListener {
 
     public void redrawBuffer() {
         contentBuffer.invalidateBuffer();
+        folder.getChildren().stream()
+                .filter(c -> c instanceof RGroupDrawable)
+                .map(RGroupDrawable.class::cast)
+                .forEach(RGroupDrawable::redrawBuffer);
     }
 
     public void resizeForContents(boolean shouldResize) {

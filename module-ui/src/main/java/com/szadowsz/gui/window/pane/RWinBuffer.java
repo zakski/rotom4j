@@ -19,8 +19,8 @@ import java.util.List;
 import static com.szadowsz.gui.config.theme.RColorType.WINDOW_BORDER;
 import static processing.core.PConstants.*;
 
-public final class RContentBuffer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RContentBuffer.class);
+public final class RWinBuffer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RWinBuffer.class);
 
     private final RWindowPane win;
 
@@ -32,7 +32,7 @@ public final class RContentBuffer {
     private int sizeX;
     private int sizeY;
 
-    public RContentBuffer(RWindowPane win) {
+    public RWinBuffer(RWindowPane win) {
         this.win = win;
     }
 
@@ -165,7 +165,7 @@ public final class RContentBuffer {
             buffer.textFont(RFontStore.getMainFont());
             buffer.textAlign(LEFT, CENTER);
             RLayoutBase layout = folder.getLayout();
-            LOGGER.debug("{} Content Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
+            LOGGER.debug("{} Win Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
             PVector pos = folder.getWindow().getContentStart();
             LOGGER.debug("{} Layout [{},{}]",folder.getName(),folder.getWindow().contentSize.x,folder.getWindow().contentSize.y);
             layout.setCompLayout(pos,folder.getWindow().contentSize, folder.getChildren());

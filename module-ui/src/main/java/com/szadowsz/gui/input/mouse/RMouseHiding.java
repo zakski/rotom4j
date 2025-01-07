@@ -7,7 +7,7 @@ import processing.core.PApplet;
  * Utility Input Class to hide the mouse while dragging
  */
 public class RMouseHiding {
-    public static boolean shouldHideWhenDragging = true;
+    public static boolean shouldHideWhenDragging = false;
     public static boolean shouldConfineToWindow = false;
     private static int mouseHidePosX;
     private static int mouseHidePosY;
