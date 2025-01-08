@@ -2,11 +2,24 @@ package com.szadowsz.gui.component.group;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.config.text.RFontStore;
+import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.layout.RDirection;
+import com.szadowsz.gui.layout.RLayoutBase;
+import com.szadowsz.gui.layout.RLayoutConfig;
+import com.szadowsz.gui.layout.RLinearLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import processing.core.PGraphics;
 import processing.core.PVector;
+
+import java.util.*;
+
+import static com.szadowsz.gui.config.theme.RColorType.WINDOW_BORDER;
+import static processing.core.PConstants.*;
 
 /**
  * Sub-Class for Groups that draw their children
@@ -25,6 +38,96 @@ public abstract class RGroupDrawable extends RGroup {
      */
     protected RGroupDrawable(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
+    }
+
+    /**
+     * Draw Child Component
+     *
+     * @param child
+     */
+    protected void drawChildComponent(PGraphics pg,  RComponent child) {
+        pg.pushMatrix();
+        pg.pushStyle();
+        child.draw(pg);
+        pg.popStyle();
+        pg.popMatrix();
+    }
+
+    /**
+     * Draw A Horizontal separator between two nodes
+     *
+     * @param pg Processing Graphics Context
+     */
+    protected void drawHorizontalSeparator(PGraphics pg) {
+        boolean show = RLayoutStore.isShowHorizontalSeparators();
+        float weight = RLayoutStore.getHorizontalSeparatorStrokeWeight();
+        if (show) {
+            pg.strokeCap(SQUARE);
+            pg.strokeWeight(weight);
+            pg.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
+            pg.line(0, 0, getWidth(), 0);
+        }
+    }
+
+    /**
+     * Draw A Horizontal separator between two nodes
+     *
+     * @param pg Processing Graphics Context
+     */
+    protected void drawVerticalSeparator(PGraphics pg) {
+        //boolean show = LayoutStore.isShowHorizontalSeparators();
+        float weight = RLayoutStore.getHorizontalSeparatorStrokeWeight();
+        // if (show) {
+        pg.strokeCap(SQUARE);
+        pg.strokeWeight(weight);
+        pg.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
+        pg.line(0, 0, 0, getHeight());
+        // }
+    }
+
+    protected void drawChildren(PGraphics pg) {
+
+        int index = 0;
+        for (RComponent component : children) {
+            if (!component.isVisible()) {
+                index++;
+                continue;
+            }
+            pg.pushMatrix();
+            pg.translate(component.getRelPosX(), component.getRelPosY());
+            drawChildComponent(pg,component);
+            if (index > 0) { // TODO if as to kind of separator to draw
+                // separator
+                if (layout instanceof RLinearLayout linear) {
+                    pg.pushStyle();
+                    if (linear.getDirection() == RDirection.VERTICAL) {
+                        drawHorizontalSeparator(pg);
+                    } else {
+                        drawVerticalSeparator(pg);
+                    }
+                    pg.popStyle();
+                }
+            }
+            index++;
+            pg.popMatrix();
+        }
+    }
+
+    /**
+     * Draw The Content of The Window
+     *
+     */
+    @Override
+    protected void drawForeground(PGraphics pg, String  name) {
+        long time = System.currentTimeMillis();
+        if (!children.isEmpty()) {
+            pg.textFont(RFontStore.getMainFont());
+            pg.textAlign(LEFT, CENTER);
+            LOGGER.debug("{} Layout [{},{}]", getName(), getWidth(), getHeight());
+            layout.setCompLayout(pos, getSize(), getChildren());
+            drawChildren(pg);
+        }
+        LOGGER.debug("{} Group [{},{}] Draw Duration {}", getName(), pg.width,pg.height,System.currentTimeMillis() - time);
     }
 
     /**
@@ -83,7 +186,8 @@ public abstract class RGroupDrawable extends RGroup {
         RComponent underMouse = findComponentAt(mouseEvent.getX(), adjustedMouseY);
         if (underMouse != null){
             if(!underMouse.isMouseOver()) {
-                LOGGER.debug("Inside Component {} [NX {} NY {} Width {} Height {}]", underMouse.getName(), underMouse.getPosX(), underMouse.getPosY(), underMouse.getWidth(), underMouse.getHeight());
+                LOGGER.info("Inside Component {} [NX {} NY {} Width {} Height {}]", underMouse.getName(), underMouse.getPosX(), underMouse.getPosY(), underMouse.getWidth(), underMouse.getHeight());
+                redrawBuffer();
             }
             underMouse.mouseOver(mouseEvent,adjustedMouseY);
         }
@@ -98,10 +202,11 @@ public abstract class RGroupDrawable extends RGroup {
         RComponent node = findComponentAt(mouseEvent.getX(), adjustedMouseY);
         if (node != null) {
             LOGGER.debug("Mouse Pressed for node {} [{}, {}, {}, {}, {}, {}]", node.getName(),mouseEvent.getX(),adjustedMouseY,node.getPosX(),node.getPosY(),node.getWidth(),node.getHeight());
-            this.getParentWindow().redrawBuffer();
             node.mousePressed(mouseEvent,adjustedMouseY);
+            redrawBuffer();
         }
     }
+
     @Override
     public void mouseDragged(RMouseEvent mouseEvent) {
         if (!isVisible()) {
@@ -113,6 +218,7 @@ public abstract class RGroupDrawable extends RGroup {
                 LOGGER.debug("Mouse Dragged for Content {}", child.getName());
                 child.mouseDragged(mouseEvent);
                 if (mouseEvent.isConsumed()) {
+                    redrawBuffer();
                     break;
                 }
             }

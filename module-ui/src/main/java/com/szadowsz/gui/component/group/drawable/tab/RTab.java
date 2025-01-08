@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 
 public class RTab extends RGroupDrawable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RTab.class);
 
     private final RTabManager manager;
 
@@ -44,5 +45,12 @@ public class RTab extends RGroupDrawable {
         return () -> {
             manager.setActive(RTab.this);
         };
+    }
+
+    @Override
+    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
+        LOGGER.info("Update Coordinates for Tab {} [{}, {}, {}, {}, {}, {}]", name, bX,bY,rX,rY,w,h);
+        super.updateCoordinates(bX, bY, rX, rY, w, h);
+        layout.setCompLayout(pos,size,children);
     }
 }

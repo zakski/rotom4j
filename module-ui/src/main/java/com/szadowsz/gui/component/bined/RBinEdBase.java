@@ -1,5 +1,6 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.gui.layout.RRect;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.rotom4j.binary.EmptyBinaryData;
@@ -21,6 +22,7 @@ import com.szadowsz.gui.input.clip.ClipboardData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PFont;
+import processing.core.PVector;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -389,6 +391,12 @@ public abstract class RBinEdBase extends RGroupDrawable {
      */
     public RFontMetrics getMetrics() {
         return metrics;
+    }
+
+    @Override
+    public PVector getPreferredSize(){
+        RRect rectangle = dimensions.getComponentRectangle();
+        return new PVector(rectangle.getWidth(), rectangle.getHeight());
     }
 
     /**

@@ -17,7 +17,7 @@ public abstract class R4JFolder<R extends RotomFile> extends RFolder {
     protected R data;
     protected String selectName;
 
-    protected /*final*/ RTabManager tabs;
+    protected final RTabManager tabs;
     protected R4JComponent<R> display;
 
     /**
@@ -33,11 +33,11 @@ public abstract class R4JFolder<R extends RotomFile> extends RFolder {
         super(gui, path, parent);
         this.data = data;
         this.selectName = selectName;
-//        tabs = new RTabManager(gui,path + "/" + TABS, this);
-//        children.add(tabs);
-//        if (this.data != null) {
-//            createTabs();
-//        }
+        tabs = new RTabManager(gui,path + "/" + TABS, this);
+        children.add(tabs);
+        if (this.data != null) {
+            createTabs();
+        }
     }
 
     /**
@@ -56,10 +56,10 @@ public abstract class R4JFolder<R extends RotomFile> extends RFolder {
     }
 
     protected void createTabs() {
-//        if (data.isCompressed()) {
-//            tabs.addTab(createEditor("Compressed", true));
-//        }
-      //  tabs.addTab(createEditor( "Raw", false));
+        if (data.isCompressed()) {
+            tabs.addTab(createEditor("Compressed", true));
+        }
+        tabs.addTab(createEditor( "Raw", false));
         tabs.addTab(createDisplay());
     }
 

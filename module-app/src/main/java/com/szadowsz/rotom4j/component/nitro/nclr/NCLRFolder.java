@@ -43,7 +43,6 @@ public class NCLRFolder extends R4JFolder<NCLR> {
             LOGGER.debug("Attached to parent NCGR");
             spriteFolder = (NCGRFolderComponent) getParentFolder();
         }
-        children.add(new NCLRComponent(gui, path + "/" + nclr,this, data));
     }
 
     @Override

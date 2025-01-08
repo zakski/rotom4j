@@ -3,7 +3,6 @@ package com.szadowsz.gui.component.group.drawable.tab;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.action.RButton;
-import com.szadowsz.gui.component.group.RGroupBuffer;
 import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.input.mouse.RActivateByType;
 import com.szadowsz.gui.input.mouse.RMouseAction;
@@ -11,16 +10,12 @@ import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLinearLayout;
-import com.szadowsz.gui.window.pane.RWindowPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PGraphics;
-import processing.core.PVector;
 
 public final class RTabHeader extends RGroupDrawable {
     private static final Logger LOGGER = LoggerFactory.getLogger(RTabHeader.class);
 
-    private final RGroupBuffer buffer;
     private final RTabManager tabManager;
 
     /**
@@ -36,8 +31,6 @@ public final class RTabHeader extends RGroupDrawable {
         super(gui, path, parent);
         tabManager = parent;
         layout = new RLinearLayout(this, RDirection.HORIZONTAL);
-        PVector preferredSize = getPreferredSize();
-        buffer = new RGroupBuffer(this,preferredSize.x,preferredSize.y);
     }
 
     @Override
@@ -45,16 +38,11 @@ public final class RTabHeader extends RGroupDrawable {
 
     }
 
-    @Override
-    protected void drawForeground(PGraphics pg, String name) {
-        pg.image(buffer.draw(), 0, 0);
-    }
-
     public void addTab(String name, RMouseAction action) {
         RButton button = new RButton(gui, path + "/" + name, this);
         button.registerAction(RActivateByType.RELEASE, action);
         children.add(button);
-        getParentWindow().redrawBuffer();
+        redrawBuffer();
     }
 
 
@@ -66,14 +54,8 @@ public final class RTabHeader extends RGroupDrawable {
                 LOGGER.debug("Inside Tab Header {} [NX {} NY {} Width {} Height {}]", underMouse.getName(), underMouse.getPosX(), underMouse.getPosY(), underMouse.getWidth(), underMouse.getHeight());
             }
             underMouse.mouseOver(mouseEvent, adjustedMouseY);
-            getParentWindow().redrawBuffer();
+            redrawBuffer();
         }
         mouseEvent.consume();
-    }
-
-    @Override
-    public void redrawBuffer(){
-        buffer.invalidateBuffer();
-        super.redrawBuffer();
     }
 }

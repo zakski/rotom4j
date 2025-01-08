@@ -167,30 +167,7 @@ public class RColorPicker extends RGroupDrawable {
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         LOGGER.debug("Drawing ColorPicker Group {} [{}, {}]", name, size.x, size.y);
-        int index = 0;
-        for (RComponent component : children) {
-            if (!component.isVisible()) {
-                index++;
-                continue;
-            }
-            pg.pushMatrix();
-            pg.translate(component.getRelPosX(), component.getRelPosY());
-            drawChildComponent(pg, component);
-            if (index > 0) { // TODO if as to kind of separator to draw
-                // separator
-                if (layout instanceof RLinearLayout linear) {
-                    pg.pushStyle();
-                    if (linear.getDirection() == RDirection.VERTICAL) {
-                        drawHorizontalSeparator(pg, (int) size.x);
-                    } else {
-                        drawVerticalSeparator(pg);
-                    }
-                    pg.popStyle();
-                }
-            }
-            index++;
-            pg.popMatrix();
-        }
+        super.drawForeground(pg, name);
     }
 
     /**
