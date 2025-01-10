@@ -5,24 +5,24 @@ import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.app.utils.ImageUtils;
-import com.szadowsz.rotom4j.file.nitro.Imageable;
+import com.szadowsz.rotom4j.file.nitro.Drawable;
 import com.szadowsz.rotom4j.utils.Configuration;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
 public class NitroPreview extends RComponent {
 
-    private final Imageable imageable;
+    private final Drawable drawable;
     PImage image;
     PImage background;
 
-    public NitroPreview(RotomGui gui, String path, RGroup parent, Imageable imageable) {
+    public NitroPreview(RotomGui gui, String path, RGroup parent, Drawable drawable) {
         super(gui, path, parent);
-        this.imageable = imageable;
-        heightInCells = imageable.getHeight() / RLayoutStore.getCell() + ((imageable.getHeight() % RLayoutStore.getCell() != 0) ? 1 : 0);
-        size.x = imageable.getWidth();
-        size.y = imageable.getHeight();
-        loadImage(ImageUtils.convertToPImage((imageable.getImage())));
+        this.drawable = drawable;
+        heightInCells = drawable.getHeight() / RLayoutStore.getCell() + ((drawable.getHeight() % RLayoutStore.getCell() != 0) ? 1 : 0);
+        size.x = drawable.getWidth();
+        size.y = drawable.getHeight();
+        loadImage(ImageUtils.convertToPImage((drawable.getImage())));
     }
 
     protected void drawCheckerboard(PGraphics pg) {
@@ -149,5 +149,13 @@ public class NitroPreview extends RComponent {
 
     public PImage getImage(){
         return image;
+    }
+
+    @Override
+    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
+        super.updateCoordinates(bX, bY, rX, rY, w, h);
+//        PImage pImage = ImageUtils.convertToPImage((drawable.getImage()));
+//        pImage.resize(Math.round(size.x),Math.round(size.y));
+//        loadImage(pImage);
     }
 }

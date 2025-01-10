@@ -3,6 +3,7 @@ package com.szadowsz.rotom4j.app;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.RotomGuiSettings;
 import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
 import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.data.evo.EvolutionNFSFile;
@@ -23,7 +24,6 @@ import com.szadowsz.rotom4j.component.nitro.nanr.NANRFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.narc.NarcFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.ncer.NCERFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolderComponent;
-import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.nscr.NSCRFolderComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +42,13 @@ public class RotomGuiImpl extends RotomGui {
         if (tree.isPathTakenByUnexpectedType(fullPath, NANRFolderComponent.class)) {
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
-        NANRFolderComponent node = (NANRFolderComponent) tree.getComponent(fullPath);
-        if (node == null) {
+        NANRFolderComponent component = (NANRFolderComponent) tree.getComponent(fullPath);
+        if (component == null) {
             RFolder parentFolder = tree.getParentFolder(fullPath);
-            node = new NANRFolderComponent(this,fullPath, parentFolder, nanr);
-            tree.insertAtPath(node);
+            component = new NANRFolderComponent(this,fullPath, parentFolder, nanr);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     public NCERFolderComponent cellBank(String path, NCER ncer) throws NitroException {
@@ -56,13 +56,13 @@ public class RotomGuiImpl extends RotomGui {
         if (tree.isPathTakenByUnexpectedType(fullPath, NCERFolderComponent.class)) {
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
-        NCERFolderComponent node = (NCERFolderComponent) tree.getComponent(fullPath);
-        if (node == null) {
+        NCERFolderComponent component = (NCERFolderComponent) tree.getComponent(fullPath);
+        if (component == null) {
             RFolder parentFolder = tree.getParentFolder(fullPath);
-            node = new NCERFolderComponent(this, fullPath, parentFolder, ncer);
-            tree.insertAtPath(node);
+            component = new NCERFolderComponent(this, fullPath, parentFolder, ncer);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     public NSCRFolderComponent scrRes(String path, NSCR nscr) {
@@ -70,41 +70,41 @@ public class RotomGuiImpl extends RotomGui {
         if (tree.isPathTakenByUnexpectedType(fullPath, NSCRFolderComponent.class)) {
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
-        NSCRFolderComponent node = (NSCRFolderComponent) tree.getComponent(fullPath);
-        if (node == null) {
+        NSCRFolderComponent component = (NSCRFolderComponent) tree.getComponent(fullPath);
+        if (component == null) {
             RFolder parentFolder = tree.getParentFolder(fullPath);
-            node = new NSCRFolderComponent(this, fullPath, parentFolder, nscr);
-            tree.insertAtPath(node);
+            component = new NSCRFolderComponent(this, fullPath, parentFolder, nscr);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
-    public NCGRFolderComponent image(String path, NCGR ncgr) {
+    public NCGRFolder image(String path, NCGR ncgr) {
         String fullPath = getCurrentPath() + path;
         if (tree.isPathTakenByUnexpectedType(fullPath, NCGRFolderComponent.class)) {
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
-        NCGRFolderComponent node = (NCGRFolderComponent) tree.getComponent(fullPath);
-        if (node == null) {
+        NCGRFolder component = (NCGRFolder) tree.getComponent(fullPath);
+        if (component == null) {
             RFolder parentFolder = tree.getParentFolder(fullPath);
-            node = new NCGRFolderComponent(this, fullPath, parentFolder, ncgr);
-            tree.insertAtPath(node);
+            component = new NCGRFolder(this, fullPath, parentFolder, ncgr);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     public NCLRFolder palette(NCLR nclr) {
         String fullPath = getCurrentPath() + nclr.getFileName();
-        if (tree.isPathTakenByUnexpectedType(fullPath, NCLRFolderComponent.class)) {
+        if (tree.isPathTakenByUnexpectedType(fullPath, NCLRFolder.class)) {
             return null;
         }
-        NCLRFolder node = (NCLRFolder) tree.getComponent(fullPath);
-        if (node == null) {
+        NCLRFolder component = (NCLRFolder) tree.getComponent(fullPath);
+        if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            node = new NCLRFolder(this, fullPath, folder, nclr);
-            tree.insertAtPath(node);
+            component = new NCLRFolder(this, fullPath, folder, nclr);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     public StatsFolderComponent personal(StatsNFSFile stats) {
@@ -112,13 +112,13 @@ public class RotomGuiImpl extends RotomGui {
         if (tree.isPathTakenByUnexpectedType(fullPath, StatsFolderComponent.class)) {
             return null;
         }
-        StatsFolderComponent node = (StatsFolderComponent) tree.getComponent(fullPath);
-        if (node == null) {
+        StatsFolderComponent component = (StatsFolderComponent) tree.getComponent(fullPath);
+        if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            node = new StatsFolderComponent(this, fullPath, folder, stats);
-            tree.insertAtPath(node);
+            component = new StatsFolderComponent(this, fullPath, folder, stats);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     public EvoFolderComponent evolution(EvolutionNFSFile evo) {
@@ -126,13 +126,13 @@ public class RotomGuiImpl extends RotomGui {
         if (tree.isPathTakenByUnexpectedType(fullPath, EvoFolderComponent.class)) {
             return null;
         }
-        EvoFolderComponent node = (EvoFolderComponent) tree.getComponent(fullPath);
-        if (node == null) {
+        EvoFolderComponent component = (EvoFolderComponent) tree.getComponent(fullPath);
+        if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            node = new EvoFolderComponent(this,fullPath, folder, evo);
-            tree.insertAtPath(node);
+            component = new EvoFolderComponent(this,fullPath, folder, evo);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     public LearnFolderComponent learnset(LearnsetNFSFile learn) {
@@ -140,13 +140,13 @@ public class RotomGuiImpl extends RotomGui {
         if (tree.isPathTakenByUnexpectedType(fullPath, LearnFolderComponent.class)) {
             return null;
         }
-        LearnFolderComponent node = (LearnFolderComponent) tree.getComponent(fullPath);
-        if (node == null) {
+        LearnFolderComponent component = (LearnFolderComponent) tree.getComponent(fullPath);
+        if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            node = new LearnFolderComponent(this, fullPath, folder, learn);
-            tree.insertAtPath(node);
+            component = new LearnFolderComponent(this, fullPath, folder, learn);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     public GrowthFolderComponent growth(GrowNFSFile grow) {
@@ -154,13 +154,13 @@ public class RotomGuiImpl extends RotomGui {
         if (tree.isPathTakenByUnexpectedType(fullPath, GrowthFolderComponent.class)) {
             return null;
         }
-        GrowthFolderComponent node = (GrowthFolderComponent) tree.getComponent(fullPath);
-        if (node == null) {
+        GrowthFolderComponent component = (GrowthFolderComponent) tree.getComponent(fullPath);
+        if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
-            node = new GrowthFolderComponent(this,fullPath, folder, grow);
-            tree.insertAtPath(node);
+            component = new GrowthFolderComponent(this,fullPath, folder, grow);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     public void registerNarcGUI(NARC narc) {
@@ -176,13 +176,13 @@ public class RotomGuiImpl extends RotomGui {
         if (tree.isPathTakenByUnexpectedType(fullPath, NarcFolderComponent.class)) {
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
-        NarcFolderComponent node = (NarcFolderComponent) tree.getComponent(fullPath);
-        if (node == null) {
+        NarcFolderComponent component = (NarcFolderComponent) tree.getComponent(fullPath);
+        if (component == null) {
             RFolder parentFolder = tree.getParentFolder(fullPath);
-            node = new NarcFolderComponent(this,fullPath, parentFolder, narc);
-            tree.insertAtPath(node);
+            component = new NarcFolderComponent(this,fullPath, parentFolder, narc);
+            tree.insertAtPath(component);
         }
-        return node;
+        return component;
     }
 
     public void registerNanrGUI(NANR nanr) throws NitroException {

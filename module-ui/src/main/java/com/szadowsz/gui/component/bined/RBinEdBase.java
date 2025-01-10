@@ -61,6 +61,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
     protected int minRowPositionLength;
     protected int maxRowPositionLength;
     protected int maxBytesPerRow = 16;
+    protected int maxRowsPerPage = 16;
     protected int wrappingBytesGroupSize = 0;
 
     // Current User Selection
@@ -383,6 +384,14 @@ public abstract class RBinEdBase extends RGroupDrawable {
         return maxBytesPerRow;
     }
 
+    /**
+     * Returns maximum number of rows per page.
+     *
+     * @return bytes per row
+     */
+    public int getMaxRowsPerPage() {
+        return maxRowsPerPage;
+    }
 
     /**
      * get current Font Metrics
@@ -395,7 +404,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
 
     @Override
     public PVector getPreferredSize(){
-        RRect rectangle = dimensions.getComponentRectangle();
+        RRect rectangle = dimensions.getDisplayRectangle();
         return new PVector(rectangle.getWidth(), rectangle.getHeight());
     }
 

@@ -1143,11 +1143,7 @@ public class RWindowPane implements RWindow, RInputListener {
 
     public void redrawBuffer() {
         contentBuffer.invalidateBuffer();
-        folder.getChildren().stream()
-                .filter(c -> c instanceof RGroupDrawable)
-                .map(RGroupDrawable.class::cast)
-                .forEach(RGroupDrawable::redrawBuffer);
-    }
+     }
 
     public void resizeForContents(boolean shouldResize) {
         isBeingResized = shouldResize;

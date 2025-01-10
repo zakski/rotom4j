@@ -11,6 +11,7 @@ import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.layout.RLinearLayout;
+import com.szadowsz.gui.window.pane.RWindowPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
@@ -45,7 +46,7 @@ public abstract class RGroupDrawable extends RGroup {
      *
      * @param child
      */
-    protected void drawChildComponent(PGraphics pg,  RComponent child) {
+    protected void drawChildComponent(PGraphics pg, RComponent child) {
         pg.pushMatrix();
         pg.pushStyle();
         child.draw(pg);
@@ -95,7 +96,7 @@ public abstract class RGroupDrawable extends RGroup {
             }
             pg.pushMatrix();
             pg.translate(component.getRelPosX(), component.getRelPosY());
-            drawChildComponent(pg,component);
+            drawChildComponent(pg, component);
             if (index > 0) { // TODO if as to kind of separator to draw
                 // separator
                 if (layout instanceof RLinearLayout linear) {
@@ -115,10 +116,9 @@ public abstract class RGroupDrawable extends RGroup {
 
     /**
      * Draw The Content of The Window
-     *
      */
     @Override
-    protected void drawForeground(PGraphics pg, String  name) {
+    protected void drawForeground(PGraphics pg, String name) {
         long time = System.currentTimeMillis();
         if (!children.isEmpty()) {
             pg.textFont(RFontStore.getMainFont());
@@ -127,7 +127,7 @@ public abstract class RGroupDrawable extends RGroup {
             layout.setCompLayout(pos, getSize(), getChildren());
             drawChildren(pg);
         }
-        LOGGER.debug("{} Group [{},{}] Draw Duration {}", getName(), pg.width,pg.height,System.currentTimeMillis() - time);
+        LOGGER.debug("{} Group [{},{}] Draw Duration {}", getName(), pg.width, pg.height, System.currentTimeMillis() - time);
     }
 
     /**
@@ -135,17 +135,21 @@ public abstract class RGroupDrawable extends RGroup {
      *
      * @return width and height in a PVector
      */
-    public PVector getPreferredSize(){
-        return layout.calcPreferredSize(getParentFolder().getName(),children);
+    public PVector getPreferredSize() {
+        return layout.calcPreferredSize(getParentFolder().getName(), children);
+    }
+
+    public PVector getDisplaySize() {
+        return getPreferredSize();
     }
 
     @Override
-    public boolean isDragged(){
+    public boolean isDragged() {
         return children.stream().anyMatch(RComponent::isDragged);
     }
 
     @Override
-    public boolean isMouseOver(){
+    public boolean isMouseOver() {
         return isChildMouseOver();
     }
 
@@ -160,11 +164,11 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void keyPressed(RKeyEvent keyEvent, float mouseX, float mouseY) {
-        if (!isVisible()){
+        if (!isVisible()) {
             return;
         }
         RComponent focused = findFocusedComponent();
-        if (focused != null){
+        if (focused != null) {
             switch (focused) {
                 case null -> {
                 }// NOOP
@@ -181,31 +185,70 @@ public abstract class RGroupDrawable extends RGroup {
             }
         }
     }
+
     @Override
-    public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY){
+    public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY) {
         RComponent underMouse = findComponentAt(mouseEvent.getX(), adjustedMouseY);
-        if (underMouse != null){
-            if(!underMouse.isMouseOver()) {
+        if (underMouse != null) {
+            if (!underMouse.isMouseOver()) {
                 LOGGER.info("Inside Component {} [NX {} NY {} Width {} Height {}]", underMouse.getName(), underMouse.getPosX(), underMouse.getPosY(), underMouse.getWidth(), underMouse.getHeight());
                 redrawBuffer();
             }
-            underMouse.mouseOver(mouseEvent,adjustedMouseY);
+            underMouse.mouseOver(mouseEvent, adjustedMouseY);
         }
         mouseEvent.consume();
     }
 
     @Override
-    public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY){
+    public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
         if (!isVisible() || !this.isVisibleParentAware()) {
             return;
         }
         RComponent node = findComponentAt(mouseEvent.getX(), adjustedMouseY);
         if (node != null) {
-            LOGGER.debug("Mouse Pressed for node {} [{}, {}, {}, {}, {}, {}]", node.getName(),mouseEvent.getX(),adjustedMouseY,node.getPosX(),node.getPosY(),node.getWidth(),node.getHeight());
-            node.mousePressed(mouseEvent,adjustedMouseY);
+            LOGGER.debug("Mouse Pressed for component {} [{}, {}, {}, {}, {}, {}]", node.getName(), mouseEvent.getX(), adjustedMouseY, node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
+            node.mousePressed(mouseEvent, adjustedMouseY);
             redrawBuffer();
         }
     }
+
+    /**
+     * Method to handle the component's reaction to the mouse being released outside of itself
+     *
+     * @param mouseEvent the change made by the mouse
+     * @param adjustedMouseY adjust for scrollbar
+     */
+    @Override
+    public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (!isVisible() || !this.isVisibleParentAware()) {
+            return;
+        }
+        if (isDragged() && mouseEvent.isConsumed()){
+            redrawBuffer();
+        }
+        for (RComponent component : children) {
+            component.mouseReleased(mouseEvent, adjustedMouseY,false);
+        }
+    }
+
+    /**
+     * Method to handle the component's reaction to the mouse being released over it
+     *
+     * @param mouseEvent the change made by the mouse
+     * @param adjustedMouseY adjust for scrollbar
+     */
+    @Override
+    public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (!isVisible() || !this.isVisibleParentAware()) {
+            return;
+        }
+        RComponent node = findComponentAt(mouseEvent.getX(), adjustedMouseY);
+        if (node != null) {
+             node.mouseReleased(mouseEvent, adjustedMouseY,true);
+            redrawBuffer();
+        }
+    }
+
 
     @Override
     public void mouseDragged(RMouseEvent mouseEvent) {
@@ -232,15 +275,15 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
-        LOGGER.debug("Update Coordinates for Drawable Group [{}, {}, {}, {}, {}, {}]", bX,bY,rX,rY,w,h);
+        LOGGER.debug("Update Coordinates for Drawable Group [{}, {}, {}, {}, {}, {}]", bX, bY, rX, rY, w, h);
         super.updateCoordinates(bX, bY, rX, rY, w, h);
-        layout.setCompLayout(pos,size,children);
+        layout.setCompLayout(pos, size, children);
     }
 
     public void redrawBuffer() {
-        children.stream()
-                .filter(c -> c instanceof RGroupDrawable)
-                .map(RGroupDrawable.class::cast)
-                .forEach(RGroupDrawable::redrawBuffer);
+        RWindowPane win = getParentWindow();
+        if (win != null) {
+            win.redrawBuffer();
+        }
     }
 }

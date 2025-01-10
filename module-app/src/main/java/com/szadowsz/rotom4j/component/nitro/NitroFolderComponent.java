@@ -7,14 +7,14 @@ import com.szadowsz.gui.component.input.slider.RSlider;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.app.utils.ImageUtils;
 import com.szadowsz.rotom4j.exception.NitroException;
-import com.szadowsz.rotom4j.file.nitro.Imageable;
+import com.szadowsz.rotom4j.file.nitro.Drawable;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
 import java.awt.image.BufferedImage;
 
 
-public abstract class NitroFolderComponent<I extends Imageable> extends RFolder {
+public abstract class NitroFolderComponent<I extends Drawable> extends RFolder {
 
     protected static final String PREVIEW_NODE = "Preview";
     protected static final String ZOOM_NODE = "Zoom";
@@ -22,12 +22,12 @@ public abstract class NitroFolderComponent<I extends Imageable> extends RFolder 
 
     protected static final String SELECT_NCLR_FILE = "Select NClR";
 
-    protected I imageable;
+    protected I drawable;
     protected String selectName;
 
-    public NitroFolderComponent(RotomGui gui, String path, RGroup parent, I imageable, String selectName) {
+    public NitroFolderComponent(RotomGui gui, String path, RGroup parent, I drawable, String selectName) {
         super(gui, path, parent);
-        this.imageable = imageable;
+        this.drawable = drawable;
         this.selectName = selectName;
     }
 
@@ -90,7 +90,7 @@ public abstract class NitroFolderComponent<I extends Imageable> extends RFolder 
      * @return true if regular, false otherwise
      */
     protected boolean shouldDisplayName() {
-        return imageable != null;
+        return drawable != null;
     }
 
     /**
@@ -105,10 +105,10 @@ public abstract class NitroFolderComponent<I extends Imageable> extends RFolder 
     /**
      * Change the Nitro Obj currently displayed
      *
-     * @param imageable the obj to now use
+     * @param drawable the obj to now use
      */
-    public void setImageable(I imageable) {
-        this.imageable = imageable;
+    public void setDrawable(I drawable) {
+        this.drawable = drawable;
     }
 
     /**
@@ -116,7 +116,7 @@ public abstract class NitroFolderComponent<I extends Imageable> extends RFolder 
      *
      * @return the current obj
      */
-    public I getImageable() {
-        return imageable;
+    public I getDrawable() {
+        return drawable;
     }
 }

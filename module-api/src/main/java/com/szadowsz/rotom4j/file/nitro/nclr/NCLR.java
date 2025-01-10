@@ -1,10 +1,8 @@
 package com.szadowsz.rotom4j.file.nitro.nclr;
 
-import com.szadowsz.rotom4j.binary.array.ByteArrayData;
 import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.NFSFactory;
-import com.szadowsz.rotom4j.compression.CompFormat;
-import com.szadowsz.rotom4j.file.nitro.Imageable;
+import com.szadowsz.rotom4j.file.nitro.Drawable;
 import com.szadowsz.rotom4j.file.RotomFormat;
 import com.szadowsz.rotom4j.file.nitro.nclr.colors.ColorFormat;
 import com.szadowsz.rotom4j.exception.InvalidFileException;
@@ -26,7 +24,7 @@ import static com.szadowsz.rotom4j.utils.ColorUtils.colorToBGR555;
 /**
  * An object representation of an NCLR file
  */
-public class NCLR extends BaseNFSFile implements Imageable {
+public class NCLR extends BaseNFSFile implements Drawable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NCLR.class);
 

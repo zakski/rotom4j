@@ -29,13 +29,13 @@ public class NANRFolderComponent extends NitroCmpFolderComponent<NANR> {
 
         children.add(createZoom());
 
-        children.add(new NCERFolderComponent(gui, path + "/" + CELL_NODE_NAME, this,imageable.getNCER()));
+        children.add(new NCERFolderComponent(gui, path + "/" + CELL_NODE_NAME, this,drawable.getNCER()));
     }
 
     public void recolorImage() throws NitroException {
-        imageable.getNCGR().recolorImage();
+        drawable.getNCGR().recolorImage();
 
-        PImage pImage = resizeImage(imageable.getImage());
+        PImage pImage = resizeImage(drawable.getImage());
         ((NitroPreview) findChildByName(PREVIEW_NODE)).loadImage(pImage);
 
         this.window.resizeForContents(true);
@@ -44,7 +44,7 @@ public class NANRFolderComponent extends NitroCmpFolderComponent<NANR> {
     @Override
     public float autosuggestWindowWidthForContents() {
         float suggested = super.autosuggestWindowWidthForContents();
-        if (imageable.getNCGR() != null) {
+        if (drawable.getNCGR() != null) {
             return Math.max(suggested,((NitroPreview) children.get(0)).getImage().width);
         } else {
             return suggested;

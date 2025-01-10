@@ -6,12 +6,14 @@ import com.szadowsz.gui.component.group.drawable.tab.RTab;
 import com.szadowsz.gui.component.group.drawable.tab.RTabFunction;
 import com.szadowsz.gui.component.group.drawable.tab.RTabManager;
 import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.RotomFile;
 
 public abstract class R4JFolder<R extends RotomFile> extends RFolder {
 
     protected static final String TABS = "tabs";
 
+    protected static final String SELECT_NCGR_FILE = "Select NCGR";
     protected static final String SELECT_NCLR_FILE = "Select NClR";
 
     protected R data;
@@ -80,5 +82,10 @@ public abstract class R4JFolder<R extends RotomFile> extends RFolder {
      */
     public void setObj(R obj) {
         this.data = obj;
+    }
+
+
+    public void recolorImage() throws NitroException {
+        display.recolorImage();
     }
 }

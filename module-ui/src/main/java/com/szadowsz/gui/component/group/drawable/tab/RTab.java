@@ -44,6 +44,7 @@ public class RTab extends RGroupDrawable {
     public RMouseAction getAction() {
         return () -> {
             manager.setActive(RTab.this);
+            manager.redrawBuffer();
         };
     }
 
@@ -52,5 +53,9 @@ public class RTab extends RGroupDrawable {
         LOGGER.info("Update Coordinates for Tab {} [{}, {}, {}, {}, {}, {}]", name, bX,bY,rX,rY,w,h);
         super.updateCoordinates(bX, bY, rX, rY, w, h);
         layout.setCompLayout(pos,size,children);
+    }
+
+    public String getTitle(){
+        return children.getFirst().getName();
     }
 }

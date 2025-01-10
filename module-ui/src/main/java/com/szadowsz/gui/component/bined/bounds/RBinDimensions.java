@@ -20,6 +20,7 @@ import com.szadowsz.gui.component.bined.settings.RCodeType;
 import com.szadowsz.gui.config.text.RFontMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import processing.core.PGraphics;
 
 /**
  * Binary Editor Component dimensions.
@@ -31,6 +32,8 @@ public class RBinDimensions {
 
     // Overall dimensions, to be fed back to the Editor component
     protected final RRect componentRectangle = new RRect();
+    protected final RRect displayRectangle = new RRect();
+    protected float dataDisplayHeight;
 
     // Drawn By RBinHeader sub-component
     protected final RRect headerAreaRectangle = new RRect();
@@ -87,6 +90,10 @@ public class RBinDimensions {
         return mainAreaRectangle;
     }
 
+    public RRect getDisplayRectangle() {
+        return displayRectangle;
+    }
+
     public float getHeaderAreaHeight() {
         return headerAreaRectangle.getHeight();
     }
@@ -118,16 +125,21 @@ public class RBinDimensions {
     /**
      * Method to calculate the initial row position segment bounds
      *
-     * @param metrics Font Metrics
+     * @param metrics           Font Metrics
      * @param rowPositionLength number of expected digits for the position info
-     * @param rowsCount number of expected rows
+     * @param maxRowsDisplayed
+     * @param rowsCount         number of expected rows
      */
-    public void computeRowDimensions(RFontMetrics metrics, int rowPositionLength, long rowsCount) {
+    public void computeRowDimensions(RFontMetrics metrics, int rowPositionLength, long maxRowsDisplayed, long rowsCount) {
         float rowPositionWidth = metrics.getCharacterWidth() * (rowPositionLength + 1);
+
+        float rowsToDisplay = Math.min(rowsCount, maxRowsDisplayed);
         float rowPositionHeight = metrics.getRowHeight() * (rowsCount+1);
+
         float headerYOffset = metrics.getFontHeight() + (float) metrics.getFontHeight() / 4;
         LOGGER.info("Editor Row Position: Length: {}, Width {}, Height {}, YOffset {}", rowPositionLength, rowPositionWidth, rowPositionHeight, headerYOffset);
         rowPositionAreaRectangle.setSize(0, headerYOffset, rowPositionWidth, rowPositionHeight);
+        dataDisplayHeight = metrics.getRowHeight()*(rowsToDisplay+1);
     }
 
     /**
@@ -135,22 +147,21 @@ public class RBinDimensions {
      *
      * @param metrics Font Metrics
      * @param codeType
-     * @param maxBytesPerRow
-     * @param rowsCount number of expected rows
-     */
-    public void computeHeaderAndDataDimensions(RFontMetrics metrics, RCodeType codeType, int maxBytesPerRow, long rowsCount) {
+    */
+    public void computeHeaderAndDataDimensions(RFontMetrics metrics, RCodeType codeType, int bytesPerRow) {
         // we have the maximum of bytes per row, so at this stage we should work out the width we ideally should have to play with
         // contentData.getDataSize()
         // structure.getBytesPerRow() vs maxBytesPerRow
         // long numRows = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow>0?1:0);
-        int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
-        int digitsForByte = codeType.getMaxDigitsForByte(); // Get the number of characters for a byte
 
-        float contentWidth = digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
+        int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
+        int digitsForByte = codeType.getMaxDigitsForByte() + 1; // Get the number of characters for a byte + spacing
+
+        float contentWidth = digitsForByte * characterWidth * bytesPerRow; // Get the ideal width of a row based on the max byte width
         float headerYOffset = metrics.getFontHeight() + (float) metrics.getFontHeight() / 4;
 
         LOGGER.info("Editor Data Content: Length: {}, Width {}, Height {}, XOffset {}, YOffset {}",
-                maxBytesPerRow,
+                bytesPerRow,
                 contentWidth,
                 rowPositionAreaRectangle.getHeight(),
                 rowPositionAreaRectangle.getWidth(),
@@ -161,8 +172,8 @@ public class RBinDimensions {
         LOGGER.info("Editor Header Data: Width {}, Height {}, XOffset {}", mainAreaRectangle.getWidth(), headerYOffset,rowPositionAreaRectangle.getWidth());
         headerAreaRectangle.setSize(rowPositionAreaRectangle.getWidth(), 0, mainAreaRectangle.getWidth(), headerYOffset);
 
-        // At this point we assume that the data fits on the one page and doesn't need scrollbars
         componentRectangle.setSize(0,0,rowPositionAreaRectangle.getWidth() +  mainAreaRectangle.getWidth(), headerYOffset + rowPositionAreaRectangle.getHeight());
+        displayRectangle.setSize(0,0, componentRectangle.getWidth(),headerYOffset+dataDisplayHeight);
     }
 
     /**

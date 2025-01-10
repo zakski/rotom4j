@@ -58,4 +58,17 @@ public final class RTabHeader extends RGroupDrawable {
         }
         mouseEvent.consume();
     }
+
+    @Override
+    public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (!isVisible() || !this.isVisibleParentAware()) {
+            return;
+        }
+        RComponent node = findComponentAt(mouseEvent.getX(), adjustedMouseY);
+        if (node != null) {
+            LOGGER.debug("Mouse Pressed for Tab {} [{}, {}, {}, {}, {}, {}]", node.getName(), mouseEvent.getX(), adjustedMouseY, node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
+            node.mousePressed(mouseEvent, adjustedMouseY);
+            redrawBuffer();
+        }
+    }
 }

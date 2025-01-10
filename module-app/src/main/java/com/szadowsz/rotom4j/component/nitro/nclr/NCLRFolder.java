@@ -10,6 +10,7 @@ import com.szadowsz.rotom4j.app.ProcessingRotom4J;
 import com.szadowsz.rotom4j.app.utils.FileChooser;
 import com.szadowsz.rotom4j.component.R4JComponent;
 import com.szadowsz.rotom4j.component.R4JFolder;
+import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
 import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolderComponent;
 import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ import static processing.core.PConstants.CENTER;
 public class NCLRFolder extends R4JFolder<NCLR> {
     private static final Logger LOGGER = LoggerFactory.getLogger(NCLRFolder.class);
 
-    private NCGRFolderComponent spriteFolder = null;
+    private NCGRFolder spriteFolder = null;
 
     /**
      * Default Constructor
@@ -39,9 +40,9 @@ public class NCLRFolder extends R4JFolder<NCLR> {
      */
     public NCLRFolder(RotomGui gui, String path, RGroup parent, NCLR nclr) {
         super(gui, path, parent,nclr,SELECT_NCLR_FILE);
-        if (getParentFolder() instanceof NCGRFolderComponent){
+        if (getParentFolder() instanceof NCGRFolder){
             LOGGER.debug("Attached to parent NCGR");
-            spriteFolder = (NCGRFolderComponent) getParentFolder();
+            spriteFolder = (NCGRFolder) getParentFolder();
         }
     }
 
@@ -72,6 +73,9 @@ public class NCLRFolder extends R4JFolder<NCLR> {
                 LOGGER.debug("Loading NCLR File: " + nclrPath);
                 data = NCLR.fromFile(nclrPath);
                 LOGGER.info("Loaded NCLR File: " + nclrPath);
+                if (data != null) {
+                    createTabs();
+                };
                 display.recolorImage();
                 if (spriteFolder!= null){
                     spriteFolder.recolorImage();
@@ -89,14 +93,14 @@ public class NCLRFolder extends R4JFolder<NCLR> {
 
     @Override
     protected final RTabFunction<R4JComponent<NCLR>> createDisplay() {
-        return (RTab tab) -> new NCLRComponent(gui, tab.getPath(),tab, data);
+        return (RTab tab) -> new NCLRComponent(gui, tab.getPath() + "/Image" ,tab, data);
     }
 
     void setDisplay(NCLRComponent nclrComponent) {
         this.display = nclrComponent;
     }
 
-    public NCGRFolderComponent getSpriteFolder() {
+    public NCGRFolder getSpriteFolder() {
         return spriteFolder;
     }
 

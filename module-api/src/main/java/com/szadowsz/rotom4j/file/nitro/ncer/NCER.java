@@ -23,7 +23,7 @@ import com.szadowsz.rotom4j.binary.array.ByteArrayData;
 import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.NFSFactory;
 import com.szadowsz.rotom4j.compression.CompFormat;
-import com.szadowsz.rotom4j.file.nitro.ImageableWithGraphic;
+import com.szadowsz.rotom4j.file.nitro.DrawableWithGraphic;
 import com.szadowsz.rotom4j.file.RotomFormat;
 import com.szadowsz.rotom4j.file.nitro.ncer.cells.CellInfo;
 import com.szadowsz.rotom4j.file.nitro.ncer.cells.CellPojo;
@@ -45,7 +45,7 @@ import java.util.Arrays;
 /**
  * An object representation of an NCER file
  */
-public class NCER extends BaseNFSFile implements ImageableWithGraphic {
+public class NCER extends BaseNFSFile implements DrawableWithGraphic {
     private static final Logger logger = LoggerFactory.getLogger(NCER.class);
 
     public static final int GX_OBJVRAMMODE_CHAR_2D = 0x000000;

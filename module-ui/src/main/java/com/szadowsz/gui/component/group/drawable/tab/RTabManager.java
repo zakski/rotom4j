@@ -145,7 +145,7 @@ public class RTabManager extends RGroupDrawable {
         children.add(new RTab(gui, path + "/tab" + (children.size()-1), this, function));
         RTab tab = ((RTab)children.getLast());
         active = children.size() - 1;
-        getHeader().addTab(tab.getName(),tab.getAction());
+        getHeader().addTab(tab.getTitle(),tab.getAction());
     }
 
     @Override
@@ -195,7 +195,7 @@ public class RTabManager extends RGroupDrawable {
     @Override
     public float suggestWidth() {
         float maxWidth = getTabs().stream().map(RGroupDrawable::suggestWidth).max(Float::compareTo).orElse(0f);
-        return Math.max(maxWidth, getHeader().getWidth());
+        return Math.max(maxWidth, getHeader().getWidth())*2;
     }
 
     @Override

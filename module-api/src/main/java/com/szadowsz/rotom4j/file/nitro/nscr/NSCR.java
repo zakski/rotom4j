@@ -4,7 +4,7 @@ import com.szadowsz.rotom4j.binary.array.ByteArrayData;
 import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.NFSFactory;
 import com.szadowsz.rotom4j.compression.CompFormat;
-import com.szadowsz.rotom4j.file.nitro.ImageableWithGraphic;
+import com.szadowsz.rotom4j.file.nitro.DrawableWithGraphic;
 import com.szadowsz.rotom4j.file.RotomFormat;
 import com.szadowsz.rotom4j.file.nitro.nscr.tiles.NTFS;
 import com.szadowsz.rotom4j.exception.InvalidFileException;
@@ -23,7 +23,7 @@ import java.util.Arrays;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
-public class NSCR extends BaseNFSFile implements ImageableWithGraphic {
+public class NSCR extends BaseNFSFile implements DrawableWithGraphic {
 
     // Block Header section
     private String id;                   // NRCS = 0x4E524353

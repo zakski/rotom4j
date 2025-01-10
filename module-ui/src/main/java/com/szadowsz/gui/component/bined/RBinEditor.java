@@ -1,5 +1,7 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.gui.component.group.RGroupBuffer;
+import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.rotom4j.binary.array.ByteArrayData;
@@ -48,8 +50,11 @@ public class RBinEditor extends RBinEdBase {
     protected RBinColorAssessor colorAssessor = new RBinColorAssessor();
 
     // How to Display
-    protected RBinViewMode viewMode = RBinViewMode.DUAL;
+    protected RBinViewMode viewMode = RBinViewMode.DUAL; // TODO implement dual display
     protected RBackgroundPaintMode backgroundPaintMode = RBackgroundPaintMode.STRIPED;
+
+    // Display Buffer
+    protected final RGroupBuffer buffer;
 
     // Cursor Caret
     protected RCaret caret;
@@ -64,6 +69,7 @@ public class RBinEditor extends RBinEdBase {
     protected RBinEditor(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
         caret = new RCaret(this);
+        buffer = new RGroupBuffer(this,size.x,size.y);
     }
 
     public RBinEditor(RotomGui gui, String path, RGroup parent, String filePath) {
@@ -75,6 +81,8 @@ public class RBinEditor extends RBinEdBase {
         caret = new RCaret(this);
         init();
         children.add(new RBinMain(gui, path + "/" + MAIN, this));
+        RRect rect = dimensions.getComponentRectangle();
+        buffer = new RGroupBuffer(this, rect.getWidth(),rect.getHeight());
     }
 
     /**
@@ -213,13 +221,13 @@ public class RBinEditor extends RBinEdBase {
      * Calculate Dimensions
      */
     protected void initDimensions(long rowsCount) {
-        dimensions.computeRowDimensions(metrics, rowPositionLength, rowsCount);
-        dimensions.computeHeaderAndDataDimensions(metrics, codeType, maxBytesPerRow, rowsCount);
+        dimensions.computeRowDimensions(metrics, rowPositionLength, maxRowsPerPage, rowsCount);
+        dimensions.computeHeaderAndDataDimensions(metrics, codeType, maxBytesPerRow);
         dimensions.computeOtherMetrics(metrics);
 
         // Relay the size to the proper place // TODO Bodge job
-        size.x = dimensions.getComponentRectangle().getWidth();
-        size.y = dimensions.getComponentRectangle().getHeight();
+        size.x = dimensions.getDisplayRectangle().getWidth();
+        size.y = dimensions.getDisplayRectangle().getHeight();
     }
 
     /**
@@ -567,32 +575,13 @@ public class RBinEditor extends RBinEdBase {
         return bytes;
     }
 
-    /**
-     * Draw Child Component
-     *
-     * @param pg    Processing Graphics Context
-     * @param child draw
-     */
-    protected void drawChildComponent(PGraphics pg, RComponent child) {
-        pg.pushMatrix();
-        pg.pushStyle();
-        child.draw(pg);
-        pg.popStyle();
-        pg.popMatrix();
-    }
-
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         updateAssessors();
-        for (RComponent component : children) {
-            if (!component.isVisible()) {
-                continue;
-            }
-            pg.pushMatrix();
-            pg.translate(component.getRelPosX(), component.getRelPosY());
-            drawChildComponent(pg, component);
-            pg.popMatrix();
-        }
+        pg.pushMatrix();
+        int yDiff = 0;
+        pg.image(buffer.draw().get(0, yDiff, (int) size.x, (int) size.y), 0, 0);
+        pg.popMatrix();
     }
 
     boolean isMirrorCursorShowing() {
@@ -845,6 +834,12 @@ public class RBinEditor extends RBinEdBase {
             mouseEvent.consume();
             redrawWinBuffer();
         }
+    }
+
+    @Override
+    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
+        super.updateCoordinates(bX, bY, rX, rY, w, h);
+        buffer.resetBuffer();
     }
 
     public static class RowDataCache {

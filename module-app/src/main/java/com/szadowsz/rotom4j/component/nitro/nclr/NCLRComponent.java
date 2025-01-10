@@ -46,10 +46,10 @@ public class NCLRComponent extends R4JComponent<NCLR> {
         parentFolder = (NCLRFolder) getParentFolder();
         parentFolder.setDisplay(this);
         this.data = data;
-        initNodes();
+        initComponents();
     }
 
-    protected void initNodes() {
+    protected void initComponents() {
         if (!children.isEmpty()) {
             return;
         }

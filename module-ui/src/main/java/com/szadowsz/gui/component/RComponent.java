@@ -2,6 +2,7 @@ package com.szadowsz.gui.component;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.RGroup;
+import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
@@ -351,6 +352,10 @@ public abstract class RComponent {
 
     public PVector getRelPosition() {
         return new PVector(relPos.x,relPos.y);
+    }
+
+    public PVector getRelPosTo(RGroupDrawable group) {
+        return new PVector(pos.x - group.getPosX(),pos.y - group.getPosY());
     }
 
     /**
