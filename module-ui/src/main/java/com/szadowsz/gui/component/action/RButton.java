@@ -1,7 +1,7 @@
 package com.szadowsz.gui.component.action;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
@@ -22,7 +22,7 @@ import static processing.core.PConstants.CENTER;
 /**
  * Bog-standard Button Component
  */
-public class RButton extends RComponent {
+public class RButton extends RSingle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RButton.class);
 
     // Whether its currently pressed

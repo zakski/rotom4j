@@ -1,7 +1,7 @@
 package com.szadowsz.gui.component.input;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import processing.core.PGraphics;
 
@@ -10,7 +10,7 @@ import processing.core.PGraphics;
  * Spinner component can be used to enter any positive or negative number value either through the keyboard, the up/down
  * spinner buttons, or the mouse wheel when over the component.
  */
-public class RSpinner extends RComponent { // TODO Determine Exact Relationship
+public class RSpinner extends RSingle { // TODO Determine Exact Relationship
     // TODO Component Stub : WIP
 
     /**

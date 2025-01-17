@@ -44,7 +44,7 @@ public class RTab extends RGroupDrawable {
     public RMouseAction getAction() {
         return () -> {
             manager.setActive(RTab.this);
-            manager.redrawBuffer();
+            redrawBuffers();
         };
     }
 

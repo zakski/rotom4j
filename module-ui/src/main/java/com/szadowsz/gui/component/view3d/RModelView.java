@@ -2,13 +2,14 @@ package com.szadowsz.gui.component.view3d;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import processing.core.PGraphics;
 
 /**
  * Component for display of 3D model
  */
-public class RModelView extends RComponent {
+public class RModelView extends RSingle {
     // TODO Component Stub : WIP
 
     /**

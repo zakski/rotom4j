@@ -1,6 +1,7 @@
 package com.szadowsz.gui.component.group;
 
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RComponentBuffer;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.text.RFontStore;
@@ -20,56 +21,15 @@ import java.util.List;
 import static com.szadowsz.gui.config.theme.RColorType.WINDOW_BORDER;
 import static processing.core.PConstants.*;
 
-public final class RGroupBuffer {
+public final class RGroupBuffer extends RComponentBuffer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RGroupBuffer.class);
 
     private final RGroupDrawable group;
 
-    private PGraphics buffer = null;
-
-    private boolean isBufferInvalid = true;
-    private boolean isReInitRequired = true;
-
-    private int sizeX;
-    private int sizeY;
-
-    public RGroupBuffer(RGroupDrawable group, float sizeX, float sizeY) {
+    public RGroupBuffer(RGroupDrawable group) {
+        super(group);
         this.group = group;
-        createBuffer(sizeX, sizeY);
     }
-
-    private void createBuffer(float sizeX, float sizeY) {
-        createBuffer((int) sizeX, (int) sizeY);
-    }
-
-    private void createBuffer(int sizeX, int sizeY) {
-        LOGGER.trace("{} Content Buffer Init - Old Size: [{},{}], New Size: [{},{}]",group.getName(),this.sizeX,this.sizeY,sizeX,sizeY);
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
-        buffer = group.getGui().getSketch().createGraphics(sizeX, sizeY, PConstants.P2D);
-        try {
-            buffer.beginDraw();
-            buffer.endDraw();
-        } catch (final Exception e) {}
-    }
-
-//    private float calcColWidth(List<RComponent> children, int col) {
-//        float spaceForName = 0;
-//        float spaceForValue = 0;
-//
-//        for (RComponent child : children) {
-//            if (col != child.getColumn())
-//                continue;
-//
-//            float nameTextWidth = child.calcNameTextWidth();
-//            float valueTextWidth = child.findValueTextWidthRoundedUpToWholeCells();
-//
-//            spaceForName = Math.max(spaceForName, nameTextWidth);
-//            spaceForValue = Math.max(spaceForValue, valueTextWidth);
-//        }
-//
-//        return spaceForName + spaceForValue;
-//    }
 
     /**
      * Draw Child Component
@@ -148,7 +108,8 @@ public final class RGroupBuffer {
      * Draw The Content of The Window
      *
      */
-    private void drawContent() {
+    @Override
+    protected void drawContent() {
         long time = System.currentTimeMillis();
         if (!group.getChildren().isEmpty()) {
             buffer.beginDraw();
@@ -165,30 +126,5 @@ public final class RGroupBuffer {
             buffer.endDraw();
         }
         LOGGER.debug("{} Content Buffer [{},{}] Draw Duration {}", group.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
-    }
-
-    private synchronized void redrawIfNecessary(){
-        if (isReInitRequired){
-            createBuffer(group.getWidth(), group.getHeight());
-            isReInitRequired = false;
-        }
-        if (isBufferInvalid) {
-            drawContent();
-            isBufferInvalid = false;
-        }
-    }
-
-    public synchronized PGraphics draw(){
-        redrawIfNecessary();
-        return buffer;
-    }
-
-    public synchronized void invalidateBuffer() {
-        isBufferInvalid = true;
-    }
-
-    public synchronized void resetBuffer() {
-        isReInitRequired = true;
-        isBufferInvalid = true;
     }
 }

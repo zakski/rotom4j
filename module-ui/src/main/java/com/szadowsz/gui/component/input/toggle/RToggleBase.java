@@ -1,7 +1,7 @@
 package com.szadowsz.gui.component.input.toggle;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 /**
  *  Base component for binary user input controls (etc. Toggle, Checkbox)
  */
-public abstract class RToggleBase extends RComponent {
+public abstract class RToggleBase extends RSingle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RToggleBase.class);
 
     protected boolean armed;

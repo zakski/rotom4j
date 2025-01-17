@@ -304,11 +304,13 @@ public class RotomGui {
 
     public void startSetup() { // TODO Me
         isSetup = true;
+        LOGGER.info("Initial setup of Rotom Gui");
     }
 
     public void endSetup() {// TODO Me
         isSetup = false;
         //tree.getRoot().resizeForContents(); TODO Not sure if not needed
+        LOGGER.info("Finished setup of Rotom Gui");
     }
 
     public void subscribe(RInputListener subscriber) { // TODO Me

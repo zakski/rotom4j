@@ -1,5 +1,6 @@
 package com.szadowsz.gui.component.group.folder;
 
+import com.szadowsz.gui.RBuffer;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
@@ -9,6 +10,8 @@ import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.window.pane.RWindowPane;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
@@ -22,6 +25,7 @@ import static processing.core.PConstants.CORNER;
  * It opens the window with child components when clicked.
  */
 public class RFolder extends RGroup {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RFolder.class);
 
     protected RWindowPane window; // reference to the companion window
 
@@ -132,6 +136,18 @@ public class RFolder extends RGroup {
         window = pane;
     }
 
+
+    @Override
+    public void draw(PGraphics pg) {
+        // the component knows its absolute position but here the current matrix is already translated to it
+        //drawContent(pg);
+        pg.image(buffer.draw(),0,0);
+    }
+
+    @Override
+    public void drawToBuffer() {
+        buffer.redraw();
+    }
     /**
      * Method to auto calculate a good width for the window based on its contents
      *

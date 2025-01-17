@@ -53,25 +53,26 @@ public abstract class RComponent {
 
     protected float heightInCells = 1; // TODO LazyGui // Shortcut for Layout Calculations
 
-    protected RLayoutConfig layoutConfig = new RLayoutConfig() {
-    };
+    protected RLayoutConfig layoutConfig = new RLayoutConfig() {};
+
+    protected RComponentBuffer buffer;
 
     // Component Config
     protected boolean isDraggable = true; // Is the component able to be dragged
     protected boolean isVisible = true; // Is the component visible? (Not Parent Aware)
 
     // Component State
-    protected boolean isDragged = false; // Set to true when mouse is dragging, set to false on mouse released
+    protected boolean isDragged = true; // Set to true when mouse is dragging, set to false on mouse released
     //protected boolean isFocused = false; // TODO Difference between mouse over and has focus
-    protected boolean isMouseOver = false; // TODO Difference between mouse over and has focus
+    protected boolean isMouseOver = true; // TODO Difference between mouse over and has focus
 
     /**
      * Default Constructor
      * <p>
      * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
      *
-     * @param gui the gui for the window that the component is drawn under
-     * @param path the path in the component tree
+     * @param gui    the gui for the window that the component is drawn under
+     * @param path   the path in the component tree
      * @param parent the parent component reference
      */
     protected RComponent(RotomGui gui, String path, RGroup parent) {
@@ -84,7 +85,7 @@ public abstract class RComponent {
         this.palette = RThemeStore.getTheme(localTheme);
 
         // If overridden in Subclasses, both size.y and heightInCells should be changed
-        size.y = heightInCells*RLayoutStore.getCell();
+        size.y = heightInCells * RLayoutStore.getCell();
     }
 
     protected String extractNameFromPath(String path) {
@@ -94,19 +95,19 @@ public abstract class RComponent {
         return RPaths.getNameFromPath(path);
     }
 
-    protected int calcHeightInCells(float minimumHeight){
-        return ((int)(minimumHeight / RLayoutStore.getCell())) + ((minimumHeight % RLayoutStore.getCell() != 0) ? 1 : 0);
+    protected int calcHeightInCells(float minimumHeight) {
+        return ((int) (minimumHeight / RLayoutStore.getCell())) + ((minimumHeight % RLayoutStore.getCell() != 0) ? 1 : 0);
     }
 
     protected void onValueChange() {
-        if(parent != null){
+        if (parent != null) {
             // go up the parent chain recursively and keep notifying of a change until the root is reached
             parent.onValueChange();
         }
     }
 
     protected void onValueChangeEnd() { // TODO LazyGui
-        if(parent != null){
+        if (parent != null) {
             // go up the parent chain recursively and keep notifying of a change until the root is reached
             parent.onValueChangeEnd();
         }
@@ -118,8 +119,8 @@ public abstract class RComponent {
      * @param pg graphics reference to use
      */
     protected void fillBackground(PGraphics pg) { // TODO LazyGui
-        if(isMouseOver){
-            LOGGER.trace("Doing Background Focus Fill {} Component",  getName());
+        if (isMouseOver) {
+            LOGGER.trace("Doing Background Focus Fill {} Component", getName());
             pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_BACKGROUND));
         } else {
             pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
@@ -132,10 +133,11 @@ public abstract class RComponent {
      * @param pg graphics reference to use
      */
     protected void fillForeground(PGraphics pg) { // TODO LazyGui
-        if(isMouseOver){
-            LOGGER.trace("Doing Foreground Focus Fill {} Component",  getName());
+        if (isMouseOver) {
+            LOGGER.debug("Doing Foreground Focus Fill {} Component", getName());
             pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_FOREGROUND));
         } else {
+            LOGGER.debug("Doing Foreground Normal Fill {} Component", getName());
             pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND));
         }
     }
@@ -148,7 +150,7 @@ public abstract class RComponent {
     protected void highlightBackground(PGraphics pg) { // TODO LazyGui
         pg.noStroke();
         pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_BACKGROUND));
-        pg.rect(0,0,size.x,size.y);
+        pg.rect(0, 0, size.x, size.y);
     }
 
     /**
@@ -167,12 +169,12 @@ public abstract class RComponent {
     /**
      * Draw the text to the left
      *
-     * @param pg graphics reference to use
+     * @param pg   graphics reference to use
      * @param text the text to draw
      */
-    protected void drawTextLeft(PGraphics pg, String text){ // TODO LazyGui
+    protected void drawTextLeft(PGraphics pg, String text) { // TODO LazyGui
         fillForeground(pg);
-        String trimmedText = RFontStore.substringToFit(pg, text, size.x,true);
+        String trimmedText = RFontStore.substringToFit(pg, text, size.x, true);
         pg.textAlign(LEFT, CENTER);
         pg.text(trimmedText, RFontStore.getMarginX(), RLayoutStore.getCell() - RFontStore.getMarginY());
     }
@@ -180,44 +182,44 @@ public abstract class RComponent {
     /**
      * Draw the text to the right
      *
-     * @param pg graphics reference to use
-     * @param text the text to draw
+     * @param pg             graphics reference to use
+     * @param text           the text to draw
      * @param fillBackground whether to fill the background
      */
     protected void drawTextRight(PGraphics pg, String text, boolean fillBackground) { // TODO LazyGui
-        if(fillBackground){
+        if (fillBackground) {
             float backdropBuffer = RLayoutStore.getCell() * 0.5f;
             float w = pg.textWidth(text) + RFontStore.getMarginX() + backdropBuffer;
             drawBackdropRight(pg, w);
         }
         pg.textAlign(RIGHT, CENTER);
-        pg.text(text,size.x - RFontStore.getMarginX(),size.y - RFontStore.getMarginY());
+        pg.text(text, size.x - RFontStore.getMarginX(), size.y - RFontStore.getMarginY());
     }
 
     /**
      * Draw the text to the right, with no overlap
      *
-     * @param pg graphics reference to use
-     * @param leftText left-centered text to draw
-     * @param rightText right-centered text to draw
+     * @param pg             graphics reference to use
+     * @param leftText       left-centered text to draw
+     * @param rightText      right-centered text to draw
      * @param fillBackground whether to fill the background
      */
     protected void drawTextRightNoOverflow(PGraphics pg, String leftText, String rightText, boolean fillBackground) { // TODO LazyGui
         pg.textAlign(RIGHT, CENTER);
-        String trimmedTextLeft = RFontStore.substringToFit(pg, leftText, size.x,true);
-        float leftOffset = pg.textWidth(trimmedTextLeft)+(RFontStore.getMarginX()*2);
-        String trimmedRightText = RFontStore.substringToFit(pg, rightText, size.x - leftOffset,true);
-        if(fillBackground){
+        String trimmedTextLeft = RFontStore.substringToFit(pg, leftText, size.x, true);
+        float leftOffset = pg.textWidth(trimmedTextLeft) + (RFontStore.getMarginX() * 2);
+        String trimmedRightText = RFontStore.substringToFit(pg, rightText, size.x - leftOffset, true);
+        if (fillBackground) {
             float w = pg.textWidth(trimmedRightText) + RFontStore.getMarginX() * 2;
             drawBackdropRight(pg, w);
         }
-        pg.text(trimmedRightText,size.x - RFontStore.getMarginX(), size.y - RFontStore.getMarginY());
+        pg.text(trimmedRightText, size.x - RFontStore.getMarginX(), size.y - RFontStore.getMarginY());
     }
 
     /**
      * Draw the backdrop to the right
      *
-     * @param pg graphics reference to use
+     * @param pg           graphics reference to use
      * @param backdropSize size of the background
      */
     protected void drawBackdropRight(PGraphics pg, float backdropSize) { // TODO LazyGui
@@ -225,7 +227,7 @@ public abstract class RComponent {
         fillBackground(pg);
         pg.noStroke();
         pg.rectMode(CORNER);
-        pg.rect(size.x-backdropSize, 0, backdropSize, size.y);
+        pg.rect(size.x - backdropSize, 0, backdropSize, size.y);
         pg.popStyle();
     }
 
@@ -239,11 +241,48 @@ public abstract class RComponent {
     /**
      * Method to draw the foreground of the component
      *
-     * @param pg graphics reference to use
+     * @param pg   graphics reference to use
      * @param name name of the component
      */
     protected abstract void drawForeground(PGraphics pg, String name); // TODO LazyGui
 
+
+    /**
+     * Method to draw the foreground of the component
+     *
+     * @param pg graphics reference to use
+     */
+    protected final void drawContent(PGraphics pg) {
+        // the component knows its absolute position but here the current matrix is already translated to it
+        if (isMouseOver) {
+            highlightBackground(pg);
+        }
+
+        pg.pushMatrix();
+        pg.pushStyle();
+        drawBackground(pg);
+        pg.popStyle();
+        pg.popMatrix();
+
+        pg.pushMatrix();
+        pg.pushStyle();
+        drawForeground(pg, name);
+        pg.popStyle();
+        pg.popMatrix();
+    }
+
+    protected void redrawBuffers() {
+        buffer.invalidateBuffer();
+        RWindowPane win = getParentWindow();
+        if (win != null) {
+            win.redrawBuffer();
+        }
+    }
+
+    protected void resetBuffer() {
+        buffer.resetBuffer();
+        getParentWindow().redrawBuffer();
+    }
 
     /**
      * Secondary update function, called for all components every frame, regardless of their parent window's closed state.
@@ -281,14 +320,19 @@ public abstract class RComponent {
      */
     public RFolder getParentFolder() { // TODO LazyGui & G4P
         RGroup p = parent;
-        while(p != null && !(p instanceof RFolder)){
+        while (p != null && !(p instanceof RFolder)) {
             p = p.getParent();
         }
         return (RFolder) p;
     }
 
     public RWindowPane getParentWindow() {
-        return getParentFolder().getWindow();
+        RFolder folder =  getParentFolder();
+        if (folder != null){
+            return folder.getWindow();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -336,7 +380,7 @@ public abstract class RComponent {
         return size.y;
     }
 
-    public RotomGui getGui(){
+    public RotomGui getGui() {
         return gui;
     }
 
@@ -351,11 +395,11 @@ public abstract class RComponent {
     }
 
     public PVector getRelPosition() {
-        return new PVector(relPos.x,relPos.y);
+        return new PVector(relPos.x, relPos.y);
     }
 
     public PVector getRelPosTo(RGroupDrawable group) {
-        return new PVector(pos.x - group.getPosX(),pos.y - group.getPosY());
+        return new PVector(pos.x - group.getPosX(), pos.y - group.getPosY());
     }
 
     /**
@@ -363,8 +407,8 @@ public abstract class RComponent {
      *
      * @return width and height in a PVector
      */
-    public PVector getPreferredSize(){
-        return new PVector(suggestWidth(),getHeight());
+    public PVector getPreferredSize() {
+        return new PVector(suggestWidth(), getHeight());
     }
 
     /**
@@ -372,8 +416,8 @@ public abstract class RComponent {
      *
      * @return width and height in a PVector
      */
-    public PVector getSize(){
-        return new PVector(getWidth(),getHeight());
+    public PVector getSize() {
+        return new PVector(getWidth(), getHeight());
     }
 
     public RLayoutConfig getCompLayoutConfig() {
@@ -384,11 +428,11 @@ public abstract class RComponent {
         return "";
     }
 
-    public boolean isDraggable(){
+    public boolean isDraggable() {
         return isDraggable;
     }
 
-    public boolean isDragged(){
+    public boolean isDragged() {
         return isDragged;
     }
 
@@ -428,9 +472,9 @@ public abstract class RComponent {
      *
      * @return true if visible, false otherwise
      */
-    public boolean isParentWindowVisible(){ // TODO LazyGui TODO Needed?
+    public boolean isParentWindowVisible() { // TODO LazyGui TODO Needed?
         RFolder folder = getParentFolder();
-        if(folder == null || folder.getWindow() == null){
+        if (folder == null || folder.getWindow() == null) {
             return !RLayoutStore.isGuiHidden();
         }
         return folder.isWindowVisible();
@@ -451,9 +495,9 @@ public abstract class RComponent {
      * @param focused TODO
      */
     public void setFocus(boolean focused) {
-        if (focused){
+        if (focused) {
             gui.takeFocus(this);
-        } else if (gui.hasFocus(this)){
+        } else if (gui.hasFocus(this)) {
             gui.takeFocus(null);
             loseFocus(null);
         }
@@ -461,17 +505,21 @@ public abstract class RComponent {
 
 
     /**
-     * Set the Height of The Window, modified by only being set in whole cells.
+     * Set the Height of the component, modified by only being set in whole cells.
      *
      * @param height raw height
      */
-    public void setHeight(float height){
+    public void setHeight(float height) {
         heightInCells = calcHeightInCells(height);
-        size.y = heightInCells*RLayoutStore.getCell();
+        size.y = heightInCells * RLayoutStore.getCell();
+        resetBuffer();
     }
 
     public void setMouseOver(boolean b) {
-        isMouseOver = b;
+        if (isMouseOver != b) {
+            isMouseOver = b;
+            redrawBuffers();
+        }
     }
 
     public void setLayoutConfig(RLayoutConfig config) {
@@ -479,7 +527,6 @@ public abstract class RComponent {
     }
 
     /**
-     *
      * @param componentTree
      * @param mouseEvent
      */
@@ -501,8 +548,8 @@ public abstract class RComponent {
      * Handle a pressed key while over the component
      *
      * @param keyEvent the pressed key
-     * @param mouseX x position
-     * @param mouseY y position
+     * @param mouseX   x position
+     * @param mouseY   y position
      */
     public void keyPressedOver(RKeyEvent keyEvent, float mouseX, float mouseY) {
         // NOOP
@@ -512,8 +559,8 @@ public abstract class RComponent {
      * Handle a pressed key chord while over the component
      *
      * @param keyEvent the pressed key
-     * @param mouseX x position
-     * @param mouseY y position
+     * @param mouseX   x position
+     * @param mouseY   y position
      */
     public void keyChordPressedOver(RKeyEvent keyEvent, float mouseX, float mouseY) {
         // NOOP
@@ -525,11 +572,13 @@ public abstract class RComponent {
     }
 
     /**
-     *
      * @param mouseEvent
      * @param adjustedMouseY
      */
-    public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY){
+    public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (!isMouseOver()) {
+            redrawBuffers();
+        }
         setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
         mouseEvent.consume();
     }
@@ -538,24 +587,26 @@ public abstract class RComponent {
      * Method to handle the component's reaction to the mouse being pressed.
      *
      * @param mouseEvent the change made by the mouse
-     * @param mouseY adjust for scrollbar
+     * @param mouseY     adjust for scrollbar
      */
     public void mousePressed(RMouseEvent mouseEvent, float mouseY) {
         isDragged = true;
         isMouseOver = true;
         mouseEvent.consume();
+        redrawBuffers();
     }
 
     /**
      * Method to handle the component's reaction to the mouse being released outside of itself
      *
      * @param mouseEvent the change made by the mouse
-     * @param mouseY adjust for scrollbar
+     * @param mouseY     adjust for scrollbar
      */
     public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float mouseY) {
-        if(isDragged){
+        if (isDragged) {
             setFocus(false);
             mouseEvent.consume();
+            redrawBuffers();
         }
         isDragged = false;
     }
@@ -564,29 +615,30 @@ public abstract class RComponent {
      * Method to handle the component's reaction to the mouse being released over it
      *
      * @param mouseEvent the change made by the mouse
-     * @param mouseY adjust for scrollbar
+     * @param mouseY     adjust for scrollbar
      */
     public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float mouseY) {
-        if(isDragged){
+        if (isDragged) {
             setFocus(true);
             mouseEvent.consume();
         }
         isDragged = false;
+        redrawBuffers();
     }
 
     /**
      * Method to handle the component's reaction to the mouse being released
      *
      * @param mouseEvent the change made by the mouse
-     * @param mouseY adjust for scrollbar
-     * @param isOver was released over the component
+     * @param mouseY     adjust for scrollbar
+     * @param isOver     was released over the component
      */
     public void mouseReleased(RMouseEvent mouseEvent, float mouseY, boolean isOver) {
-        if(isOver){
-            mouseReleasedOverComponent(mouseEvent,mouseY);
-        } else {
-            mouseReleasedAnywhere(mouseEvent,mouseY);
-        }
+//        if (isOver) {
+//            mouseReleasedOverComponent(mouseEvent, mouseY);
+//        } else {
+//            mouseReleasedAnywhere(mouseEvent, mouseY);
+//        }
     }
 
     /**
@@ -600,26 +652,28 @@ public abstract class RComponent {
 
     /**
      * Main update function, only called when the parent window containing this component is open.
-     * @see RComponent#drawBackground(PGraphics)
+     *
      * @param pg main PGraphics of the gui of the same size as the main PApplet canvas to draw on
+     * @see RComponent#drawBackground(PGraphics)
      */
-    public final void draw(PGraphics pg) { // TODO LazyGui
+    public void draw(PGraphics pg) {
         // the component knows its absolute position but here the current matrix is already translated to it
-        if(isMouseOver){
-            highlightBackground(pg);
+        drawContent(pg);
+    }
+
+
+    public abstract void drawToBuffer();
+
+    /**
+     * For most controls there is nothing to do when they loose focus. Override this
+     * method in classes that need to do something when they loose focus eg
+     * TextField
+     */
+    public void loseFocus(RComponent grabber) {
+        if (isMouseOver) {
+            isMouseOver = false;
         }
-
-        pg.pushMatrix();
-        pg.pushStyle();
-        drawBackground(pg);
-        pg.popStyle();
-        pg.popMatrix();
-
-        pg.pushMatrix();
-        pg.pushStyle();
-        drawForeground(pg, name);
-        pg.popStyle();
-        pg.popMatrix();
+        redrawBuffers();
     }
 
     public abstract float suggestWidth();
@@ -629,8 +683,8 @@ public abstract class RComponent {
      *
      * @param rX relative screen x
      * @param rX relative screen y
-     * @param w absolute screen width
-     * @param h absolute screen height
+     * @param w  absolute screen width
+     * @param h  absolute screen height
      */
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) { // TODO LazyGui
         pos.x = bX + rX;
@@ -639,28 +693,17 @@ public abstract class RComponent {
         relPos.y = rY;
         size.x = w;
         size.y = h;
+        resetBuffer();
     }
 
     /**
      * The components must know its absolute position and size, so it can respond to user input events
      *
      * @param basePos absolute base position in window
-     * @param relPos relative position from base
-     * @param dim allowed width and height
+     * @param relPos  relative position from base
+     * @param dim     allowed width and height
      */
     public void updateCoordinates(PVector basePos, PVector relPos, PVector dim) { // TODO LazyGui
-        updateCoordinates(basePos.x, basePos.y, relPos.x, relPos.y, dim.x,dim.y);
-    }
-
-    /**
-     * For most controls there is nothing to do when they loose focus. Override this
-     * method in classes that need to do something when they loose focus eg
-     * TextField
-     */
-    public void loseFocus(RComponent grabber) {
-        if (isMouseOver){
-            isMouseOver = false;
-        }
-        getParentWindow().redrawBuffer();
+        updateCoordinates(basePos.x, basePos.y, relPos.x, relPos.y, dim.x, dim.y);
     }
 }

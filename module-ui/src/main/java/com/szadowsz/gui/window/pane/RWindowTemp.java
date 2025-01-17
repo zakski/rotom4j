@@ -127,18 +127,18 @@ public class RWindowTemp extends RWindowPane {
         }
     }
     @Override
-    public void drawWindow(PGraphics pg) {
-        pg.textFont(RFontStore.getMainFont());
+    public void drawWindow(PGraphics canvas) {
+        canvas.textFont(RFontStore.getMainFont());
         setScrollbarHighlighted(isVisible && (isPointInsideScrollbar(sketch.mouseX, sketch.mouseY) && !isBeingDragged) || folder.isMouseOver());
         if (!isVisible || !folder.isVisibleParentAware()) {
             return;
         }
-        constrainBounds(pg);
-        pg.pushMatrix();
-        drawBackgroundWithWindowBorder(pg, true);
+        constrainBounds(canvas);
+        canvas.pushMatrix();
+        drawBackgroundWithWindowBorder(canvas, true);
         vsb.ifPresent(s ->
                 s.draw(
-                        pg,
+                        canvas,
                         pos.x,
                         pos.y,
                         contentSize.x,
@@ -147,10 +147,12 @@ public class RWindowTemp extends RWindowPane {
                 )
         );
         if (!folder.getChildren().isEmpty()) {
-            drawContent(pg);
+            // Redraws have to be done before we draw the content buffer
+            folder.getChildren().forEach(RComponent::drawToBuffer);
+            drawContent(canvas);
         }
-        drawBackgroundWithWindowBorder(pg, false);
-        pg.popMatrix();
+        drawBackgroundWithWindowBorder(canvas, false);
+        canvas.popMatrix();
     }
 
 

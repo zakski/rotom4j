@@ -157,13 +157,13 @@ public class RTabManager extends RGroupDrawable {
         RTab tab = getActiveTab();
         if (isPointInRect(mouseEvent.getX(), adjustedMouseY, header.getPosX(), header.getPosY(), header.getWidth(), header.getHeight())) {
             if (!header.isMouseOver()){
-                redrawBuffer();
+                redrawBuffers();
             }
             header.mouseOver(mouseEvent,adjustedMouseY);
             mouseEvent.consume();
         } else if (isPointInRect(mouseEvent.getX(), adjustedMouseY, tab.getPosX(), tab.getPosY(), tab.getWidth(), tab.getHeight())) {
             if (!tab.isMouseOver()){
-                redrawBuffer();
+                redrawBuffers();
             }
             tab.mouseOver(mouseEvent,adjustedMouseY);
             mouseEvent.consume();
@@ -187,7 +187,7 @@ public class RTabManager extends RGroupDrawable {
             mouseEvent.consume();
         }
         if (mouseEvent.isConsumed()){
-            redrawBuffer();
+            redrawBuffers();
         }
     }
 

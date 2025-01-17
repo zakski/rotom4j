@@ -42,7 +42,7 @@ public final class RTabHeader extends RGroupDrawable {
         RButton button = new RButton(gui, path + "/" + name, this);
         button.registerAction(RActivateByType.RELEASE, action);
         children.add(button);
-        redrawBuffer();
+        redrawBuffers();
     }
 
 
@@ -54,7 +54,7 @@ public final class RTabHeader extends RGroupDrawable {
                 LOGGER.debug("Inside Tab Header {} [NX {} NY {} Width {} Height {}]", underMouse.getName(), underMouse.getPosX(), underMouse.getPosY(), underMouse.getWidth(), underMouse.getHeight());
             }
             underMouse.mouseOver(mouseEvent, adjustedMouseY);
-            redrawBuffer();
+            redrawBuffers();
         }
         mouseEvent.consume();
     }
@@ -68,7 +68,7 @@ public final class RTabHeader extends RGroupDrawable {
         if (node != null) {
             LOGGER.debug("Mouse Pressed for Tab {} [{}, {}, {}, {}, {}, {}]", node.getName(), mouseEvent.getX(), adjustedMouseY, node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
             node.mousePressed(mouseEvent, adjustedMouseY);
-            redrawBuffer();
+            redrawBuffers();
         }
     }
 }

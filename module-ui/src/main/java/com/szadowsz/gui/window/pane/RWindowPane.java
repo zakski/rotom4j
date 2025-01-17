@@ -726,7 +726,7 @@ public class RWindowPane implements RWindow, RInputListener {
                 )
         );
         if (!folder.getChildren().isEmpty()) {
-            drawContent(canvas);
+           drawContent(canvas);
         }
         drawBackgroundWithWindowBorder(canvas, false);
         drawTitleBar(canvas, folder.shouldDrawTitle());

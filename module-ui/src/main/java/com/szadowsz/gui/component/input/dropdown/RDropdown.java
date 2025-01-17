@@ -2,6 +2,7 @@ package com.szadowsz.gui.component.input.dropdown;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import processing.core.PGraphics;
 
@@ -15,7 +16,7 @@ import processing.core.PGraphics;
  * The vertical size of an individual item is calculated from the overall height
  * specified when creating the control.
  */
-public class RDropdown extends RComponent {
+public class RDropdown extends RSingle {
     // TODO Component Stub : WIP
 
     /**

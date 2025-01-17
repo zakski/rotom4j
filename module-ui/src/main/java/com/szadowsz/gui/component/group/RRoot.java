@@ -31,6 +31,11 @@ public class RRoot extends RGroup {
     }
 
     @Override
+    public void drawToBuffer() {
+
+    }
+
+    @Override
     public void setLayout(RLayoutBase layout) {
         this.layout = layout;
         resizeForContents();

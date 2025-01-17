@@ -4,11 +4,12 @@ package com.szadowsz.gui.component.input.color;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.drawable.RColorPicker;
 import processing.core.PGraphics;
 
 
-public final class RColorHex extends RComponent {
+public final class RColorHex extends RSingle {
 
     private final RColorPicker parentColorPicker;
 

@@ -53,9 +53,6 @@ public class RBinEditor extends RBinEdBase {
     protected RBinViewMode viewMode = RBinViewMode.DUAL; // TODO implement dual display
     protected RBackgroundPaintMode backgroundPaintMode = RBackgroundPaintMode.STRIPED;
 
-    // Display Buffer
-    protected final RGroupBuffer buffer;
-
     // Cursor Caret
     protected RCaret caret;
     protected boolean showMirrorCursor = true;
@@ -69,7 +66,6 @@ public class RBinEditor extends RBinEdBase {
     protected RBinEditor(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
         caret = new RCaret(this);
-        buffer = new RGroupBuffer(this,size.x,size.y);
     }
 
     public RBinEditor(RotomGui gui, String path, RGroup parent, String filePath) {
@@ -81,8 +77,6 @@ public class RBinEditor extends RBinEdBase {
         caret = new RCaret(this);
         init();
         children.add(new RBinMain(gui, path + "/" + MAIN, this));
-        RRect rect = dimensions.getComponentRectangle();
-        buffer = new RGroupBuffer(this, rect.getWidth(),rect.getHeight());
     }
 
     /**

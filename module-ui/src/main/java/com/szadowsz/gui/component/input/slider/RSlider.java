@@ -2,7 +2,7 @@ package com.szadowsz.gui.component.input.slider;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RDelayStore;
 import com.szadowsz.gui.config.text.RFontStore;
@@ -28,7 +28,7 @@ import static processing.core.PApplet.*;
 /**
  * 1D float slider component.
  * */
-public class RSlider extends RComponent {
+public class RSlider extends RSingle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RSlider.class);
 
     // Current supported precisions
@@ -498,8 +498,8 @@ public class RSlider extends RComponent {
         } else {
             LOGGER.debug("Mouse DeltaX for Slider {} [{} = {} - {}]", name, mouseDeltaX, mouseEvent.getPrevX(), mouseEvent.getX());
         }
+        redrawBuffers();
         mouseEvent.consume();
-        getParentWindow().redrawBuffer();
     }
 
     @Override

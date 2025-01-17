@@ -2,6 +2,7 @@ package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
 import com.szadowsz.gui.component.bined.bounds.RBinStructure;
 import com.szadowsz.gui.component.bined.bounds.RBinVisibility;
@@ -11,7 +12,7 @@ import com.szadowsz.gui.config.text.RFontStore;
 import processing.core.PFont;
 import processing.core.PGraphics;
 
-public abstract class RBinComponent extends RComponent {
+public abstract class RBinComponent extends RSingle {
 
     protected final RBinEditor editor;
 

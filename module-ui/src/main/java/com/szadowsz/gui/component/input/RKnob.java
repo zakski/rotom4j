@@ -1,14 +1,14 @@
 package com.szadowsz.gui.component.input;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import processing.core.PGraphics;
 
 /**
  * Configurable knob value component.
  */
-public class RKnob extends RComponent {
+public class RKnob extends RSingle {
     // TODO Component Stub : WIP
 
     /**

@@ -2,6 +2,7 @@ package com.szadowsz.gui.component.input.color;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.drawable.RColorPicker;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RColorType;
@@ -15,7 +16,7 @@ import java.awt.*;
 /**
  * Node to give a graphical preview of a given Color
  */
-public class RColorPreview extends RComponent {
+public class RColorPreview extends RSingle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RColorPreview.class);
 
     private final RColorPicker group;

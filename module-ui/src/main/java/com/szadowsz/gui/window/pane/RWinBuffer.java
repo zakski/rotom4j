@@ -1,5 +1,6 @@
 package com.szadowsz.gui.window.pane;
 
+import com.szadowsz.gui.RBuffer;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.text.RFontStore;
@@ -10,8 +11,7 @@ import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLinearLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PConstants;
-import processing.core.PGraphics;
+import processing.core.PApplet;
 import processing.core.PVector;
 
 import java.util.List;
@@ -19,110 +19,87 @@ import java.util.List;
 import static com.szadowsz.gui.config.theme.RColorType.WINDOW_BORDER;
 import static processing.core.PConstants.*;
 
-public final class RWinBuffer {
+public class RWinBuffer extends RBuffer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RWinBuffer.class);
 
-    private final RWindowPane win;
-
-    private PGraphics buffer = null;
-
-    private boolean isBufferInvalid = true;
-    private boolean isReInitRequired = true;
-
-    private int sizeX;
-    private int sizeY;
+    protected final RWindowPane win;
+    protected final RFolder folder;
 
     public RWinBuffer(RWindowPane win) {
         this.win = win;
+        this.folder = win.getFolder();
     }
 
-    private void createBuffer(float sizeX, float sizeY) {
-        createBuffer((int) sizeX, (int) sizeY);
+    @Override
+    protected String getName() {
+        return win.getTitle();
     }
 
-    private void createBuffer(int sizeX, int sizeY) {
-        LOGGER.trace("{} Content Buffer Init - Old Size: [{},{}], New Size: [{},{}]",win.getFolder().getName(),this.sizeX,this.sizeY,sizeX,sizeY);
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
-        buffer = win.getSketch().createGraphics(sizeX, sizeY, PConstants.P2D);
-        buffer.beginDraw();
-        buffer.endDraw();
+    @Override
+    protected PApplet getSketch() {
+        return win.getSketch();
     }
 
-//    private float calcColWidth(List<RComponent> children, int col) {
-//        float spaceForName = 0;
-//        float spaceForValue = 0;
-//
-//        for (RComponent child : children) {
-//            if (col != child.getColumn())
-//                continue;
-//
-//            float nameTextWidth = child.calcNameTextWidth();
-//            float valueTextWidth = child.findValueTextWidthRoundedUpToWholeCells();
-//
-//            spaceForName = Math.max(spaceForName, nameTextWidth);
-//            spaceForValue = Math.max(spaceForValue, valueTextWidth);
-//        }
-//
-//        return spaceForName + spaceForValue;
-//    }
+    @Override
+    protected PVector calculateBufferSize() {
+        return new PVector(win.getContentWidth(),win.getContentHeight());
+    }
 
     /**
      * Draw Child Component
      *
      * @param child
      */
-    private void drawChildComponent(RComponent child) {
-        buffer.pushMatrix();
-        buffer.pushStyle();
+    protected void drawChildComponent(RComponent child) {
+        buffer.push();
         child.draw(buffer);
-        buffer.popStyle();
-        buffer.popMatrix();
+        buffer.pop();
     }
 
     /**
      * Draw A Horizontal separator between two nodes
      *
-     * @param pg Processing Graphics Context
-     */
-    private void drawHorizontalSeparator(PGraphics pg) {
-        drawHorizontalSeparator(pg, pg.width);
-    }
-
-    /**
-     * Draw A Horizontal separator between two nodes
-     *
-     * @param pg    Processing Graphics Context
      * @param width separator width
      */
-    private void drawHorizontalSeparator(PGraphics pg, int width) {
+    protected void drawHorizontalSeparator(int width) {
         boolean show = RLayoutStore.isShowHorizontalSeparators();
         float weight = RLayoutStore.getHorizontalSeparatorStrokeWeight();
         if (show) {
-            pg.strokeCap(SQUARE);
-            pg.strokeWeight(weight);
-            pg.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
-            pg.line(0, 0, width, 0);
+            buffer.strokeCap(SQUARE);
+            buffer.strokeWeight(weight);
+            buffer.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
+            buffer.line(0, 0, width, 0);
         }
     }
 
+
     /**
      * Draw A Horizontal separator between two nodes
-     *
-     * @param pg Processing Graphics Context
      */
-    private void drawVerticalSeparator(PGraphics pg) {
+    protected void drawVerticalSeparator() {
         //boolean show = LayoutStore.isShowHorizontalSeparators();
         float weight = RLayoutStore.getHorizontalSeparatorStrokeWeight();
         // if (show) {
-        pg.strokeCap(SQUARE);
-        pg.strokeWeight(weight);
-        pg.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
-        pg.line(0, 0, 0, pg.height);
+        buffer.strokeCap(SQUARE);
+        buffer.strokeWeight(weight);
+        buffer.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
+        buffer.line(0, 0, 0, buffer.height);
         // }
     }
 
-    private void drawChildren(RFolder folder, float width) {
+    protected void drawSeparator(int width) {
+        if (folder.getLayout() instanceof RLinearLayout linear) {
+            buffer.push();
+            if (linear.getDirection() == RDirection.VERTICAL) {
+                drawHorizontalSeparator(width);
+            } else {
+                drawVerticalSeparator();
+            }
+            buffer.pop();
+        }
+    }
+
+    protected void drawChildren(float width) {
         List<RComponent> children = folder.getChildren();
 
         int index = 0;
@@ -131,32 +108,21 @@ public final class RWinBuffer {
                 index++;
                 continue;
             }
-            buffer.pushMatrix();
+            buffer.push();
             buffer.translate(component.getRelPosX(), component.getRelPosY());
             drawChildComponent(component);
             if (index > 0) { // TODO if as to kind of separator to draw
                 // separator
-                if (folder.getLayout() instanceof RLinearLayout linear) {
-                    buffer.pushStyle();
-                    if (linear.getDirection() == RDirection.VERTICAL) {
-                        drawHorizontalSeparator(buffer, (int) width);
-                    } else {
-                        drawVerticalSeparator(buffer);
-                    }
-                    buffer.popStyle();
-                }
+                drawSeparator((int) width);
             }
             index++;
-            buffer.popMatrix();
+            buffer.pop();
         }
+        drawSeparator((int) width);
     }
 
-    /**
-     * Draw The Content of The Window
-     *
-     * @param folder Container of UI Nodes
-     */
-    private void drawContent(RFolder folder) {
+    @Override
+    protected void drawContent() {
         long time = System.currentTimeMillis();
         if (!folder.getChildren().isEmpty()) {
             buffer.beginDraw();
@@ -164,40 +130,40 @@ public final class RWinBuffer {
 
             buffer.textFont(RFontStore.getMainFont());
             buffer.textAlign(LEFT, CENTER);
-            RLayoutBase layout = folder.getLayout();
-            LOGGER.debug("{} Win Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
-            PVector pos = folder.getWindow().getContentStart();
-            LOGGER.debug("{} Layout [{},{}]",folder.getName(),folder.getWindow().contentSize.x,folder.getWindow().contentSize.y);
-            layout.setCompLayout(pos,folder.getWindow().contentSize, folder.getChildren());
-            drawChildren(folder, buffer.width);
+            drawChildren(buffer.width);
 
             buffer.endDraw();
         }
         LOGGER.debug("{} Content Buffer [{},{}] Draw Duration {}", folder.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
     }
 
-    private synchronized void redrawIfNecessary(){
+    @Override
+    protected synchronized void reinitialisationIfNecessary() {
         if (isReInitRequired){
-            createBuffer(win.getContentWidth(), win.getContentHeight());
+            PVector size = calculateBufferSize();
+            createBuffer(size.x, size.y);
+
+            // Resizings have to be done before we draw the content buffer
+            RLayoutBase layout = folder.getLayout();
+            LOGGER.debug("{} Win Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
+            PVector pos = folder.getWindow().getContentStart();
+            LOGGER.debug("{} Layout [{},{}]",folder.getName(),folder.getWindow().contentSize.x,folder.getWindow().contentSize.y);
+            layout.setCompLayout(pos,folder.getWindow().contentSize, folder.getChildren());
+
             isReInitRequired = false;
         }
+    }
+
+    @Override
+    protected synchronized void redrawIfNecessary() {
+        reinitialisationIfNecessary();
         if (isBufferInvalid) {
-            drawContent(win.getFolder());
+            // Redraws have to be done before we draw the content buffer
+            folder.getChildren().forEach(RComponent::drawToBuffer);
+
+            drawContent();
+
             isBufferInvalid = false;
         }
-    }
-
-    public synchronized PGraphics draw(){
-        redrawIfNecessary();
-        return buffer;
-    }
-
-    public synchronized void invalidateBuffer() {
-        isBufferInvalid = true;
-    }
-
-    public synchronized void resetBuffer() {
-        isReInitRequired = true;
-        isBufferInvalid = true;
     }
 }

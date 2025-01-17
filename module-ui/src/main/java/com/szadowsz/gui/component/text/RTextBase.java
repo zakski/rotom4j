@@ -2,6 +2,7 @@ package com.szadowsz.gui.component.text;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.theme.RColorConverter;
 import com.szadowsz.gui.config.text.RFontStore;
@@ -23,7 +24,7 @@ import static processing.core.PConstants.*;
 /**
  * Base class for any component that primarily uses text.
  */
-public abstract class RTextBase extends RComponent {
+public abstract class RTextBase extends RSingle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RTextBase.class);
 
     private final String regexLookBehindForNewLine = "(?<=\\n)";

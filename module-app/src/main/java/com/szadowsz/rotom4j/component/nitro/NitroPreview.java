@@ -2,6 +2,7 @@ package com.szadowsz.rotom4j.component.nitro;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.app.utils.ImageUtils;
@@ -10,7 +11,7 @@ import com.szadowsz.rotom4j.utils.Configuration;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
-public class NitroPreview extends RComponent {
+public class NitroPreview extends RSingle {
 
     private final Drawable drawable;
     PImage image;
