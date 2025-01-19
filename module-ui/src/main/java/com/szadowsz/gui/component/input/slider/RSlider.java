@@ -498,7 +498,7 @@ public class RSlider extends RSingle {
         } else {
             LOGGER.debug("Mouse DeltaX for Slider {} [{} = {} - {}]", name, mouseDeltaX, mouseEvent.getPrevX(), mouseEvent.getX());
         }
-        redrawBuffers();
+        redrawBuffers(); // REDRAW-VALID: we should redraw the buffer as dragging changes the slider value
         mouseEvent.consume();
     }
 

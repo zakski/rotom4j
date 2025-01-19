@@ -9,7 +9,6 @@ import com.szadowsz.rotom4j.app.ProcessingRotom4J;
 import com.szadowsz.rotom4j.app.utils.FileChooser;
 import com.szadowsz.rotom4j.component.R4JComponent;
 import com.szadowsz.rotom4j.component.R4JFolder;
-import com.szadowsz.rotom4j.component.nitro.NitroCmpFolder;
 import com.szadowsz.rotom4j.component.nitro.NitroCmpFolderComponent;
 import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
 import org.slf4j.Logger;

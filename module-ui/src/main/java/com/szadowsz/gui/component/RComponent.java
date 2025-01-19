@@ -62,9 +62,9 @@ public abstract class RComponent {
     protected boolean isVisible = true; // Is the component visible? (Not Parent Aware)
 
     // Component State
-    protected boolean isDragged = true; // Set to true when mouse is dragging, set to false on mouse released
+    protected boolean isDragged = false; // Set to true when mouse is dragging, set to false on mouse released
     //protected boolean isFocused = false; // TODO Difference between mouse over and has focus
-    protected boolean isMouseOver = true; // TODO Difference between mouse over and has focus
+    protected boolean isMouseOver = false; // TODO Difference between mouse over and has focus
 
     /**
      * Default Constructor
@@ -252,7 +252,7 @@ public abstract class RComponent {
      *
      * @param pg graphics reference to use
      */
-    protected final void drawContent(PGraphics pg) {
+    protected void drawContent(PGraphics pg) {
         // the component knows its absolute position but here the current matrix is already translated to it
         if (isMouseOver) {
             highlightBackground(pg);
@@ -271,9 +271,15 @@ public abstract class RComponent {
         pg.popMatrix();
     }
 
+    /**
+     * Make a call to flag a redraw of the component buffer due to a change in state, most likely by user input.
+     *
+     * This should not need to call redraw on parent buffers, because the parent should flag it needs to redraw after
+     * seeing the mouse/key event consumed.
+     */
     protected void redrawBuffers() {
         buffer.invalidateBuffer();
-        RWindowPane win = getParentWindow();
+        RWindowPane win = getParentWindow(); // TODO check if needed
         if (win != null) {
             win.redrawBuffer();
         }
@@ -281,7 +287,10 @@ public abstract class RComponent {
 
     protected void resetBuffer() {
         buffer.resetBuffer();
-        getParentWindow().redrawBuffer();
+        RWindowPane win = getParentWindow(); // TODO check if needed
+        if (win != null) {
+            win.redrawBuffer();
+        }
     }
 
     /**
@@ -503,22 +512,10 @@ public abstract class RComponent {
         }
     }
 
-
-    /**
-     * Set the Height of the component, modified by only being set in whole cells.
-     *
-     * @param height raw height
-     */
-    public void setHeight(float height) {
-        heightInCells = calcHeightInCells(height);
-        size.y = heightInCells * RLayoutStore.getCell();
-        resetBuffer();
-    }
-
     public void setMouseOver(boolean b) {
         if (isMouseOver != b) {
             isMouseOver = b;
-            redrawBuffers();
+            redrawBuffers(); // REDRAW-VALID: we should redraw the buffer when the mouse over state changes
         }
     }
 
@@ -531,7 +528,7 @@ public abstract class RComponent {
      * @param mouseEvent
      */
     public void setMouseOverThisOnly(RComponentTree componentTree, RMouseEvent mouseEvent) {
-        isMouseOver = true;
+        setMouseOver(true);
         componentTree.setAllOtherMouseOversToFalse(this);
     }
 
@@ -576,9 +573,6 @@ public abstract class RComponent {
      * @param adjustedMouseY
      */
     public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (!isMouseOver()) {
-            redrawBuffers();
-        }
         setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
         mouseEvent.consume();
     }
@@ -590,11 +584,13 @@ public abstract class RComponent {
      * @param mouseY     adjust for scrollbar
      */
     public void mousePressed(RMouseEvent mouseEvent, float mouseY) {
+        // We should mark these as true, but we don't need to do reprocessing of the buffers based on their prior state
         isDragged = true;
         isMouseOver = true;
+
+        redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user pressed the mouse
         mouseEvent.consume();
-        redrawBuffers();
-    }
+     }
 
     /**
      * Method to handle the component's reaction to the mouse being released outside of itself
@@ -606,7 +602,7 @@ public abstract class RComponent {
         if (isDragged) {
             setFocus(false);
             mouseEvent.consume();
-            redrawBuffers();
+            redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
         }
         isDragged = false;
     }
@@ -623,7 +619,7 @@ public abstract class RComponent {
             mouseEvent.consume();
         }
         isDragged = false;
-        redrawBuffers();
+        redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
     }
 
     /**
@@ -634,11 +630,11 @@ public abstract class RComponent {
      * @param isOver     was released over the component
      */
     public void mouseReleased(RMouseEvent mouseEvent, float mouseY, boolean isOver) {
-//        if (isOver) {
-//            mouseReleasedOverComponent(mouseEvent, mouseY);
-//        } else {
-//            mouseReleasedAnywhere(mouseEvent, mouseY);
-//        }
+        if (isOver) {
+            mouseReleasedOverComponent(mouseEvent, mouseY);
+        } else {
+            mouseReleasedAnywhere(mouseEvent, mouseY);
+        }
     }
 
     /**
@@ -658,7 +654,7 @@ public abstract class RComponent {
      */
     public void draw(PGraphics pg) {
         // the component knows its absolute position but here the current matrix is already translated to it
-        drawContent(pg);
+        pg.image(buffer.draw(),0,0);
     }
 
 
@@ -673,7 +669,7 @@ public abstract class RComponent {
         if (isMouseOver) {
             isMouseOver = false;
         }
-        redrawBuffers();
+        redrawBuffers(); // REDRAW-VALID: we should redraw the buffer when the component loses focus
     }
 
     public abstract float suggestWidth();
@@ -691,9 +687,18 @@ public abstract class RComponent {
         pos.y = bY + rY;
         relPos.x = rX;
         relPos.y = rY;
+
+        if (size.x != w){
+            resetBuffer(); // RESET-VALID: we should resize the buffer if the size changes
+        }
+
         size.x = w;
+
+        if (size.y != h){
+            resetBuffer(); // RESET-VALID: we should resize the buffer if the size changes
+        }
+
         size.y = h;
-        resetBuffer();
     }
 
     /**
@@ -703,7 +708,7 @@ public abstract class RComponent {
      * @param relPos  relative position from base
      * @param dim     allowed width and height
      */
-    public void updateCoordinates(PVector basePos, PVector relPos, PVector dim) { // TODO LazyGui
+    public final void updateCoordinates(PVector basePos, PVector relPos, PVector dim) { // TODO LazyGui
         updateCoordinates(basePos.x, basePos.y, relPos.x, relPos.y, dim.x, dim.y);
     }
 }

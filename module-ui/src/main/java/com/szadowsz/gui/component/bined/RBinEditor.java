@@ -148,12 +148,12 @@ public class RBinEditor extends RBinEdBase {
 
     protected void setActiveCaretPosition(RCaretPos caretPosition) {
         caret.setCaretPosition(caretPosition);
-        redrawWinBuffer();
+        redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if we move the caret
     }
 
     protected void setActiveCaretPosition(long dataPosition) {
         caret.setCaretPosition(dataPosition);
-        redrawWinBuffer();
+        redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if we move the caret
     }
 
     protected void setCodeValue(int value) {
@@ -172,7 +172,7 @@ public class RBinEditor extends RBinEdBase {
         boolean changed = previousOperation != currentOperation;
         if (changed) {
             caret.resetBlink();
-            redrawWinBuffer();
+            redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if we change the edit operation
         }
     }
 
@@ -331,8 +331,6 @@ public class RBinEditor extends RBinEdBase {
         RCaretPos caretPosition = computeClosestCaretPosition(positionX, positionY);
         setActiveCaretPosition(caretPosition);
         updateSelection(selecting);
-
-        getParentWindow().redrawBuffer();
     }
 
     protected void moveCaret(RMouseEvent me) {
@@ -401,7 +399,6 @@ public class RBinEditor extends RBinEdBase {
             }
             notifyDataChanged();
             move(RSelectingMode.NONE, RMovementDirection.RIGHT);
-            redrawWinBuffer();
         }
     }
 
@@ -434,7 +431,6 @@ public class RBinEditor extends RBinEdBase {
             notifyDataChanged();
             caret.setCaretPosition(dataPosition + bytes.length - 1);
             move(RSelectingMode.NONE, RMovementDirection.RIGHT);
-            redrawWinBuffer();
         }
     }
 
@@ -469,7 +465,6 @@ public class RBinEditor extends RBinEdBase {
         caret.setCodeOffset(0);
         setActiveCaretPosition(caret.getCaretPosition());
         notifyDataChanged();
-        redrawWinBuffer();
         clearSelection();
     }
 
@@ -501,7 +496,6 @@ public class RBinEditor extends RBinEdBase {
         if (tabKeyHandlingMode == RTabKeyMode.PLATFORM_SPECIFIC || tabKeyHandlingMode == RTabKeyMode.CYCLE_TO_NEXT_SECTION || tabKeyHandlingMode == RTabKeyMode.CYCLE_TO_PREVIOUS_SECTION) {
             if (getViewMode() == RBinViewMode.DUAL) {
                 move(selectingMode, RMovementDirection.SWITCH_SECTION);
-                redrawWinBuffer();
             }
         } else if (getActiveSection() == RCodeAreaSection.TEXT_PREVIEW) {
             String sequence = tabKeyHandlingMode == RTabKeyMode.INSERT_TAB ? "\t" : "  ";
@@ -532,7 +526,6 @@ public class RBinEditor extends RBinEdBase {
             ((EditableBinaryData) contentData).remove(dataPosition - 1, 1);
             notifyDataChanged();
             setActiveCaretPosition(caret.getCaretPosition());
-            redrawWinBuffer();
             clearSelection();
         }
     }
@@ -545,7 +538,6 @@ public class RBinEditor extends RBinEdBase {
         if (hasSelection()) {
             deleteSelection();
             notifyDataChanged();
-            redrawWinBuffer();
         } else {
             long dataPosition = caret.getDataPosition();
             if (dataPosition >= getDataSize()) {
@@ -558,8 +550,8 @@ public class RBinEditor extends RBinEdBase {
             }
             setActiveCaretPosition(caret.getCaretPosition());
             clearSelection();
-            redrawWinBuffer();
         }
+        redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if delete is pressed
     }
 
     public byte[] charToBytes(char value) {
@@ -572,10 +564,19 @@ public class RBinEditor extends RBinEdBase {
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         updateAssessors();
-        pg.pushMatrix();
-        int yDiff = 0;
-        pg.image(buffer.draw().get(0, yDiff, (int) size.x, (int) size.y), 0, 0);
-        pg.popMatrix();
+//        pg.pushMatrix();
+//        int yDiff = 0;
+//        pg.image(buffer.draw().get(0, yDiff, (int) size.x, (int) size.y), 0, 0);
+//        pg.popMatrix();
+        for (RComponent component : children) {
+            if (!component.isVisible()) {
+                continue;
+            }
+            pg.pushMatrix();
+            pg.translate(component.getRelPosX(), component.getRelPosY());
+            drawChildComponent(pg, component);
+            pg.popMatrix();
+        }
     }
 
     boolean isMirrorCursorShowing() {
@@ -668,25 +669,21 @@ public class RBinEditor extends RBinEdBase {
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_LEFT: {
                 move(isSelectingMode(keyEvent), RMovementDirection.LEFT);
-                redrawWinBuffer();
                 keyEvent.consume();
                 break;
             }
             case KeyEvent.VK_RIGHT: {
                 move(isSelectingMode(keyEvent), RMovementDirection.RIGHT);
-                redrawWinBuffer();
                 keyEvent.consume();
                 break;
             }
             case KeyEvent.VK_UP: {
                 move(isSelectingMode(keyEvent), RMovementDirection.UP);
-                redrawWinBuffer();
                 keyEvent.consume();
                 break;
             }
             case KeyEvent.VK_DOWN: {
                 move(isSelectingMode(keyEvent), RMovementDirection.DOWN);
-                redrawWinBuffer();
                 keyEvent.consume();
                 break;
             }
@@ -696,7 +693,6 @@ public class RBinEditor extends RBinEdBase {
                 } else {
                     move(isSelectingMode(keyEvent), RMovementDirection.ROW_START);
                 }
-                redrawWinBuffer();
                 keyEvent.consume();
                 break;
             }
@@ -706,14 +702,12 @@ public class RBinEditor extends RBinEdBase {
                 } else {
                     move(isSelectingMode(keyEvent), RMovementDirection.ROW_END);
                 }
-                redrawWinBuffer();
                 keyEvent.consume();
                 break;
             }
             case KeyEvent.VK_PAGE_UP: {
                 scroll(RScrollDirection.PAGE_UP);
                 move(isSelectingMode(keyEvent), RMovementDirection.PAGE_UP);
-                redrawWinBuffer();
                 keyEvent.consume();
                 break;
             }
@@ -804,6 +798,7 @@ public class RBinEditor extends RBinEdBase {
                 pressedCharInPreview(keyValue);
             }
         }
+        redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if a key is typed
     }
 
 
@@ -826,7 +821,7 @@ public class RBinEditor extends RBinEdBase {
             isMouseOver = true;
             moveCaret(mouseEvent.getX(), mouseEvent.getY(), RSelectingMode.SELECTING);
             mouseEvent.consume();
-            redrawWinBuffer();
+            redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if the user is selecting multiple chars
         }
     }
 

@@ -570,6 +570,11 @@ public class RBinMain extends RBinComponent {
         drawCursor(pg);
     }
 
+//    @Override
+//    protected void redrawBuffers() {
+//        super.redrawBuffers();
+//    }
+
     @Override
     public float suggestWidth() {
         return dimensions.getComponentRectangle().getWidth();

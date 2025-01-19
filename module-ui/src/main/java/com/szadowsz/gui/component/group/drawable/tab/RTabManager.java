@@ -17,7 +17,7 @@ import java.util.*;
 import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 
 public class RTabManager extends RGroupDrawable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RGroupDrawable.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RTabManager.class);
 
     protected static final String HEADER = "header";
 
@@ -34,6 +34,7 @@ public class RTabManager extends RGroupDrawable {
      */
     public RTabManager(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
+        buffer = new RTabBuffer(this);
         layout = null;
         children.add(new RTabHeader(gui, path + "/" + HEADER, this));
     }
@@ -49,6 +50,30 @@ public class RTabManager extends RGroupDrawable {
         return new PVector(maxWidth, maxHeight);
     }
 
+    protected boolean isPointOverActiveTab(RMouseEvent mouseEvent, float adjustedMouseY) {
+        RTab tab = getActiveTab();
+        return isPointInRect(
+                mouseEvent.getX(),
+                adjustedMouseY,
+                tab.getPosX(),
+                tab.getPosY(),
+                tab.getWidth(),
+                tab.getHeight()
+        );
+    }
+
+    protected boolean isPointOverHeader(RMouseEvent mouseEvent, float adjustedMouseY) {
+        RComponent header = findChildByName(HEADER);
+        return isPointInRect(
+                mouseEvent.getX(),
+                adjustedMouseY,
+                header.getPosX(),
+                header.getPosY(),
+                header.getWidth(),
+                header.getHeight()
+        );
+    }
+
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         RComponent header = findChildByName(HEADER);
@@ -62,43 +87,6 @@ public class RTabManager extends RGroupDrawable {
             tab.draw(pg);
         }
         pg.popMatrix();
-    }
-
-
-    protected void updateChildrenCoordinates() { // TODO Fancyify
-        float availableVerticalSpace = size.y;
-        float availableHorizontalSpace = size.x;
-        LOGGER.trace("{} Available Space [{},{}]",getName(),availableHorizontalSpace,availableVerticalSpace);
-
-        final Map<RComponent, PVector> fittingMap = new IdentityHashMap<>();
-
-        RComponent header = findChildByName(HEADER);
-        PVector preferredSize = header.getPreferredSize();
-        LOGGER.info("{} Tab Header Preferred Size [{},{}]",getName(),preferredSize.x,preferredSize.y);
-        PVector headerFittingSize = new PVector(
-                Math.min(availableHorizontalSpace, preferredSize.x),
-                preferredSize.y);
-        if (availableHorizontalSpace > headerFittingSize.x) {
-            headerFittingSize.x = availableHorizontalSpace;
-        }
-        LOGGER.info("{} Tab Header Fitting Size [{},{}]",getName(),headerFittingSize.x,headerFittingSize.y);
-
-        preferredSize = getPreferredTabSize();
-        LOGGER.info("{} Active Tab Preferred Size [{},{}]",getName(),preferredSize.x,preferredSize.y);
-        PVector tabFittingSize = new PVector(
-                Math.min(availableHorizontalSpace, preferredSize.x),
-                preferredSize.y);
-        if (availableHorizontalSpace > tabFittingSize.x) {
-            tabFittingSize.x = availableHorizontalSpace;
-        }
-        LOGGER.info("{} Active Tab Fitting Size [{},{}]",getName(),tabFittingSize.x,tabFittingSize.y);
-
-        PVector start = getPosition();
-        header.updateCoordinates(start, new PVector(), headerFittingSize);
-
-        for (RTab tab: getTabs()) {
-            tab.updateCoordinates(start, new PVector(0,headerFittingSize.y), tabFittingSize);
-        }
     }
 
     List<RTab> getTabs() {
@@ -146,6 +134,8 @@ public class RTabManager extends RGroupDrawable {
         RTab tab = ((RTab)children.getLast());
         active = children.size() - 1;
         getHeader().addTab(tab.getTitle(),tab.getAction());
+        getTabs().forEach(t -> t.resetBuffer());
+        resetBuffer(); // RESET-VALID: we should resize the buffer if a new tab is added
     }
 
     @Override
@@ -153,17 +143,17 @@ public class RTabManager extends RGroupDrawable {
         if (!isVisible() || !this.isVisibleParentAware()) {
             return;
         }
-        RComponent header = findChildByName(HEADER);
-        RTab tab = getActiveTab();
-        if (isPointInRect(mouseEvent.getX(), adjustedMouseY, header.getPosX(), header.getPosY(), header.getWidth(), header.getHeight())) {
+        if (isPointOverHeader(mouseEvent, adjustedMouseY)) {
+            RComponent header = findChildByName(HEADER);
             if (!header.isMouseOver()){
-                redrawBuffers();
+                redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the mouse is over the header
             }
             header.mouseOver(mouseEvent,adjustedMouseY);
             mouseEvent.consume();
-        } else if (isPointInRect(mouseEvent.getX(), adjustedMouseY, tab.getPosX(), tab.getPosY(), tab.getWidth(), tab.getHeight())) {
+        } else if (isPointOverActiveTab(mouseEvent, adjustedMouseY)) {
+            RTab tab = getActiveTab();
             if (!tab.isMouseOver()){
-                redrawBuffers();
+                redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the mouse is over the tab
             }
             tab.mouseOver(mouseEvent,adjustedMouseY);
             mouseEvent.consume();
@@ -175,19 +165,19 @@ public class RTabManager extends RGroupDrawable {
         if (!isVisible() || !this.isVisibleParentAware()) {
             return;
         }
-        RComponent header = findChildByName(HEADER);
         RTab tab = getActiveTab();
-        if (isPointInRect(mouseEvent.getX(), adjustedMouseY, header.getPosX(), header.getPosY(), header.getWidth(), header.getHeight())) {
+        if (isPointOverHeader(mouseEvent, adjustedMouseY)) {
+            RComponent header = findChildByName(HEADER);
             LOGGER.debug("Mouse Pressed for tab header {} [{}, {}, {}, {}, {}, {}]", header.getName(),mouseEvent.getX(),adjustedMouseY,header.getPosX(),header.getPosY(),header.getWidth(),header.getHeight());
             header.mousePressed(mouseEvent,adjustedMouseY);
             mouseEvent.consume();
-        } else if (isPointInRect(mouseEvent.getX(), adjustedMouseY, tab.getPosX(), tab.getPosY(), tab.getWidth(), tab.getHeight())) {
+        } else if (isPointOverActiveTab(mouseEvent, adjustedMouseY)) {
             LOGGER.debug("Mouse Pressed for active tab {} [{}, {}, {}, {}, {}, {}]", tab.getName(),mouseEvent.getX(),adjustedMouseY,tab.getPosX(),tab.getPosY(),tab.getWidth(),tab.getHeight());
             tab.mousePressed(mouseEvent,adjustedMouseY);
             mouseEvent.consume();
         }
         if (mouseEvent.isConsumed()){
-            redrawBuffers();
+            redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the user pressed the mouse over the tab group
         }
     }
 
@@ -199,14 +189,50 @@ public class RTabManager extends RGroupDrawable {
     }
 
     @Override
-    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
-        LOGGER.debug("Update Coordinates for Drawable Group [{}, {}, {}, {}, {}, {}]", bX,bY,rX,rY,w,h);
-        pos.x = bX + rX;
-        pos.y = bY + rY;
-        relPos.x = rX;
-        relPos.y = rY;
-        size.x = w;
-        size.y = h;
-        updateChildrenCoordinates();
+    public void updateChildrenCoordinates() { // TODO Fancyify
+        float availableVerticalSpace = size.y;
+        float availableHorizontalSpace = size.x;
+        LOGGER.trace("{} Available Space [{},{}]",getName(),availableHorizontalSpace,availableVerticalSpace);
+
+        final Map<RComponent, PVector> fittingMap = new IdentityHashMap<>();
+
+        RComponent header = findChildByName(HEADER);
+        PVector preferredSize = header.getPreferredSize();
+        LOGGER.info("{} Tab Header Preferred Size [{},{}]",getName(),preferredSize.x,preferredSize.y);
+        PVector headerFittingSize = new PVector(
+                Math.min(availableHorizontalSpace, preferredSize.x),
+                preferredSize.y);
+        if (availableHorizontalSpace > headerFittingSize.x) {
+            headerFittingSize.x = availableHorizontalSpace;
+        }
+        LOGGER.info("{} Tab Header Fitting Size [{},{}]",getName(),headerFittingSize.x,headerFittingSize.y);
+
+        preferredSize = getPreferredTabSize();
+        LOGGER.info("{} Active Tab Preferred Size [{},{}]",getName(),preferredSize.x,preferredSize.y);
+        PVector tabFittingSize = new PVector(
+                Math.min(availableHorizontalSpace, preferredSize.x),
+                preferredSize.y);
+        if (availableHorizontalSpace > tabFittingSize.x) {
+            tabFittingSize.x = availableHorizontalSpace;
+        }
+        LOGGER.info("{} Active Tab Fitting Size [{},{}]",getName(),tabFittingSize.x,tabFittingSize.y);
+
+        PVector start = getPosition();
+        header.updateCoordinates(start, new PVector(), headerFittingSize);
+
+        for (RTab tab: getTabs()) {
+            tab.updateCoordinates(start, new PVector(0,headerFittingSize.y), tabFittingSize);
+        }
+        resetBuffer();
+    }
+
+    @Override
+    protected void drawContent(PGraphics pg) {
+        super.drawContent(pg);
+    }
+
+    @Override
+    public void draw(PGraphics pg) {
+        drawContent(pg);
     }
 }

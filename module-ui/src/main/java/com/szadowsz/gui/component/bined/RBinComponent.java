@@ -107,4 +107,9 @@ public abstract class RBinComponent extends RSingle {
             drawShiftedChars(pg, drawnChars, charOffset + pos - group, group, positionX + (pos - group) * cellWidth, positionY);
         }
     }
+
+    @Override
+    protected void redrawBuffers() {
+        super.redrawBuffers(); // REDRAW-VALID: just carbon copying the redraw so we allow it to be visible
+    }
 }

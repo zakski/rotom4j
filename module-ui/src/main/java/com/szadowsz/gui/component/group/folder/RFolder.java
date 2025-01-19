@@ -3,6 +3,7 @@ package com.szadowsz.gui.component.group.folder;
 import com.szadowsz.gui.RBuffer;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RComponentBuffer;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
@@ -40,6 +41,7 @@ public class RFolder extends RGroup {
      */
     public RFolder(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
+        buffer = new RComponentBuffer(this);
     }
 
     /**
@@ -134,14 +136,6 @@ public class RFolder extends RGroup {
      */
     public void setWindow(RWindowPane pane) {
         window = pane;
-    }
-
-
-    @Override
-    public void draw(PGraphics pg) {
-        // the component knows its absolute position but here the current matrix is already translated to it
-        //drawContent(pg);
-        pg.image(buffer.draw(),0,0);
     }
 
     @Override

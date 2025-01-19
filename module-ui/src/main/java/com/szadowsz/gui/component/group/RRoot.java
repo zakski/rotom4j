@@ -4,6 +4,7 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.layout.RLayoutBase;
+import com.szadowsz.gui.window.pane.RWindowPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
@@ -68,5 +69,11 @@ public class RRoot extends RGroup {
                 }
             }
         }
+    }
+
+    protected void redrawBuffers() {
+    }
+
+    protected void resetBuffer() {
     }
 }

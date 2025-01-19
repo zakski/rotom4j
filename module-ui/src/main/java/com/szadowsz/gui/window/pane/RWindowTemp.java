@@ -6,6 +6,7 @@ import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.input.mouse.RMouseHiding;
 import com.szadowsz.gui.layout.RLinearLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,40 +148,37 @@ public class RWindowTemp extends RWindowPane {
                 )
         );
         if (!folder.getChildren().isEmpty()) {
-            // Redraws have to be done before we draw the content buffer
-            folder.getChildren().forEach(RComponent::drawToBuffer);
             drawContent(canvas);
         }
         drawBackgroundWithWindowBorder(canvas, false);
         canvas.popMatrix();
     }
 
-
     @Override
-    public void mouseMoved(RMouseEvent e) {
-        if (isMouseInsideScrollbar(e)) {
-            if (folder.getChildren().stream().anyMatch(RComponent::isMouseOver)) {
-                contentBuffer.invalidateBuffer();
-            }
-            e.consume();
-            vsb.ifPresent(s -> s.mouseMoved(e));
-            folder.setMouseOverThisOnly(gui.getComponentTree(),e);
-        } else if (isMouseInsideContent(e)) {
-            LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", e.getX(), e.getY(), pos.x, pos.y, size.x, size.y);
-            RComponent node = findComponentAt(e.getX(), e.getY());
-            if (node != null && !node.isMouseOver()) {
-                LOGGER.debug("Inside {} Component MX {} MY {} NX {} NY {} Width {} Height {}",  node.getName(), e.getX(), e.getY(), node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
-                contentBuffer.invalidateBuffer();
-            }
-            if (node != null && node.isParentWindowVisible()) {
-                LOGGER.debug("Consume Mouse Move for {} Component",  node.getName());
-                node.setMouseOverThisOnly(gui.getComponentTree(),e);
-                e.consume();
+    public void mouseMoved(RMouseEvent mouseEvent) {
+        if (!isVisible()) {
+            return;
+        }
+
+        if (isMouseInsideContent(mouseEvent)) {
+            LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", mouseEvent.getX(), mouseEvent.getY(), pos.x, pos.y, size.x, size.y);
+            RComponent child = findComponentAt(mouseEvent.getX(), mouseEvent.getY());
+            if (child != null) {
+                if (!child.isMouseOver()) {
+                    LOGGER.debug("Inside Component {} [NX {} NY {} Width {} Height {}]", child.getName(), child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
+                    contentBuffer.invalidateBuffer();
+                }
+                child.mouseOver(mouseEvent, mouseEvent.getY());
             }
         } else {
-            if (!isPointInRect(e.getX(),e.getY(),pos.x-5,pos.y-5,size.x+10,size.y+10)) {
+            if (!isPointInRect(mouseEvent.getX(),mouseEvent.getY(),pos.x-5,pos.y-5,size.x+10,size.y+10)) {
+                if (folder.isChildMouseOver()) {
+                    LOGGER.info("Child Was Over {} Window",title);
+                    contentBuffer.invalidateBuffer();
+                }
+
                 gui.setAllMouseOverToFalse(this.folder);
-                if (!isInParentWindow(e.getX(), e.getY()) && !isInChildWindow(e.getX(), e.getY())) {
+                if (!isInParentWindow(mouseEvent.getX(), mouseEvent.getY()) && !isInChildWindow(mouseEvent.getX(), mouseEvent.getY())) {
                     close();
                 }
             }
@@ -188,8 +186,58 @@ public class RWindowTemp extends RWindowPane {
     }
 
     @Override
-    public void mouseReleased(RMouseEvent e) {
-        super.mouseReleased(e);
+    public void mousePressed(RMouseEvent mouseEvent) {
+        if (!isVisible()) {
+            return;
+        }
+        // Make sure Window Grabs focus
+        if (isMouseInsideWindow(mouseEvent)) {
+            if (!isFocused()) {
+                setFocusOnThis();
+            }
+        }
+        // Reset Values
+        isCloseInProgress = false;
+        isBeingDragged = false;
+        isBeingResized = false;
+
+
+        // Then Check Window Parts
+        if (!isRoot() && ((isMouseInsideCloseButton(mouseEvent) && mouseEvent.isLeft()) || (isMouseInsideWindow(mouseEvent) && mouseEvent.isRight()))) {
+            isCloseInProgress = true;
+            mouseEvent.consume();
+        } else if (isPointInsideContent(mouseEvent.getX(), mouseEvent.getY())) {
+            RComponent child = findComponentAt(mouseEvent.getX(), mouseEvent.getY());
+            if (child != null) {
+                contentBuffer.invalidateBuffer();
+                child.mousePressed(mouseEvent, mouseEvent.getY());
+            }
+        }
+    }
+
+    @Override
+    public void mouseReleased(RMouseEvent mouseEvent) {
+        if (!isVisible()) {
+            return;
+        }
+
+        // Check Window Parts
+        if (isCloseInProgress && ((isMouseInsideCloseButton(mouseEvent) && mouseEvent.isLeft()) || (isMouseInsideWindow(mouseEvent) && mouseEvent.isRight()))) {
+            close();
+            mouseEvent.consume();
+        } else {
+            RComponent released = findComponentAt(mouseEvent.getX(), mouseEvent.getY());
+            for (RComponent child : folder.getChildren()) {
+                boolean isReleased = child.equals(released);
+                if (isReleased) {
+                    contentBuffer.invalidateBuffer();
+                }
+                child.mouseReleased(mouseEvent, mouseEvent.getY(), isReleased);
+            }
+            if (mouseEvent.isConsumed()){
+                RMouseHiding.tryRevealMouseAfterDragging(sketch);
+            }
+        }
     }
 
     @Override

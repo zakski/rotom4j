@@ -1,6 +1,7 @@
 package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.layout.RRect;
+import com.szadowsz.gui.window.pane.RWindowPane;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.rotom4j.binary.EmptyBinaryData;
@@ -200,6 +201,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
      */
     protected void clearSelection() {
         selection.clearSelection();
+        redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if the selection is cleared
     }
 
     protected void clearClipboardData() {
@@ -300,8 +302,13 @@ public abstract class RBinEdBase extends RGroupDrawable {
         }
     }
 
-    protected void redrawWinBuffer(){
-        getParentWindow().redrawBuffer();
+    protected void redrawBuffers() {
+        buffer.invalidateBuffer();
+        ((RBinMain) children.getFirst()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary main if we redraw the binary editor
+        RWindowPane win = getParentWindow();
+        if (win != null) {
+            win.redrawBuffer();
+        }
     }
 
     /**

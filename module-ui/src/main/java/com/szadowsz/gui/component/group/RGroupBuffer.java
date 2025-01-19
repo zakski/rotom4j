@@ -21,7 +21,7 @@ import java.util.List;
 import static com.szadowsz.gui.config.theme.RColorType.WINDOW_BORDER;
 import static processing.core.PConstants.*;
 
-public final class RGroupBuffer extends RComponentBuffer {
+public class RGroupBuffer extends RComponentBuffer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RGroupBuffer.class);
 
     private final RGroupDrawable group;
@@ -111,20 +111,28 @@ public final class RGroupBuffer extends RComponentBuffer {
     @Override
     protected void drawContent() {
         long time = System.currentTimeMillis();
+        group.updateChildrenCoordinates();
         if (!group.getChildren().isEmpty()) {
             buffer.beginDraw();
             buffer.clear();
             buffer.textFont(RFontStore.getMainFont());
             buffer.textAlign(LEFT, CENTER);
-            RLayoutBase layout = group.getLayout();
-            LOGGER.debug("{} Content Buffer [{},{}] Layout {}",group.getName(),buffer.width,buffer.height,layout);
-            PVector pos = group.getPosition();
-            LOGGER.debug("{} Layout [{},{}]",group.getName(),group.getWidth(),group.getHeight());
-            layout.setCompLayout(pos,group.getSize(), group.getChildren());
-            drawChildren(buffer.width);
-
+            group.drawContent(buffer);
             buffer.endDraw();
         }
         LOGGER.debug("{} Content Buffer [{},{}] Draw Duration {}", group.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
+    }
+
+    @Override
+    protected synchronized void redrawIfNecessary() {
+        reinitialisationIfNecessary();
+        if (isBufferInvalid) {
+            // Redraws have to be done before we draw the content buffer
+            group.getChildren().forEach(RComponent::drawToBuffer);
+
+            drawContent();
+
+            isBufferInvalid = false;
+        }
     }
 }

@@ -35,40 +35,12 @@ public final class RTabHeader extends RGroupDrawable {
 
     @Override
     public void setLayout(RLayoutBase layout) {
-
     }
 
     public void addTab(String name, RMouseAction action) {
         RButton button = new RButton(gui, path + "/" + name, this);
         button.registerAction(RActivateByType.RELEASE, action);
         children.add(button);
-        redrawBuffers();
-    }
-
-
-    @Override
-    public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY) {
-        RComponent underMouse = findComponentAt(mouseEvent.getX(), adjustedMouseY);
-        if (underMouse != null) {
-            if (!underMouse.isMouseOver()) {
-                LOGGER.debug("Inside Tab Header {} [NX {} NY {} Width {} Height {}]", underMouse.getName(), underMouse.getPosX(), underMouse.getPosY(), underMouse.getWidth(), underMouse.getHeight());
-            }
-            underMouse.mouseOver(mouseEvent, adjustedMouseY);
-            redrawBuffers();
-        }
-        mouseEvent.consume();
-    }
-
-    @Override
-    public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (!isVisible() || !this.isVisibleParentAware()) {
-            return;
-        }
-        RComponent node = findComponentAt(mouseEvent.getX(), adjustedMouseY);
-        if (node != null) {
-            LOGGER.debug("Mouse Pressed for Tab {} [{}, {}, {}, {}, {}, {}]", node.getName(), mouseEvent.getX(), adjustedMouseY, node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
-            node.mousePressed(mouseEvent, adjustedMouseY);
-            redrawBuffers();
-        }
+        resetBuffer(); // RESET-VALID: we should resize the buffer if a new tab is added
     }
 }

@@ -8,6 +8,7 @@ import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RDirection;
+import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLinearLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,15 +121,19 @@ public abstract class RGroupDrawable extends RGroup {
             pg.textFont(RFontStore.getMainFont());
             pg.textAlign(LEFT, CENTER);
             LOGGER.debug("{} Layout [{},{}]", getName(), getWidth(), getHeight());
-            layout.setCompLayout(pos, getSize(), getChildren());
             drawChildren(pg);
         }
         LOGGER.debug("{} Group [{},{}] Draw Duration {}", getName(), pg.width, pg.height, System.currentTimeMillis() - time);
     }
 
+    @Override
+    protected void drawContent(PGraphics pg) {
+        super.drawContent(pg);
+    }
 
     @Override
     public void drawToBuffer() {
+        children.forEach(RComponent::drawToBuffer);
         buffer.redraw();
     }
 
@@ -145,6 +150,15 @@ public abstract class RGroupDrawable extends RGroup {
         return getPreferredSize();
     }
 
+    /**
+     * TODO
+     *
+     * @return TODO
+     */
+    public boolean hasFocus() {
+        return children.stream().anyMatch(RComponent::hasFocus);
+    }
+
     @Override
     public boolean isDragged() {
         return children.stream().anyMatch(RComponent::isDragged);
@@ -153,15 +167,6 @@ public abstract class RGroupDrawable extends RGroup {
     @Override
     public boolean isMouseOver() {
         return isChildMouseOver();
-    }
-
-    /**
-     * TODO
-     *
-     * @return TODO
-     */
-    public boolean hasFocus() {
-        return children.stream().anyMatch(RComponent::hasFocus);
     }
 
     @Override
@@ -193,8 +198,8 @@ public abstract class RGroupDrawable extends RGroup {
         RComponent underMouse = findComponentAt(mouseEvent.getX(), adjustedMouseY);
         if (underMouse != null) {
             if (!underMouse.isMouseOver()) {
-                LOGGER.info("Inside Component {} [NX {} NY {} Width {} Height {}]", underMouse.getName(), underMouse.getPosX(), underMouse.getPosY(), underMouse.getWidth(), underMouse.getHeight());
-                redrawBuffers();
+                LOGGER.debug("Inside Child Component {} [NX {} NY {} Width {} Height {}]", underMouse.getName(), underMouse.getPosX(), underMouse.getPosY(), underMouse.getWidth(), underMouse.getHeight());
+                redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the mouse is over one of the children
             }
             underMouse.mouseOver(mouseEvent, adjustedMouseY);
         }
@@ -203,14 +208,15 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (!isVisible() || !this.isVisibleParentAware()) {
+        if (!isVisible()) {
             return;
         }
-        RComponent node = findComponentAt(mouseEvent.getX(), adjustedMouseY);
-        if (node != null) {
-            LOGGER.debug("Mouse Pressed for component {} [{}, {}, {}, {}, {}, {}]", node.getName(), mouseEvent.getX(), adjustedMouseY, node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight());
-            node.mousePressed(mouseEvent, adjustedMouseY);
-            redrawBuffers();
+
+        RComponent child = findComponentAt(mouseEvent.getX(), adjustedMouseY);
+        if (child != null) {
+            LOGGER.debug("Mouse Pressed for Child Component {} [{}, {}, {}, {}, {}, {}]", child.getName(), mouseEvent.getX(), adjustedMouseY, child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
+            child.mousePressed(mouseEvent, adjustedMouseY);
+            redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the user pressed the mouse over a child
         }
     }
 
@@ -222,12 +228,14 @@ public abstract class RGroupDrawable extends RGroup {
      */
     @Override
     public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (!isVisible() || !this.isVisibleParentAware()) {
+        if (!isVisible()) {
             return;
         }
-        if (isDragged() && mouseEvent.isConsumed()) {
-            redrawBuffers();
+
+        if (isDragged()) {
+            redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the user was dragging a child and released the mouse anywhere
         }
+
         for (RComponent component : children) {
             component.mouseReleased(mouseEvent, adjustedMouseY, false);
         }
@@ -244,10 +252,10 @@ public abstract class RGroupDrawable extends RGroup {
         if (!isVisible() || !this.isVisibleParentAware()) {
             return;
         }
-        RComponent node = findComponentAt(mouseEvent.getX(), adjustedMouseY);
-        if (node != null) {
-            node.mouseReleased(mouseEvent, adjustedMouseY, true);
-            redrawBuffers();
+        RComponent child = findComponentAt(mouseEvent.getX(), adjustedMouseY);
+        if (child != null) {
+            child.mouseReleased(mouseEvent, adjustedMouseY, true);
+            redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the user released the mouse over a child
         }
     }
 
@@ -263,7 +271,7 @@ public abstract class RGroupDrawable extends RGroup {
                 LOGGER.debug("Mouse Dragged for Content {}", child.getName());
                 child.mouseDragged(mouseEvent);
                 if (mouseEvent.isConsumed()) {
-                    redrawBuffers();
+                    redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the user is dragging a child
                     break;
                 }
             }
@@ -279,6 +287,11 @@ public abstract class RGroupDrawable extends RGroup {
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
         LOGGER.debug("Update Coordinates for Drawable Group [{}, {}, {}, {}, {}, {}]", bX, bY, rX, rY, w, h);
         super.updateCoordinates(bX, bY, rX, rY, w, h);
+        updateChildrenCoordinates();
+    }
+
+    public void updateChildrenCoordinates() {
+        LOGGER.debug("{} Layout [{},{}]",getName(),getWidth(),getHeight());
         layout.setCompLayout(pos, size, children);
     }
 }
