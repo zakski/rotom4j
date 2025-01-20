@@ -830,6 +830,7 @@ public class RBinEditor extends RBinEdBase {
 
     @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
+        children.getFirst().updateCoordinates(bX,bY,rX,rY,w,h);
         super.updateCoordinates(bX, bY, rX, rY, w, h);
         buffer.resetBuffer();
     }

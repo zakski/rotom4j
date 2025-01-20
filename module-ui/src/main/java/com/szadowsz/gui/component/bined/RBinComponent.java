@@ -13,7 +13,7 @@ import com.szadowsz.gui.config.text.RFontStore;
 import processing.core.PFont;
 import processing.core.PGraphics;
 
-public abstract class RBinComponent extends RComponent {
+public abstract class RBinComponent extends RSingle {
 
     protected final RBinEditor editor;
 
