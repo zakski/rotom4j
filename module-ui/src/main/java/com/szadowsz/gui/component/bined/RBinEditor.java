@@ -1,7 +1,5 @@
 package com.szadowsz.gui.component.bined;
 
-import com.szadowsz.gui.component.group.RGroupBuffer;
-import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.rotom4j.binary.array.ByteArrayData;
@@ -33,6 +31,7 @@ import processing.core.PVector;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 /**
  * Editor Level Logic
@@ -95,6 +94,10 @@ public class RBinEditor extends RBinEdBase {
      */
     protected RCodeAreaSection getActiveSection() {
         return caret.getSection();
+    }
+
+    protected List<RBinComponent> getBinComponents(){
+        return children.stream().map(c -> (RBinComponent) c).toList();
     }
 
     protected RBinCharAssessor getCharAssessor() {
@@ -829,11 +832,6 @@ public class RBinEditor extends RBinEdBase {
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
         super.updateCoordinates(bX, bY, rX, rY, w, h);
         buffer.resetBuffer();
-    }
-
-    @Override
-    public void draw(PGraphics pg) {
-        drawContent(pg);
     }
 
     public static class RowDataCache {
