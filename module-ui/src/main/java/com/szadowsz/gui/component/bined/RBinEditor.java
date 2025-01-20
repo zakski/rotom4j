@@ -831,6 +831,11 @@ public class RBinEditor extends RBinEdBase {
         buffer.resetBuffer();
     }
 
+    @Override
+    public void draw(PGraphics pg) {
+        drawContent(pg);
+    }
+
     public static class RowDataCache {
 
         char[] headerChars;

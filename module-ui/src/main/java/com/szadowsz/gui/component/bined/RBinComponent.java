@@ -2,6 +2,7 @@ package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.RComponentBuffer;
 import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
 import com.szadowsz.gui.component.bined.bounds.RBinStructure;
@@ -12,7 +13,7 @@ import com.szadowsz.gui.config.text.RFontStore;
 import processing.core.PFont;
 import processing.core.PGraphics;
 
-public abstract class RBinComponent extends RSingle {
+public abstract class RBinComponent extends RComponent {
 
     protected final RBinEditor editor;
 
@@ -43,6 +44,7 @@ public abstract class RBinComponent extends RSingle {
         this.metrics = this.editor.getMetrics();
 
         this.font = RFontStore.getMainFont();
+        buffer = new RComponentBuffer(this);
     }
 
     @Override

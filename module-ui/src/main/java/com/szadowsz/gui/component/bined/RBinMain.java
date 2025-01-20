@@ -579,4 +579,14 @@ public class RBinMain extends RBinComponent {
     public float suggestWidth() {
         return dimensions.getComponentRectangle().getWidth();
     }
+
+    @Override
+    public void draw(PGraphics pg) {
+        drawContent(pg);
+    }
+
+    @Override
+    public void drawToBuffer() {
+
+    }
 }
