@@ -20,7 +20,6 @@ import com.szadowsz.gui.component.bined.settings.RCodeType;
 import com.szadowsz.gui.config.text.RFontMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PGraphics;
 
 /**
  * Binary Editor Component dimensions.
@@ -31,16 +30,20 @@ public class RBinDimensions {
     private static Logger LOGGER = LoggerFactory.getLogger(RBinDimensions.class);
 
     // Overall dimensions, to be fed back to the Editor component
-    protected final RRect componentRectangle = new RRect();
-    protected final RRect displayRectangle = new RRect();
+    protected final RRect componentDims = new RRect();
+    protected final RRect componentDisplayDims = new RRect();
+
     protected float dataDisplayHeight;
 
     // Drawn By RBinHeader sub-component
-    protected final RRect headerAreaRectangle = new RRect();
+    protected final RRect headerDims = new RRect();
 
     // Drawn By RBinMain sub-component
-    protected final RRect rowPositionAreaRectangle = new RRect();
-    protected final RRect mainAreaRectangle = new RRect();
+    protected final RRect rowPositionDims = new RRect();
+    protected final RRect rowPositionDisplayDims = new RRect();
+
+    protected final RRect contentDims = new RRect();
+    protected final RRect contentDisplayDims = new RRect();
 
     // TODO naming
     protected int charactersPerRectangle;
@@ -52,75 +55,72 @@ public class RBinDimensions {
 
     protected int computeCharactersPerRectangle(RFontMetrics metrics) {
         int characterWidth = metrics.getCharacterWidth();
-        return characterWidth == 0 ? 0 : Math.round((mainAreaRectangle.getWidth() + characterWidth - 1) / characterWidth);
+        return characterWidth == 0 ? 0 : Math.round((contentDims.getWidth() + characterWidth - 1) / characterWidth);
     }
 
     protected int computeCharactersPerPage(RFontMetrics metrics) {
         int characterWidth = metrics.getCharacterWidth();
-        return characterWidth == 0 ? 0 : Math.round(mainAreaRectangle.getWidth() / characterWidth);
+        return characterWidth == 0 ? 0 : Math.round(contentDims.getWidth() / characterWidth);
     }
 
     protected int computeRowsPerRectangle(RFontMetrics metrics) {
         int rowHeight = metrics.getRowHeight();
-        return rowHeight == 0 ? 0 : Math.round((mainAreaRectangle.getHeight() + rowHeight - 1) / rowHeight);
+        return rowHeight == 0 ? 0 : Math.round((contentDims.getHeight() + rowHeight - 1) / rowHeight);
     }
 
     protected int computeRowsPerPage(RFontMetrics metrics) {
         int rowHeight = metrics.getRowHeight();
-        return rowHeight == 0 ? 0 : Math.round(mainAreaRectangle.getHeight() / rowHeight);
+        return rowHeight == 0 ? 0 : Math.round(contentDims.getHeight() / rowHeight);
     }
 
     public int getCharactersPerPage() {
         return charactersPerPage;
     }
 
-    public RRect getComponentRectangle() {
-        return componentRectangle;
-    }
-    
-    public float getDataViewWidth() {
-        return mainAreaRectangle.getWidth();
+    public RRect getComponentDims() {
+        return componentDims;
     }
 
-    public float getDataViewHeight() {
-        return mainAreaRectangle.getHeight();
+    public RRect getComponentDisplayDims() {
+        return componentDisplayDims;
     }
 
-    public RRect getDataViewRectangle() {
-        return mainAreaRectangle;
+    public float getContentWidth() {
+        return contentDims.getWidth();
     }
 
-    public RRect getDisplayRectangle() {
-        return displayRectangle;
+    public float getContentHeight() {
+        return contentDims.getHeight();
     }
 
-    public float getHeaderAreaHeight() {
-        return headerAreaRectangle.getHeight();
+    public RRect getContentDims() {
+        return contentDims;
     }
 
-    public RRect getHeaderAreaRectangle() {
-        return headerAreaRectangle;
+    public float getHeaderHeight() {
+        return headerDims.getHeight();
     }
 
-    public RRect getMainAreaRectangle() {
-        return mainAreaRectangle;
+    public RRect getHeaderDims() {
+        return headerDims;
+    }
+
+    public float getRowPositionWidth() {
+        return rowPositionDims.getWidth();
+    }
+
+    public RRect getRowPositionDims() {
+        return rowPositionDims;
     }
 
     public int getRowsPerPage() {
         return rowsPerPage;
     }
 
-    public int getRowsPerRect() {
+    public int getTotalRows() {
         return rowsPerRect;
     }
 
-    public RRect getRowPositionAreaRectangle() {
-        return rowPositionAreaRectangle;
-    }
-
-    public float getRowPositionAreaWidth() {
-        return rowPositionAreaRectangle.getWidth();
-    }
 
     /**
      * Method to calculate the initial row position segment bounds
@@ -138,7 +138,7 @@ public class RBinDimensions {
 
         float headerYOffset = metrics.getFontHeight() + (float) metrics.getFontHeight() / 4;
         LOGGER.info("Editor Row Position: Length: {}, Width {}, Height {}, YOffset {}", rowPositionLength, rowPositionWidth, rowPositionHeight, headerYOffset);
-        rowPositionAreaRectangle.setSize(0, headerYOffset, rowPositionWidth, rowPositionHeight);
+        rowPositionDims.setSize(0, headerYOffset, rowPositionWidth, rowPositionHeight);
         dataDisplayHeight = metrics.getRowHeight()*(rowsToDisplay+1);
     }
 
@@ -163,17 +163,17 @@ public class RBinDimensions {
         LOGGER.info("Editor Data Content: Length: {}, Width {}, Height {}, XOffset {}, YOffset {}",
                 bytesPerRow,
                 contentWidth,
-                rowPositionAreaRectangle.getHeight(),
-                rowPositionAreaRectangle.getWidth(),
+                rowPositionDims.getHeight(),
+                rowPositionDims.getWidth(),
                 headerYOffset);
 
-        mainAreaRectangle.setSize(rowPositionAreaRectangle.getWidth(), headerYOffset, contentWidth, rowPositionAreaRectangle.getHeight());
+        contentDims.setSize(rowPositionDims.getWidth(), headerYOffset, contentWidth, rowPositionDims.getHeight());
 
-        LOGGER.info("Editor Header Data: Width {}, Height {}, XOffset {}", mainAreaRectangle.getWidth(), headerYOffset,rowPositionAreaRectangle.getWidth());
-        headerAreaRectangle.setSize(rowPositionAreaRectangle.getWidth(), 0, mainAreaRectangle.getWidth(), headerYOffset);
+        LOGGER.info("Editor Header Data: Width {}, Height {}, XOffset {}", contentDims.getWidth(), headerYOffset, rowPositionDims.getWidth());
+        headerDims.setSize(rowPositionDims.getWidth(), 0, contentDims.getWidth(), headerYOffset);
 
-        componentRectangle.setSize(0,0,rowPositionAreaRectangle.getWidth() +  mainAreaRectangle.getWidth(), headerYOffset + rowPositionAreaRectangle.getHeight());
-        displayRectangle.setSize(0,0, componentRectangle.getWidth(),headerYOffset+dataDisplayHeight);
+        componentDims.setSize(0,0, rowPositionDims.getWidth() +  contentDims.getWidth(), headerYOffset + rowPositionDims.getHeight());
+        componentDisplayDims.setSize(0,0, componentDims.getWidth(),headerYOffset+dataDisplayHeight);
     }
 
     /**

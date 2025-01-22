@@ -156,11 +156,11 @@ public abstract class RBinEdBase extends RGroupDrawable {
     }
 
     protected RCaretPos computeClosestCaretPosition(float positionX, float positionY) {
-        float relativeX = positionX - (pos.x + dimensions.getRowPositionAreaWidth());
-        float relativeY = positionY - (pos.y + dimensions.getHeaderAreaHeight());
+        float relativeX = positionX - (pos.x + dimensions.getRowPositionWidth());
+        float relativeY = positionY - (pos.y + dimensions.getHeaderHeight());
         RCaretPos caret = new RCaretPos();
 
-        if (relativeX < 0 || relativeY < 0 || relativeX > dimensions.getDataViewWidth() || relativeY > dimensions.getDataViewHeight()) {
+        if (relativeX < 0 || relativeY < 0 || relativeX > dimensions.getContentWidth() || relativeY > dimensions.getContentHeight()) {
             return caret;
         }
 
@@ -411,7 +411,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
 
     @Override
     public PVector getPreferredSize(){
-        RRect rectangle = dimensions.getDisplayRectangle();
+        RRect rectangle = dimensions.getComponentDisplayDims();
         return new PVector(rectangle.getWidth(), rectangle.getHeight());
     }
 

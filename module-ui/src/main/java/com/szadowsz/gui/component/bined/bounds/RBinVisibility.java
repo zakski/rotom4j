@@ -2,7 +2,6 @@ package com.szadowsz.gui.component.bined.bounds;
 
 import com.szadowsz.gui.component.bined.RBinEditor;
 import com.szadowsz.gui.component.bined.settings.RBinViewMode;
-import com.szadowsz.gui.config.text.RFontMetrics;
 
 public class RBinVisibility {
 
@@ -75,7 +74,7 @@ public class RBinVisibility {
         RBinViewMode viewMode = editor.getViewMode();
 
         int invisibleFromLeftX = 0;//scrolling.getHorizontalScrollX(characterWidth);
-        int invisibleFromRightX = Math.round(invisibleFromLeftX + editor.getDimensions().getDataViewWidth());
+        int invisibleFromRightX = Math.round(invisibleFromLeftX + editor.getDimensions().getContentWidth());
 
         charactersPerCodeSection = structure.computeFirstCodeCharacterPos(bytesPerRow);
 

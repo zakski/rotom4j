@@ -119,7 +119,7 @@ public class RBinEditor extends RBinEdBase {
      */
     protected PVector getPositionPoint(long dataPosition, int codeOffset, RCodeAreaSection section) {
         int bytesPerRow = structure.getBytesPerRow();
-        int rowsPerRect = dimensions.getRowsPerRect();
+        int rowsPerRect = dimensions.getTotalRows();
         int characterWidth = metrics.getCharacterWidth();
         int rowHeight = metrics.getRowHeight();
 
@@ -130,7 +130,7 @@ public class RBinEditor extends RBinEdBase {
 
         int byteOffset = (int) (dataPosition % bytesPerRow);
 
-        RRect dataViewRect = dimensions.getDataViewRectangle();
+        RRect dataViewRect = dimensions.getContentDims();
         float caretY = (dataViewRect.getY() + row * rowHeight);
         float caretX;
         if (section == RCodeAreaSection.TEXT_PREVIEW) {
@@ -223,8 +223,8 @@ public class RBinEditor extends RBinEdBase {
         dimensions.computeOtherMetrics(metrics);
 
         // Relay the size to the proper place // TODO Bodge job
-        size.x = dimensions.getDisplayRectangle().getWidth();
-        size.y = dimensions.getDisplayRectangle().getHeight();
+        size.x = dimensions.getComponentDisplayDims().getWidth();
+        size.y = dimensions.getComponentDisplayDims().getHeight();
     }
 
     /**
