@@ -110,7 +110,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
     /**
      * Initialise Editor Structural data
      */
-    protected abstract void init();
+    protected abstract void initBounds();
 
     /**
      * Read the Binary Data
@@ -294,7 +294,8 @@ public abstract class RBinEdBase extends RGroupDrawable {
 
     protected void redrawBuffers() {
         buffer.invalidateBuffer();
-        ((RBinMain) children.getFirst()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary main if we redraw the binary editor
+        ((RBinHeader) children.getFirst()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary header if we redraw the binary editor
+        ((RBinMain) children.get(1)).redrawBuffers(); // REDRAW-VALID: we should redraw the binary main if we redraw the binary editor
         RWindowPane win = getParentWindow();
         if (win != null) {
             win.redrawBuffer();

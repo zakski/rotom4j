@@ -5,7 +5,6 @@ import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.rotom4j.binary.array.ByteArrayData;
-import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.binary.io.reader.Buffer;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
@@ -74,14 +73,11 @@ public class RBinEditor extends RBinEdBase {
     }
 
     public RBinEditor(RotomGui gui, String path, RGroup parent, String filePath) {
-        super(gui, path, parent);
+        this(gui, path, parent);
 
-        LOGGER.info("Loading File \"{}\" for \"{}\" Binary Editor", filePath, name);
-        byte[] data = Buffer.readFile(filePath);
-        contentData = new ByteArrayEditableData(data);
-        caret = new RCaret(this);
-        init();
-        children.add(new RBinMain(gui, path + "/" + MAIN, this));
+        loadData(filePath);
+        initBounds();
+        initComponents();
     }
 
     /**
@@ -203,7 +199,7 @@ public class RBinEditor extends RBinEdBase {
     }
 
     @Override
-    protected void init() {
+    protected void initBounds() {
         LOGGER.info("Initialising \"{}\" Binary Editor", name);
         caret.setSection(RCodeAreaSection.CODE_MATRIX);
 
@@ -225,6 +221,11 @@ public class RBinEditor extends RBinEdBase {
                     0
             ));
         }
+    }
+
+    protected void initComponents() {
+        children.add(new RBinHeader(gui, path + "/" + HEADER, this));
+        children.add(new RBinMain(gui, path + "/" + MAIN, this));
     }
 
     /**
@@ -848,7 +849,9 @@ public class RBinEditor extends RBinEdBase {
 
     @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
-        children.getFirst().updateCoordinates(bX,bY,rX,rY,w,h);
+        RRect headerDims = dimensions.getHeaderDims();
+        children.getFirst().updateCoordinates(bX,bY,rX,rY + headerDims.getY(),w,headerDims.getHeight()); // header
+        children.get(1).updateCoordinates(bX,bY,rX,rY + headerDims.getHeight(),w,dimensions.getContentHeight()); // header
         super.updateCoordinates(bX, bY, rX, rY, w, h);
         buffer.resetBuffer();
     }

@@ -13,7 +13,7 @@ public class R4JEditor extends RBinEditor {
 
         contentData = (isCompressed)? data.getCompressedData() : data;
 
-        init();
-        children.add(new RBinMain(gui, path + "/" + MAIN, this));
+        initBounds();
+        initComponents();
     }
 }

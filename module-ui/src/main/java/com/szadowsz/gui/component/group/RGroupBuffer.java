@@ -74,36 +74,6 @@ public class RGroupBuffer extends RComponentBuffer {
         // }
     }
 
-    private void drawChildren(float width) {
-        List<RComponent> children = group.getChildren();
-
-        int index = 0;
-        for (RComponent component : children) {
-            if (!component.isVisible()) {
-                index++;
-                continue;
-            }
-            buffer.pushMatrix();
-            PVector relPos = component.getRelPosTo(group);
-            buffer.translate(relPos.x, relPos.y);
-            drawChildComponent(component);
-            if (index > 0) { // TODO if as to kind of separator to draw
-                // separator
-                if (group.getLayout() instanceof RLinearLayout linear) {
-                    buffer.pushStyle();
-                    if (linear.getDirection() == RDirection.VERTICAL) {
-                        drawHorizontalSeparator((int) width);
-                    } else {
-                        drawVerticalSeparator();
-                    }
-                    buffer.popStyle();
-                }
-            }
-            index++;
-            buffer.popMatrix();
-        }
-    }
-
     /**
      * Draw The Content of The Window
      *
