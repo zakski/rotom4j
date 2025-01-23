@@ -1,5 +1,7 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.gui.component.utils.RComponentScrollbar;
+import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.rotom4j.binary.array.ByteArrayData;
@@ -32,6 +34,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Editor Level Logic
@@ -55,6 +58,9 @@ public class RBinEditor extends RBinEdBase {
     // Cursor Caret
     protected RCaret caret;
     protected boolean showMirrorCursor = true;
+
+    // Vertical Scrollbar
+    protected Optional<RComponentScrollbar> vsb = Optional.empty();
 
     protected REnterKeyMode enterKeyHandlingMode = REnterKeyMode.PLATFORM_SPECIFIC;
     protected RTabKeyMode tabKeyHandlingMode = RTabKeyMode.PLATFORM_SPECIFIC;
@@ -119,12 +125,12 @@ public class RBinEditor extends RBinEdBase {
      */
     protected PVector getPositionPoint(long dataPosition, int codeOffset, RCodeAreaSection section) {
         int bytesPerRow = structure.getBytesPerRow();
-        int rowsPerRect = dimensions.getTotalRows();
+        long totalRows = dimensions.getTotalRows();
         int characterWidth = metrics.getCharacterWidth();
         int rowHeight = metrics.getRowHeight();
 
         long row = dataPosition / bytesPerRow;
-        if (row < -1 || row > rowsPerRect) {
+        if (row < -1 || row > totalRows) {
             return null;
         }
 
@@ -199,28 +205,37 @@ public class RBinEditor extends RBinEdBase {
     @Override
     protected void init() {
         LOGGER.info("Initialising \"{}\" Binary Editor", name);
-
         caret.setSection(RCodeAreaSection.CODE_MATRIX);
+
         initMetrics();
+        initDimensions();
 
-        long rowsCount = computeRowsCount();
-        rowPositionLength = computeRowPositionLength();
-
-        initDimensions(rowsCount);
         structure.setEditor(this);
-        structure.updateCache(dimensions.getCharactersPerPage());
+        structure.updateCache(dimensions.getCharactersPerRow());
 
         initVisibility(); // use the sizes to figure out the width
         updateRowDataCache();
+
+        if (maxRowsForDisplay < dimensions.getTotalRows()){
+            vsb = Optional.of(new RComponentScrollbar(
+                    this,
+                    new PVector(dimensions.getContentWidth(), dimensions.getHeaderHeight()),
+                    new PVector(RLayoutStore.getCell(),dimensions.getContentHeight()),
+                    dimensions.getContentHeight(),
+                    0
+            ));
+        }
     }
 
     /**
      * Calculate Dimensions
      */
-    protected void initDimensions(long rowsCount) {
-        dimensions.computeRowDimensions(metrics, rowPositionLength, maxRowsPerPage, rowsCount);
+    protected void initDimensions() {
+        long actualRowsCount = computeRowsCount();
+        rowPositionCharacters = computeRowPositionCharacters();
+
+        dimensions.computeRowDimensions(metrics, rowPositionCharacters, actualRowsCount, maxRowsForDisplay);
         dimensions.computeHeaderAndDataDimensions(metrics, codeType, maxBytesPerRow);
-        dimensions.computeOtherMetrics(metrics);
 
         // Relay the size to the proper place // TODO Bodge job
         size.x = dimensions.getComponentDisplayDims().getWidth();
@@ -239,8 +254,8 @@ public class RBinEditor extends RBinEdBase {
     }
 
     protected void initVisibility() {
-        int charactersPerPage = dimensions.getCharactersPerPage();
-        structure.updateCache(charactersPerPage);
+        int charactersPerRow = dimensions.getCharactersPerRow();
+        structure.updateCache(charactersPerRow);
         visibility.recomputeCharPositions(this);
     }
 
@@ -284,7 +299,7 @@ public class RBinEditor extends RBinEdBase {
 
         rowDataCache.headerChars = new char[visibility.getCharactersPerCodeSection()];
         rowDataCache.rowData = new byte[structure.getBytesPerRow() + metrics.getMaxBytesPerChar() - 1];
-        rowDataCache.rowPositionCode = new char[rowPositionLength];
+        rowDataCache.rowPositionCode = new char[rowPositionCharacters];
         rowDataCache.rowCharacters = new char[structure.getCharactersPerRow()];
     }
 
@@ -321,7 +336,7 @@ public class RBinEditor extends RBinEdBase {
 
     protected void move(RSelectingMode selectingMode, RMovementDirection direction) {
         RCaretPos caretPosition = getActiveCaretPosition();
-        RCaretPos movePosition = structure.computeMovePosition(caretPosition, direction, dimensions.getRowsPerPage());
+        RCaretPos movePosition = structure.computeMovePosition(caretPosition, direction, dimensions.getTotalRows());
         if (!caretPosition.equals(movePosition)) {
             setActiveCaretPosition(movePosition);
             updateSelection(selectingMode);
@@ -580,6 +595,9 @@ public class RBinEditor extends RBinEdBase {
             drawChildComponent(pg, component);
             pg.popMatrix();
         }
+        pg.pushMatrix();
+     //   vsb.ifPresent(sb -> sb.draw(pg,));
+        pg.popMatrix();
     }
 
     boolean isMirrorCursorShowing() {
@@ -660,7 +678,7 @@ public class RBinEditor extends RBinEdBase {
     public float suggestWidth() {
         int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
         int digitsForByte = codeType.getMaxDigitsForByte(); // Get the number of characters for a byte
-        return characterWidth * (rowPositionLength + 1) + digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
+        return characterWidth * (rowPositionCharacters + 1) + digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
     }
 
     @Override

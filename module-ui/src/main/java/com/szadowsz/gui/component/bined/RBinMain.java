@@ -120,7 +120,7 @@ public class RBinMain extends RBinComponent {
         int bytesPerRow = structure.getBytesPerRow();
         long dataSize = editor.getDataSize();
         int rowHeight = metrics.getRowHeight();
-        int totalRows = dimensions.getTotalRows();
+        long totalRows = dimensions.getTotalRows();
         RRect contentDims = dimensions.getContentDims();
 
         pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
@@ -239,7 +239,7 @@ public class RBinMain extends RBinComponent {
         int rowHeight = metrics.getRowHeight();
         float contentX = dimensions.getRowPositionWidth();
         float contentY = dimensions.getHeaderHeight();
-        int totalRows = dimensions.getTotalRows();
+        long totalRows = dimensions.getTotalRows();
 
         long dataSize = editor.getDataSize();
         long dataPosition = 0;
@@ -410,7 +410,7 @@ public class RBinMain extends RBinComponent {
 
         pg.textFont(font);
         pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
-        pg.rect(headerDims.getX(), headerDims.getY(), headerDims.getWidth(), headerDims.getHeight());
+        pg.rect(dimensions.getComponentDims().getX(), headerDims.getY(), dimensions.getComponentDims().getWidth(), headerDims.getHeight());
 
         RBinViewMode viewMode = editor.getViewMode();
         RCodeCase codeCharactersCase = editor.getCodeCharactersCase();
@@ -497,13 +497,13 @@ public class RBinMain extends RBinComponent {
         int rowHeight = metrics.getRowHeight();
         int characterWidth = metrics.getCharacterWidth();
         int subFontSpace = metrics.getSubFontSpace();
-        int totalRows = dimensions.getTotalRows();
+        long totalRows = dimensions.getTotalRows();
 
         RRect rowPositionDims = dimensions.getRowPositionDims();
         RRect contentDims = dimensions.getContentDims();
 
         RBinEditor.RowDataCache rowDataCache = editor.getRowDataCache();
-        int rowPositionLength = editor.getRowPositionLength();
+        int rowPositionLength = editor.getRowPositionCharacters();
 
         RBackgroundPaintMode backgroundPaintMode = editor.getBackgroundPaintMode();
 

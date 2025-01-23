@@ -58,11 +58,11 @@ public abstract class RBinEdBase extends RGroupDrawable {
 
     // Row Layout Config
     protected RRowWrappingMode rowWrapping = RRowWrappingMode.NO_WRAPPING;
-    protected int rowPositionLength;
-    protected int minRowPositionLength;
-    protected int maxRowPositionLength;
+
+    protected int rowPositionCharacters; // the length of the row position info in characters
+
     protected int maxBytesPerRow = 16;
-    protected int maxRowsPerPage = 16;
+    protected int maxRowsForDisplay = 16;
     protected int wrappingBytesGroupSize = 0;
 
     // Current User Selection
@@ -133,11 +133,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
      *
      * @return the expected row position length
      */
-    protected int computeRowPositionLength() {
-        if (minRowPositionLength > 0 && minRowPositionLength == maxRowPositionLength) {
-            return minRowPositionLength;
-        }
-
+    protected int computeRowPositionCharacters() {
         long dataSize = getDataSize();
         if (dataSize == 0) {
             return 1;
@@ -145,12 +141,6 @@ public abstract class RBinEdBase extends RGroupDrawable {
 
         double natLog = Math.log(dataSize == Long.MAX_VALUE ? dataSize : dataSize + 1);
         int positionLength = (int) Math.ceil(natLog / RCodeType.HEXADECIMAL.getBaseLog());
-        if (minRowPositionLength > 0 && positionLength < minRowPositionLength) {
-            positionLength = minRowPositionLength;
-        }
-        if (maxRowPositionLength > 0 && positionLength > maxRowPositionLength) {
-            positionLength = maxRowPositionLength;
-        }
 
         return positionLength == 0 ? 1 : positionLength;
     }
@@ -166,7 +156,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
 
         int cursorCharX = Math.round(relativeX) / metrics.getCharacterWidth();
         int cursorDataX = cursorCharX / (codeType.getMaxDigitsForByte()+1);
-        int cursorY = Math.round(relativeY) / metrics.getRowHeight();
+        long cursorY = Math.round(relativeY) / metrics.getRowHeight();
 
         long dataPosition = cursorDataX + (cursorY * structure.getBytesPerRow());
         int codeOffset = cursorCharX % (codeType.getMaxDigitsForByte()+1);
@@ -347,8 +337,8 @@ public abstract class RBinEdBase extends RGroupDrawable {
         return editMode;
     }
 
-    int getRowPositionLength() {
-        return rowPositionLength;
+    int getRowPositionCharacters() {
+        return rowPositionCharacters;
     }
 
     RBinSelection getSelectionHandler() {
@@ -396,8 +386,8 @@ public abstract class RBinEdBase extends RGroupDrawable {
      *
      * @return bytes per row
      */
-    public int getMaxRowsPerPage() {
-        return maxRowsPerPage;
+    public int getMaxRowsForDisplay() {
+        return maxRowsForDisplay;
     }
 
     /**
@@ -411,8 +401,8 @@ public abstract class RBinEdBase extends RGroupDrawable {
 
     @Override
     public PVector getPreferredSize(){
-        RRect rectangle = dimensions.getComponentDisplayDims();
-        return new PVector(rectangle.getWidth(), rectangle.getHeight());
+        RRect dims = dimensions.getComponentDisplayDims();
+        return new PVector(dims.getWidth(), dims.getHeight());
     }
 
     /**

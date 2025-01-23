@@ -118,7 +118,7 @@ public class RBinStructure {
         return rowCharPosition / (editor.getCodeType().getMaxDigitsForByte() + 1);
     }
 
-    public RCaretPos computeMovePosition(RCaretPos position, RMovementDirection direction, int rowsPerPage) {
+    public RCaretPos computeMovePosition(RCaretPos position, RMovementDirection direction, long totalRows) {
         long dataSize = editor.getDataSize();
         RCodeType codeType = editor.getCodeType();
         RCodeAreaSection section = position.getSection().orElse(RCodeAreaSection.CODE_MATRIX);
@@ -190,7 +190,7 @@ public class RBinStructure {
             }
             case PAGE_UP: {
                 long dataPosition = position.getDataPosition();
-                long increment = (long) bytesPerRow * rowsPerPage;
+                long increment = (long) bytesPerRow * totalRows;
                 if (dataPosition < increment) {
                     target.setDataPosition(dataPosition % bytesPerRow);
                 } else {
@@ -200,7 +200,7 @@ public class RBinStructure {
             }
             case PAGE_DOWN: {
                 long dataPosition = position.getDataPosition();
-                long increment = (long) bytesPerRow * rowsPerPage;
+                long increment = (long) bytesPerRow * totalRows;
                 if (dataPosition > dataSize - increment) {
                     long positionOnRow = dataPosition % bytesPerRow;
                     long lastRowDataStart = dataSize - (dataSize % bytesPerRow);
