@@ -429,6 +429,10 @@ public abstract class RComponent {
         return new PVector(getWidth(), getHeight());
     }
 
+    public PVector getBufferSize() {
+        return new PVector(getWidth(), getHeight());
+    }
+
     public RLayoutConfig getCompLayoutConfig() {
         return layoutConfig;
     }

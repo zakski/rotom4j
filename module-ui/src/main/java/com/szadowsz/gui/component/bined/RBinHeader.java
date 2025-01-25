@@ -328,13 +328,11 @@ public class RBinHeader extends RBinComponent {
 
         drawHeader(pg);
 
-        RRect rowPositionDims = dimensions.getRowPositionDims();
         RRect headerDims = dimensions.getHeaderDims();
 
         // Decoration lines
         pg.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); // g.setColor(colorsProfile.getDecorationLine());
-        pg.line(headerDims.getX(), headerDims.getHeight() - 1, headerDims.getWidth(), headerDims.getHeight() - 1);
-
+        pg.line(headerDims.getX(), headerDims.getHeight() - 1, headerDims.getX() + headerDims.getWidth(), headerDims.getHeight() - 1);
     }
 
     @Override

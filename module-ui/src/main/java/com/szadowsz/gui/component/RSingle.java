@@ -22,7 +22,7 @@ public abstract class RSingle extends RComponent{
     }
 
     @Override
-    public final void draw(PGraphics pg) {
+    public void draw(PGraphics pg) {
         // the component knows its absolute position but here the current matrix is already translated to it
         pg.image(buffer.draw(),0,0);
     }

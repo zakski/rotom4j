@@ -35,7 +35,7 @@ public class RBinStructure {
 
     private long rowsPerDocument;
 
-    protected int computeBytesPerRow(int charactersPerPage) {
+    protected int computeBytesPerRow(int charactersPerRow) {
         RBinViewMode viewMode = editor.getViewMode();
         int maxBytesPerRow = editor.getMaxBytesPerRow();
         int wrappingBytesGroupSize = editor.getWrappingBytesGroupSize();
@@ -48,7 +48,7 @@ public class RBinStructure {
             if (viewMode != RBinViewMode.CODE_MATRIX) {
                 charactersPerByte++;
             }
-            computedBytesPerRow = charactersPerPage / charactersPerByte;
+            computedBytesPerRow = charactersPerRow / charactersPerByte;
 
             if (maxBytesPerRow > 0 && computedBytesPerRow > maxBytesPerRow) {
                 computedBytesPerRow = maxBytesPerRow;

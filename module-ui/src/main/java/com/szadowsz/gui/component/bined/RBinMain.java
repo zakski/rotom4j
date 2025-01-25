@@ -13,6 +13,7 @@ import com.szadowsz.gui.layout.RRect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
+import processing.core.PVector;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -459,24 +460,25 @@ public class RBinMain extends RBinComponent {
         if (lineX >= rowPositionDims.getX()) {
             pg.line(lineX, 0, lineX, contentDims.getHeight());
         }
+        pg.line(lineX + contentDims.getWidth(), 0, lineX + contentDims.getWidth(), contentDims.getHeight());
+
     }
 
     @Override
     protected void drawForeground(PGraphics pg, String name) {
-
-//        drawHeader(pg);
         drawRowPosition(pg);
 
-        // Decoration lines
-        pg.stroke(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); // pg.setColor(colorsProfile.getDecorationLine());
-//        float lineX = dataViewRectangle.getX() + previewRelativeX - scrollPosition.getCharPosition() * characterWidth - scrollPosition.getCharOffset() - characterWidth / 2 - 1;
-//        if (lineX >= dataViewRectangle.getX()) {
-//            pg.line(lineX, dataViewRectangle.getY(), lineX, dataViewRectangle.getY() + dataViewRectangle.getHeight());
-//        }
-
         drawRows(pg);
+
         drawCursor(pg);
     }
+
+//    public void draw(PGraphics pg) {
+//        // the component knows its absolute position but here the current matrix is already translated to it
+//        int yDiff = editor.getVerticalScroll();
+//        PGraphics draw = buffer.draw();
+//        pg.image(draw.get(0, yDiff, (int) size.x, (int) size.y), 0, 0);
+//    }
 
     @Override
     protected void redrawBuffers() {
@@ -486,5 +488,9 @@ public class RBinMain extends RBinComponent {
     @Override
     public float suggestWidth() {
         return dimensions.getComponentDims().getWidth();
+    }
+
+    public PVector getBufferSize(){
+        return new PVector(dimensions.getComponentDims().getWidth(), dimensions.getComponentDims().getHeight());
     }
 }

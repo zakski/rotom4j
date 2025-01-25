@@ -26,7 +26,7 @@ public class RComponentBuffer extends RBuffer {
 
     @Override
     protected PVector calculateBufferSize() {
-        return component.getSize();
+        return component.getBufferSize();
     }
 
     @Override

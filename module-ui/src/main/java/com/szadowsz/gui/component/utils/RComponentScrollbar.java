@@ -1,9 +1,12 @@
 package com.szadowsz.gui.component.utils;
 
 import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.bined.RBinMain;
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
@@ -14,6 +17,8 @@ import static com.old.ui.utils.Coordinates.isPointInRect;
  * Vertical/Horizontal Scrollbar for Components
  */
 public class RComponentScrollbar {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RComponentScrollbar.class);
+
     private static final float CORNER_RADIUS = 6;
     private final RComponent component;
 
@@ -72,44 +77,12 @@ public class RComponentScrollbar {
         loose = l;
     }
 
-    public float getValue() {
-        return value;
-    }
-
-    public boolean isDragging() {
-        return dragging;
-    }
-
-    public boolean isVisible() {
-        return visible;
-    }
-
-    /**
-     * @param visible the visibility to set
-     */
-    public void setVisible(boolean visible) {
-        this.visible = visible;
-        this.bufferInvalid = true;
-    }
-
-    public void draw(PGraphics pg, float posX, float posY, float windowSizeX, float windowSizeY, float windowHeight) {
-        if (!visible || windowSizeY <= 0)
-            return;
-        pg.pushMatrix();
-        updateBuffer(posX + windowSizeX, posY, windowSizeY, windowHeight);
-        pg.translate(posX + windowSizeX, posY);
-        pg.image(buffer, 0, 0);
-        pg.popMatrix();
-    }
-
-    protected void updateBuffer(float posX, float posY, float componentSizeY, float componentHeight) {
-        this.posX = posX;
-        this.posY = posY;
-        float factor = componentSizeY / componentHeight;
+    protected void updateBuffer(float posX, float posY, float componentDisplayHeight, float componentHeight) {
+        float factor = componentDisplayHeight / componentHeight;
         if (this.factor != factor || bufferInvalid) {
-            updateValues(posX, posY, width, componentSizeY, componentHeight, loose);
+            updateValues(posX, posY, width, componentDisplayHeight, componentHeight, loose);
 
-            buffer = component.getGui().getSketch().createGraphics((int) width, (int) componentSizeY, PApplet.JAVA2D);
+            buffer = component.getGui().getSketch().createGraphics((int) width, (int) componentDisplayHeight, PApplet.JAVA2D);
             buffer.rectMode(PApplet.CORNER);
             buffer.beginDraw();
             // Draw the track
@@ -119,7 +92,7 @@ public class RComponentScrollbar {
                 buffer.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
             }
             buffer.noStroke();
-            buffer.rect(8, 3, width - 8, componentSizeY - 5);
+            buffer.rect(8, 3, width - 8, componentDisplayHeight - 5);
 
             // ****************************************
             buffer.strokeWeight(1);
@@ -151,34 +124,90 @@ public class RComponentScrollbar {
         value = Math.min(Math.max(value + valueDiff, 0), 1);
     }
 
-    public void invalidateBuffer() {
+    public synchronized void invalidateBuffer() {
         bufferInvalid = true;
+    }
+
+    public synchronized float getPosX() {
+        return posX;
+    }
+
+    public synchronized float getPosY() {
+        return posY;
+    }
+
+    public synchronized float getHeight() {
+        return height;
+    }
+
+    public synchronized float getWidth() {
+        return width;
+    }
+
+    public synchronized float getValue() {
+        return value;
+    }
+
+    public synchronized boolean isMouseOver() {
+        return over;
+    }
+
+    public synchronized boolean isDragged() {
+        return dragging;
+    }
+
+    public synchronized boolean isVisible() {
+        return visible;
+    }
+
+    /**
+     * @param visible the visibility to set
+     */
+    public synchronized void setVisible(boolean visible) {
+        this.visible = visible;
+        this.bufferInvalid = true;
+    }
+
+    public synchronized void draw(PGraphics pg, float posX, float posY, float windowSizeX) {
+        if (!visible)
+            return;
+        pg.pushMatrix();
+        pg.translate(posX + windowSizeX, posY);
+        pg.image(buffer, 0, 0);
+        pg.popMatrix();
+    }
+
+    public void drawToBuffer(float posX, float posY, float windowSizeX, float windowSizeY, float windowHeight) {
+        updateBuffer(posX + windowSizeX, posY, windowSizeY, windowHeight);
     }
 
     /**
      * All GUI components are registered for mouseEvents
      */
-    public void mouseMoved(RMouseEvent mouseEvent) {
+    public synchronized void mouseMoved(RMouseEvent mouseEvent, float adjustedMouseY) {
         if (!visible)
             return;
-        over = isPointInRect(mouseEvent.getX(), mouseEvent.getY(), posX, posY + variance * value, width, handleSize);
+        over = isPointInRect(mouseEvent.getX(), adjustedMouseY, posX, posY + variance * value, width, handleSize);
     }
 
-    public void mousePressed(RMouseEvent mouseEvent) {
+    public synchronized void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
         if (!visible)
             return;
-        if (isPointInRect(mouseEvent.getX(), mouseEvent.getY(), posX, posY + variance * value, width, handleSize)) {
+        if (isPointInRect(mouseEvent.getX(), adjustedMouseY, posX, posY + variance * value, width, handleSize)) {
+            LOGGER.info("Mouse pressed for {} scrollbar confirmed",component.getName());
+            over = true;
             dragging = true;
         }
     }
 
 
-    public void mouseReleased(RMouseEvent mouseEvent) {
+    public synchronized void mouseReleased(RMouseEvent mouseEvent, float adjustedMouseY) {
         if (!visible)
             return;
         if (dragging) {
-            updateHandle(mouseEvent.getY());
-            over = isPointInRect(mouseEvent.getX(), mouseEvent.getY(), posX, posY + variance * value, width, handleSize);
+            LOGGER.info("Mouse released for {} scrollbar confirmed",component.getName());
+            updateHandle(adjustedMouseY);
+            over = isPointInRect(mouseEvent.getX(), adjustedMouseY, posX, posY + variance * value, width, handleSize);
             dragging = false;
             isValueChanging = false;
             bufferInvalid = true;
@@ -186,29 +215,26 @@ public class RComponentScrollbar {
     }
 
 
-    public void mouseDragged(RMouseEvent mouseEvent) {
+    public synchronized void mouseDragged(RMouseEvent mouseEvent) {
         if (!visible)
             return;
 
         if (dragging) {
+            LOGGER.info("Mouse dragged for {} scrollbar confirmed",component.getName());
             updateHandle(mouseEvent.getY());
             isValueChanging = true;
             bufferInvalid = true;
         }
     }
 
-    public void mouseWheel(RMouseEvent mouseEvent) {
+    public synchronized void mouseWheel(RMouseEvent mouseEvent) {
         if (!visible)
             return;
         invalidateBuffer();
         value = Math.min(Math.max(value + (float) mouseEvent.getRotation() / (float) loose, 0), 1);
     }
 
-    public float getHeight() {
-        return height;
-    }
-
-    public float getWidth() {
-        return width;
+    public synchronized void updateCoordinates(float x, float y, float width, float height, float componentActualHeight) {
+        updateValues(x, y, width, height, componentActualHeight, loose);
     }
 }

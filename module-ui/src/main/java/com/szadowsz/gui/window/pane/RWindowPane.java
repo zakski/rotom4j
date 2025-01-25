@@ -1076,7 +1076,7 @@ public class RWindowPane implements RWindow, RInputListener {
             isBeingDragged = true;
             mouseEvent.consume();
         } else if (isMouseInsideScrollbar(mouseEvent) && mouseEvent.isLeft()) {
-            vsb.ifPresent(s -> s.mousePressed(mouseEvent));
+            vsb.ifPresent(s -> s.mouseReleased(mouseEvent));
             mouseEvent.consume();
         } else if (isMouseInsideResizeBorder(mouseEvent) && RLayoutStore.isWindowResizeEnabled()) {
             LOGGER.info("{} isBeingResized", title);

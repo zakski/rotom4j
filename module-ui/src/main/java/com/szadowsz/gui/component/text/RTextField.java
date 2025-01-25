@@ -422,7 +422,7 @@ public class RTextField extends RTextEditable {
         super.mouseDragged(mouseEvent);
         if (gui.hasFocus(this)) {
             super.mouseDragged(mouseEvent);
-            if (hsb.isDragging()) {
+            if (hsb.isDragged()) {
                 hsb.mouseDragged(mouseEvent);
             } else {
                 endTLHI = stext.calculateFromXY(buffer.getNative(), pos.x, pos.y);

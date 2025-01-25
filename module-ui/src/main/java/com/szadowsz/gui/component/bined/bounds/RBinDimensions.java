@@ -56,32 +56,10 @@ public class RBinDimensions {
 
     protected int charactersPerRow;
 
-//    public RRect getComponentRectangle() {
-//        return componentRectangle;
-//    }
-//
-//
-//    public RRect getDataViewRectangle() {
-//        return mainAreaRectangle;
-//    }
-//
-//
-//
-
-//
-//    public RRect getMainAreaRectangle() {
-//        return mainAreaRectangle;
-//    }
-//
-//    public int getRowsPerPage() {
-//        return rowsPerPage;
-//    }
-
     protected int computeCharactersPerRow(RFontMetrics metrics) {
         int characterWidth = metrics.getCharacterWidth();
         return characterWidth == 0 ? 0 : Math.round(contentDims.getWidth() / characterWidth);
     }
-
 
     public int getCharactersPerRow() {
         return charactersPerRow;
@@ -101,6 +79,10 @@ public class RBinDimensions {
 
     public float getContentHeight() {
         return contentDims.getHeight();
+    }
+
+    public float getContentDisplayHeight() {
+        return contentDisplayDims.getHeight();
     }
 
     public RRect getContentDims() {
@@ -125,6 +107,10 @@ public class RBinDimensions {
 
     public long getTotalRows() {
         return totalRows;
+    }
+
+    public RRect getVerticalScrollbarDims() {
+        return vScrollDims;
     }
 
     /**

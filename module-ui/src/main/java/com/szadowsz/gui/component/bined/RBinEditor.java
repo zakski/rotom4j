@@ -2,6 +2,7 @@ package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
 import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.window.pane.RScrollbar;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.rotom4j.binary.array.ByteArrayData;
@@ -32,8 +33,9 @@ import processing.core.PVector;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.Optional;
+
+import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 
 /**
  * Editor Level Logic
@@ -59,7 +61,7 @@ public class RBinEditor extends RBinEdBase {
     protected boolean showMirrorCursor = true;
 
     // Vertical Scrollbar
-    protected Optional<RComponentScrollbar> vsb = Optional.empty();
+    protected RComponentScrollbar vsb = null;
 
     protected REnterKeyMode enterKeyHandlingMode = REnterKeyMode.PLATFORM_SPECIFIC;
     protected RTabKeyMode tabKeyHandlingMode = RTabKeyMode.PLATFORM_SPECIFIC;
@@ -96,10 +98,6 @@ public class RBinEditor extends RBinEdBase {
      */
     protected RCodeAreaSection getActiveSection() {
         return caret.getSection();
-    }
-
-    protected List<RBinComponent> getBinComponents(){
-        return children.stream().map(c -> (RBinComponent) c).toList();
     }
 
     protected RBinCharAssessor getCharAssessor() {
@@ -149,6 +147,27 @@ public class RBinEditor extends RBinEdBase {
 
     protected boolean isValidChar(char value) {
         return getCharset().canEncode();
+    }
+
+    /**
+     * Check if the point is inside the scroll bar of the Window
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return true if the point is inside the scroll bar, false otherwise
+     */
+    protected boolean isPointInsideScrollbar(float x, float y) {
+        if (vsb == null || !vsb.isVisible()) {
+            return false;
+        }
+        float cx = pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth();
+        float cy = pos.y + dimensions.getHeaderHeight();
+        return isPointInRect(x, y,
+                cx, cy, RLayoutStore.getCell(), dimensions.getContentDisplayHeight());
+    }
+
+    protected boolean isMouseInsideScrollbar(RMouseEvent e, float adjustedMouseY) {
+        return isVisible && isPointInsideScrollbar(e.getX(), adjustedMouseY);
     }
 
     protected void setActiveCaretPosition(RCaretPos caretPosition) {
@@ -212,14 +231,16 @@ public class RBinEditor extends RBinEdBase {
         initVisibility(); // use the sizes to figure out the width
         updateRowDataCache();
 
-        if (maxRowsForDisplay < dimensions.getTotalRows()){
-            vsb = Optional.of(new RComponentScrollbar(
+        if (maxRowsForDisplay < dimensions.getTotalRows()) {
+            vsb = new RComponentScrollbar(
                     this,
-                    new PVector(dimensions.getContentWidth(), dimensions.getHeaderHeight()),
-                    new PVector(RLayoutStore.getCell(),dimensions.getContentHeight()),
+                    new PVector(pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth(), pos.y + dimensions.getHeaderHeight()),
+                    new PVector(RLayoutStore.getCell(), dimensions.getContentDisplayHeight()),
                     dimensions.getContentHeight(),
-                    0
-            ));
+                    16
+            );
+            vsb.setVisible(true);
+            LOGGER.info("Bin Editor {} created scrollbar with Pos [{}, {}] Size [{},{}]", getName(), vsb.getPosX(), vsb.getPosY(), vsb.getWidth(), vsb.getHeight());
         }
     }
 
@@ -583,21 +604,28 @@ public class RBinEditor extends RBinEdBase {
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         updateAssessors();
-//        pg.pushMatrix();
-//        int yDiff = 0;
-//        pg.image(buffer.draw().get(0, yDiff, (int) size.x, (int) size.y), 0, 0);
-//        pg.popMatrix();
-        for (RComponent component : children) {
-            if (!component.isVisible()) {
-                continue;
-            }
-            pg.pushMatrix();
-            pg.translate(component.getRelPosX(), component.getRelPosY());
-            drawChildComponent(pg, component);
-            pg.popMatrix();
-        }
+
         pg.pushMatrix();
-     //   vsb.ifPresent(sb -> sb.draw(pg,));
+        RBinHeader header = (RBinHeader) findChildByName(HEADER);
+        pg.translate(header.getRelPosX(), header.getRelPosY());
+        header.draw(pg);
+        pg.popMatrix();
+
+        pg.pushMatrix();
+        RBinMain main = (RBinMain) findChildByName(MAIN);
+        pg.translate(main.getRelPosX(), main.getRelPosY());
+        main.draw(pg);
+        pg.popMatrix();
+
+        pg.pushMatrix();
+        RRect contentDims = dimensions.getContentDims();
+        if (vsb != null && vsb.isVisible()){
+            vsb.draw(pg,
+                    contentDims.getX(),
+                    contentDims.getY(),
+                    contentDims.getWidth()
+            );
+        }
         pg.popMatrix();
     }
 
@@ -662,6 +690,12 @@ public class RBinEditor extends RBinEdBase {
         return rowDataCache;
     }
 
+    public int getVerticalScroll() {
+        float yDiff = dimensions.getContentHeight() - dimensions.getContentDisplayHeight();
+        float value = vsb.getValue();
+        return (int) (yDiff * value);
+    }
+
     /**
      * Returns current view mode.
      *
@@ -672,7 +706,29 @@ public class RBinEditor extends RBinEdBase {
     }
 
     @Override
+    public boolean isMouseOver() {
+        return super.isMouseOver() || vsb.isMouseOver();
+    }
+
+    @Override
+    public boolean isDragged() {
+        return super.isDragged() || vsb.isDragged();
+    }
+
+    @Override
     public void setLayout(RLayoutBase layout) {
+    }
+
+    @Override
+    public void drawToBuffer() {
+        children.forEach(RComponent::drawToBuffer);
+        RRect contentDims = dimensions.getContentDims();
+        vsb.drawToBuffer( contentDims.getX(),
+                contentDims.getY(),
+                contentDims.getWidth(),
+                dimensions.getContentDisplayHeight(),
+                contentDims.getHeight());
+        buffer.redraw();
     }
 
     @Override
@@ -800,7 +856,7 @@ public class RBinEditor extends RBinEdBase {
     @Override
     public void keyTyped(RKeyEvent keyEvent, float mouseX, float mouseY) {
         char keyValue = keyEvent.getKey();
-        LOGGER.info("Bin Editor key {}",keyValue);
+        LOGGER.info("Bin Editor key {}", keyValue);
         // TODO Add support for high unicode codes
         if (keyValue == KeyEvent.CHAR_UNDEFINED) {
             return;
@@ -811,7 +867,7 @@ public class RBinEditor extends RBinEdBase {
 
         RCodeAreaSection section = getActiveSection();
         if (section != RCodeAreaSection.TEXT_PREVIEW) {
-            LOGGER.info("Process as Code {}",keyValue);
+            LOGGER.info("Process as Code {}", keyValue);
             if (!keyEvent.hasModifiers() || keyEvent.isShiftDown()) {
                 pressedCharAsCode(keyValue);
             }
@@ -823,6 +879,23 @@ public class RBinEditor extends RBinEdBase {
         redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if a key is typed
     }
 
+    @Override
+    public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (isMouseInsideScrollbar(mouseEvent, adjustedMouseY)) {
+            LOGGER.info("Bin Editor {} mouse over scrollbar", getName());
+            if (isChildMouseOver()) {
+                buffer.invalidateBuffer();
+            }
+            if (!vsb.isMouseOver()){
+                redrawBuffers();
+            }
+            vsb.mouseMoved(mouseEvent, adjustedMouseY);
+            setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
+            mouseEvent.consume();
+        } else {
+            super.mouseOver(mouseEvent, adjustedMouseY);
+        }
+    }
 
     @Override
     public void mousePressed(RMouseEvent mouseEvent, float mouseY) {
@@ -830,29 +903,86 @@ public class RBinEditor extends RBinEdBase {
             gui.takeFocus(this);
         }
         if (mouseEvent.isLeft()) {
-            moveCaret(mouseEvent);
-            isDragged = true;
-            isMouseOver = true;
-            mouseEvent.consume();
+            if (isMouseInsideScrollbar(mouseEvent, mouseY)) {
+                LOGGER.info("Bin Editor {} mouse [{},{}] pressed over scrollbar with Pos {{}, {}] Size [{},{}]", getName(), mouseEvent.getX(), mouseY, vsb.getPosX(), vsb.getPosY(), vsb.getWidth(),vsb.getHeight());
+                vsb.mousePressed(mouseEvent, mouseY);
+                mouseEvent.consume();
+            } else {
+                moveCaret(mouseEvent);
+                isDragged = true;
+                isMouseOver = true;
+                mouseEvent.consume();
+            }
         }
     }
 
     @Override
     public void mouseDragged(RMouseEvent mouseEvent) {
         if (gui.hasFocus(this)) {
-            isMouseOver = true;
-            moveCaret(mouseEvent.getX(), mouseEvent.getY(), RSelectingMode.SELECTING);
-            mouseEvent.consume();
-            redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if the user is selecting multiple chars
+            if (vsb != null && vsb.isDragged()) {
+                LOGGER.info("Bin Editor {} mouse dragged with scrollbar Size [{},{}]", getName(), vsb.getWidth(),vsb.getHeight());
+                vsb.mouseDragged(mouseEvent);
+                redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user dragged the mouse
+            } else {
+                isMouseOver = true;
+                moveCaret(mouseEvent.getX(), mouseEvent.getY(), RSelectingMode.SELECTING);
+                mouseEvent.consume();
+                redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if the user is selecting multiple chars
+            }
         }
+    }
+
+    public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (isDragged || (vsb != null && vsb.isDragged())) {
+            if (vsb.isDragged()) {
+                LOGGER.info("Bin Editor {} mouse released scrollbar anywhere", getName());
+                vsb.mouseReleased(mouseEvent, adjustedMouseY);
+            } else {
+                setFocus(false);
+            }
+            mouseEvent.consume();
+            redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
+        }
+        isDragged = false;
+    }
+
+    /**
+     * Method to handle the component's reaction to the mouse being released over it
+     *
+     * @param mouseEvent the change made by the mouse
+     * @param mouseY     adjust for scrollbar
+     */
+    public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (isDragged || (vsb != null && vsb.isDragged())) {
+            if (vsb.isDragged()) {
+                LOGGER.info("Bin Editor {} mouse released over scrollbar", getName());
+                vsb.mouseReleased(mouseEvent, adjustedMouseY);
+            } else {
+                setFocus(true);
+            }
+            mouseEvent.consume();
+            redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
+        }
+        isDragged = false;
+        redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
+    }
+
+    @Override
+    public void redrawBuffers() {
+        vsb.invalidateBuffer();
+        super.redrawBuffers();
     }
 
     @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
         RRect headerDims = dimensions.getHeaderDims();
-        children.getFirst().updateCoordinates(bX,bY,rX,rY + headerDims.getY(),w,headerDims.getHeight()); // header
-        children.get(1).updateCoordinates(bX,bY,rX,rY + headerDims.getHeight(),w,dimensions.getContentHeight()); // header
+        children.getFirst().updateCoordinates(bX, bY, rX, rY + headerDims.getY(), w, headerDims.getHeight()); // header
+        children.get(1).updateCoordinates(bX, bY, rX, rY + headerDims.getHeight(), w, dimensions.getContentDisplayHeight()); // main
         super.updateCoordinates(bX, bY, rX, rY, w, h);
+        float scrollX = pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth();
+        float scrollY = pos.y + dimensions.getHeaderHeight();
+        LOGGER.info("Bin Editor {} updated scrollbar with Pos [{}, {}] Size [{},{}]", getName(), scrollX, scrollY, RLayoutStore.getCell(), dimensions.getContentHeight());
+        vsb.updateCoordinates(scrollX,scrollY,RLayoutStore.getCell(), dimensions.getContentDisplayHeight(), dimensions.getContentHeight());
         buffer.resetBuffer();
     }
 
