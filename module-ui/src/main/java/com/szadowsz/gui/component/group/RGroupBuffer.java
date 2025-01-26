@@ -32,49 +32,6 @@ public class RGroupBuffer extends RComponentBuffer {
     }
 
     /**
-     * Draw Child Component
-     *
-     * @param child
-     */
-    private void drawChildComponent(RComponent child) {
-        buffer.pushMatrix();
-        buffer.pushStyle();
-        child.draw(buffer);
-        buffer.popStyle();
-        buffer.popMatrix();
-    }
-
-    /**
-     * Draw A Horizontal separator between two nodes
-     *
-     * @param width separator width
-     */
-    private void drawHorizontalSeparator(int width) {
-        boolean show = RLayoutStore.isShowHorizontalSeparators();
-        float weight = RLayoutStore.getHorizontalSeparatorStrokeWeight();
-        if (show) {
-            buffer.strokeCap(SQUARE);
-            buffer.strokeWeight(weight);
-            buffer.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
-            buffer.line(0, 0, width, 0);
-        }
-    }
-
-    /**
-     * Draw A Horizontal separator between two nodes
-     */
-    private void drawVerticalSeparator() {
-        //boolean show = LayoutStore.isShowHorizontalSeparators();
-        float weight = RLayoutStore.getHorizontalSeparatorStrokeWeight();
-        // if (show) {
-        buffer.strokeCap(SQUARE);
-        buffer.strokeWeight(weight);
-        buffer.stroke(RThemeStore.getRGBA(WINDOW_BORDER));
-        buffer.line(0, 0, 0, buffer.height);
-        // }
-    }
-
-    /**
      * Draw The Content of The Window
      *
      */
@@ -91,18 +48,5 @@ public class RGroupBuffer extends RComponentBuffer {
             buffer.endDraw();
         }
         LOGGER.debug("{} Content Buffer [{},{}] Draw Duration {}", group.getName(),buffer.width,buffer.height,System.currentTimeMillis() - time);
-    }
-
-    @Override
-    protected synchronized void redrawIfNecessary() {
-        reinitialisationIfNecessary();
-        if (isBufferInvalid) {
-            // Redraws have to be done before we draw the content buffer
-            group.getChildren().forEach(RComponent::drawToBuffer);
-
-            drawContent();
-
-            isBufferInvalid = false;
-        }
     }
 }

@@ -1,5 +1,6 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.bined.bounds.RBinSelection;
@@ -473,12 +474,12 @@ public class RBinMain extends RBinComponent {
         drawCursor(pg);
     }
 
-//    public void draw(PGraphics pg) {
-//        // the component knows its absolute position but here the current matrix is already translated to it
-//        int yDiff = editor.getVerticalScroll();
-//        PGraphics draw = buffer.draw();
-//        pg.image(draw.get(0, yDiff, (int) size.x, (int) size.y), 0, 0);
-//    }
+    public void draw(PGraphics pg) {
+        // the component knows its absolute position but here the current matrix is already translated to it
+        int yDiff = editor.getVerticalScroll();
+//        pg.image(buffer.draw().get(0, yDiff, (int) size.x, (int) (size.y)), 0, 0);
+        pg.image(buffer.draw(),0,0);
+    }
 
     @Override
     protected void redrawBuffers() {

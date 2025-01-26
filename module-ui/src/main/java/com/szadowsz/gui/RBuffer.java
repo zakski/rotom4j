@@ -62,8 +62,6 @@ public abstract class RBuffer {
         }
     }
 
-
-
     public synchronized PGraphics draw(){
         redrawIfNecessary();
         return buffer;

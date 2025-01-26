@@ -75,25 +75,7 @@ public class ProcessingRotom4J extends PApplet {
     @Override
     public void draw() {
         background(30,40,189);
-//        fill(255);
-//        textFont(RFontStore.getMainFont());
-//        text("Pickle 0",100,100);
-//        buffer1.beginDraw();
-//        buffer1.clear();
-//        buffer1.background(255);
-//        buffer1.fill(0);
-//        buffer1.textFont(RFontStore.getMainFont());
-//        buffer1.text("Pickle 1",100,100);
-//        buffer1.endDraw();
-//        buffer0.beginDraw();
-//        buffer0.clear();
-//        buffer0.background(0);
-//        buffer0.fill(255);
-//        buffer0.textFont(RFontStore.getMainFont());
-//        buffer0.text("Pickle 1",100,100);
-//        buffer0.image(buffer1,125,150);
-//        buffer0.endDraw();
-//        image(buffer0, 100, 150);
+
     }
 
 

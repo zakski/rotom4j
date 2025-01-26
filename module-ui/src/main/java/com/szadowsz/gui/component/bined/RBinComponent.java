@@ -44,7 +44,6 @@ public abstract class RBinComponent extends RSingle {
         this.metrics = this.editor.getMetrics();
 
         this.font = RFontStore.getMainFont();
-        buffer = new RComponentBuffer(this);
     }
 
     @Override
