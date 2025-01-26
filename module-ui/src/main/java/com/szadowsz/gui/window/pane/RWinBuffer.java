@@ -1,6 +1,6 @@
 package com.szadowsz.gui.window.pane;
 
-import com.szadowsz.gui.RBuffer;
+import com.szadowsz.gui.layers.RBuffer;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.text.RFontStore;

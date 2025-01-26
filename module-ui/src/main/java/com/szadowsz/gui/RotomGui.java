@@ -463,6 +463,16 @@ public class RotomGui {
         return folder;
     }
 
+    public RFolder pushFolder(String paneName, RLayoutConfig config) {
+        tryLogStackWarning("pushPane(String,RLayoutConfig)");
+        RFolder folder = pushFolder(paneName);
+        folder.setLayoutConfig(config);
+        if (folder.getParent() instanceof RRoot root) {
+            this.getWinManager().uncoverOrCreateWindow(folder);
+            root.resizeForContents();
+        }
+        return folder;
+    }
 
     public RPanel pushPanel(String paneName, RLayoutConfig config) {
         tryLogStackWarning("pushPane(String,RLayoutConfig)");

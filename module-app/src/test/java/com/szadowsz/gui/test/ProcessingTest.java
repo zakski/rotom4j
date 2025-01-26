@@ -8,6 +8,10 @@ import com.szadowsz.gui.component.group.folder.RDropdownMenu;
 import com.szadowsz.gui.input.mouse.RActivateByType;
 import com.szadowsz.gui.input.mouse.RMouseAction;
 import com.szadowsz.gui.layout.RBorderLayout;
+import com.szadowsz.rotom4j.app.RotomGuiImpl;
+import com.szadowsz.rotom4j.app.RotomGuiManagerImpl;
+import com.szadowsz.rotom4j.exception.NitroException;
+import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -23,9 +27,11 @@ public class ProcessingTest extends PApplet {
 
     public final static Preferences prefs = Preferences.userNodeForPackage(ProcessingTest.class);
 
-    protected RotomGui gui;
+    protected RotomGuiImpl gui;
     protected RotomGuiSettings settings;
 
+
+    private final String path = "C:\\Code\\pokemon\\srcs\\changes\\Gen 4\\prologmon-masters\\pokemon_dp\\src\\contest\\graphic\\contest_obj\\bigman.NCGR";
 
     private void setLookAndFeel() {
         try {
@@ -52,47 +58,23 @@ public class ProcessingTest extends PApplet {
         surface.setResizable(true);
         surface.setLocation(100,100);
 
-        gui = RotomGuiManager.embedGui(this,settings);
+        gui = (RotomGuiImpl) RotomGuiManagerImpl.embedGui(this,settings);
+
         gui.startSetup();
+
         RBorderLayout layout = new RBorderLayout();
         layout.setSpacing(8,8,8,8);
         gui.setLayout(layout);
-        gui.pushPanel("File Pane", RBorderLayout.RLocation.LEFT);
-        gui.checkbox("test1",true);
-        gui.toggle("test2",false);
-        gui.colorPicker("color1",new Color(0,0,255));
-        gui.slider("slider1",125,0,255);
-        gui.slider("slider2",125.0f,0.0f,255.0f);
-        gui.pushFolder("text test");
-        gui.label("test label", "THIS IS A TEST LABEL");
-        gui.field("test field");
-        gui.area("test area");
-        gui.popWindow();
-        gui.pushFolder("text code folder");
-        gui.code("test code", "C:\\Code\\pokemon\\srcs\\changes\\Gen 4\\prologmon-masters\\pm_dp_ose\\src\\contest\\graphic\\contest_obj\\audience_heart.NCGR");
-        gui.popWindow();
+
+        gui.pushFolder("Window", RBorderLayout.RLocation.CENTER);
+        try {
+            gui.image("ncgr",new NCGR(path));
+        } catch (NitroException e) {
+            throw new RuntimeException(e);
+        }
         gui.popWindow();
 
-        gui.pushToolbar("Titlebar", RBorderLayout.RLocation.TOP);
-        RButton test3 = gui.button("test3");
-        test3.registerAction(RActivateByType.RELEASE, new RMouseAction() {
-            @Override
-            public void execute() {
-                System.out.println("TEST3"); // MAT DAMON
-            }
-        });
 
-        RDropdownMenu options = gui.pushDropdown("Options");
-        RButton test4 = gui.button("test4");
-        test4.registerAction(RActivateByType.RELEASE, new RMouseAction() {
-            @Override
-            public void execute() {
-                System.out.println("TEST4"); // MAT DAMON
-            }
-        });
-        gui.popWindow();
-
-        gui.popWindow();
         gui.endSetup();
 
 //        RegisterGeneralUI.buildFileDropdown(gui);

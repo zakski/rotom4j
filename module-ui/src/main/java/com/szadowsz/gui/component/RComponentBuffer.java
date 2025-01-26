@@ -1,6 +1,6 @@
 package com.szadowsz.gui.component;
 
-import com.szadowsz.gui.RBuffer;
+import com.szadowsz.gui.layers.RBuffer;
 import com.szadowsz.gui.config.text.RFontStore;
 import processing.core.PApplet;
 import processing.core.PGraphics;

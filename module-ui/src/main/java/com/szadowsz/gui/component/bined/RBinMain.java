@@ -1,5 +1,6 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.gui.RotomGui;
@@ -14,6 +15,7 @@ import com.szadowsz.gui.layout.RRect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
+import processing.core.PImage;
 import processing.core.PVector;
 
 import java.awt.*;
@@ -21,6 +23,7 @@ import java.util.Arrays;
 
 public class RBinMain extends RBinComponent {
     private static final Logger LOGGER = LoggerFactory.getLogger(RBinMain.class);
+    private PImage toDraw;
 
     /**
      * Default Binary Sub-Component Constructor
@@ -477,8 +480,8 @@ public class RBinMain extends RBinComponent {
     public void draw(PGraphics pg) {
         // the component knows its absolute position but here the current matrix is already translated to it
         int yDiff = editor.getVerticalScroll();
-//        pg.image(buffer.draw().get(0, yDiff, (int) size.x, (int) (size.y)), 0, 0);
-        pg.image(buffer.draw(),0,0);
+        pg.image(toDraw, 0, 0);
+//        pg.image(buffer.draw(),0,0);
     }
 
     @Override
@@ -493,5 +496,12 @@ public class RBinMain extends RBinComponent {
 
     public PVector getBufferSize(){
         return new PVector(dimensions.getComponentDims().getWidth(), dimensions.getComponentDims().getHeight());
+    }
+
+    @Override
+    public void drawToBuffer() {
+        super.drawToBuffer();
+        int yDiff = editor.getVerticalScroll();
+        toDraw = buffer.draw().get(0, yDiff, (int) size.x, (int) (size.y));
     }
 }

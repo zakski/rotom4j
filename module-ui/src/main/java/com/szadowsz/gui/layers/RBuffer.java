@@ -1,4 +1,4 @@
-package com.szadowsz.gui;
+package com.szadowsz.gui.layers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

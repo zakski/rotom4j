@@ -28,7 +28,7 @@ public abstract class RSingle extends RComponent{
     }
 
     @Override
-    public final void drawToBuffer() {
+    public void drawToBuffer() {
         buffer.redraw();
     }
 }

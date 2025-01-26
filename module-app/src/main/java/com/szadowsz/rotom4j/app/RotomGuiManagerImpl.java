@@ -13,7 +13,20 @@ public class RotomGuiManagerImpl extends RotomGuiManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(RotomGuiManagerImpl.class);
 
     public static RotomGui embedGui(PApplet sketch, RotomGuiSettings settings){
-        return RotomGuiManager.embedGui(sketch, settings);
+        if (sketch == null){
+            throw new RWindowException("sketch cannot be null");
+        }
+        if (windows.contains(sketch)){
+            throw new RWindowException("sketch " + sketch + "  cannot be registered twice");
+        }
+        if (settings == null){
+            settings = new RotomGuiSettings();
+        }
+        LOGGER.info("Embedding GUI for Window: {}", sketch);
+        RotomGui rotomGui = new RotomGuiImpl(sketch, settings);
+        guis.add(rotomGui);
+        windows.add(sketch);
+        return rotomGui;
     }
 
     /**
