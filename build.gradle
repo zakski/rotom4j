@@ -1,0 +1,31 @@
+plugins {
+    id 'java-library'
+}
+
+description = 'nds4j'
+
+allprojects {
+    group = 'com.szadowsz'
+    version = '0.10-ALPHA'
+
+    repositories {
+        mavenLocal()
+        maven {
+            url = uri('https://repo.maven.apache.org/maven2/')
+        }
+    }
+}
+
+allprojects {
+    java.sourceCompatibility = JavaVersion.VERSION_21
+    java.targetCompatibility = JavaVersion.VERSION_21
+
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
+    tasks.withType(Javadoc) {
+        options.encoding = 'UTF-8'
+    }
+}
