@@ -11,7 +11,6 @@ import com.szadowsz.rotom4j.app.utils.FileChooser;
 import com.szadowsz.rotom4j.component.R4JComponent;
 import com.szadowsz.rotom4j.component.R4JFolder;
 import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
-import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolderComponent;
 import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

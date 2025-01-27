@@ -23,7 +23,6 @@ import com.szadowsz.rotom4j.component.bin.stats.StatsFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.nanr.NANRFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.narc.NarcFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.ncer.NCERFolderComponent;
-import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.nscr.NSCRFolderComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +80,7 @@ public class RotomGuiImpl extends RotomGui {
 
     public NCGRFolder image(String path, NCGR ncgr) {
         String fullPath = getCurrentPath() + path;
-        if (tree.isPathTakenByUnexpectedType(fullPath, NCGRFolderComponent.class)) {
+        if (tree.isPathTakenByUnexpectedType(fullPath, NCLRFolder.class)) {
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
         NCGRFolder component = (NCGRFolder) tree.getComponent(fullPath);

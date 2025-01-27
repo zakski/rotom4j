@@ -2,10 +2,10 @@ package com.szadowsz.rotom4j.component.nitro;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.RGroup;
+import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.nitro.DrawableWithGraphic;
 import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
-import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolderComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +22,7 @@ public abstract class NitroCmpFolderComponent<I extends DrawableWithGraphic> ext
 
     @Override
     public void recolorImage() throws NitroException {
-        NCGR ncgr = ((NCGRFolderComponent) findChildByName(IMAGE_NODE_NAME)).getDrawable();
+        NCGR ncgr = ((NCGRFolder) findChildByName(IMAGE_NODE_NAME)).getObj();
         drawable.setNCGR(ncgr);
     }
 }

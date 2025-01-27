@@ -194,7 +194,7 @@ public class RComponentScrollbar {
         if (!visible)
             return;
         if (isPointInRect(mouseEvent.getX(), adjustedMouseY, posX, posY + variance * value, width, handleSize)) {
-            LOGGER.info("Mouse pressed for {} scrollbar confirmed",component.getName());
+            LOGGER.debug("Mouse pressed for {} scrollbar confirmed",component.getName());
             over = true;
             dragging = true;
         }
@@ -205,7 +205,7 @@ public class RComponentScrollbar {
         if (!visible)
             return;
         if (dragging) {
-            LOGGER.info("Mouse released for {} scrollbar confirmed",component.getName());
+            LOGGER.debug("Mouse released for {} scrollbar confirmed",component.getName());
             updateHandle(adjustedMouseY);
             over = isPointInRect(mouseEvent.getX(), adjustedMouseY, posX, posY + variance * value, width, handleSize);
             dragging = false;
@@ -220,7 +220,7 @@ public class RComponentScrollbar {
             return;
 
         if (dragging) {
-            LOGGER.info("Mouse dragged for {} scrollbar confirmed",component.getName());
+            LOGGER.debug("Mouse dragged for {} scrollbar confirmed",component.getName());
             updateHandle(mouseEvent.getY());
             isValueChanging = true;
             bufferInvalid = true;

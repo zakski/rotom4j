@@ -100,7 +100,7 @@ public class RTab extends RGroupDrawable {
 
     @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) { // TODO LazyGui
-        LOGGER.info("Update Coordinates for Tab {} [{}, {}, {}, {}, {}, {}]", name, bX,bY,rX,rY,w,h);
+        LOGGER.debug("Update Coordinates for Tab {} [{}, {}, {}, {}, {}, {}]", name, bX,bY,rX,rY,w,h);
         super.updateCoordinates(bX, bY, rX, rY, w, h);
         children.getFirst().updateCoordinates(bX, bY, rX, rY, w, h);
     }

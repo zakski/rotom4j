@@ -2,11 +2,11 @@ package com.szadowsz.rotom4j.component.nitro.nscr;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.nitro.nscr.NSCR;
 import com.szadowsz.rotom4j.component.nitro.NitroCmpFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.NitroPreview;
-import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolderComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PImage;
@@ -22,7 +22,7 @@ public class NSCRFolderComponent extends NitroCmpFolderComponent<NSCR> {
 
         children.add(createZoom());
 
-        children.add(new NCGRFolderComponent(gui, path + "/" + IMAGE_NODE_NAME, this, drawable.getNCGR()));
+        children.add(new NCGRFolder(gui, path + "/" + IMAGE_NODE_NAME, this, drawable.getNCGR()));
     }
 
     @Override

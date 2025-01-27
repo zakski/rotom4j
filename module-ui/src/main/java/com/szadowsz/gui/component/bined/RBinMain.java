@@ -360,7 +360,7 @@ public class RBinMain extends RBinComponent {
 
     protected void drawCursor(PGraphics pg) {
         if (!gui.hasFocus(editor)) {
-            LOGGER.info("No Cursor Focus for {}",editor.getName());
+            LOGGER.debug("No Cursor Focus for {}",editor.getName());
             return;
         }
 

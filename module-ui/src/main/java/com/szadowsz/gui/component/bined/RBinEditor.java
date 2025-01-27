@@ -882,7 +882,7 @@ public class RBinEditor extends RBinEdBase {
     @Override
     public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY) {
         if (isMouseInsideScrollbar(mouseEvent, adjustedMouseY)) {
-            LOGGER.info("Bin Editor {} mouse over scrollbar", getName());
+            LOGGER.debug("Bin Editor {} mouse over scrollbar", getName());
             if (isChildMouseOver()) {
                 buffer.invalidateBuffer();
             }
@@ -904,7 +904,7 @@ public class RBinEditor extends RBinEdBase {
         }
         if (mouseEvent.isLeft()) {
             if (isMouseInsideScrollbar(mouseEvent, mouseY)) {
-                LOGGER.info("Bin Editor {} mouse [{},{}] pressed over scrollbar with Pos {{}, {}] Size [{},{}]", getName(), mouseEvent.getX(), mouseY, vsb.getPosX(), vsb.getPosY(), vsb.getWidth(),vsb.getHeight());
+                LOGGER.debug("Bin Editor {} mouse [{},{}] pressed over scrollbar with Pos {{}, {}] Size [{},{}]", getName(), mouseEvent.getX(), mouseY, vsb.getPosX(), vsb.getPosY(), vsb.getWidth(),vsb.getHeight());
                 vsb.mousePressed(mouseEvent, mouseY);
                 mouseEvent.consume();
             } else {
@@ -920,7 +920,7 @@ public class RBinEditor extends RBinEdBase {
     public void mouseDragged(RMouseEvent mouseEvent) {
         if (gui.hasFocus(this)) {
             if (vsb != null && vsb.isDragged()) {
-                LOGGER.info("Bin Editor {} mouse dragged with scrollbar Size [{},{}]", getName(), vsb.getWidth(),vsb.getHeight());
+                LOGGER.debug("Bin Editor {} mouse dragged with scrollbar Size [{},{}]", getName(), vsb.getWidth(),vsb.getHeight());
                 vsb.mouseDragged(mouseEvent);
                 redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user dragged the mouse
             } else {
@@ -955,7 +955,7 @@ public class RBinEditor extends RBinEdBase {
     public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float adjustedMouseY) {
         if (isDragged || (vsb != null && vsb.isDragged())) {
             if (vsb.isDragged()) {
-                LOGGER.info("Bin Editor {} mouse released over scrollbar", getName());
+                LOGGER.debug("Bin Editor {} mouse released over scrollbar", getName());
                 vsb.mouseReleased(mouseEvent, adjustedMouseY);
             } else {
                 setFocus(true);
@@ -981,7 +981,7 @@ public class RBinEditor extends RBinEdBase {
         super.updateCoordinates(bX, bY, rX, rY, w, h);
         float scrollX = pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth();
         float scrollY = pos.y + dimensions.getHeaderHeight();
-        LOGGER.info("Bin Editor {} updated scrollbar with Pos [{}, {}] Size [{},{}]", getName(), scrollX, scrollY, RLayoutStore.getCell(), dimensions.getContentHeight());
+        LOGGER.debug("Bin Editor {} updated scrollbar with Pos [{}, {}] Size [{},{}]", getName(), scrollX, scrollY, RLayoutStore.getCell(), dimensions.getContentHeight());
         vsb.updateCoordinates(scrollX,scrollY,RLayoutStore.getCell(), dimensions.getContentDisplayHeight(), dimensions.getContentHeight());
         buffer.resetBuffer();
     }

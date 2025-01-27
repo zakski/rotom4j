@@ -145,9 +145,9 @@ public class RWinBuffer extends RBuffer {
 
             // Resizings have to be done before we draw the content buffer
             RLayoutBase layout = folder.getLayout();
-            LOGGER.info("{} Win Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
+            LOGGER.debug("{} Win Buffer [{},{}] Layout {}",folder.getName(),buffer.width,buffer.height,layout);
             PVector pos = folder.getWindow().getContentStart();
-            LOGGER.info("{} Layout [{},{}]",folder.getName(),folder.getWindow().contentSize.x,folder.getWindow().contentSize.y);
+            LOGGER.debug("{} Layout [{},{}]",folder.getName(),folder.getWindow().contentSize.x,folder.getWindow().contentSize.y);
             layout.setCompLayout(pos,folder.getWindow().contentSize, folder.getChildren());
 
             isReInitRequired = false;

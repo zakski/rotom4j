@@ -198,24 +198,24 @@ public class RTabManager extends RGroupDrawable {
 
         RComponent header = findChildByName(HEADER);
         PVector preferredSize = header.getPreferredSize();
-        LOGGER.info("{} Tab Header Preferred Size [{},{}]",getName(),preferredSize.x,preferredSize.y);
+        LOGGER.debug("{} Tab Header Preferred Size [{},{}]",getName(),preferredSize.x,preferredSize.y);
         PVector headerFittingSize = new PVector(
                 Math.min(availableHorizontalSpace, preferredSize.x),
                 preferredSize.y);
         if (availableHorizontalSpace > headerFittingSize.x) {
             headerFittingSize.x = availableHorizontalSpace;
         }
-        LOGGER.info("{} Tab Header Fitting Size [{},{}]",getName(),headerFittingSize.x,headerFittingSize.y);
+        LOGGER.debug("{} Tab Header Fitting Size [{},{}]",getName(),headerFittingSize.x,headerFittingSize.y);
 
         preferredSize = getPreferredTabSize();
-        LOGGER.info("{} Active Tab Preferred Size [{},{}]",getName(),preferredSize.x,preferredSize.y);
+        LOGGER.debug("{} Active Tab Preferred Size [{},{}]",getName(),preferredSize.x,preferredSize.y);
         PVector tabFittingSize = new PVector(
                 Math.min(availableHorizontalSpace, preferredSize.x),
                 preferredSize.y);
         if (availableHorizontalSpace > tabFittingSize.x) {
             tabFittingSize.x = availableHorizontalSpace;
         }
-        LOGGER.info("{} Active Tab Fitting Size [{},{}]",getName(),tabFittingSize.x,tabFittingSize.y);
+        LOGGER.debug("{} Active Tab Fitting Size [{},{}]",getName(),tabFittingSize.x,tabFittingSize.y);
 
         PVector start = getPosition();
         header.updateCoordinates(start, new PVector(), headerFittingSize);

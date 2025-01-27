@@ -1014,7 +1014,7 @@ public class RWindowPane implements RWindow, RInputListener {
             mouseEvent.consume();
         } else {
             if (folder.isChildMouseOver()) {
-                LOGGER.info("Child Was Over {} Window",title);
+                LOGGER.debug("Child Was Over {} Window",title);
                 contentBuffer.invalidateBuffer();
             }
             gui.setAllMouseOverToFalse(this.folder);

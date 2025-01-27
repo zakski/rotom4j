@@ -173,7 +173,7 @@ public class RWindowTemp extends RWindowPane {
         } else {
             if (!isPointInRect(mouseEvent.getX(),mouseEvent.getY(),pos.x-5,pos.y-5,size.x+10,size.y+10)) {
                 if (folder.isChildMouseOver()) {
-                    LOGGER.info("Child Was Over {} Window",title);
+                    LOGGER.debug("Child Was Over {} Window",title);
                     contentBuffer.invalidateBuffer();
                 }
 
