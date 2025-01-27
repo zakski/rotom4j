@@ -53,7 +53,7 @@ public class NCLRComponent extends R4JComponent<NCLR> {
         if (!children.isEmpty()) {
             return;
         }
-        children.add(new NitroPreview(gui,path + "/" + PREVIEW_NODE, this,data));
+        children.add(new NitroPreview(gui,path + "/" + PREVIEW_COMP, this,data));
         RSlider pal = new RSliderInt(gui,path + "/" + PALETTE_NODE_NAME, this, 0, 0, data.getPaletteCount()-1, true) {
             @Override
             protected void onValueChange() {
@@ -66,7 +66,7 @@ public class NCLRComponent extends R4JComponent<NCLR> {
         children.add(new RSliderInt(gui,path + "/" + COLOR_NODE_NAME, this,0,0,getNumColors(),true));
         children.add(new RColorPicker(gui,path + "/" + PICKER_NODE_NAME,this,getColor(),false));
         if (parentFolder.getSpriteFolder() != null) {
-            RButton reset = new RButton(gui,path + "/" + RESET_NODE, this);
+            RButton reset = new RButton(gui,path + "/" + RESET_COMP, this);
             reset.registerAction(RActivateByType.RELEASE, this::resetPalette);
             children.add(reset);
         }
@@ -162,7 +162,7 @@ public class NCLRComponent extends R4JComponent<NCLR> {
         int palette = getPaletteNum();
         index = 0;
         PImage pImage = ImageUtils.convertToPImage(data.getImage(palette));
-        ((NitroPreview) findChildByName(PREVIEW_NODE)).loadImage(pImage);
+        ((NitroPreview) findChildByName(PREVIEW_COMP)).loadImage(pImage);
     }
 
     @Override

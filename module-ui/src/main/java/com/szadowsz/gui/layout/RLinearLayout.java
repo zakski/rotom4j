@@ -159,11 +159,11 @@ public class RLinearLayout extends RLayoutBase {
             }
 
             PVector preferredSize = component.getPreferredSize();
-            LOGGER.trace("{} Component Preferred Size [{},{}]",component.getName(),preferredSize.x,preferredSize.y);
+            LOGGER.info("{} Component Preferred Size [{},{}]",component.getName(),preferredSize.x,preferredSize.y);
             PVector fittingSize = new PVector(
                     Math.min(availableHorizontalSpace, preferredSize.x),
                     preferredSize.y);
-            LOGGER.trace("{} Component Fitting Size [{},{}]",component.getName(),fittingSize.x,fittingSize.y);
+            LOGGER.info("{} Component Fitting Size [{},{}]",component.getName(),fittingSize.x,fittingSize.y);
             if(alignment == Alignment.FILL) {
                 fittingSize.x = (availableHorizontalSpace);
             }

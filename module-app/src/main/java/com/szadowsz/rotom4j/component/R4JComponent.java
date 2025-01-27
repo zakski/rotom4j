@@ -8,9 +8,9 @@ import com.szadowsz.rotom4j.file.RotomFile;
 
 public abstract class R4JComponent<R extends RotomFile> extends RGroupDrawable {
 
-    protected static final String PREVIEW_NODE = "Preview";
-    protected static final String ZOOM_NODE = "Zoom";
-    protected static final String RESET_NODE = "Reset";
+    protected static final String PREVIEW_COMP = "Preview";
+    protected static final String ZOOM_COMP = "Zoom";
+    protected static final String RESET_COMP = "Reset";
 
     protected R data;
 

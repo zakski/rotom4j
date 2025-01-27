@@ -215,7 +215,15 @@ public class RSlider extends RSingle {
      * @param floatToSet the value to set
      */
     protected void setValue(float floatToSet) {
-        value = floatToSet;
+        if (floatToSet > valueMax || floatToSet < valueMin) {
+            LOGGER.info("Slider {} was set to {} by user - cannot be outside range [{} - {}]",
+                    getName(),
+                    floatToSet,
+                    valueMin,
+                    valueMax
+            );
+        }
+        this.value = floatToSet;
         onValueChange(); // post-change processing
     }
 
@@ -292,6 +300,14 @@ public class RSlider extends RSingle {
             }
             value = constrain(value, valueMin, valueMax);
         }
+        if (constrained) {
+            LOGGER.info("Slider {} was constrained to {} - cannot be outside range [{} - {}]",
+                    getName(),
+                    value,
+                    valueMin,
+                    valueMax
+            );
+        }
         return constrained;
     }
 
@@ -300,6 +316,7 @@ public class RSlider extends RSingle {
      */
     protected void onValueChange() {
         constrainValue();
+        redrawBuffers();
     }
 
     /**
@@ -520,6 +537,16 @@ public class RSlider extends RSingle {
     }
 
     public void setValueFromParent(float value) {
+        if (value > valueMax || value < valueMin) {
+            LOGGER.info("Slider {} was set to {} by parent {} - cannot be outside range [{} - {}]",
+                    getName(),
+                    value,
+                    getParent().getName(),
+                    valueMin,
+                    valueMax
+            );
+        }
         this.value = value;
+        onValueChange();
     }
 }
