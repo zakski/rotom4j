@@ -45,7 +45,7 @@ public abstract class NitroFolderComponent<I extends Drawable> extends RFolder {
                 1.0f,
                 4.0f,
                 true,
-                false
+                0.01f
         ) {
             @Override
             protected void onValueChange() {
