@@ -59,7 +59,6 @@ public class RSlider extends RSingle {
 
     // Precision Configuration
     protected int precisionIndex;
-    protected float precisionValue;
 
     // Default/Min/Max Values of the slider
     protected float valueDefault;
@@ -72,8 +71,7 @@ public class RSlider extends RSingle {
     // Configuration Toggles
     protected boolean isConstrained;  // if we clamp to min and max values
     protected boolean isVertical; // if the slider is vertical or horizontal
-    protected boolean showPercentIndicator;  // TODO Consider need
-    protected boolean showSquigglyEquals = true; // TODO Consider need
+    protected boolean showPercentIndicator;
 
 
     protected float backgroundScroll; // TODO consider need
@@ -98,9 +96,9 @@ public class RSlider extends RSingle {
         setSensiblePrecision(nf(value, 0, 0));
     }
 
-    public RSlider(RotomGui gui, String path, RGroup parent, float defaultValue, float min, float max, boolean constrained, boolean displaySquigglyEquals){
+    public RSlider(RotomGui gui, String path, RGroup parent, float defaultValue, float min, float max, boolean constrained, float suggestPrecision){
         this(gui, path, parent, defaultValue, min, max, constrained);
-        this.showSquigglyEquals = displaySquigglyEquals;
+        setPrecisionByIndex(precisionRange.indexOf(suggestPrecision));
     }
 
     /**
@@ -117,18 +115,11 @@ public class RSlider extends RSingle {
             return "NaN";
         }
         String valueToDisplay;
-        boolean isFractionalPrecision = precisionValue % 1f > 0;
+        boolean isFractionalPrecision = precisionRange.get(precisionIndex) % 1f > 0;
         if (isFractionalPrecision) {
-            valueToDisplay = nf(value, 0, getFractionalDigitLength(String.valueOf(precisionValue)));
+            valueToDisplay = nf(value, 0, getFractionalDigitLength(String.valueOf(precisionRange.get(precisionIndex))));
         } else {
             valueToDisplay = nf(round(value), 0, 0);
-        }
-        if (showSquigglyEquals && RLayoutStore.shouldDisplaySquigglyEquals()) {
-            String valueWithoutRounding = nf(value, 0, 0);
-            boolean precisionRoundingHidesInformation = valueToDisplay.length() < valueWithoutRounding.length();
-            if (precisionRoundingHidesInformation) {
-                valueToDisplay = SQUIGGLY_EQUALS + valueToDisplay;
-            }
         }
         // java float literals use . so we also use . to be consistent
         valueToDisplay = valueToDisplay.replaceAll(",", ".");
@@ -184,7 +175,6 @@ public class RSlider extends RSingle {
             return;
         }
         precisionIndex = constrain(newPrecisionIndex, 0, precisionRange.size() - 1);
-        precisionValue = precisionRange.get(precisionIndex);
     }
 
     /**
@@ -215,6 +205,7 @@ public class RSlider extends RSingle {
      * @param floatToSet the value to set
      */
     protected void setValue(float floatToSet) {
+        float previous = value;
         if (floatToSet > valueMax || floatToSet < valueMin) {
             LOGGER.info("Slider {} was set to {} by user - cannot be outside range [{} - {}]",
                     getName(),
@@ -224,7 +215,10 @@ public class RSlider extends RSingle {
             );
         }
         this.value = floatToSet;
-        onValueChange(); // post-change processing
+        boolean constrained = constrainValue();
+        if (!constrained || (value > previous && value == valueMax) || (value < previous && value == valueMin)) {
+            onValueChange(); // post-change processing
+        }
     }
 
     /**
@@ -315,7 +309,6 @@ public class RSlider extends RSingle {
      * How to behave when the slider value changes
      */
     protected void onValueChange() {
-        constrainValue();
         redrawBuffers();
     }
 
@@ -342,7 +335,7 @@ public class RSlider extends RSingle {
         float mouseDelta = isVertical ? mouseDeltaY : mouseDeltaX;
         if (mouseDelta != 0) {
             LOGGER.debug("Mouse Delta for Slider {} [{}]", name, mouseDelta);
-            float delta = mouseDelta * precisionValue;
+            float delta = mouseDelta * precisionRange.get(precisionIndex);
             LOGGER.debug("Slider Delta for Slider {} [{} - {}]", name, delta, value);
             setValue(value - delta);
             LOGGER.debug("Value for Slider {} [{}]", name, value);

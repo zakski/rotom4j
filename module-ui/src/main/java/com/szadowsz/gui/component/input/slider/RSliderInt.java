@@ -13,10 +13,6 @@ public class RSliderInt extends RSlider {
         super(gui, path, parent, defaultValue, min, max, constrained);
     }
 
-    public RSliderInt(RotomGui gui, String path, RGroup parent, int defaultValue, int min, int max, boolean constrained, boolean displaySquigglyEquals) {
-        super(gui, path, parent, defaultValue, min, max, constrained, displaySquigglyEquals);
-    }
-
     @Override
     protected boolean validatePrecision(int newPrecisionIndex) {
         return false; // TODO We current can't change precision, should allow for different whole number precision?
@@ -31,7 +27,6 @@ public class RSliderInt extends RSlider {
     protected void setSensiblePrecision(String value) {
         // TODO We current can't change precision, should allow for different whole number precision?
         precisionIndex = precisionRange.indexOf(1f);
-        precisionValue = precisionRange.get(precisionIndex);
     }
 
     /**
