@@ -12,8 +12,7 @@ import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutConfig;
-import com.szadowsz.gui.window.RWindow;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.window.internal.RWindowImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
@@ -51,8 +50,6 @@ public abstract class RComponent {
     // Width and height of component in pixels
     protected final PVector size = new PVector(); // TODO LazyGui & G4P
 
-    protected float heightInCells = 1; // TODO LazyGui // Shortcut for Layout Calculations
-
     protected RLayoutConfig layoutConfig = new RLayoutConfig() {};
 
     protected RComponentBuffer buffer;
@@ -85,7 +82,7 @@ public abstract class RComponent {
         this.palette = RThemeStore.getTheme(localTheme);
 
         // If overridden in Subclasses, both size.y and heightInCells should be changed
-        size.y = heightInCells * RLayoutStore.getCell();
+        size.y = RLayoutStore.getCell();
     }
 
     protected String extractNameFromPath(String path) {
@@ -93,10 +90,6 @@ public abstract class RComponent {
             return gui.getSketch().getClass().getSimpleName(); // not using lowercase separated class name after all because it breaks what users expect to see
         }
         return RPaths.getNameFromPath(path);
-    }
-
-    protected int calcHeightInCells(float minimumHeight) {
-        return ((int) (minimumHeight / RLayoutStore.getCell())) + ((minimumHeight % RLayoutStore.getCell() != 0) ? 1 : 0);
     }
 
     protected void onValueChange() {
@@ -279,15 +272,22 @@ public abstract class RComponent {
      */
     protected void redrawBuffers() {
         buffer.invalidateBuffer();
-        RWindowPane win = getParentWindow(); // TODO check if needed
+        if (parent != null && !(parent instanceof RFolder)) {
+            parent.redrawBuffers();
+        }
+        RWindowImpl win = getParentWindow(); // TODO check if needed
         if (win != null) {
             win.redrawBuffer();
         }
     }
 
-    protected void resetBuffer() {
+    public void resetBuffer() {
         buffer.resetBuffer();
-        RWindowPane win = getParentWindow(); // TODO check if needed
+        RGroup parent = getParent();
+        if (parent != null && !(parent instanceof RFolder)) {
+            parent.resetBuffer();
+        }
+        RWindowImpl win = getParentWindow(); // TODO check if needed
         if (win != null) {
             win.redrawBuffer();
         }
@@ -335,7 +335,7 @@ public abstract class RComponent {
         return (RFolder) p;
     }
 
-    public RWindowPane getParentWindow() {
+    public RWindowImpl getParentWindow() {
         RFolder folder =  getParentFolder();
         if (folder != null){
             return folder.getWindow();
@@ -532,8 +532,16 @@ public abstract class RComponent {
      * @param mouseEvent
      */
     public void setMouseOverThisOnly(RComponentTree componentTree, RMouseEvent mouseEvent) {
+        if (!isMouseOver()){
+            buffer.invalidateBuffer();
+        }
         setMouseOver(true);
         componentTree.setAllOtherMouseOversToFalse(this);
+    }
+
+
+    public void setVisible(boolean visible) {
+        isVisible = visible;
     }
 
     /**

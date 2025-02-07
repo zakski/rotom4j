@@ -5,7 +5,7 @@ import com.szadowsz.gui.RotomGuiManager;
 import com.szadowsz.gui.RotomGuiSettings;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.exception.RWindowException;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.window.internal.RWindowImpl;
 import com.szadowsz.gui.window.sketch.RWindowAWT;
 import com.szadowsz.gui.window.sketch.RWindowSketch;
 import com.szadowsz.gui.window.sketch.RWindowJOGL;
@@ -145,7 +145,7 @@ public class RWindowBuilder {
             if (folder == null){
                 throw new RWindowException("RFolder supplied cannot be null");
             }
-            return new RWindowPane(applet, gui, folder, title, xPos, yPos, width, height);
+            return new RWindowImpl(applet, gui, folder, title, xPos, yPos, width, height);
         } else {
             LOGGER.debug("Constructing External Window {}", title);
             RWindowSketch external = switch (renderer) {

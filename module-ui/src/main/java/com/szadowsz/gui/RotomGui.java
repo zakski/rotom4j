@@ -26,8 +26,8 @@ import com.szadowsz.gui.layout.RBorderLayout;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.utils.RContextLines;
 import com.szadowsz.gui.utils.RSnapToGrid;
-import com.szadowsz.gui.window.RWindowManager;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.window.internal.RWindowManager;
+import com.szadowsz.gui.window.internal.RWindowImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -221,7 +221,7 @@ public class RotomGui {
         return sb.toString();
     }
 
-    protected RWindowPane getWindowBeingDraggedIfAny() { // TODO LazyGui
+    protected RWindowImpl getWindowBeingDraggedIfAny() { // TODO LazyGui
         List<RComponent> allNodes = tree.getComponents();
         for (RComponent node : allNodes) {
             if (node instanceof RFolder folder) {
@@ -292,7 +292,7 @@ public class RotomGui {
         return isSetup;
     }
 
-    public void setFocus(RWindowPane window) { // TODO LazyGui
+    public void setFocus(RWindowImpl window) { // TODO LazyGui
         winManager.setFocus(window);
         inputHandler.setFocus(window);
     }

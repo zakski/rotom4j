@@ -1,4 +1,4 @@
-package com.szadowsz.gui.window.pane;
+package com.szadowsz.gui.window.internal;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
@@ -12,7 +12,7 @@ import processing.core.PVector;
 
 import static processing.core.PApplet.round;
 
-public class RWindowToolbar extends RWindowPane {
+public class RWindowToolbar extends RWindowImpl {
 
     public RWindowToolbar(PApplet app, RotomGui gui, RFolder folder, String title, PVector pos, PVector size) {
         super(app, gui, folder, title, (int) pos.x, (int) pos.y, (int) size.x, (int) size.y);

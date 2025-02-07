@@ -1,22 +1,21 @@
-package com.szadowsz.gui.window.pane;
+package com.szadowsz.gui.window.internal;
 
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RPaths;
-import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.component.group.RRoot;
+import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.input.RInputListener;
 import com.szadowsz.gui.input.mouse.RMouseHiding;
 import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLayoutConfig;
 import com.szadowsz.gui.layout.RLinearLayout;
-import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.gui.config.text.RFontStore;
-import com.szadowsz.gui.config.RLayoutStore;
-import com.szadowsz.gui.input.RInputListener;
 import com.szadowsz.gui.window.RWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,13 +28,15 @@ import java.util.Optional;
 import static com.szadowsz.gui.config.theme.RColorType.*;
 import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 import static processing.core.PApplet.*;
+import static processing.core.PApplet.lerp;
+import static processing.core.PConstants.CENTER;
 
 /**
  * Base Class for Internal Windows
  */
-public class RWindowPane implements RWindow, RInputListener {
+public class RWindowImpl implements RWindow, RInputListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RWindowPane.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RWindowImpl.class);
 
     // PApplet to draw in
     protected final PApplet sketch;
@@ -61,25 +62,26 @@ public class RWindowPane implements RWindow, RInputListener {
     // Window Dimensions
     protected final PVector size;
     protected final PVector sizeUnconstrained;
-    protected final PVector contentSize;
+
+    protected final PVector contentSize; // size of the content display area, basically window size - title and scroll bars
 
     // How Dimensions where Set
     protected RSizeMode sizing = RSizeMode.COMPONENT;
 
-    // Window Status Info
 
-    // Draw Info
+    // Window State
+    protected boolean isVisible = true; // if the window is visible
+
+    // Window Draw State
     protected boolean isTitleHighlighted; // if the window title is visible, should it be highlighted
     protected boolean isScrollbarHighlighted;  // if the vertical scrollbar is visible, should it be highlighted
 
-    protected boolean isVisible = true; // if the window is visible
-
-    // Window Transition Status Info
+    // Window Transition State
     protected boolean isBeingDragged; // if the window is being moved
     protected boolean isBeingResized; // if the window shape is changing
     protected boolean isCloseInProgress; // if close button press in progress
 
-    public RWindowPane(PApplet sketch, RotomGui gui, RFolder folder, String title, int xPos, int yPos, int width, int height) {
+    public RWindowImpl(PApplet sketch, RotomGui gui, RFolder folder, String title, int xPos, int yPos, int width, int height) {
         this.sketch = sketch;
         this.gui = gui;
 
@@ -97,7 +99,14 @@ public class RWindowPane implements RWindow, RInputListener {
         this.sizeUnconstrained = new PVector(size.x, size.y);
         this.contentSize = new PVector(size.x, size.y);
         initDimensions();
-        LOGGER.debug("{} Window [{},{},{},{}] Post-Dimension Init", title, pos.x, pos.y, this.size.x, this.size.y);
+
+        LOGGER.info("{} {} { Coords [{},{}], Size [{},{}], Unconstrained [{}.{}] } Dimension Calculated",
+                title, getClass().getSimpleName(),
+                pos.x, pos.y,
+                this.size.x, this.size.y,
+                this.sizeUnconstrained.x, this.sizeUnconstrained.y
+        );
+
         contentBuffer = new RWinBuffer(this);
     }
 
@@ -110,9 +119,10 @@ public class RWindowPane implements RWindow, RInputListener {
      * @param width  initial window width
      * @param height initial window height
      */
-    public RWindowPane(PApplet app, RotomGui gui, RFolder folder, float xPos, float yPos, float width, float height) {
+    public RWindowImpl(PApplet app, RotomGui gui, RFolder folder, float xPos, float yPos, float width, float height) {
         this(app, gui, folder, folder.getName(), (int) xPos, (int) yPos, (int) width, (int) height);
     }
+
 
     /**
      * Constructor for Internal Window
@@ -122,18 +132,125 @@ public class RWindowPane implements RWindow, RInputListener {
      * @param pos   initial X,Y display location in PApplet
      * @param dim   initial window dimensions
      */
-    public RWindowPane(PApplet app, RotomGui gui, RFolder folder, String title, PVector pos, PVector dim) {
+    public RWindowImpl(PApplet app, RotomGui gui, RFolder folder, String title, PVector pos, PVector dim) {
         this(app, gui, folder, title, (int) pos.x, (int) pos.y, (int) dim.x, (int) dim.y);
+    }
+
+    /**
+     * Initialise the dimensions of the Window
+     */
+    protected void initDimensions() {
+        if (folder.getChildren().isEmpty()) {
+            // We only have what's provided to go on as at this stage, as we would have no child components
+            if (size.x == 0 || size.y == 0) {
+                if (size.x == 0) {
+                    if (RLayoutStore.shouldSuggestWindowWidth() && folder.suggestWindowWidthInCells() == RLayoutStore.getWindowWidthInCells()) {
+                        size.x = folder.autosuggestWindowWidthForContents();
+                    } else {
+                        size.x = RLayoutStore.getCell() * folder.suggestWindowWidthInCells();
+                    }
+                    contentSize.x = size.x;
+                    sizeUnconstrained.x = size.x;
+                }
+                if (size.y == 0) {
+                    contentSize.y = RLayoutStore.getCell();
+                    sizeUnconstrained.y = contentSize.y;
+                    if (folder.shouldDrawTitle()) {
+                        size.y = contentSize.y + RLayoutStore.getCell();
+                    } else {
+                        size.y = contentSize.y;
+                    }
+                }
+            }
+        } else {
+            if (size.x == 0 || size.y == 0) {
+                RLayoutBase layout = folder.getLayout();
+                PVector preferredSize = layout.calcPreferredSize((folder.shouldDrawTitle()) ? folder.getName() : "", folder.getChildren());
+                if (size.y == 0) {
+                    contentSize.y = preferredSize.y;
+                    sizeUnconstrained.y = preferredSize.y;
+                    if (folder.shouldDrawTitle()) {
+                        size.y = preferredSize.y + RLayoutStore.getCell();
+                    } else {
+                        size.y = preferredSize.y;
+                    }
+                }
+                if (size.x == 0) {
+                    contentSize.x = preferredSize.x;
+                    sizeUnconstrained.x = preferredSize.x;
+                    if (vsb.isPresent()) {
+                        size.x = preferredSize.x + RLayoutStore.getCell();
+                    } else {
+                        size.x = preferredSize.x;
+                    }
+                }
+
+            }
+        }
     }
 
 
     /**
-     * Helper Method to work out the upper left most point of where the content should be drawn from
+     * Initialise Scrollbar for Vertical Layouts
+     */
+    protected void initScrollbar() {
+        if (vsb.isEmpty()) {
+            RLayoutBase layout = folder.getLayout();
+            if (layout instanceof RLinearLayout) {
+                if (((RLinearLayout) layout).getDirection() == RDirection.VERTICAL) {
+                    vsb = Optional.of(new RScrollbar(this, getScrollbarStart(), getScrollbarBounds(), sizeUnconstrained.y, 16));
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Helper Method to calculate the upper left most point of where the content should be drawn from
      *
      * @return content starting coordinates
      */
     protected PVector getContentStart() {
         return new PVector(pos.x, pos.y + ((folder.shouldDrawTitle()) ? RLayoutStore.getCell() : 0));
+    }
+
+
+    protected int getContentWidth() {
+        switch (folder.getLayout()) {
+            case RLinearLayout linear -> {
+                return (int) contentSize.x;
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
+        }
+    }
+
+    protected float getContentHeight() {
+        switch (folder.getLayout()) {
+            case RLinearLayout linear -> {
+                return (int) contentSize.y;
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
+        }
+    }
+
+    /**
+     * Helper Method to calculate the current vertical scroll value for Window Content
+     *
+     * @return float 0.0 - 1.0 value representing a percentage of how far the content is scrolled vertically
+     */
+    protected float getVerticalScrollbarValue() {
+        return vsb.map(RScrollbar::getValue).orElse(0.0f);
+    }
+
+    /**
+     * Helper Method to calculate the current vertical scrolled value to add on to Window Content boundary checks to
+     * properly account for the scrolling the user has done.
+     *
+     * @return
+     */
+    protected float getVerticallyScrolledDifference() {
+        float yDiff = sizeUnconstrained.y - size.y;
+        return yDiff * getVerticalScrollbarValue();
     }
 
     /**
@@ -142,7 +259,7 @@ public class RWindowPane implements RWindow, RInputListener {
      * @return Scrollbar dimensions
      */
     protected PVector getScrollbarBounds() {
-        return new PVector(RLayoutStore.getCell(), size.y);
+        return new PVector(RLayoutStore.getCell(), contentSize.y);
     }
 
     /**
@@ -151,17 +268,9 @@ public class RWindowPane implements RWindow, RInputListener {
      * @return Scrollbar starting coordinates
      */
     protected PVector getScrollbarStart() {
-        return new PVector(pos.x + contentSize.x, pos.y);
+        return new PVector(pos.x + contentSize.x, pos.y + RLayoutStore.getCell());
     }
 
-    protected float getScrollbarValue() {
-        return vsb.map(RScrollbar::getValue).orElse(0.0f);
-    }
-
-    protected float getScrolledY() {
-        float yDiff = sizeUnconstrained.y - size.y;
-        return yDiff * vsb.map(RScrollbar::getValue).orElse(0.0f);
-    }
 
     /**
      * Check if the window is focused upon
@@ -312,8 +421,20 @@ public class RWindowPane implements RWindow, RInputListener {
         return isPointInsideWindow(e.getX(), e.getY());
     }
 
-    protected boolean isRoot() {
-        return folder.getParent() instanceof RRoot;
+    protected boolean isStartingToClose(RMouseEvent mouseEvent) {
+        return canBeClosed() &&
+                ((isMouseInsideCloseButton(mouseEvent) && mouseEvent.isLeft()) ||
+                        (isMouseInsideWindow(mouseEvent) && mouseEvent.isRight())
+                );
+    }
+
+    /**
+     * Check if the Window can be closed
+     *
+     * @return true if it does not directly descend from the Root component
+     */
+    protected boolean canBeClosed() {
+        return !(folder.getParent() instanceof RRoot);
     }
 
     /**
@@ -338,16 +459,11 @@ public class RWindowPane implements RWindow, RInputListener {
                 folder.isMouseOver();
     }
 
-    protected void setFocusOnThis() {
-    }
-
     /**
-     * Helper Method to control titlebar Highlighting
-     *
-     * @param v true if it is to be highlighted, false otherwise
+     * Set Focus to this Window
      */
-    protected void setTitleHighlighted(boolean v) {
-        isTitleHighlighted = v;
+    protected void setFocusOnThis() {
+        gui.setFocus(this);
     }
 
     /**
@@ -360,71 +476,12 @@ public class RWindowPane implements RWindow, RInputListener {
     }
 
     /**
-     * Initialise the dimensions of the Window
+     * Helper Method to control titlebar Highlighting
+     *
+     * @param v true if it is to be highlighted, false otherwise
      */
-    protected void initDimensions() {
-        if (folder.getChildren().isEmpty()) {
-            // We only have what's provided to go on as at this stage, as we would have no child components
-            if (size.x == 0 || size.y == 0) {
-                if (size.x == 0) {
-                    if (RLayoutStore.shouldSuggestWindowWidth() && folder.suggestWindowWidthInCells() == RLayoutStore.getWindowWidthInCells()) {
-                        size.x = folder.autosuggestWindowWidthForContents();
-                    } else {
-                        size.x = RLayoutStore.getCell() * folder.suggestWindowWidthInCells();
-                    }
-                    contentSize.x = size.x;
-                    sizeUnconstrained.x = size.x;
-                }
-                if (size.y == 0) {
-                    contentSize.y = RLayoutStore.getCell();
-                    sizeUnconstrained.y = contentSize.y;
-                    if (folder.shouldDrawTitle()) {
-                        size.y = contentSize.y + RLayoutStore.getCell();
-                    } else {
-                        size.y = contentSize.y;
-                    }
-                }
-            }
-        } else {
-            if (size.x == 0 || size.y == 0) {
-                RLayoutBase layout = folder.getLayout();
-                PVector preferredSize = layout.calcPreferredSize((folder.shouldDrawTitle()) ? folder.getName() : "", folder.getChildren());
-                if (size.y == 0) {
-                    contentSize.y = preferredSize.y;
-                    sizeUnconstrained.y = preferredSize.y;
-                    if (folder.shouldDrawTitle()) {
-                        size.y = preferredSize.y + RLayoutStore.getCell();
-                    } else {
-                        size.y = preferredSize.y;
-                    }
-                }
-                if (size.x == 0) {
-                    contentSize.x = preferredSize.x;
-                    sizeUnconstrained.x = preferredSize.x;
-                    if (vsb.isPresent()) {
-                        size.x = preferredSize.x + RLayoutStore.getCell();
-                    } else {
-                        size.x = preferredSize.x;
-                    }
-                }
-
-            }
-        }
-    }
-
-
-    /**
-     * Initialise Scrollbar for Vertical Layouts
-     */
-    protected void initScrollbar() {
-        if (vsb.isEmpty()) {
-            RLayoutBase layout = folder.getLayout();
-            if (layout instanceof RLinearLayout) {
-                if (((RLinearLayout) layout).getDirection() == RDirection.VERTICAL) {
-                    vsb = Optional.of(new RScrollbar(this, getScrollbarStart(), getScrollbarBounds(), sizeUnconstrained.y, 16));
-                }
-            }
-        }
+    protected void setTitleHighlighted(boolean v) {
+        isTitleHighlighted = v;
     }
 
     protected PVector calcPreferredSize() {
@@ -439,24 +496,27 @@ public class RWindowPane implements RWindow, RInputListener {
         };
     }
 
-    protected void handleBeingResized(RMouseEvent mouseEvent) {
-        sizing = RSizeMode.USER;
-        float minimumWindowSizeInCells = 4;
-        float maximumWindowSize = sketch.width;
-        float oldWindowSizeX = size.x;
-        size.x += mouseEvent.getX() - mouseEvent.getPrevX();
-        size.x = constrain(size.x, minimumWindowSizeInCells * RLayoutStore.getCell(), maximumWindowSize);
-        if (vsb.map(sb -> !sb.isVisible()).orElse(true)) {
-            contentSize.x = size.x;
-        } else {
-            contentSize.x = size.x - RLayoutStore.getCell();
+    /**
+     * Constrain the Windows width/height when the layout is vertical
+     *
+     * @param pg              Processing Graphics Context
+     * @param preferredHeight what it isa calculated to need
+     */
+    protected void constrainHeight(PGraphics pg, float preferredHeight) {
+        if (!RLayoutStore.shouldKeepWindowsInBounds()) {
+            return;
         }
-        vsb.ifPresent(RScrollbar::invalidateBuffer);
-        mouseEvent.consume();
-        reinitialiseBuffer();
-        LOGGER.debug("oldX: " + mouseEvent.getPrevX() + ", new:X " + mouseEvent.getX());
-        LOGGER.debug("old: " + oldWindowSizeX + ", new: " + size.x);
+        size.y = preferredHeight;
+        sizeUnconstrained.y = size.y;
+        contentSize.y = sizeUnconstrained.y;
+
+        if (pos.y + size.y > pg.height) {
+            size.y = pg.height - pos.y;
+            initScrollbar();
+            vsb.ifPresent(s -> s.setVisible(true));
+        }
     }
+
     /**
      * Keep the window in bounds, by altering its position
      *
@@ -483,26 +543,6 @@ public class RWindowPane implements RWindow, RInputListener {
         }
     }
 
-    /**
-     * Constrain the Windows width/height when the layout is vertical
-     *
-     * @param pg              Processing Graphics Context
-     * @param preferredHeight what it isa calculated to need
-     */
-    protected void constrainHeight(PGraphics pg, float preferredHeight) {
-        if (!RLayoutStore.shouldKeepWindowsInBounds()) {
-            return;
-        }
-        size.y = preferredHeight;
-        sizeUnconstrained.y = size.y;
-        contentSize.y = sizeUnconstrained.y;
-
-        if (pos.y + size.y > pg.height) {
-            size.y = pg.height - pos.y;
-            initScrollbar();
-            vsb.ifPresent(s -> s.setVisible(true));
-        }
-    }
 
     /**
      * Constrain the Windows width/height when the layout is horizontal
@@ -556,8 +596,8 @@ public class RWindowPane implements RWindow, RInputListener {
         if (oldWindowSizeX != size.x || oldWindowSizeY != size.y ||
                 oldWindowSizeXForContents != contentSize.x || oldWindowSizeYForContents != contentSize.y ||
                 oldWindowSizeXUnconstrained != sizeUnconstrained.x || oldWindowSizeYUnconstrained != sizeUnconstrained.y) {
-            LOGGER.trace("Old Width: [{},{},{}], New Width: [{},{},{}]", oldWindowSizeX, oldWindowSizeXUnconstrained, oldWindowSizeXForContents, contentSize.x, sizeUnconstrained.x, contentSize.x);
-            LOGGER.trace("Old Height: [{},{},{}], New Height: [{},{},{}]", oldWindowSizeY, oldWindowSizeYUnconstrained, oldWindowSizeYForContents, contentSize.y, sizeUnconstrained.y, contentSize.y);
+            LOGGER.info("{} Constrained - Old Width: [{},{},{}], New Width: [{},{},{}]", getTitle(), oldWindowSizeX, oldWindowSizeXUnconstrained, oldWindowSizeXForContents, contentSize.x, sizeUnconstrained.x, contentSize.x);
+            LOGGER.info("{} Constrained - Old Height: [{},{},{}], New Height: [{},{},{}]", getTitle(), oldWindowSizeY, oldWindowSizeYUnconstrained, oldWindowSizeYForContents, contentSize.y, sizeUnconstrained.y, contentSize.y);
 
             reinitialiseBuffer();
         }
@@ -609,13 +649,13 @@ public class RWindowPane implements RWindow, RInputListener {
      */
     protected void drawTitleBar(PGraphics canvas, boolean shouldDraw) {
         if (shouldDraw) {
-            float availableWidthForText = size.x - RFontStore.getMarginX() + (isRoot() ? 0 : -RLayoutStore.getCell());
+            float availableWidthForText = size.x - RFontStore.getMarginX() + (!canBeClosed() ? 0 : -RLayoutStore.getCell());
             String leftText = RFontStore.substringToFit(canvas, folder.getName(), availableWidthForText);
             canvas.pushMatrix();
             canvas.pushStyle();
             canvas.translate(pos.x, pos.y);
             canvas.fill(isTitleHighlighted() ? RThemeStore.getRGBA(FOCUS_BACKGROUND) : RThemeStore.getRGBA(NORMAL_BACKGROUND));
-            if (!sketch.focused && isRoot()) {
+            if (!sketch.focused && !canBeClosed()) {
                 canvas.fill(RThemeStore.getRGBA(FOCUS_BACKGROUND));
                 leftText = "not in focus";
                 setTitleHighlighted(true);
@@ -643,7 +683,7 @@ public class RWindowPane implements RWindow, RInputListener {
             PVector contentStart = getContentStart();
             pg.translate(contentStart.x, contentStart.y);
             if (isScrollbarVisible()) {
-                int yDiff = round((sizeUnconstrained.y - size.y) * getScrollbarValue());
+                int yDiff = round(getVerticallyScrolledDifference());
                 pg.image(contentBuffer.draw().get(0, yDiff, (int) contentSize.x, (int) (size.y - RLayoutStore.getCell())), 0, 0);
             } else {
                 pg.image(contentBuffer.draw(), 0, 0);
@@ -726,29 +766,114 @@ public class RWindowPane implements RWindow, RInputListener {
                 )
         );
         if (!folder.getChildren().isEmpty()) {
-           drawContent(canvas);
+            drawContent(canvas);
         }
         drawBackgroundWithWindowBorder(canvas, false);
         drawTitleBar(canvas, folder.shouldDrawTitle());
-        if (!isRoot()) {
+        if (canBeClosed()) {
             drawCloseButton(canvas);
         }
         drawResizeIndicator(canvas);
     }
 
-    public float getContentHeight() {
-        switch (folder.getLayout()) {
-            case RLinearLayout linear -> {
-                return (int) contentSize.y;
+    protected RComponent findVisibleComponentAt(float x, float y) {
+        for (RComponent child : folder.getChildren()) {
+            if (!child.isVisible()) {
+                continue;
             }
-            default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
+            if (isPointInRect(x, y, child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight())) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    protected void handleBeingResized(RMouseEvent mouseEvent) {
+        sizing = RSizeMode.USER;
+        float minimumWindowSizeInCells = 4;
+        float maximumWindowSize = sketch.width;
+        float oldWindowSizeX = size.x;
+        size.x += mouseEvent.getX() - mouseEvent.getPrevX();
+        size.x = constrain(size.x, minimumWindowSizeInCells * RLayoutStore.getCell(), maximumWindowSize);
+        if (vsb.map(sb -> !sb.isVisible()).orElse(true)) {
+            contentSize.x = size.x;
+        } else {
+            contentSize.x = size.x - RLayoutStore.getCell();
+        }
+        vsb.ifPresent(RScrollbar::invalidateBuffer);
+        reinitialiseBuffer();
+        LOGGER.info("oldMouseX: {}, newMouseX: {}", mouseEvent.getPrevX(), mouseEvent.getX());
+        LOGGER.info("oldWidth: {}, newWidth: {}", oldWindowSizeX, size.x);
+    }
+
+    protected void mouseMovedInsideContent(RMouseEvent mouseEvent) {
+        PVector contentStart = getContentStart();
+        float yShift = getVerticallyScrolledDifference();
+        float mouseY = mouseEvent.getY() + yShift;
+        LOGGER.trace("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", mouseEvent.getX(), mouseY, contentStart.x, contentStart.y, size.x, size.y);
+        RComponent child = findVisibleComponentAt(mouseEvent.getX(), mouseY);
+        if (child != null) {
+            if (!child.isMouseOver()) {
+                LOGGER.debug("Inside Component {} [NX {} NY {} Width {} Height {}]", child.getName(), child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
+                contentBuffer.invalidateBuffer();
+            }
+            child.mouseOver(mouseEvent, mouseY);
         }
     }
 
-    @Override
-    public PApplet getSketch() {
-        return sketch;
+    protected void mouseMovedInsideScrollbar(RMouseEvent mouseEvent) {
+        if (folder.isChildMouseOver()) {
+            contentBuffer.invalidateBuffer();
+        }
+        vsb.ifPresent(s -> s.mouseMoved(mouseEvent));
+        folder.setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
+        mouseEvent.consume();
     }
+
+
+    protected void mouseMovedInsideTitle(RMouseEvent mouseEvent) {
+        if (folder.isChildMouseOver()) {
+            contentBuffer.invalidateBuffer();
+        }
+        folder.setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
+        mouseEvent.consume();
+    }
+
+    protected void mousePressedInsideContent(RMouseEvent mouseEvent) {
+        RComponent child = findVisibleComponentAt(mouseEvent.getX(), mouseEvent.getY());
+        if (child != null) {
+            float yShift = getVerticallyScrolledDifference();
+            float mouseY = mouseEvent.getY() + yShift;
+            child.mousePressed(mouseEvent, mouseY);
+            contentBuffer.invalidateBuffer();
+        }
+    }
+
+    protected void mouseReleasedComponentCheck(RMouseEvent mouseEvent) {
+        RComponent released = findVisibleComponentAt(mouseEvent.getX(), mouseEvent.getY());
+        float yShift = getVerticallyScrolledDifference();
+        float mouseY = mouseEvent.getY() + yShift;
+        for (RComponent child : folder.getChildren()) {
+            boolean isReleased = child.equals(released);
+            if (isReleased) {
+                contentBuffer.invalidateBuffer();
+            }
+            child.mouseReleased(mouseEvent, mouseY, isReleased);
+        }
+        if (mouseEvent.isConsumed()) {
+            RMouseHiding.tryRevealMouseAfterDragging(sketch);
+        }
+    }
+
+    /**
+     * Get the Layout to be used to specify all Child Component Dimensions
+     *
+     * @return the top level layout config used for all children displayed inside the window
+     */
+    public RLayoutConfig getComponentLayoutConfig() {
+        return folder.getCompLayoutConfig();
+    }
+
 
     /**
      * Get Internal Window's Companion Folder
@@ -760,8 +885,8 @@ public class RWindowPane implements RWindow, RInputListener {
     }
 
     @Override
-    public String getTitle() {
-        return title;
+    public int getHeight() {
+        return Math.round(size.y);
     }
 
     @Override
@@ -780,31 +905,23 @@ public class RWindowPane implements RWindow, RInputListener {
     }
 
     @Override
-    public int getWidth() {
-        return (int) size.x;
-    }
-
-    @Override
-    public int getHeight() {
-        return (int) size.y;
-    }
-
-    @Override
     public PVector getSize() {
         return size.copy();
     }
 
-    public int getContentWidth() {
-        switch (folder.getLayout()) {
-            case RLinearLayout linear -> {
-                return (int) contentSize.x;
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + folder.getLayout());
-        }
+    @Override
+    public PApplet getSketch() {
+        return sketch;
     }
 
-    public RLayoutConfig getLayoutConfig() {
-        return folder.getCompLayoutConfig();
+    @Override
+    public String getTitle() {
+        return title;
+    }
+
+    @Override
+    public int getWidth() {
+        return Math.round(size.x);
     }
 
     /**
@@ -813,7 +930,7 @@ public class RWindowPane implements RWindow, RInputListener {
      * @return true if dragged, false otherwise
      */
     public boolean isDragged() {
-        return false;
+        return isBeingDragged;
     }
 
     /**
@@ -843,9 +960,8 @@ public class RWindowPane implements RWindow, RInputListener {
         return isVisible;
     }
 
-
-    public void setBounds(float x, float y, float sizeX, float sizeY, RSizeMode mode) {
-        LOGGER.trace("Setting Bounds [{},{},{},{}] for {} using {}", x, y, sizeX, sizeY, folder.getName(), mode);
+    public void setBounds(float x, float y, float sizeX, float sizeY, RSizeMode mode, String reason) {
+        LOGGER.info("Setting Bounds [{},{},{},{}] for {} using {} because \"{}\"", x, y, sizeX, sizeY, folder.getName(), mode, reason);
         sizing = mode;
         pos.x = x;
         pos.y = y;
@@ -870,26 +986,22 @@ public class RWindowPane implements RWindow, RInputListener {
         folder.sortChildren();
     }
 
-    /**
-     * Method to open the Window
-     *
-     * @param setFocus true if should be focused on, false otherwise
-     */
-    public void open(boolean setFocus) {
-        isVisible = true;
-        if (setFocus) {
-            setFocusOnThis();
+    public void setCoordinates(float x, float y) {
+        pos.x = x;
+        pos.y = y;
+
+        PVector cPos = folder.getWindow().getContentStart();
+        RLayoutBase layout = folder.getLayout();
+
+        layout.setCompLayout(cPos, contentSize, folder.getChildren());
+        contentBuffer.invalidateBuffer();
+    }
+
+    public void setWidth(Float nullableSizeX) {
+        if (nullableSizeX != null && size.x != nullableSizeX) {
+            size.x = nullableSizeX;
+            contentBuffer.resetBuffer();
         }
-        reinitialiseBuffer();
-    }
-
-    public void close() {
-        isVisible = false;
-        isBeingDragged = false;
-    }
-
-
-    public void drawContextLine(PGraphics canvas, float endpointRectSize, boolean shouldPickShortestLine) {
     }
 
     /**
@@ -898,6 +1010,7 @@ public class RWindowPane implements RWindow, RInputListener {
      * @param canvas the PGraphics context to draw the Window onto
      */
     public void drawWindow(PGraphics canvas) {
+        long time = System.currentTimeMillis();
         canvas.textFont(RFontStore.getMainFont());
 
         // Check The Need for Highlights
@@ -915,106 +1028,113 @@ public class RWindowPane implements RWindow, RInputListener {
         canvas.pushMatrix();
         drawPane(canvas);
         canvas.popMatrix();
-    }
-
-    protected RComponent findComponentAt(float x, float y) {
-        for (RComponent child : folder.getChildren()) {
-            if (!child.isVisible()) {
-                continue;
-            }
-            if (isPointInRect(x, y, child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight())) {
-                return child;
-            }
+        long currentTime = System.currentTimeMillis();
+        if (currentTime > time) {
+            LOGGER.debug("{} Window [{},{}] Draw Duration {}", getTitle(), size.x, size.y, currentTime - time);
         }
-        return null;
-    }
-
-
-    @Override
-    public void keyPressed(RKeyEvent keyEvent) {
-        if (!isVisible()) {
-            return;
-        }
-
-        float mouseX = sketch.mouseX;
-        float mouseY = sketch.mouseY;
-
-        if (isPointInsideTitleBar(mouseX, mouseY)) {
-            folder.keyPressedOver(keyEvent, mouseX, mouseY);
-            return;
-        }
-
-        folder.keyPressed(keyEvent, mouseX, mouseY);
     }
 
     @Override
-    public void keyChordPressed(RKeyEvent keyEvent) {
+    public void keyChordPressed(RKeyEvent e) {
         if (!isVisible()) {
+            LOGGER.debug("Window {} is not visible to process key chord pressed event", getTitle());
             return;
         }
 
-        float mouseX = sketch.mouseX;
-        float mouseY = sketch.mouseY;
-
-        if (isPointInsideTitleBar(mouseX, mouseY)) {
-            folder.keyChordPressedOver(keyEvent, mouseX, mouseY);
-            return;
-        }
-
-        folder.keyChordPressed(keyEvent, mouseX, mouseY);
+        RInputListener.super.keyChordPressed(e);
     }
 
-    public void keyTyped(RKeyEvent keyEvent) {
+    @Override
+    public void keyPressed(RKeyEvent e) {
         if (!isVisible()) {
+            LOGGER.debug("Window {} is not visible to process key pressed event", getTitle());
             return;
         }
 
-        float mouseX = sketch.mouseX;
-        float mouseY = sketch.mouseY;
+        RInputListener.super.keyPressed(e);
+    }
 
-        if (isPointInsideTitleBar(mouseX, mouseY)) {
-            folder.keyTypedOver(keyEvent, mouseX, mouseY);
+    @Override
+    public void keyReleased(RKeyEvent e) {
+        if (!isVisible()) {
+            LOGGER.debug("Window {} is not visible to process key released event", getTitle());
             return;
         }
 
-        folder.keyTyped(keyEvent, mouseX, mouseY);
+        RInputListener.super.keyReleased(e);
+    }
+
+    @Override
+    public void keyTyped(RKeyEvent e) {
+        if (!isVisible()) {
+            LOGGER.debug("Window {} is not visible to process key typed event", getTitle());
+            return;
+        }
+
+        RInputListener.super.keyTyped(e);
+    }
+
+    @Override
+    public void mouseClicked(RMouseEvent mouseEvent) {
+        if (!isVisible()) {
+            LOGGER.debug("Window {} is not visible to process mouse clicked event", getTitle());
+            return;
+        }
+
+        RInputListener.super.mouseClicked(mouseEvent);
+    }
+
+    @Override
+    public void mouseDragged(RMouseEvent mouseEvent) {
+        if (!isVisible()) {
+            LOGGER.debug("Window {} is not visible to process mouse dragged event", getTitle());
+            return;
+        }
+
+        if (isDragged()) {
+            pos.x += mouseEvent.getX() - mouseEvent.getPrevX();
+            pos.y += mouseEvent.getY() - mouseEvent.getPrevY();
+            vsb.ifPresent(RScrollbar::invalidateBuffer);
+            mouseEvent.consume();
+        } else if (isBeingResized) {
+            handleBeingResized(mouseEvent);
+            mouseEvent.consume();
+        } else if (vsb.map(RScrollbar::isDragging).orElse(false)) {
+            vsb.ifPresent(s -> s.mouseDragged(mouseEvent));
+            mouseEvent.consume();
+        } else {
+            for (RComponent child : folder.getChildren()) {
+                LOGGER.debug("Mouse Drag Check for {} Content {}", getTitle(), child.getName());
+                if (child.isDragged()) {
+                    LOGGER.debug("Mouse Dragged for {} Content {}", getTitle(), child.getName());
+                    child.mouseDragged(mouseEvent);
+                    if (mouseEvent.isConsumed() && child.isDraggable()) {
+                        RMouseHiding.tryHideMouseForDragging(sketch);
+                    }
+                    if (mouseEvent.isConsumed()) {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     @Override
     public void mouseMoved(RMouseEvent mouseEvent) {
         if (!isVisible()) {
+            LOGGER.debug("Window {} is not visible to process mouse moved event", getTitle());
             return;
         }
-
-        if (isMouseInsideContent(mouseEvent)) {
-            PVector contentStart = getContentStart();
-            float yShift = getScrolledY();
-            float mouseY = mouseEvent.getY() + yShift;
-            LOGGER.trace("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", mouseEvent.getX(), mouseY, contentStart.x, contentStart.y, size.x, size.y);
-            RComponent child = findComponentAt(mouseEvent.getX(), mouseY);
-            if (child != null) {
-                if (!child.isMouseOver()) {
-                    LOGGER.debug("Inside Component {} [NX {} NY {} Width {} Height {}]", child.getName(), child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
-                    contentBuffer.invalidateBuffer();
-                }
-                child.mouseOver(mouseEvent, mouseY);
-            }
-        } else if (isMouseInsideTitlebar(mouseEvent)) {
-            if (folder.isChildMouseOver()) {
-                contentBuffer.invalidateBuffer();
-            }
-            folder.setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
-            mouseEvent.consume();
+        if (isMouseInsideTitlebar(mouseEvent)) {
+            mouseMovedInsideTitle(mouseEvent);
         } else if (isMouseInsideScrollbar(mouseEvent)) {
-            if (folder.isChildMouseOver()) {
-                contentBuffer.invalidateBuffer();
-            }
-            vsb.ifPresent(s -> s.mouseMoved(mouseEvent));
-            folder.setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
-            mouseEvent.consume();
+            mouseMovedInsideScrollbar(mouseEvent);
+        } else if (isMouseInsideContent(mouseEvent)) {
+            mouseMovedInsideContent(mouseEvent);
+        } else if (isMouseInsideResizeBorder(mouseEvent) && RLayoutStore.isWindowResizeEnabled()) {
+            LOGGER.info("Over {} Resize Area", getTitle());
         } else {
             if (folder.isChildMouseOver()) {
-                LOGGER.debug("Child Was Over {} Window",title);
                 contentBuffer.invalidateBuffer();
             }
             gui.setAllMouseOverToFalse(this.folder);
@@ -1024,39 +1144,36 @@ public class RWindowPane implements RWindow, RInputListener {
     @Override
     public void mousePressed(RMouseEvent mouseEvent) {
         if (!isVisible()) {
+            LOGGER.debug("Window {} is not visible to process mouse pressed event", getTitle());
             return;
         }
+
         // Make sure Window Grabs focus
         if (isMouseInsideWindow(mouseEvent)) {
             if (!isFocused()) {
                 setFocusOnThis();
             }
-        }
-        // Reset Values
-        isCloseInProgress = false;
-        isBeingDragged = false;
-        isBeingResized = false;
 
+            // Reset Values
+            isCloseInProgress = false;
+            isBeingDragged = false;
+            isBeingResized = false;
 
-        // Then Check Window Parts
-        if (!isRoot() && ((isMouseInsideCloseButton(mouseEvent) && mouseEvent.isLeft()) || (isMouseInsideWindow(mouseEvent) && mouseEvent.isRight()))) {
-            isCloseInProgress = true;
-            mouseEvent.consume();
-        } else if (isPointInsideContent(mouseEvent.getX(), mouseEvent.getY())) {
-            RComponent child = findComponentAt(mouseEvent.getX(), mouseEvent.getY());
-            if (child != null) {
-                float yShift = getScrolledY();
-                float mouseY = mouseEvent.getY() + yShift;
-                contentBuffer.invalidateBuffer();
-                child.mousePressed(mouseEvent, mouseY);
+            // Then Check Window Parts
+            if (isStartingToClose(mouseEvent)) {
+                isCloseInProgress = true;
+                mouseEvent.consume();
+            } else if (isMouseInsideTitlebar(mouseEvent) && mouseEvent.isLeft()) {
+                isBeingDragged = true;
+                mouseEvent.consume();
+            } else if (isMouseInsideScrollbar(mouseEvent) && mouseEvent.isLeft()) {
+                vsb.ifPresent(s -> s.mousePressed(mouseEvent));
+                mouseEvent.consume();
+            } else if (isPointInsideContent(mouseEvent.getX(), mouseEvent.getY())) {
+                mousePressedInsideContent(mouseEvent);
             }
-        } else if (isMouseInsideTitlebar(mouseEvent) && mouseEvent.isLeft()) {
-            isBeingDragged = true;
-            mouseEvent.consume();
-        } else if (isMouseInsideScrollbar(mouseEvent) && mouseEvent.isLeft()) {
-            vsb.ifPresent(s -> s.mousePressed(mouseEvent));
-            mouseEvent.consume();
         } else if (isMouseInsideResizeBorder(mouseEvent) && RLayoutStore.isWindowResizeEnabled()) {
+            LOGGER.info("{} Resized Started", title);
             isBeingResized = true;
             mouseEvent.consume();
         }
@@ -1065,6 +1182,7 @@ public class RWindowPane implements RWindow, RInputListener {
     @Override
     public void mouseReleased(RMouseEvent mouseEvent) {
         if (!isVisible()) {
+            LOGGER.debug("Window {} is not visible to process mouse released event", getTitle());
             return;
         }
 
@@ -1079,58 +1197,21 @@ public class RWindowPane implements RWindow, RInputListener {
             vsb.ifPresent(s -> s.mouseReleased(mouseEvent));
             mouseEvent.consume();
         } else if (isMouseInsideResizeBorder(mouseEvent) && RLayoutStore.isWindowResizeEnabled()) {
-            LOGGER.info("{} isBeingResized", title);
-            isBeingResized = true;
+            LOGGER.info("{} Resized Finished", title);
+            isBeingResized = false;
             mouseEvent.consume();
         } else {
-            RComponent released = findComponentAt(mouseEvent.getX(), mouseEvent.getY());
-            float yShift = getScrolledY();
-            float mouseY = mouseEvent.getY() + yShift;
-            for (RComponent child : folder.getChildren()) {
-                boolean isReleased = child.equals(released);
-                if (isReleased) {
-                    contentBuffer.invalidateBuffer();
-                }
-                child.mouseReleased(mouseEvent, mouseY, isReleased);
-            }
-            if (mouseEvent.isConsumed()){
-                RMouseHiding.tryRevealMouseAfterDragging(sketch);
-            }
-        }
-    }
-
-    @Override
-    public void mouseDragged(RMouseEvent mouseEvent) {
-        if (!isVisible()) {
-            return;
-        }
-        if (isBeingDragged) {
-            pos.x += mouseEvent.getX() - mouseEvent.getPrevX();
-            pos.y += mouseEvent.getY() - mouseEvent.getPrevY();
-            vsb.ifPresent(RScrollbar::invalidateBuffer);
-            mouseEvent.consume();
-        } else if (isBeingResized) {
-            handleBeingResized(mouseEvent);
-        } else if (vsb.map(RScrollbar::isDragging).orElse(false)) {
-            vsb.ifPresent(s -> s.mouseDragged(mouseEvent));
-        }
-        for (RComponent child : folder.getChildren()) {
-            LOGGER.debug("Mouse Drag Check for Content {}", child.getName());
-            if (child.isDragged()) {
-                LOGGER.debug("Mouse Dragged for Content {}", child.getName());
-                child.mouseDragged(mouseEvent);
-                if (mouseEvent.isConsumed() && child.isDraggable()) {
-                    RMouseHiding.tryHideMouseForDragging(sketch);
-                }
-                if (mouseEvent.isConsumed()) {
-                    break;
-                }
-            }
+            mouseReleasedComponentCheck(mouseEvent);
         }
     }
 
     @Override
     public void mouseWheel(RMouseEvent mouseEvent) {
+        if (!isVisible()) {
+            LOGGER.debug("Window {} is not visible to process mouse wheel event", getTitle());
+            return;
+        }
+
         if (isMouseInsideWindow(mouseEvent)) {
             vsb.ifPresent(s -> s.mouseWheel(mouseEvent));
             mouseEvent.consume();
@@ -1143,18 +1224,45 @@ public class RWindowPane implements RWindow, RInputListener {
 
     public void redrawBuffer() {
         contentBuffer.invalidateBuffer();
-     }
+    }
 
-    public void resizeForContents(boolean shouldResize) {
-        isBeingResized = shouldResize;
-        if (isBeingResized) {
-            sizing = RSizeMode.COMPONENT;
+    public void resizeForComponent() { // TODO require child component for confirmation?
+        reinitialiseBuffer();
+        RLayoutBase layout = folder.getLayout();
+        PVector preferredSize = layout.calcPreferredSize((folder.shouldDrawTitle()) ? folder.getName() : "", folder.getChildren());
+        contentSize.y = preferredSize.y;
+        sizeUnconstrained.y = preferredSize.y;
+        if (folder.shouldDrawTitle()) {
+            size.y = preferredSize.y + RLayoutStore.getCell();
+        } else {
+            size.y = preferredSize.y;
+        }
+
+        contentSize.x = preferredSize.x;
+        sizeUnconstrained.x = preferredSize.x;
+        if (vsb.isPresent()) {
+            size.x = preferredSize.x + RLayoutStore.getCell();
+        } else {
+            size.x = preferredSize.x;
         }
     }
 
-    public void setCoordinates(float x, float y) {
+    /**
+     * Method to open the Window
+     *
+     * @param setFocus true if should be focused on, false otherwise
+     */
+    public void open(boolean setFocus) {
+        isVisible = true;
+        if (setFocus) {
+            setFocusOnThis();
+        }
+        reinitialiseBuffer();
     }
 
-    public void setWidth(Float nullableSizeX) {
+    public void close() {
+        isVisible = false;
+        isBeingDragged = false;
+        isBeingResized = false;
     }
 }

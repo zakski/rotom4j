@@ -1,4 +1,4 @@
-package com.szadowsz.gui.window.pane;
+package com.szadowsz.gui.window.internal;
 
 import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
@@ -14,7 +14,7 @@ import static com.old.ui.utils.Coordinates.isPointInRect;
  */
 public class RScrollbar {
     private static final float CORNER_RADIUS = 6;
-    private final RWindowPane win;
+    private final RWindowImpl win;
 
     protected float filler = .5f;
 
@@ -48,12 +48,12 @@ public class RScrollbar {
     /**
      * Create the scroll bar
      */
-    protected RScrollbar(RWindowPane win, float xp, float yp, float sw, float sh, float wh, int l) {
+    protected RScrollbar(RWindowImpl win, float xp, float yp, float sw, float sh, float wh, int l) {
         this.win = win;
         updateValues(xp, yp, sw, sh, wh, l);
     }
 
-    public RScrollbar(RWindowPane rWindowPane, PVector scrollbarStart, PVector scrollbarBounds, float y, int i) {
+    public RScrollbar(RWindowImpl rWindowPane, PVector scrollbarStart, PVector scrollbarBounds, float y, int i) {
         this(rWindowPane,scrollbarStart.x,scrollbarStart.y,scrollbarBounds.x,scrollbarBounds.y,y,i);
     }
 

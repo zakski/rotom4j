@@ -2,7 +2,7 @@ package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.window.internal.RWindowImpl;
 import processing.core.PVector;
 
 import java.util.List;
@@ -54,7 +54,7 @@ public abstract class RLayoutBase {
      * @param area Size available to this layout manager to lay out the components on
      * @param windows List of windows to lay out
      */
-    public abstract void setWinLayout(PVector area, List<RWindowPane> windows);
+    public abstract void setWinLayout(PVector area, List<RWindowImpl> windows);
 
     /**
      * Set who owns the layout

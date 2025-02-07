@@ -336,11 +336,6 @@ public class RBinHeader extends RBinComponent {
     }
 
     @Override
-    protected void redrawBuffers() {
-        super.redrawBuffers();
-    }
-
-    @Override
     public float suggestWidth() {
         return dimensions.getComponentDims().getWidth();
     }

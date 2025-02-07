@@ -45,7 +45,7 @@ public class NCERFolderComponent extends NitroCmpFolderComponent<NCER> {
         PImage pImage = resizeImage(drawable.getImage((int) cellNode.getValueAsInt()));
         ((NitroPreview) findChildByName(drawable.getFileName())).loadImage(pImage);
 
-        this.window.resizeForContents(true);
+        resetBuffer();
     }
 
     @Override

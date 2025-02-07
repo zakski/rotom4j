@@ -75,7 +75,7 @@ public abstract class RGroup extends RComponent {
      * @return true if the mouse is over a child, false otherwise
      */
     public boolean isChildMouseOver(){
-        return children.stream().anyMatch(RComponent::isMouseOver);
+        return children.stream().anyMatch(c -> c.isVisible() && c.isMouseOver());
     }
 
     /**
@@ -117,15 +117,15 @@ public abstract class RGroup extends RComponent {
      *
      * @param x X-Coordinate
      * @param y Y-Coordinate
-     * @return The Component at these Coordinates, if one exists, false otherwise
+     * @return The Component at these Coordinates, if one exists, null otherwise
      */
-    public RComponent findComponentAt(float x, float y) {
-        for (RComponent node : children) {
-            if (!node.isVisible()) {
+    public RComponent findVisibleComponentAt(float x, float y) {
+        for (RComponent component : children) {
+            if (!component.isVisible()) {
                 continue;
             }
-            if (isPointInRect(x, y, node.getPosX(), node.getPosY(), node.getWidth(), node.getHeight())) {
-                return node;
+            if (isPointInRect(x, y, component.getPosX(), component.getPosY(), component.getWidth(), component.getHeight())) {
+                return component;
             }
         }
         return null;
@@ -167,7 +167,7 @@ public abstract class RGroup extends RComponent {
                 case RComponent c -> c.keyPressedFocused(keyEvent);
             }
         } else {
-            RComponent underMouse = findComponentAt(mouseX, mouseY);
+            RComponent underMouse = findVisibleComponentAt(mouseX, mouseY);
             switch (underMouse) {
                 case null -> {
                 }// NOOP
@@ -188,7 +188,7 @@ public abstract class RGroup extends RComponent {
         if (!isVisible()) {
             return;
         }
-        RComponent underMouse = findComponentAt(mouseX, mouseY);
+        RComponent underMouse = findVisibleComponentAt(mouseX, mouseY);
         switch (underMouse){
             case null -> {}// NOOP
             case RGroup g -> g.keyChordPressed(keyEvent,mouseX,mouseY);
@@ -200,7 +200,7 @@ public abstract class RGroup extends RComponent {
         if (!isVisible()) {
             return;
         }
-        RComponent underMouse = findComponentAt(mouseX, mouseY);
+        RComponent underMouse = findVisibleComponentAt(mouseX, mouseY);
         switch (underMouse){
             case null -> {}// NOOP
             case RGroup g -> g.keyTyped(keyEvent,mouseX,mouseY);
@@ -229,11 +229,9 @@ public abstract class RGroup extends RComponent {
      */
     public void insertChild(RComponent child) {
         children.add(child);
+        resetBuffer();
         RFolder folder = getParentFolder();
-        if (folder.getWindow() != null) {
-            folder.getWindow().resizeForContents(true);
-            folder.getWindow().reinitialiseBuffer();
-        }
+        folder.resetWinBuffer();
     }
 
     /**

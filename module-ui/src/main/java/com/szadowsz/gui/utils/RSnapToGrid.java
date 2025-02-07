@@ -3,7 +3,7 @@ package com.szadowsz.gui.utils;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.RShaderStore;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.window.internal.RWindowImpl;
 import processing.core.PGraphics;
 import processing.core.PVector;
 import processing.opengl.PShader;
@@ -50,7 +50,7 @@ public class RSnapToGrid {
      *
      * @param draggedWindow a window being dragged
      */
-    private static void updateAlpha(RWindowPane draggedWindow) {
+    private static void updateAlpha(RWindowImpl draggedWindow) {
         float dragAlphaMax = pointGridColor.getAlpha();
         dragAlphaMax = constrain(dragAlphaMax, 0, 1);
         if(draggedWindow != null){
@@ -150,7 +150,7 @@ public class RSnapToGrid {
      * @param pg Processing Graphics Context
      * @param draggedWindow a window being dragged
      */
-    public static void displayGuideAndApplyFilter(RotomGui gui, PGraphics pg, RWindowPane draggedWindow){
+    public static void displayGuideAndApplyFilter(RotomGui gui, PGraphics pg, RWindowImpl draggedWindow){
         if(pointShader == null){
             pointShader = RShaderStore.getOrLoadShader(gui,pointShaderPath);
         }

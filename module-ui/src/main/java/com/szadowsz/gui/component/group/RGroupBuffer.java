@@ -1,24 +1,10 @@
 package com.szadowsz.gui.component.group;
 
-import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.RComponentBuffer;
-import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.text.RFontStore;
-import com.szadowsz.gui.config.theme.RThemeStore;
-import com.szadowsz.gui.layout.RDirection;
-import com.szadowsz.gui.layout.RLayoutBase;
-import com.szadowsz.gui.layout.RLinearLayout;
-import com.szadowsz.gui.window.pane.RWindowPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PConstants;
-import processing.core.PGraphics;
-import processing.core.PVector;
 
-import java.util.List;
-
-import static com.szadowsz.gui.config.theme.RColorType.WINDOW_BORDER;
 import static processing.core.PConstants.*;
 
 public class RGroupBuffer extends RComponentBuffer {

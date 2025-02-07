@@ -62,6 +62,14 @@ public abstract class RBuffer {
         }
     }
 
+    public boolean isBufferInvalid() {
+        return isBufferInvalid;
+    }
+
+    public boolean isReInitRequired() {
+        return isReInitRequired;
+    }
+
     public synchronized PGraphics draw(){
         redrawIfNecessary();
         return buffer;

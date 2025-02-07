@@ -20,8 +20,8 @@ package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
-import com.szadowsz.gui.window.pane.RSizeMode;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.window.internal.RSizeMode;
+import com.szadowsz.gui.window.internal.RWindowImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PVector;
@@ -127,10 +127,10 @@ public class RBorderLayout extends RLayoutBase {
      * @param windows list of windows
      * @return windows organised by location
      */
-    private EnumMap<RLocation, RWindowPane> makeWinLookupMap(List<RWindowPane> windows) {
-        EnumMap<RLocation, RWindowPane> map = new EnumMap<>(RLocation.class);
-        List<RWindowPane> unassignedWindows = new ArrayList<>();
-        for(RWindowPane window: windows) {
+    private EnumMap<RLocation, RWindowImpl> makeWinLookupMap(List<RWindowImpl> windows) {
+        EnumMap<RLocation, RWindowImpl> map = new EnumMap<>(RLocation.class);
+        List<RWindowImpl> unassignedWindows = new ArrayList<>();
+        for(RWindowImpl window: windows) {
             if (!window.isVisible()) {
                 continue;
             }
@@ -142,7 +142,7 @@ public class RBorderLayout extends RLayoutBase {
             }
         }
         //Try to assign windows to available locations
-        for(RWindowPane window: unassignedWindows) {
+        for(RWindowImpl window: unassignedWindows) {
             for(RLocation location: AUTO_ASSIGN_ORDER) {
                 if(!map.containsKey(location)) {
                     map.put(location, window);
@@ -251,9 +251,9 @@ public class RBorderLayout extends RLayoutBase {
     }
 
     @Override
-    public void setWinLayout(PVector area, List<RWindowPane> windows) {
+    public void setWinLayout(PVector area, List<RWindowImpl> windows) {
         LOGGER.debug("Setting Border layout For Windows");
-        EnumMap<RLocation, RWindowPane> layout = makeWinLookupMap(windows);
+        EnumMap<RLocation, RWindowImpl> layout = makeWinLookupMap(windows);
         float availableHorizontalSpace = area.x;
         float availableVerticalSpace = area.y;
 
@@ -264,46 +264,46 @@ public class RBorderLayout extends RLayoutBase {
         //First allocate the top
         if(layout.containsKey(RLocation.TOP)) {
             LOGGER.debug("Allocating Space for Top of Win Border layout");
-            RWindowPane topWindow = layout.get(RLocation.TOP);
+            RWindowImpl topWindow = layout.get(RLocation.TOP);
             topWindowHeight = Math.min(topWindow.getSize().y, availableVerticalSpace);
-            topWindow.setBounds(0,0,availableHorizontalSpace, topWindowHeight, RSizeMode.LAYOUT);
+            topWindow.setBounds(0,0,availableHorizontalSpace, topWindowHeight, RSizeMode.LAYOUT, "Applying Top Bounds to Border Layout");
             availableVerticalSpace -= topWindowHeight;
         }
 
         //Next allocate the bottom
         if(layout.containsKey(RLocation.BOTTOM)) {
             LOGGER.debug("Allocating Space for Bottom of Win Border layout");
-            RWindowPane bottomWindow = layout.get(RLocation.BOTTOM);
+            RWindowImpl bottomWindow = layout.get(RLocation.BOTTOM);
             float bottomWindowHeight = Math.min(bottomWindow.getSize().y, availableVerticalSpace);
-            bottomWindow.setBounds(0, area.y - bottomWindowHeight,availableHorizontalSpace, bottomWindowHeight, RSizeMode.LAYOUT);
+            bottomWindow.setBounds(0, area.y - bottomWindowHeight,availableHorizontalSpace, bottomWindowHeight, RSizeMode.LAYOUT, "Applying Bottom Bounds to Border Layout");
             availableVerticalSpace -= bottomWindowHeight;
         }
 
         //Now divide the remaining space between LEFT, CENTER and RIGHT
         if(layout.containsKey(RLocation.LEFT)) {
             LOGGER.debug("Allocating Space for Left of Win Border layout");
-            RWindowPane leftWindow = layout.get(RLocation.LEFT);
+            RWindowImpl leftWindow = layout.get(RLocation.LEFT);
             leftWindowWidth = Math.min(leftWindow.getSize().x, availableHorizontalSpace - leftSpacing);
-            leftWindow.setBounds(0, topWindowHeight +topSpacing,leftWindowWidth, availableVerticalSpace -topSpacing-bottomSpacing, RSizeMode.LAYOUT);
+            leftWindow.setBounds(0, topWindowHeight +topSpacing,leftWindowWidth, availableVerticalSpace -topSpacing-bottomSpacing, RSizeMode.LAYOUT, "Applying Left Bounds to Border Layout");
             availableHorizontalSpace -= leftWindowWidth;
         }
         if(layout.containsKey(RLocation.RIGHT)) {
             LOGGER.debug("Allocating Space for Right of Win Border layout");
-            RWindowPane rightWindow = layout.get(RLocation.RIGHT);
+            RWindowImpl rightWindow = layout.get(RLocation.RIGHT);
             float rightWindowWidth = Math.min(rightWindow.getSize().x, availableHorizontalSpace - rightSpacing);
-            rightWindow.setBounds(area.x - rightWindowWidth, topWindowHeight+topSpacing, rightWindowWidth, availableVerticalSpace-topSpacing-bottomSpacing, RSizeMode.LAYOUT);
+            rightWindow.setBounds(area.x - rightWindowWidth, topWindowHeight+topSpacing, rightWindowWidth, availableVerticalSpace-topSpacing-bottomSpacing, RSizeMode.LAYOUT, "Applying Right Bounds to Border Layout");
             availableHorizontalSpace -= rightWindowWidth;
         }
         if(layout.containsKey(RLocation.CENTER)) {
             LOGGER.debug("Allocating Space for Center of Win Border layout");
-            RWindowPane centerWindow = layout.get(RLocation.CENTER);
-            centerWindow.setBounds(leftWindowWidth+leftSpacing, topWindowHeight+topSpacing,availableHorizontalSpace-leftSpacing-rightSpacing, availableVerticalSpace-topSpacing-bottomSpacing, RSizeMode.LAYOUT);
+            RWindowImpl centerWindow = layout.get(RLocation.CENTER);
+            centerWindow.setBounds(leftWindowWidth+leftSpacing, topWindowHeight+topSpacing,availableHorizontalSpace-leftSpacing-rightSpacing, availableVerticalSpace-topSpacing-bottomSpacing, RSizeMode.LAYOUT, "Applying Center Bounds to Border Layout");
         }
 
         //Set the remaining components to 0x0
-        for(RWindowPane component: windows) {
+        for(RWindowImpl component: windows) {
             if(component.isVisible() && !layout.containsValue(component)) {
-                component.setBounds(0,0,0,0, RSizeMode.LAYOUT);
+                component.setBounds(0,0,0,0, RSizeMode.LAYOUT, "Zeroing Border Layout Window Remainder");
             }
         }
     }

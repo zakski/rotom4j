@@ -2,7 +2,6 @@ package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
 import com.szadowsz.gui.config.RLayoutStore;
-import com.szadowsz.gui.window.pane.RScrollbar;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.rotom4j.binary.array.ByteArrayData;
@@ -33,7 +32,6 @@ import processing.core.PVector;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.nio.ByteBuffer;
-import java.util.Optional;
 
 import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 

@@ -5,8 +5,8 @@ import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
-import com.szadowsz.gui.window.pane.RSizeMode;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.window.internal.RSizeMode;
+import com.szadowsz.gui.window.internal.RWindowImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -137,7 +137,7 @@ public class RLinearLayout extends RLayoutBase {
     }
 
 
-    private void doFlexibleVerticalLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
+    private void doFlexibleVerticalLayout(PVector start, PVector area, List<RComponent> visibleComponents) { // TODO Lanterna
         float availableVerticalSpace = area.y;
         float availableHorizontalSpace = area.x;
         LOGGER.trace("{} Available Space [{},{}]",group.getName(),availableHorizontalSpace,availableVerticalSpace);
@@ -149,7 +149,8 @@ public class RLinearLayout extends RLayoutBase {
         //float expectedWidth = suggestWidthForVerticalLayout(group.getName(), components, availableHorizontalSpace);
         //LOGGER.debug("{} Expected Width {}",group.getName(),expectedWidth);
 
-        for (RComponent component: components) {
+        for (RComponent component: visibleComponents) {
+
             Alignment alignment = ((LinearLayoutData) group.getCompLayoutConfig()).alignment;
             if (component instanceof RGroupDrawable) {
                 RLayoutConfig layoutData = component.getCompLayoutConfig();
@@ -159,11 +160,17 @@ public class RLinearLayout extends RLayoutBase {
             }
 
             PVector preferredSize = component.getPreferredSize();
-            LOGGER.info("{} Component Preferred Size [{},{}]",component.getName(),preferredSize.x,preferredSize.y);
+            LOGGER.debug("{} Component Preferred Size [{},{}]",component.getName(),preferredSize.x,preferredSize.y);
             PVector fittingSize = new PVector(
                     Math.min(availableHorizontalSpace, preferredSize.x),
                     preferredSize.y);
-            LOGGER.info("{} Component Fitting Size [{},{}]",component.getName(),fittingSize.x,fittingSize.y);
+            LOGGER.info("{} Component Fitting: Pos [{}, {}] - Size [{},{}]",
+                    component.getName(),
+                    component.getPosX(),
+                    component.getPosY(),
+                    fittingSize.x,
+                    fittingSize.y
+            );
             if(alignment == Alignment.FILL) {
                 fittingSize.x = (availableHorizontalSpace);
             }
@@ -171,14 +178,14 @@ public class RLinearLayout extends RLayoutBase {
             fittingMap.put(component, fittingSize);
             totalRequiredVerticalSpace += fittingSize.y + spacing;
         }
-        if (!components.isEmpty()) {
+        if (!visibleComponents.isEmpty()) {
             // Remove the last spacing
             totalRequiredVerticalSpace -= spacing;
         }
 
         // If we can't fit everything, trim the down the size of the largest components until it fits
         if (availableVerticalSpace < totalRequiredVerticalSpace) {
-            List<RComponent> copyOfComponents = new ArrayList<>(components);
+            List<RComponent> copyOfComponents = new ArrayList<>(visibleComponents);
             Collections.reverse(copyOfComponents);
             copyOfComponents.sort((o1, o2) -> {
                 // Reverse sort
@@ -205,7 +212,8 @@ public class RLinearLayout extends RLayoutBase {
         if (availableVerticalSpace > totalRequiredVerticalSpace) {
             boolean resizedOneComponent = false;
             while (availableVerticalSpace > totalRequiredVerticalSpace) {
-                for(RComponent component: components) {
+                for(RComponent component: visibleComponents) {
+
                     LinearLayoutData layoutData = null;
                     if (component instanceof RGroupDrawable group) {
                         RLayoutConfig config = group.getCompLayoutConfig();
@@ -229,7 +237,7 @@ public class RLinearLayout extends RLayoutBase {
 
         // Assign the sizes and positions
         float topPosition = 0;
-        for(RComponent component: components) {
+        for(RComponent component: visibleComponents) {
             Alignment alignment = Alignment.BEGINNING;
             if (component instanceof RGroupDrawable group) {
                 RLayoutConfig layoutData = group.getCompLayoutConfig();
@@ -258,15 +266,15 @@ public class RLinearLayout extends RLayoutBase {
         }
     }
 
-    private void doFlexibleWinVerticalLayout(PVector area, List<RWindowPane> windows) { // TODO Lanterna
+    private void doFlexibleWinVerticalLayout(PVector area, List<RWindowImpl> windows) { // TODO Lanterna
         float availableVerticalSpace = area.y;
         float availableHorizontalSpace = area.x;
-        final Map<RWindowPane, PVector> fittingMap = new IdentityHashMap<>();
+        final Map<RWindowImpl, PVector> fittingMap = new IdentityHashMap<>();
         float totalRequiredVerticalSpace = 0;
 
-        for (RWindowPane window: windows) {
+        for (RWindowImpl window: windows) {
             Alignment alignment = Alignment.BEGINNING;
-            RLayoutConfig layoutData = window.getLayoutConfig();
+            RLayoutConfig layoutData = window.getComponentLayoutConfig();
             if (layoutData instanceof LinearLayoutData) {
                 alignment = ((LinearLayoutData) layoutData).alignment;
             }
@@ -289,7 +297,7 @@ public class RLinearLayout extends RLayoutBase {
 
         // If we can't fit everything, trim the down the size of the largest windows until it fits
         if (availableVerticalSpace < totalRequiredVerticalSpace) {
-            List<RWindowPane> copyOfWindows = new ArrayList<>(windows);
+            List<RWindowImpl> copyOfWindows = new ArrayList<>(windows);
             Collections.reverse(copyOfWindows);
             copyOfWindows.sort((o1, o2) -> {
                 // Reverse sort
@@ -298,7 +306,7 @@ public class RLinearLayout extends RLayoutBase {
 
             while (availableVerticalSpace < totalRequiredVerticalSpace) {
                 float largestSize = fittingMap.get(copyOfWindows.get(0)).y;
-                for (RWindowPane largeWindow: copyOfWindows) {
+                for (RWindowImpl largeWindow: copyOfWindows) {
                     PVector currentSize = fittingMap.get(largeWindow);
                     if (largestSize > currentSize.y) {
                         break;
@@ -316,8 +324,8 @@ public class RLinearLayout extends RLayoutBase {
         if (availableVerticalSpace > totalRequiredVerticalSpace) {
             boolean resizedOneWindow = false;
             while (availableVerticalSpace > totalRequiredVerticalSpace) {
-                for(RWindowPane window: windows) {
-                    LinearLayoutData layoutData = (LinearLayoutData) window.getLayoutConfig();
+                for(RWindowImpl window: windows) {
+                    LinearLayoutData layoutData = (LinearLayoutData) window.getComponentLayoutConfig();
                     final PVector currentSize = fittingMap.get(window);
                     if (layoutData != null && layoutData.growPolicy == GrowPolicy.CAN_GROW) {
                         fittingMap.put(window, currentSize.add(0,1));
@@ -336,9 +344,9 @@ public class RLinearLayout extends RLayoutBase {
 
         // Assign the sizes and positions
         float topPosition = 0;
-        for(RWindowPane window: windows) {
+        for(RWindowImpl window: windows) {
             Alignment alignment = Alignment.BEGINNING;
-            RLayoutConfig layoutData = window.getLayoutConfig();
+            RLayoutConfig layoutData = window.getComponentLayoutConfig();
             if (layoutData instanceof LinearLayoutData) {
                 alignment = ((LinearLayoutData) layoutData).alignment;
             }
@@ -358,18 +366,18 @@ public class RLinearLayout extends RLayoutBase {
                     position.x = 0;
                     break;
             }
-            window.setBounds(position.x,position.y,decidedSize.x,decidedSize.y, RSizeMode.LAYOUT);
+            window.setBounds(position.x,position.y,decidedSize.x,decidedSize.y, RSizeMode.LAYOUT, "Applying Linear Vertical Layout");
             topPosition += decidedSize.y + spacing;
         }
     }
 
-    private void doFlexibleHorizontalLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
+    private void doFlexibleHorizontalLayout(PVector start, PVector area, List<RComponent> visibleComponents) { // TODO Lanterna
         float availableVerticalSpace = area.y;
         float availableHorizontalSpace = area.x;
         final Map<RComponent, PVector> fittingMap = new IdentityHashMap<>();
         int totalRequiredHorizontalSpace = 0;
 
-        for (RComponent component: components) {
+        for (RComponent component: visibleComponents) {
             Alignment alignment = Alignment.BEGINNING;
             if (component instanceof RGroupDrawable) {
                 RLayoutConfig layoutData = component.getCompLayoutConfig();
@@ -389,14 +397,14 @@ public class RLinearLayout extends RLayoutBase {
             fittingMap.put(component, fittingSize);
             totalRequiredHorizontalSpace += fittingSize.x + spacing;
         }
-        if (!components.isEmpty()) {
+        if (!visibleComponents.isEmpty()) {
             // Remove the last spacing
             totalRequiredHorizontalSpace -= spacing;
         }
 
         // If we can't fit everything, trim the down the size of the largest components until it fits
         if (availableHorizontalSpace < totalRequiredHorizontalSpace) {
-            List<RComponent> copyOfComponents = new ArrayList<>(components);
+            List<RComponent> copyOfComponents = new ArrayList<>(visibleComponents);
             Collections.reverse(copyOfComponents);
             copyOfComponents.sort((o1, o2) -> {
                 // Reverse sort
@@ -423,7 +431,8 @@ public class RLinearLayout extends RLayoutBase {
         if (availableHorizontalSpace > totalRequiredHorizontalSpace) {
             boolean resizedOneComponent = false;
             while (availableHorizontalSpace > totalRequiredHorizontalSpace) {
-                for(RComponent component: components) {
+                for(RComponent component: visibleComponents) {
+
                     LinearLayoutData layoutData = null;
                     if (component instanceof RGroupDrawable) {
                         layoutData = (LinearLayoutData) component.getCompLayoutConfig();
@@ -446,7 +455,7 @@ public class RLinearLayout extends RLayoutBase {
 
         // Assign the sizes and positions
         float leftPosition = 0;
-        for(RComponent component: components) {
+        for(RComponent component: visibleComponents) {
             Alignment alignment = Alignment.BEGINNING;
             if (component instanceof RGroupDrawable) {
                 RLayoutConfig layoutData = component.getCompLayoutConfig();
@@ -475,15 +484,15 @@ public class RLinearLayout extends RLayoutBase {
         }
     }
 
-    private void doFlexibleWinHorizontalLayout(PVector area, List<RWindowPane> windows) { // TODO Lanterna
+    private void doFlexibleWinHorizontalLayout(PVector area, List<RWindowImpl> windows) { // TODO Lanterna
         float availableVerticalSpace = area.y;
         float availableHorizontalSpace = area.x;
-        final Map<RWindowPane, PVector> fittingMap = new IdentityHashMap<>();
+        final Map<RWindowImpl, PVector> fittingMap = new IdentityHashMap<>();
         int totalRequiredHorizontalSpace = 0;
 
-        for (RWindowPane window: windows) {
+        for (RWindowImpl window: windows) {
             Alignment alignment = Alignment.BEGINNING;
-            RLayoutConfig layoutData = window.getLayoutConfig();
+            RLayoutConfig layoutData = window.getComponentLayoutConfig();
             if (layoutData instanceof LinearLayoutData) {
                 alignment = ((LinearLayoutData) layoutData).alignment;
             }
@@ -506,7 +515,7 @@ public class RLinearLayout extends RLayoutBase {
 
         // If we can't fit everything, trim the down the size of the largest windows until it fits
         if (availableHorizontalSpace < totalRequiredHorizontalSpace) {
-            List<RWindowPane> copyOfWindows = new ArrayList<>(windows);
+            List<RWindowImpl> copyOfWindows = new ArrayList<>(windows);
             Collections.reverse(copyOfWindows);
             copyOfWindows.sort((o1, o2) -> {
                 // Reverse sort
@@ -515,7 +524,7 @@ public class RLinearLayout extends RLayoutBase {
 
             while (availableHorizontalSpace < totalRequiredHorizontalSpace) {
                 float largestSize = fittingMap.get(copyOfWindows.get(0)).x;
-                for (RWindowPane largeWindow: copyOfWindows) {
+                for (RWindowImpl largeWindow: copyOfWindows) {
                     PVector currentSize = fittingMap.get(largeWindow);
                     if (largestSize > currentSize.x) {
                         break;
@@ -533,8 +542,8 @@ public class RLinearLayout extends RLayoutBase {
         if (availableHorizontalSpace > totalRequiredHorizontalSpace) {
             boolean resizedOneWindow = false;
             while (availableHorizontalSpace > totalRequiredHorizontalSpace) {
-                for(RWindowPane window: windows) {
-                    LinearLayoutData layoutData =  (LinearLayoutData) window.getLayoutConfig();
+                for(RWindowImpl window: windows) {
+                    LinearLayoutData layoutData =  (LinearLayoutData) window.getComponentLayoutConfig();
                     final PVector currentSize = fittingMap.get(window);
                     if (layoutData != null && layoutData.growPolicy == GrowPolicy.CAN_GROW) {
                         fittingMap.put(window, currentSize.add(1,0));
@@ -553,9 +562,9 @@ public class RLinearLayout extends RLayoutBase {
 
         // Assign the sizes and positions
         float leftPosition = 0;
-        for(RWindowPane window: windows) {
+        for(RWindowImpl window: windows) {
             Alignment alignment = Alignment.BEGINNING;
-            RLayoutConfig layoutData = window.getLayoutConfig();
+            RLayoutConfig layoutData = window.getComponentLayoutConfig();
             if (layoutData instanceof LinearLayoutData) {
                 alignment = ((LinearLayoutData) layoutData).alignment;
             }
@@ -575,7 +584,7 @@ public class RLinearLayout extends RLayoutBase {
                     position.y = 0;
                     break;
             }
-            window.setBounds(position.x,position.y,decidedSize.x,decidedSize.y, RSizeMode.LAYOUT);
+            window.setBounds(position.x,position.y,decidedSize.x,decidedSize.y, RSizeMode.LAYOUT, "Applying Linear Horizontal Layout");
             leftPosition += decidedSize.x + spacing;
         }
     }
@@ -584,6 +593,9 @@ public class RLinearLayout extends RLayoutBase {
         float maxHeight = 0;
         float width = 0;
         for(RComponent component: components) {
+            if (!component.isVisible()){
+                continue;
+            }
             PVector preferredSize = component.getPreferredSize();
             if(maxHeight < preferredSize.y) {
                 maxHeight = preferredSize.y;
@@ -598,6 +610,9 @@ public class RLinearLayout extends RLayoutBase {
         float maxWidth = RFontStore.calcMainTextWidth(title, RLayoutStore.getCell()) + RLayoutStore.getCell();
         float height = 0;
         for(RComponent child: components) {
+            if (!child.isVisible()){
+                continue;
+            }
             PVector preferredSize = child.getPreferredSize();
             maxWidth = PApplet.max(maxWidth,preferredSize.x);
             height += preferredSize.y;
@@ -667,20 +682,20 @@ public class RLinearLayout extends RLayoutBase {
     @Override
     public void setCompLayout(PVector start, PVector area, List<RComponent> components) { // TODO Lanterna
         // Filter out invisible components
-        components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
+        List<RComponent> visibleComponents = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
 
         if(direction == RDirection.VERTICAL) { // TODO Lanterna
-            doFlexibleVerticalLayout(start,area, components);
+            doFlexibleVerticalLayout(start,area, visibleComponents);
         } else {
-            doFlexibleHorizontalLayout(start,area, components);
+            doFlexibleHorizontalLayout(start,area, visibleComponents);
         }
         this.changed = false;
     }
 
     @Override
-    public void setWinLayout(PVector area, List<RWindowPane> windows) { // TODO Lanterna
+    public void setWinLayout(PVector area, List<RWindowImpl> windows) { // TODO Lanterna
         // Filter out invisible windows
-        windows = windows.stream().filter(RWindowPane::isVisible).collect(Collectors.toList());
+        windows = windows.stream().filter(RWindowImpl::isVisible).collect(Collectors.toList());
 
         if(direction == RDirection.VERTICAL) { // TODO Lanterna
             doFlexibleWinVerticalLayout(area, windows);
@@ -689,22 +704,6 @@ public class RLinearLayout extends RLayoutBase {
         }
         this.changed = false;
     }
-
-//    private float suggestWidthForVerticalLayout(String title, List<RComponent> components, float availableHorizontalSpace) {
-//        float titleTextWidth = RFontStore.calcMainTextWidth(title, RLayoutStore.getCell());
-//        float minimumSpaceTotal = titleTextWidth + RLayoutStore.getCell();
-//        float spaceForName = RLayoutStore.getCell() * 2;
-//        float spaceForValue = RLayoutStore.getCell() * 2;
-//        spaceForName = PApplet.max(spaceForName, titleTextWidth);
-//        for (RComponent child : components) {
-//            PVector preferredSize = child.getPreferredSize();
-//            float nameTextWidth = child.calcNameTextWidth();
-//            spaceForName = PApplet.max(spaceForName, nameTextWidth);
-//            float valueTextWidth = child.calcValueWidth();
-//            spaceForValue = PApplet.max(spaceForValue, valueTextWidth);
-//        }
-//        return PApplet.constrain(spaceForName + spaceForValue, minimumSpaceTotal, availableHorizontalSpace);
-//    }
 
     @Override
     public String toString() {

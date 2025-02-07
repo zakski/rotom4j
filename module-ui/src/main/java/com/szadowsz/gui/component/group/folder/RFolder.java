@@ -9,7 +9,7 @@ import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutBase;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.window.internal.RWindowImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -27,7 +27,7 @@ import static processing.core.PConstants.CORNER;
 public class RFolder extends RGroup {
     private static final Logger LOGGER = LoggerFactory.getLogger(RFolder.class);
 
-    protected RWindowPane window; // reference to the companion window
+    protected RWindowImpl window; // reference to the companion window
 
     /**
      * Default Constructor
@@ -99,7 +99,7 @@ public class RFolder extends RGroup {
      *
      * @return companion window
      */
-    public RWindowPane getWindow() {
+    public RWindowImpl getWindow() {
         return window;
     }
 
@@ -133,7 +133,7 @@ public class RFolder extends RGroup {
      *
      * @param pane internal window to set as companion
      */
-    public void setWindow(RWindowPane pane) {
+    public void setWindow(RWindowImpl pane) {
         window = pane;
     }
 
@@ -187,7 +187,7 @@ public class RFolder extends RGroup {
         if (!isWindowVisible()) {
             return;
         }
-        RComponent underMouse = findComponentAt(mouseX, mouseY);
+        RComponent underMouse = findVisibleComponentAt(mouseX, mouseY);
         switch (underMouse) {
             case null -> {
             }// NOOP
@@ -207,9 +207,13 @@ public class RFolder extends RGroup {
     @Override
     public void insertChild(RComponent child) {
         children.add(child);
-        if (getWindow() != null) {
-            getWindow().resizeForContents(true);
-            getWindow().reinitialiseBuffer();
+        resetWinBuffer();
+    }
+
+    public void resetWinBuffer(){
+        RWindowImpl window = getWindow();
+        if (window != null) {
+            window.reinitialiseBuffer();
         }
     }
 }

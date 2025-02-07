@@ -1,4 +1,4 @@
-package com.szadowsz.gui.window.pane;
+package com.szadowsz.gui.window.internal;
 
 public enum RSizeMode {
 

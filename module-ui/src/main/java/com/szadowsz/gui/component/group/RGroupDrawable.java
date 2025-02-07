@@ -8,7 +8,6 @@ import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RDirection;
-import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLinearLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,6 +85,7 @@ public abstract class RGroupDrawable extends RGroup {
     protected void drawChildren(PGraphics pg) {
 
         int index = 0;
+
         for (RComponent component : children) {
             if (!component.isVisible()) {
                 index++;
@@ -146,10 +146,6 @@ public abstract class RGroupDrawable extends RGroup {
         return layout.calcPreferredSize(getParentFolder().getName(), children);
     }
 
-    public PVector getDisplaySize() {
-        return getPreferredSize();
-    }
-
     /**
      * TODO
      *
@@ -183,7 +179,7 @@ public abstract class RGroupDrawable extends RGroup {
                 case RComponent c -> keyPressedFocused(keyEvent);
             }
         } else {
-            RComponent underMouse = findComponentAt(mouseX, mouseY);
+            RComponent underMouse = findVisibleComponentAt(mouseX, mouseY);
             switch (underMouse) {
                 case null -> {
                 }// NOOP
@@ -195,7 +191,7 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY) {
-        RComponent underMouse = findComponentAt(mouseEvent.getX(), adjustedMouseY);
+        RComponent underMouse = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
         if (underMouse != null) {
             if (!underMouse.isMouseOver()) {
                 LOGGER.debug("Inside Child Component {} [NX {} NY {} Width {} Height {}]", underMouse.getName(), underMouse.getPosX(), underMouse.getPosY(), underMouse.getWidth(), underMouse.getHeight());
@@ -212,7 +208,7 @@ public abstract class RGroupDrawable extends RGroup {
             return;
         }
 
-        RComponent child = findComponentAt(mouseEvent.getX(), adjustedMouseY);
+        RComponent child = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
         if (child != null) {
             LOGGER.debug("Mouse Pressed for Child Component {} [{}, {}, {}, {}, {}, {}]", child.getName(), mouseEvent.getX(), adjustedMouseY, child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
             child.mousePressed(mouseEvent, adjustedMouseY);
@@ -252,7 +248,7 @@ public abstract class RGroupDrawable extends RGroup {
         if (!isVisible() || !this.isVisibleParentAware()) {
             return;
         }
-        RComponent child = findComponentAt(mouseEvent.getX(), adjustedMouseY);
+        RComponent child = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
         if (child != null) {
             child.mouseReleased(mouseEvent, adjustedMouseY, true);
             redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the user released the mouse over a child

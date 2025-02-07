@@ -80,6 +80,8 @@ public class RTabManager extends RGroupDrawable {
         pg.pushMatrix();
         pg.translate(header.getRelPosX(), header.getRelPosY());
         header.draw(pg);
+        pg.popMatrix();
+        pg.pushMatrix();
         RTab tab = getActiveTab();
         if (tab != null) {
             pg.translate(tab.getRelPosX(), tab.getRelPosY());
@@ -205,7 +207,13 @@ public class RTabManager extends RGroupDrawable {
         if (availableHorizontalSpace > headerFittingSize.x) {
             headerFittingSize.x = availableHorizontalSpace;
         }
-        LOGGER.debug("{} Tab Header Fitting Size [{},{}]",getName(),headerFittingSize.x,headerFittingSize.y);
+        LOGGER.info("{} Tab Header Fitting: Pos [{}, {}] - Size [{},{}]",
+                getName(),
+                header.getPosX(),
+                header.getPosY(),
+                headerFittingSize.x,
+                headerFittingSize.y
+                );
 
         preferredSize = getPreferredTabSize();
         LOGGER.debug("{} Active Tab Preferred Size [{},{}]",getName(),preferredSize.x,preferredSize.y);
@@ -215,7 +223,14 @@ public class RTabManager extends RGroupDrawable {
         if (availableHorizontalSpace > tabFittingSize.x) {
             tabFittingSize.x = availableHorizontalSpace;
         }
-        LOGGER.debug("{} Active Tab Fitting Size [{},{}]",getName(),tabFittingSize.x,tabFittingSize.y);
+        LOGGER.info("{} Active Tab ({}) Fitting: Pos [{}, {}] - Size [{},{}]",
+                getName(),
+                getActiveTab().getName(),
+                getActiveTab().getPosX(),
+                getActiveTab().getPosY(),
+                tabFittingSize.x,
+                tabFittingSize.y
+        );
 
         PVector start = getPosition();
         header.updateCoordinates(start, new PVector(), headerFittingSize);

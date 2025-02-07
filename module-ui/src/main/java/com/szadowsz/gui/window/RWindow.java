@@ -8,19 +8,13 @@ import processing.core.PVector;
  */
 public interface RWindow {
 
-    /**
-     * Getter for Window's PApplet
-     *
-     * @return the app the Window is drawn in / represents
-     */
-    PApplet getSketch();
 
     /**
-     * Getter for Window's Title
+     * Getter for Window's Current Height
      *
-     * @return the display name of the window
+     * @return height of the Window
      */
-    String getTitle();
+    int getHeight();
 
     /**
      * Getter for Window's Current X Coordinate
@@ -44,23 +38,30 @@ public interface RWindow {
     PVector getPos();
 
     /**
-     * Getter for Window's Current Width
-     *
-     * @return width of the Window
-     */
-    int getWidth();
-
-    /**
-     * Getter for Window's Current Height
-     *
-     * @return height of the Window
-     */
-    int getHeight();
-
-    /**
      * Getter for Window's Current Dimensions
      *
      * @return  PVector that represents the current dimensions of the window
      */
     PVector getSize();
+
+    /**
+     * Getter for Window's PApplet
+     *
+     * @return the app the Window is drawn in / represents
+     */
+    PApplet getSketch();
+
+    /**
+     * Getter for Window's Title
+     *
+     * @return the display name of the window
+     */
+    String getTitle();
+
+    /**
+     * Getter for Window's Current Width
+     *
+     * @return width of the Window
+     */
+    int getWidth();
 }

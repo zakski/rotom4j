@@ -2,7 +2,7 @@ package com.szadowsz.gui.layout;
 
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.group.RGroup;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.window.internal.RWindowImpl;
 import processing.core.PVector;
 
 import java.util.List;
@@ -48,7 +48,7 @@ public class RGridLayout extends RLayoutBase {
     }
 
     @Override
-    public void setWinLayout(PVector area, List<RWindowPane> windows) {
+    public void setWinLayout(PVector area, List<RWindowImpl> windows) {
 
     }
 

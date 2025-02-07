@@ -37,8 +37,7 @@ public class NANRFolderComponent extends NitroCmpFolderComponent<NANR> {
 
         PImage pImage = resizeImage(drawable.getImage());
         ((NitroPreview) findChildByName(PREVIEW_NODE)).loadImage(pImage);
-
-        this.window.resizeForContents(true);
+        resetBuffer();
     }
 
     @Override

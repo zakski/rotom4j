@@ -33,7 +33,7 @@ public class NSCRFolderComponent extends NitroCmpFolderComponent<NSCR> {
         PImage pImage = resizeImage(drawable.getImage());
         ((NitroPreview) findChildByName(drawable.getFileName())).loadImage(pImage);
 
-        this.window.resizeForContents(true);
+        resetBuffer();
     }
 
     @Override

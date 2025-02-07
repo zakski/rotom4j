@@ -1,4 +1,4 @@
-package com.szadowsz.gui.window.pane;
+package com.szadowsz.gui.window.internal;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
@@ -19,7 +19,7 @@ import static com.old.ui.utils.Coordinates.isPointInRect;
 /**
  * Gui Temporary Window Node Organisation and Drawing
  */
-public class RWindowTemp extends RWindowPane {
+public class RWindowTemp extends RWindowImpl {
     private static final Logger LOGGER = LoggerFactory.getLogger(RWindowTemp.class);
 
     public RWindowTemp(PApplet app, RotomGui gui, RFolder folder, PVector pos, PVector size) {
@@ -54,7 +54,7 @@ public class RWindowTemp extends RWindowPane {
     }
 
     @Override
-    protected RComponent findComponentAt(float x, float y) {
+    protected RComponent findVisibleComponentAt(float x, float y) {
         for (RComponent node : folder.getChildren()) {
             if (!node.isVisible()) {
                 continue;
@@ -162,7 +162,7 @@ public class RWindowTemp extends RWindowPane {
 
         if (isMouseInsideContent(mouseEvent)) {
             LOGGER.debug("Mouse Inside Content: X {} Y {} WinX {} WinY {} Width {} Height {}", mouseEvent.getX(), mouseEvent.getY(), pos.x, pos.y, size.x, size.y);
-            RComponent child = findComponentAt(mouseEvent.getX(), mouseEvent.getY());
+            RComponent child = findVisibleComponentAt(mouseEvent.getX(), mouseEvent.getY());
             if (child != null) {
                 if (!child.isMouseOver()) {
                     LOGGER.debug("Inside Component {} [NX {} NY {} Width {} Height {}]", child.getName(), child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
@@ -203,11 +203,11 @@ public class RWindowTemp extends RWindowPane {
 
 
         // Then Check Window Parts
-        if (!isRoot() && ((isMouseInsideCloseButton(mouseEvent) && mouseEvent.isLeft()) || (isMouseInsideWindow(mouseEvent) && mouseEvent.isRight()))) {
+        if (canBeClosed() && ((isMouseInsideCloseButton(mouseEvent) && mouseEvent.isLeft()) || (isMouseInsideWindow(mouseEvent) && mouseEvent.isRight()))) {
             isCloseInProgress = true;
             mouseEvent.consume();
         } else if (isPointInsideContent(mouseEvent.getX(), mouseEvent.getY())) {
-            RComponent child = findComponentAt(mouseEvent.getX(), mouseEvent.getY());
+            RComponent child = findVisibleComponentAt(mouseEvent.getX(), mouseEvent.getY());
             if (child != null) {
                 contentBuffer.invalidateBuffer();
                 child.mousePressed(mouseEvent, mouseEvent.getY());
@@ -226,7 +226,7 @@ public class RWindowTemp extends RWindowPane {
             close();
             mouseEvent.consume();
         } else {
-            RComponent released = findComponentAt(mouseEvent.getX(), mouseEvent.getY());
+            RComponent released = findVisibleComponentAt(mouseEvent.getX(), mouseEvent.getY());
             for (RComponent child : folder.getChildren()) {
                 boolean isReleased = child.equals(released);
                 if (isReleased) {

@@ -64,7 +64,7 @@ public class RContextLines {
             }
             boolean shouldShowLine = showContextLinesMode == SHOW_CONTEXT_LINES_ALWAYS || (folderNode.getWindow().isTitleHighlighted() && showContextLinesMode == SHOW_CONTEXT_LINES_MODE_ON_HOVER);
             if (shouldShowLine) {
-                folderNode.getWindow().drawContextLine(pg, endpointRectSize, shouldPickShortestLine);
+               // TODO folderNode.getWindow().drawContextLine(pg, endpointRectSize, shouldPickShortestLine);
             }
         }
         pg.popStyle();

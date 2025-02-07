@@ -1,4 +1,4 @@
-package com.szadowsz.gui.window.pane;
+package com.szadowsz.gui.window.internal;
 
 import com.szadowsz.gui.layers.RBuffer;
 import com.szadowsz.gui.component.RComponent;
@@ -22,10 +22,10 @@ import static processing.core.PConstants.*;
 public class RWinBuffer extends RBuffer {
     private static final Logger LOGGER = LoggerFactory.getLogger(RWinBuffer.class);
 
-    protected final RWindowPane win;
+    protected final RWindowImpl win;
     protected final RFolder folder;
 
-    public RWinBuffer(RWindowPane win) {
+    public RWinBuffer(RWindowImpl win) {
         this.win = win;
         this.folder = win.getFolder();
     }

@@ -1,4 +1,4 @@
-package com.szadowsz.gui.window.pane;
+package com.szadowsz.gui.window.internal;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PVector;
 
-public class RWindowPanel extends RWindowPane {
+public class RWindowPanel extends RWindowImpl {
     private static final Logger LOGGER = LoggerFactory.getLogger(RWindowPanel.class);
 
     public RWindowPanel(PApplet app, RotomGui gui, RPanel folder, String title, PVector pos, PVector size) {

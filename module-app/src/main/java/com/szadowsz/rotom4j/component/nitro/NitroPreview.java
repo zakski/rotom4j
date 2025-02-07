@@ -20,7 +20,6 @@ public class NitroPreview extends RSingle {
     public NitroPreview(RotomGui gui, String path, RGroup parent, Drawable drawable) {
         super(gui, path, parent);
         this.drawable = drawable;
-        heightInCells = drawable.getHeight() / RLayoutStore.getCell() + ((drawable.getHeight() % RLayoutStore.getCell() != 0) ? 1 : 0);
         size.x = drawable.getWidth();
         size.y = drawable.getHeight();
         loadImage(ImageUtils.convertToPImage((drawable.getImage())));
@@ -142,7 +141,6 @@ public class NitroPreview extends RSingle {
 
     public void loadImage(PImage pImage) {
         this.image = pImage;
-        heightInCells = image.height / RLayoutStore.getCell() + ((image.height % RLayoutStore.getCell() != 0) ? 1 : 0);
         size.x = image.width;
         size.y = image.height;
         createBG();

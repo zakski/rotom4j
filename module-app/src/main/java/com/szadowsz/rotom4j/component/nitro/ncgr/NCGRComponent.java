@@ -1,7 +1,6 @@
 package com.szadowsz.rotom4j.component.nitro.ncgr;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.input.slider.RSlider;
@@ -24,7 +23,7 @@ import java.io.IOException;
 public class NCGRComponent extends R4JComponent<NCGR> {
     protected static final Logger LOGGER = LoggerFactory.getLogger(NCGRComponent.class);
 
-    private static final String PALETTE_NODE_NAME = "palette";
+    private static final String PALETTE_COMP = "palette";
 
     private final NCGRFolder parentFolder;
 
@@ -51,7 +50,7 @@ public class NCGRComponent extends R4JComponent<NCGR> {
     protected void initComponents() {
         children.add(new NitroPreview(gui, path + "/" + PREVIEW_COMP, this, data));
         children.add(createZoom());
-        children.add(new NCLRFolder(gui, path + "/" + PALETTE_NODE_NAME, this, data.getNCLR()));
+        children.add(new NCLRFolder(gui, path + "/" + PALETTE_COMP, this, data.getNCLR()));
         if (cmpFolder != null) {
             RButton reset = new RButton(gui, path + "/" + RESET_COMP, this);
             reset.registerAction(RActivateByType.RELEASE, this::resetImage);
@@ -73,13 +72,14 @@ public class NCGRComponent extends R4JComponent<NCGR> {
                 1.0f,
                 4.0f,
                 true,
-                false
+                0.01f
         ) {
             @Override
             protected void onValueChange() {
                 super.onValueChange();
                 try {
                     recolorImage();
+                    getParentWindow().resizeForComponent();
                 } catch (NitroException e) {
                     throw new RuntimeException(e);
                 }
@@ -137,16 +137,18 @@ public class NCGRComponent extends R4JComponent<NCGR> {
 
     @Override
     public void recolorImage() throws NitroException {
-        data.setNCLR(((NCLRFolder) findChildByName(PALETTE_NODE_NAME)).getObj());
+        data.setNCLR(((NCLRFolder) findChildByName(PALETTE_COMP)).getObj());
         data.recolorImage();
 
         PImage pImage = resizeImage(data.getImage());
 
         ((NitroPreview) findChildByName(PREVIEW_COMP)).loadImage(pImage);
 
+        resetBuffer();
         if (getParentWindow() != null) {
-            getParentWindow().resizeForContents(true);
+            getParentWindow().reinitialiseBuffer();
         }
+
         if (cmpFolder != null) {
             cmpFolder.recolorImage();
         }
@@ -155,13 +157,30 @@ public class NCGRComponent extends R4JComponent<NCGR> {
     @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
         boolean init = size.x == 0.0f;
-        super.updateCoordinates(bX, bY, rX, rY, w, h);
-        BufferedImage image = data.getImage();
-        LOGGER.info("Preview Image size for {} is [{}, {}]", getParent().getName(), image.getWidth(), image.getHeight());
+
+
+        pos.x = bX + rX;
+        pos.y = bY + rY;
+        relPos.x = rX;
+        relPos.y = rY;
+
+        if (size.x != w) {
+            resetBuffer(); // RESET-VALID: we should resize the buffer if the size changes
+            size.x = w;
+        }
+
+
+        if (size.y != h) {
+            resetBuffer(); // RESET-VALID: we should resize the buffer if the size changes
+            size.y = h;
+        }
+
         if (init) {
+            LOGGER.info("Initialising zoom level for {}", getName());
+            BufferedImage image = data.getImage();
             float zoom = size.x / image.getWidth();
-            RSlider component = (RSlider) findChildByName(ZOOM_COMP);
             LOGGER.info("Setting zoom for {} to {}", getParent().getName(), zoom);
+            RSlider component = (RSlider) findChildByName(ZOOM_COMP);
             component.setValueFromParent(zoom);
         }
         try {
@@ -169,7 +188,21 @@ public class NCGRComponent extends R4JComponent<NCGR> {
         } catch (NitroException e) {
             throw new RuntimeException(e);
         }
-        NitroPreview preview = (NitroPreview) findChildByName(PREVIEW_COMP);
-        LOGGER.info("Preview Component size for {} is [{}, {}]", getParent().getName(), preview.getWidth(), preview.getHeight());
+        layout.setCompLayout(pos, size, children);
+    }
+
+    @Override
+    public float suggestWidth() {
+        return ((NitroPreview) children.getFirst()).getImage().width;
+    }
+
+    @Override
+    public void resetBuffer() {
+        if (!buffer.isReInitRequired()) {
+            super.resetBuffer();
+            findChildByName(ZOOM_COMP).resetBuffer();
+            findChildByName(PREVIEW_COMP).resetBuffer();
+            findChildByName(PALETTE_COMP).resetBuffer();
+        }
     }
 }

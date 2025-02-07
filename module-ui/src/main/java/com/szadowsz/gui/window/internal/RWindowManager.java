@@ -1,4 +1,4 @@
-package com.szadowsz.gui.window;
+package com.szadowsz.gui.window.internal;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RDropdownMenu;
@@ -6,24 +6,20 @@ import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.group.folder.RPanel;
 import com.szadowsz.gui.component.group.folder.RToolbar;
 import com.szadowsz.gui.config.RLayoutStore;
-import com.szadowsz.gui.window.pane.RWindowPane;
-import com.szadowsz.gui.window.pane.RWindowPanel;
-import com.szadowsz.gui.window.pane.RWindowTemp;
-import com.szadowsz.gui.window.pane.RWindowToolbar;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Internal/Pane Window Manager
+ * Internal Window Manager
  */
 public class RWindowManager {
 
     private final RotomGui gui;
 
-    private final CopyOnWriteArrayList<RWindowPane> windowsToSetFocusOn = new CopyOnWriteArrayList<>();
-    private final CopyOnWriteArrayList<RWindowPane> windows = new CopyOnWriteArrayList<>(); // TODO should be set?
+    private final CopyOnWriteArrayList<RWindowImpl> windowsToSetFocusOn = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<RWindowImpl> windows = new CopyOnWriteArrayList<>(); // TODO should be set?
 
     /**
      * Manager Constructor
@@ -41,7 +37,7 @@ public class RWindowManager {
      * @param window the window to check
      * @return true if the window is focused upon, false otherwise
      */
-    public boolean isFocused(RWindowPane window) {
+    public boolean isFocused(RWindowImpl window) {
         return windows.getLast().equals(window);
     }
 
@@ -50,7 +46,7 @@ public class RWindowManager {
      *
      * @param window the window to focus on
      */
-    public void setFocus(RWindowPane window) {
+    public void setFocus(RWindowImpl window) {
         windowsToSetFocusOn.add(window);
     }
 
@@ -66,7 +62,7 @@ public class RWindowManager {
     public void uncoverOrCreateTempWindow(RDropdownMenu folder, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
         PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
         if (folder.getParentFolder() != null) {
-            RWindowPane parentWindow = folder.getParentWindow();
+            RWindowImpl parentWindow = folder.getParentWindow();
             if (parentWindow != null) {
                 pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
             }
@@ -77,18 +73,18 @@ public class RWindowManager {
         if (nullablePosY != null) {
             pos.y = nullablePosY;
         }
-        boolean windowFound = findWindow(folder, setFocus, pos);
-        if (!windowFound) {
-            RWindowPane window = new RWindowTemp(gui.getSketch(),gui, folder, pos.x, pos.y, folder.suggestWidth(),0);
+        RWindowImpl window = findWindow(folder, setFocus, pos);
+        if (window == null) {
+            window = new RWindowTemp(gui.getSketch(),gui, folder, pos.x, pos.y, folder.suggestWidth(),0);
             windows.add(window);
         }
-        if (windowFound && folder.getParentFolder() == null) {
-            folder.getWindow().setCoordinates(pos.x,pos.y);
+        if (folder.getParentFolder() == null) {
+            window.setCoordinates(pos.x,pos.y);
             if (nullableSizeX != null) {
-                folder.getWindow().setWidth(nullableSizeX);
+                window.setWidth(nullableSizeX);
             }
         }
-        folder.getWindow().open(setFocus);
+        window.open(setFocus);
     }
 
     /**
@@ -101,7 +97,7 @@ public class RWindowManager {
     public void uncoverOrCreateToolbar(RToolbar folder, boolean setFocus, Float nullablePosY) {
         PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
         if (folder.getParentFolder() != null) {
-            RWindowPane parentWindow = folder.getParentWindow();
+            RWindowImpl parentWindow = folder.getParentWindow();
             if (parentWindow != null) {
                 pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
             }
@@ -109,15 +105,15 @@ public class RWindowManager {
         if (nullablePosY != null) {
             pos.y = nullablePosY;
         }
-        boolean windowFound = findWindow(folder, setFocus, pos);
-        if (!windowFound) {
-            RWindowPane window = new RWindowToolbar(gui.getSketch(),gui, folder, folder.getName(), pos.y);
+        RWindowImpl window = findWindow(folder, setFocus, pos);
+        if (window == null) {
+            window = new RWindowToolbar(gui.getSketch(),gui, folder, folder.getName(), pos.y);
             windows.add(window);
         }
-        if (windowFound && folder.getParentFolder() == null) {
-            folder.getWindow().setCoordinates(pos.x,pos.y);
+        if (folder.getParentFolder() == null) {
+            window.setCoordinates(pos.x,pos.y);
         }
-        folder.getWindow().open(setFocus);
+        window.open(setFocus);
     }
 
     public void uncoverOrCreateToolbar(RToolbar folder) { // TODO LazyGui
@@ -136,7 +132,7 @@ public class RWindowManager {
     public void uncoverOrCreateWindow(RFolder folder, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
         PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
         if (folder.getParentFolder() != null) {
-            RWindowPane parentWindow = folder.getParentWindow();
+            RWindowImpl parentWindow = folder.getParentWindow();
             if (parentWindow != null) {
                 pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
             }
@@ -147,16 +143,16 @@ public class RWindowManager {
         if (nullablePosY != null) {
             pos.y = nullablePosY;
         }
-        boolean windowFound = findWindow(folder, setFocus, pos);
-        if (!windowFound) {
-            RWindowPane window = new RWindowPane(gui.getSketch(),gui,folder, pos.x, pos.y, 0,0);
+        RWindowImpl window = findWindow(folder, setFocus, pos);
+        if (window == null) {
+             window = new RWindowImpl(gui.getSketch(),gui,folder, pos.x, pos.y, 0,0);
             windows.add(window);
             window.open(setFocus);
         }
-        if (windowFound && folder.getParent() == null) {
-            folder.getWindow().setCoordinates(pos.x, pos.y);
+        if (folder.getParent() == null) {
+            window.setCoordinates(pos.x, pos.y);
             if (nullableSizeX != null) {
-                folder.getWindow().setWidth(nullableSizeX);
+                window.setWidth(nullableSizeX);
             }
         }
     }
@@ -177,7 +173,7 @@ public class RWindowManager {
     public void uncoverOrCreatePanel(RPanel panel, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
         PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
         if (panel.getParentFolder() != null) {
-            RWindowPane parentWindow = panel.getParentWindow();
+            RWindowImpl parentWindow = panel.getParentWindow();
             if (parentWindow != null) {
                 pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
             }
@@ -188,16 +184,16 @@ public class RWindowManager {
         if (nullablePosY != null) {
             pos.y = nullablePosY;
         }
-        boolean windowFound = findWindow(panel, setFocus, pos);
-        if (!windowFound) {
-            RWindowPane window = new RWindowPanel(gui.getSketch(),gui,panel, pos.x, pos.y);
+        RWindowImpl window = findWindow(panel, setFocus, pos);
+        if (window == null) {
+            window = new RWindowPanel(gui.getSketch(),gui,panel, pos.x, pos.y);
             windows.add(window);
             window.open(setFocus);
         }
-        if (windowFound && panel.getParent() == null) {
-            panel.getWindow().setCoordinates(pos.x, pos.y);
+        if (panel.getParent() == null) {
+            window.setCoordinates(pos.x, pos.y);
             if (nullableSizeX != null) {
-                panel.getWindow().setWidth(nullableSizeX);
+                window.setWidth(nullableSizeX);
             }
         }
     }
@@ -213,13 +209,13 @@ public class RWindowManager {
      */
     public void updateAndDrawWindows(PGraphics canvas) { // TODO LazyGui
         if (!windowsToSetFocusOn.isEmpty()) {
-            for (RWindowPane w : windowsToSetFocusOn) {
+            for (RWindowImpl w : windowsToSetFocusOn) {
                 windows.remove(w);
                 windows.add(w);
             }
             windowsToSetFocusOn.clear();
         }
-        for (RWindowPane win : windows) {
+        for (RWindowImpl win : windows) {
             win.drawWindow(canvas);
         }
     }
@@ -230,11 +226,10 @@ public class RWindowManager {
      * @param folder    the corresponding folder node
      * @param setFocus      true if the window is in focus, false otherwise
      * @param pos           expected position
-     * @return true if found, false otherwise
+     * @return the window if found, null otherwise
      */
-    protected boolean findWindow(RFolder folder, boolean setFocus, PVector pos) {
-        boolean windowFound = false;
-        for (RWindowPane w : windows) {
+    protected RWindowImpl findWindow(RFolder folder, boolean setFocus, PVector pos) {
+        for (RWindowImpl w : windows) {
             if (w.getFolder().getPath().equals(folder.getPath())) {
                 w.setCoordinates(pos.x, pos.y);
                 if (RLayoutStore.shouldFolderRowClickCloseWindowIfOpen() && w.isVisible()) {
@@ -242,10 +237,9 @@ public class RWindowManager {
                 } else {
                     w.open(setFocus);
                 }
-                windowFound = true;
-                break;
+                return w;
             }
         }
-        return windowFound;
+        return null;
     }
 }

@@ -1,7 +1,7 @@
 package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.layout.RRect;
-import com.szadowsz.gui.window.pane.RWindowPane;
+import com.szadowsz.gui.window.internal.RWindowImpl;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.rotom4j.binary.EditableBinaryData;
 import com.szadowsz.rotom4j.binary.EmptyBinaryData;
@@ -293,12 +293,14 @@ public abstract class RBinEdBase extends RGroupDrawable {
     }
 
     protected void redrawBuffers() {
-        buffer.invalidateBuffer();
-        ((RBinHeader) children.getFirst()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary header if we redraw the binary editor
-        ((RBinMain) children.get(1)).redrawBuffers(); // REDRAW-VALID: we should redraw the binary main if we redraw the binary editor
-        RWindowPane win = getParentWindow();
-        if (win != null) {
-            win.redrawBuffer();
+        if (!buffer.isBufferInvalid()) {
+            buffer.invalidateBuffer();
+            ((RBinHeader) children.getFirst()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary header if we redraw the binary editor
+            ((RBinMain) children.get(1)).redrawBuffers(); // REDRAW-VALID: we should redraw the binary main if we redraw the binary editor
+            RWindowImpl win = getParentWindow();
+            if (win != null) {
+                win.redrawBuffer();
+            }
         }
     }
 
