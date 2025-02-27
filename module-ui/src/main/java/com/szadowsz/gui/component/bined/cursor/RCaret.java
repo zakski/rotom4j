@@ -23,19 +23,19 @@ public class RCaret {
     private boolean visible = true;
     private boolean selectionVisible = false;
 
-    private int rate;
-    private int dot;
+//    private int rate;
+//    private int dot;
 
     private PVector magicCaretPosition = new PVector();
     private final RCaretPos caretPosition = new RCaretPos();
     protected RCursorRenderingMode renderingMode = RCursorRenderingMode.NEGATIVE;
 
-    protected int blinkRate = 0;
-    protected Timer blinkTimer = null;
+//    protected int blinkRate = 0;
+//    protected Timer blinkTimer = null;
 
     public RCaret(RComponent component) {
         this.component = component;
-        privateSetBlinkRate(DEFAULT_BLINK_RATE);
+        privateSetBlinkRate(0);
     }
 
     public static int getCursorThickness(RCursorShape cursorShape, int characterWidth, int lineHeight) {
@@ -55,32 +55,32 @@ public class RCaret {
             throw new IllegalArgumentException("Blink rate cannot be negative");
         }
 
-        this.blinkRate = blinkRate;
-        if (blinkTimer != null) {
-            blinkTimer.cancel();
-            blinkTimer = null;
-            visible = true;
-        }
-        if (blinkRate > 0) {
-            blinkTimer = new Timer("blinkRate", true);
-            blinkTimer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    visible = !visible;
-                }
-            }, blinkRate, blinkRate);
-        }
+//        this.blinkRate = blinkRate;
+//        if (blinkTimer != null) {
+//            blinkTimer.cancel();
+//            blinkTimer = null;
+//            visible = true;
+//        }
+//        if (blinkRate > 0) {
+//            blinkTimer = new Timer("blinkRate", true);
+//            blinkTimer.schedule(new TimerTask() {
+//                @Override
+//                public void run() {
+//                    visible = !visible;
+//                }
+//            }, blinkRate, blinkRate);
+//        }
     }
     public void resetBlink() {
-        if (blinkTimer != null) {
-            visible = true;
-            privateSetBlinkRate(blinkRate);
-        }
+//        if (blinkTimer != null) {
+//            visible = true;
+//            privateSetBlinkRate(blinkRate);
+//        }
     }
 
-    public int getBlinkRate() {
-        return rate;
-    }
+//    public int getBlinkRate() {
+//        return rate;
+//    }
 
     /**
      * Returns caret position.
@@ -101,9 +101,9 @@ public class RCaret {
         return caretPosition.getDataPosition();
     }
 
-    public int getDot() {
-        return dot;
-    }
+//    public int getDot() {
+//        return dot;
+//    }
 
     public PVector getMagicCaretPosition() {
         return magicCaretPosition;
@@ -134,9 +134,9 @@ public class RCaret {
         return visible;
     }
 
-    public void setBlinkRate(int rate) {
-        this.rate = rate;
-    }
+//    public void setBlinkRate(int rate) {
+//        this.rate = rate;
+//    }
 
     /**
      * Sets current caret position to provided value.

@@ -10,11 +10,12 @@ import com.szadowsz.gui.component.bined.bounds.RBinVisibility;
 import com.szadowsz.gui.component.bined.settings.RBackgroundPaintMode;
 import com.szadowsz.gui.config.text.RFontMetrics;
 import com.szadowsz.gui.config.text.RFontStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PFont;
 import processing.core.PGraphics;
 
 public abstract class RBinComponent extends RSingle {
-
     protected final RBinEditor editor;
 
     protected PFont font;

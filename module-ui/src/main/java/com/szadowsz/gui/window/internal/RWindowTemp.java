@@ -192,7 +192,7 @@ public class RWindowTemp extends RWindowImpl {
         }
         // Make sure Window Grabs focus
         if (isMouseInsideWindow(mouseEvent)) {
-            if (!isFocused()) {
+            if (!hasFocus()) {
                 setFocusOnThis();
             }
         }

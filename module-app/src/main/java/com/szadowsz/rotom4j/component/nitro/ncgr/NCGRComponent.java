@@ -78,7 +78,7 @@ public class NCGRComponent extends R4JComponent<NCGR> {
             protected void onValueChange() {
                 super.onValueChange();
                 try {
-                    recolorImage();
+                    resizeImage();
                     getParentWindow().resizeForComponent();
                 } catch (NitroException e) {
                     throw new RuntimeException(e);
@@ -137,6 +137,24 @@ public class NCGRComponent extends R4JComponent<NCGR> {
 
     @Override
     public void recolorImage() throws NitroException {
+        data.setNCLR(((NCLRFolder) findChildByName(PALETTE_COMP)).getObj());
+        data.recolorImage();
+
+        PImage pImage = resizeImage(data.getImage());
+
+        ((NitroPreview) findChildByName(PREVIEW_COMP)).loadImage(pImage);
+
+        redrawBuffers();
+        if (getParentWindow() != null) {
+            getParentWindow().redrawBuffer();
+        }
+
+        if (cmpFolder != null) {
+            cmpFolder.recolorImage();
+        }
+    }
+
+    public void resizeImage() throws NitroException {
         data.setNCLR(((NCLRFolder) findChildByName(PALETTE_COMP)).getObj());
         data.recolorImage();
 

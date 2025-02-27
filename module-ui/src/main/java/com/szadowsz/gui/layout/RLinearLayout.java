@@ -164,7 +164,7 @@ public class RLinearLayout extends RLayoutBase {
             PVector fittingSize = new PVector(
                     Math.min(availableHorizontalSpace, preferredSize.x),
                     preferredSize.y);
-            LOGGER.info("{} Component Fitting: Pos [{}, {}] - Size [{},{}]",
+            LOGGER.debug("{} Component Fitting: Pos [{}, {}] - Size [{},{}]",
                     component.getName(),
                     component.getPosX(),
                     component.getPosY(),

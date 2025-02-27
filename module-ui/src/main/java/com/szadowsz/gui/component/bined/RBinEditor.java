@@ -369,11 +369,12 @@ public class RBinEditor extends RBinEdBase {
         RCaretPos caretPosition = computeClosestCaretPosition(positionX, positionY);
         setActiveCaretPosition(caretPosition);
         updateSelection(selecting);
+        redrawBuffers();
     }
 
-    protected void moveCaret(RMouseEvent me) {
+    protected void moveCaret(RMouseEvent me, float yDiff) {
         RSelectingMode selecting = me.isShiftDown() ? RSelectingMode.SELECTING : RSelectingMode.NONE;
-        moveCaret(me.getX(), me.getY(), selecting);
+        moveCaret(me.getX(), me.getY() + yDiff, selecting);
     }
 
     private void pressedCharAsCode(char keyChar) {
@@ -906,7 +907,7 @@ public class RBinEditor extends RBinEdBase {
                 vsb.mousePressed(mouseEvent, mouseY);
                 mouseEvent.consume();
             } else {
-                moveCaret(mouseEvent);
+                moveCaret(mouseEvent,getVerticalScroll());
                 isDragged = true;
                 isMouseOver = true;
                 mouseEvent.consume();

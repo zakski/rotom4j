@@ -165,7 +165,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
             codeOffset = codeType.getMaxDigitsForByte()-1;
         }
 
-        LOGGER.debug("Mapping Mouse to Caret [{}/{},{}] = [{},{}]",cursorCharX,cursorDataX,cursorY,dataPosition,codeOffset);
+        LOGGER.info("Mapping Mouse to Caret [{}/{},{}] = [{},{}]",cursorCharX,cursorDataX,cursorY,dataPosition,codeOffset);
 
         if (dataPosition < 0) {
             dataPosition = 0;
@@ -292,11 +292,17 @@ public abstract class RBinEdBase extends RGroupDrawable {
         }
     }
 
+
+    protected void redrawChildBuffers() {
+        ((RBinHeader) children.getFirst()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary header if we redraw the binary editor
+        ((RBinMain) children.get(1)).redrawBuffers(); // REDRAW-VALID: we should redraw the binary main if we redraw the binary editor
+    }
+
     protected void redrawBuffers() {
         if (!buffer.isBufferInvalid()) {
+            LOGGER.info("Redrawing {} Editor Buffer",getName());
             buffer.invalidateBuffer();
-            ((RBinHeader) children.getFirst()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary header if we redraw the binary editor
-            ((RBinMain) children.get(1)).redrawBuffers(); // REDRAW-VALID: we should redraw the binary main if we redraw the binary editor
+            redrawChildBuffers();
             RWindowImpl win = getParentWindow();
             if (win != null) {
                 win.redrawBuffer();

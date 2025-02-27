@@ -271,16 +271,6 @@ public class RWindowImpl implements RWindow, RInputListener {
         return new PVector(pos.x + contentSize.x, pos.y + RLayoutStore.getCell());
     }
 
-
-    /**
-     * Check if the window is focused upon
-     *
-     * @return true if the window is the focus, false otherwise
-     */
-    protected boolean isFocused() {
-        return gui.getWinManager().isFocused(this);
-    }
-
     /**
      * Check if the point is inside the close button of the Window
      *
@@ -596,8 +586,8 @@ public class RWindowImpl implements RWindow, RInputListener {
         if (oldWindowSizeX != size.x || oldWindowSizeY != size.y ||
                 oldWindowSizeXForContents != contentSize.x || oldWindowSizeYForContents != contentSize.y ||
                 oldWindowSizeXUnconstrained != sizeUnconstrained.x || oldWindowSizeYUnconstrained != sizeUnconstrained.y) {
-            LOGGER.info("{} Constrained - Old Width: [{},{},{}], New Width: [{},{},{}]", getTitle(), oldWindowSizeX, oldWindowSizeXUnconstrained, oldWindowSizeXForContents, contentSize.x, sizeUnconstrained.x, contentSize.x);
-            LOGGER.info("{} Constrained - Old Height: [{},{},{}], New Height: [{},{},{}]", getTitle(), oldWindowSizeY, oldWindowSizeYUnconstrained, oldWindowSizeYForContents, contentSize.y, sizeUnconstrained.y, contentSize.y);
+            LOGGER.info("{} Constrained - Old Width: [F {},U {},C {}], New Width: [F {},U {},C {}]", getTitle(), oldWindowSizeX, oldWindowSizeXUnconstrained, oldWindowSizeXForContents, contentSize.x, sizeUnconstrained.x, contentSize.x);
+            LOGGER.info("{} Constrained - Old Height: [F {},U {},C {}], New Height: [F {},U {},C {}]", getTitle(), oldWindowSizeY, oldWindowSizeYUnconstrained, oldWindowSizeYForContents, contentSize.y, sizeUnconstrained.y, contentSize.y);
 
             reinitialiseBuffer();
         }
@@ -802,8 +792,8 @@ public class RWindowImpl implements RWindow, RInputListener {
         }
         vsb.ifPresent(RScrollbar::invalidateBuffer);
         reinitialiseBuffer();
-        LOGGER.info("oldMouseX: {}, newMouseX: {}", mouseEvent.getPrevX(), mouseEvent.getX());
-        LOGGER.info("oldWidth: {}, newWidth: {}", oldWindowSizeX, size.x);
+        LOGGER.debug("oldMouseX: {}, newMouseX: {}", mouseEvent.getPrevX(), mouseEvent.getX());
+        LOGGER.debug("oldWidth: {}, newWidth: {}", oldWindowSizeX, size.x);
     }
 
     protected void mouseMovedInsideContent(RMouseEvent mouseEvent) {
@@ -958,6 +948,15 @@ public class RWindowImpl implements RWindow, RInputListener {
      */
     public boolean isVisible() {
         return isVisible;
+    }
+
+    /**
+     * Check if the window is focused upon
+     *
+     * @return true if the window is the focus, false otherwise
+     */
+    public boolean hasFocus() {
+        return gui.getWinManager().isFocused(this);
     }
 
     public void setBounds(float x, float y, float sizeX, float sizeY, RSizeMode mode, String reason) {
@@ -1150,7 +1149,7 @@ public class RWindowImpl implements RWindow, RInputListener {
 
         // Make sure Window Grabs focus
         if (isMouseInsideWindow(mouseEvent)) {
-            if (!isFocused()) {
+            if (!hasFocus()) {
                 setFocusOnThis();
             }
 

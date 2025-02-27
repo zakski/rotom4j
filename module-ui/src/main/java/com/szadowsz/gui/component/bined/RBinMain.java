@@ -1,7 +1,5 @@
 package com.szadowsz.gui.component.bined;
 
-import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.binary.BinaryData;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.bined.bounds.RBinSelection;
@@ -279,6 +277,7 @@ public class RBinMain extends RBinComponent {
 
         switch (renderingMode) {
             case PAINT: {
+                LOGGER.info("{} Cursor - Pos [{}, {}] Size [{}, {}]",getName(),cursorX, cursorY, width, height);
                 pg.rect(cursorX, cursorY, width, height);
                 break;
             }
@@ -286,6 +285,7 @@ public class RBinMain extends RBinComponent {
                 Graphics2D g2d = ((Graphics2D) pg.getNative());
                 g2d.setXORMode(RThemeStore.getColor(RColorType.NORMAL_BACKGROUND) /*  pg.setColor(colorsProfile.getTextBackground()*/);
                 pg.rect(cursorX, cursorY, width, height);
+                LOGGER.info("{} Cursor - Pos [{}, {}] Size [{}, {}]",getName(),cursorX, cursorY, width, height);
                 g2d.setPaintMode();
                 break;
             }
@@ -304,6 +304,7 @@ public class RBinMain extends RBinComponent {
                 RCodeType codeType = editor.getCodeType();
 
                 pg.rect(cursorX, cursorY - dimensions.getHeaderHeight(), width, height);
+                LOGGER.info("{} Cursor - Pos [{}, {}] Size [{}, {}]",getName(),cursorX, cursorY - dimensions.getHeaderHeight(), width, height);
                 pg.fill(RThemeStore.getRGBA(RColorType.CURSOR_NEGATIVE)); // g.setColor(colorsProfile.getCursorNegativeColor());
 
                 BinaryData contentData = editor.getContentData();
@@ -359,9 +360,11 @@ public class RBinMain extends RBinComponent {
     }
 
     protected void drawCursor(PGraphics pg) {
-        if (!gui.hasFocus(editor)) {
+        if (!gui.hasFocus(editor) || !editor.getParentWindow().hasFocus()) {
             LOGGER.debug("No Cursor Focus for {}",editor.getName());
             return;
+        } else {
+            LOGGER.info("Cursor Focus for {}",editor.getName());
         }
 
         RRect contentDims = dimensions.getContentDims();
@@ -379,29 +382,38 @@ public class RBinMain extends RBinComponent {
         boolean cursorVisible = caret.isVisible() && !intersection.isEmpty();
 
         if (cursorVisible) {
+            LOGGER.info("Cursor Visible for {}",editor.getName());
             RCursorRenderingMode renderingMode = caret.getRenderingMode();
             pg.stroke(RThemeStore.getRGBA(RColorType.CURSOR)); // pg.setColor(colorsProfile.getCursorColor());
 
             drawCursorRect(pg, intersection.getX(), intersection.getY(), intersection.getWidth(), intersection.getHeight(), renderingMode, caret);
+        } else {
+            if (caret.isVisible()){
+                LOGGER.info("Problem with Cursor Intersection for {}",editor.getName());
+            }
+
+            if (!intersection.isEmpty()){
+                LOGGER.info("Problem with Cursor Visiblity for {}",editor.getName());
+            }
         }
 
         // Paint mirror cursor
-        if (viewMode == RBinViewMode.DUAL && editor.isMirrorCursorShowing()) {
-            editor.updateMirrorCursorRect(caret.getDataPosition(), caret.getSection());
-            RRect mirrorCursorRect = cursorDataCache.mirrorCursorRect;
-            if (!mirrorCursorRect.isEmpty()) {
-                intersection = contentDims.intersection(mirrorCursorRect);
-                boolean mirrorCursorVisible = !intersection.isEmpty();
-                if (mirrorCursorVisible) {
-//                    //pg.setClip(intersection);
-//                    pg.stroke(RThemeStore.getRGBA(RColorType.CURSOR)); // pg.setColor(colorsProfile.getCursorColor());
-//                    Graphics2D g2d = (Graphics2D) ((Graphics) pg.getNative()).create();
-//                    g2d.setStroke(cursorDataCache.dashedStroke);
-//                    //g2d.drawRect(mirrorCursorRect.getX(), mirrorCursorRect.getY(), mirrorCursorRect.getWidth() - 1, mirrorCursorRect.getHeight() - 1);
-//                    g2d.dispose();
-                }
-            }
-        }
+//        if (viewMode == RBinViewMode.DUAL && editor.isMirrorCursorShowing()) {
+//            editor.updateMirrorCursorRect(caret.getDataPosition(), caret.getSection());
+//            RRect mirrorCursorRect = cursorDataCache.mirrorCursorRect;
+//            if (!mirrorCursorRect.isEmpty()) {
+//                intersection = contentDims.intersection(mirrorCursorRect);
+//                boolean mirrorCursorVisible = !intersection.isEmpty();
+//                if (mirrorCursorVisible) {
+////                    //pg.setClip(intersection);
+////                    pg.stroke(RThemeStore.getRGBA(RColorType.CURSOR)); // pg.setColor(colorsProfile.getCursorColor());
+////                    Graphics2D g2d = (Graphics2D) ((Graphics) pg.getNative()).create();
+////                    g2d.setStroke(cursorDataCache.dashedStroke);
+////                    //g2d.drawRect(mirrorCursorRect.getX(), mirrorCursorRect.getY(), mirrorCursorRect.getWidth() - 1, mirrorCursorRect.getHeight() - 1);
+////                    g2d.dispose();
+//                }
+//            }
+//        }
         //pg.setClip(clipBounds);
     }
 
@@ -486,6 +498,7 @@ public class RBinMain extends RBinComponent {
 
     @Override
     protected void redrawBuffers() {
+        LOGGER.info("Redrawing {} Bin Editor Main",getParent().getName());
         super.redrawBuffers();
     }
 
