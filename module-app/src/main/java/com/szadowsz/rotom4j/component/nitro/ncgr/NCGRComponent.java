@@ -1,10 +1,12 @@
 package com.szadowsz.rotom4j.component.nitro.ncgr;
 
 import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.input.slider.RSlider;
 import com.szadowsz.gui.input.mouse.RActivateByType;
+import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.rotom4j.app.utils.ImageUtils;
 import com.szadowsz.rotom4j.component.R4JComponent;
@@ -221,6 +223,20 @@ public class NCGRComponent extends R4JComponent<NCGR> {
             findChildByName(ZOOM_COMP).resetBuffer();
             findChildByName(PREVIEW_COMP).resetBuffer();
             findChildByName(PALETTE_COMP).resetBuffer();
+        }
+    }
+
+    @Override
+    public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (!isVisible()) {
+            return;
+        }
+
+        RComponent child = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
+        if (child != null) {
+            LOGGER.info("Mouse Pressed for NCGR Component {} [{}, {}, {}, {}, {}, {}]", child.getName(), mouseEvent.getX(), adjustedMouseY, child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
+            child.mousePressed(mouseEvent, adjustedMouseY);
+            redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the user pressed the mouse over a child
         }
     }
 }
