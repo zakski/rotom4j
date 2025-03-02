@@ -2,6 +2,7 @@ package com.szadowsz.rotom4j.component.bin.evo;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.file.data.evo.EvolutionNFSFile;
 import com.szadowsz.rotom4j.file.data.evo.data.EvoMethod;
 import com.szadowsz.rotom4j.ref.ItemDex;
@@ -9,9 +10,6 @@ import com.szadowsz.rotom4j.ref.PokeDex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
-
-import static com.old.ui.store.LayoutStore.cell;
-
 
 public class EvoFolderComponent extends RFolder {
 
@@ -104,7 +102,7 @@ public class EvoFolderComponent extends RFolder {
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         drawTextLeft(pg, name);
-        drawBackdropRight(pg, cell);
+        drawBackdropRight(pg, RLayoutStore.getCell());
         //       drawRightTextToNotOverflowLeftText(pg, getValueAsString(), name, true); //we need to calculate how much space is left for value after the name is displayed
     }
 

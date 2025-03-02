@@ -155,17 +155,17 @@ public abstract class RBinEdBase extends RGroupDrawable {
         }
 
         int cursorCharX = Math.round(relativeX) / metrics.getCharacterWidth();
-        int cursorDataX = cursorCharX / (codeType.getMaxDigitsForByte()+1);
+        int cursorDataX = cursorCharX / (codeType.getMaxDigitsForByte() + 1);
         long cursorY = Math.round(relativeY) / metrics.getRowHeight();
 
         long dataPosition = cursorDataX + (cursorY * structure.getBytesPerRow());
-        int codeOffset = cursorCharX % (codeType.getMaxDigitsForByte()+1);
+        int codeOffset = cursorCharX % (codeType.getMaxDigitsForByte() + 1);
 
         if (codeOffset >= codeType.getMaxDigitsForByte()) {
-            codeOffset = codeType.getMaxDigitsForByte()-1;
+            codeOffset = codeType.getMaxDigitsForByte() - 1;
         }
 
-        LOGGER.info("Mapping Mouse to Caret [{}/{},{}] = [{},{}]",cursorCharX,cursorDataX,cursorY,dataPosition,codeOffset);
+        LOGGER.info("Mapping Mouse to Caret [{}/{},{}] = [{},{}]", cursorCharX, cursorDataX, cursorY, dataPosition, codeOffset);
 
         if (dataPosition < 0) {
             dataPosition = 0;
@@ -173,8 +173,8 @@ public abstract class RBinEdBase extends RGroupDrawable {
         }
 
         if (dataPosition >= contentData.getDataSize()) {
-            dataPosition = contentData.getDataSize()-1;
-            codeOffset = codeType.getMaxDigitsForByte()-1;
+            dataPosition = contentData.getDataSize() - 1;
+            codeOffset = codeType.getMaxDigitsForByte() - 1;
         }
 
         caret.setDataPosition(dataPosition);
@@ -227,7 +227,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
         }
     }
 
-    protected abstract void deleteSelection() ;
+    protected abstract void deleteSelection();
 
     protected abstract void pasteBinaryData(BinaryData pastedData);
 
@@ -295,18 +295,17 @@ public abstract class RBinEdBase extends RGroupDrawable {
 
     protected void redrawChildBuffers() {
         ((RBinHeader) children.getFirst()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary header if we redraw the binary editor
-        ((RBinMain) children.get(1)).redrawBuffers(); // REDRAW-VALID: we should redraw the binary main if we redraw the binary editor
+        ((RBinMain) children.getLast()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary main if we redraw the binary editor
     }
 
     protected void redrawBuffers() {
-        if (!buffer.isBufferInvalid()) {
-            LOGGER.info("Redrawing {} Editor Buffer",getName());
-            buffer.invalidateBuffer();
-            redrawChildBuffers();
-            RWindowImpl win = getParentWindow();
-            if (win != null) {
-                win.redrawBuffer();
-            }
+        LOGGER.info("Redrawing {} {}", getClassName(), getName());
+        buffer.invalidateBuffer();
+        redrawChildBuffers();
+        RWindowImpl win = getParentWindow();
+        if (win != null) {
+            LOGGER.info("Redrawing {} {}'s Parent Window {}", getClassName(), getName(), win.getTitle());
+            win.redrawBuffer();
         }
     }
 
@@ -409,7 +408,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
     }
 
     @Override
-    public PVector getPreferredSize(){
+    public PVector getPreferredSize() {
         RRect dims = dimensions.getComponentDisplayDims();
         return new PVector(dims.getWidth(), dims.getHeight());
     }
@@ -427,7 +426,7 @@ public abstract class RBinEdBase extends RGroupDrawable {
         return structure;
     }
 
-    public RBinVisibility getVisibility(){
+    public RBinVisibility getVisibility() {
         return visibility;
     }
 

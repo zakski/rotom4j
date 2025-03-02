@@ -497,12 +497,6 @@ public class RBinMain extends RBinComponent {
     }
 
     @Override
-    protected void redrawBuffers() {
-        LOGGER.info("Redrawing {} Bin Editor Main",getParent().getName());
-        super.redrawBuffers();
-    }
-
-    @Override
     public float suggestWidth() {
         return dimensions.getComponentDims().getWidth();
     }

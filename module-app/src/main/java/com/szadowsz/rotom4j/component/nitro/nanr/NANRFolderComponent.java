@@ -2,6 +2,7 @@ package com.szadowsz.rotom4j.component.nitro.nanr;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.nitro.nanr.NANR;
 import com.szadowsz.rotom4j.component.nitro.NitroCmpFolderComponent;
@@ -11,9 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 import processing.core.PImage;
-
-import static com.old.ui.store.LayoutStore.cell;
-
 
 public class NANRFolderComponent extends NitroCmpFolderComponent<NANR> {
     private static final Logger LOGGER = LoggerFactory.getLogger(NANRFolderComponent.class);
@@ -53,6 +51,6 @@ public class NANRFolderComponent extends NitroCmpFolderComponent<NANR> {
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         drawTextLeft(pg, name);
-        drawBackdropRight(pg, cell);
+        drawBackdropRight(pg, RLayoutStore.getCell());
    }
 }

@@ -11,7 +11,7 @@ import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PVector;
 
-import static com.old.ui.utils.Coordinates.isPointInRect;
+import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 
 /**
  * Vertical/Horizontal Scrollbar for Components

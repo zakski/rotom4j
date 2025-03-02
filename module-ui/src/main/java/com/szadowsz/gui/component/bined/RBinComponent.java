@@ -1,8 +1,6 @@
 package com.szadowsz.gui.component.bined;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.RComponentBuffer;
 import com.szadowsz.gui.component.RSingle;
 import com.szadowsz.gui.component.bined.bounds.RBinDimensions;
 import com.szadowsz.gui.component.bined.bounds.RBinStructure;
@@ -16,6 +14,8 @@ import processing.core.PFont;
 import processing.core.PGraphics;
 
 public abstract class RBinComponent extends RSingle {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RBinComponent.class);
+
     protected final RBinEditor editor;
 
     protected PFont font;
@@ -112,6 +112,7 @@ public abstract class RBinComponent extends RSingle {
 
     @Override
     protected void redrawBuffers() {
-        super.redrawBuffers(); // REDRAW-VALID: just carbon copying the redraw so we allow it to be visible
+        LOGGER.info("Redraw called for {} {}",getClassName(),getName());
+        buffer.invalidateBuffer();
     }
 }

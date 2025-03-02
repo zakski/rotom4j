@@ -1,7 +1,5 @@
 package com.szadowsz.gui.input.keys;
 
-import com.old.ui.input.keys.ChordFunction;
-import com.old.ui.input.keys.KeyChord;
 import com.szadowsz.gui.RotomGui;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
