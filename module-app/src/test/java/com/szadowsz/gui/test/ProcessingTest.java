@@ -11,6 +11,7 @@ import com.szadowsz.gui.layout.RBorderLayout;
 import com.szadowsz.rotom4j.app.RotomGuiImpl;
 import com.szadowsz.rotom4j.app.RotomGuiManagerImpl;
 import com.szadowsz.rotom4j.exception.NitroException;
+import com.szadowsz.rotom4j.file.nitro.ncer.NCER;
 import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ public class ProcessingTest extends PApplet {
     protected RotomGuiSettings settings;
 
 
-    private final String path = "C:\\Code\\pokemon\\srcs\\changes\\Gen 4\\prologmon-masters\\pokemon_dp\\src\\contest\\graphic\\contest_obj\\bigman.NCGR";
+    private final String path = "C:\\Code\\pokemon\\srcs\\changes\\Gen 4\\prologmon-masters\\pokemon_dp\\src\\contest\\graphic\\contest_obj\\bigman.NCER";
 
     private void setLookAndFeel() {
         try {
@@ -68,7 +69,7 @@ public class ProcessingTest extends PApplet {
 
         gui.pushFolder("Window", RBorderLayout.RLocation.CENTER);
         try {
-            gui.image("ncgr",new NCGR(path));
+            gui.cellBank("ncer",new NCER(path));
         } catch (NitroException e) {
             throw new RuntimeException(e);
         }

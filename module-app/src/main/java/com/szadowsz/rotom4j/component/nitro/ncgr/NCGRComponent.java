@@ -8,9 +8,8 @@ import com.szadowsz.gui.component.input.slider.RSlider;
 import com.szadowsz.gui.input.mouse.RActivateByType;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutBase;
-import com.szadowsz.rotom4j.app.utils.ImageUtils;
 import com.szadowsz.rotom4j.component.R4JComponent;
-import com.szadowsz.rotom4j.component.nitro.NitroCmpFolderComponent;
+import com.szadowsz.rotom4j.component.R4JResourceFolder;
 import com.szadowsz.rotom4j.component.nitro.NitroPreview;
 import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
@@ -29,7 +28,7 @@ public class NCGRComponent extends R4JComponent<NCGR> {
 
     private final NCGRFolder parentFolder;
 
-    private NitroCmpFolderComponent<?> cmpFolder;
+    private R4JResourceFolder<?> cmpFolder;
 
     /**
      * Default Constructor
@@ -92,7 +91,7 @@ public class NCGRComponent extends R4JComponent<NCGR> {
 
     @Override
     public void setLayout(RLayoutBase layout) {
-
+        // NOOP
     }
 
     protected void resetImage() {
@@ -114,27 +113,6 @@ public class NCGRComponent extends R4JComponent<NCGR> {
                 throw new RuntimeException(t);
             }
         }
-    }
-
-    /**
-     * Method to convert a BufferedImage to a PImage and resize it according to an optional zoom node
-     *
-     * @param image to convert
-     * @return appropriately scaled PImage
-     */
-    protected PImage resizeImage(BufferedImage image) {
-        if (image == null) {
-            return null;
-        }
-        PImage pImage = ImageUtils.convertToPImage(image);
-        RSlider zoomNode = (RSlider) findChildByName(ZOOM_COMP);
-        if (zoomNode != null) {
-            float zoom = zoomNode.getValueAsFloat();
-            int resizedWidth = Math.round(pImage.width * zoom);
-            LOGGER.info("Resized Image width {} with zoom {} to {}", pImage.width, zoom, resizedWidth);
-            pImage.resize(resizedWidth, 0);
-        }
-        return pImage;
     }
 
     @Override

@@ -3,11 +3,11 @@ package com.szadowsz.rotom4j.component.nitro.nanr;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.rotom4j.component.nitro.ncer.NCERFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.nitro.nanr.NANR;
 import com.szadowsz.rotom4j.component.nitro.NitroCmpFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.NitroPreview;
-import com.szadowsz.rotom4j.component.nitro.ncer.NCERFolderComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
@@ -27,7 +27,7 @@ public class NANRFolderComponent extends NitroCmpFolderComponent<NANR> {
 
         children.add(createZoom());
 
-        children.add(new NCERFolderComponent(gui, path + "/" + CELL_NODE_NAME, this,drawable.getNCER()));
+        children.add(new NCERFolder(gui, path + "/" + CELL_NODE_NAME, this, drawable.getNCER()));
     }
 
     public void recolorImage() throws NitroException {

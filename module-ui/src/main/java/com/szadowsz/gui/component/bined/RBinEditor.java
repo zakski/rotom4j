@@ -691,7 +691,7 @@ public class RBinEditor extends RBinEdBase {
 
     public int getVerticalScroll() {
         float yDiff = dimensions.getContentHeight() - dimensions.getContentDisplayHeight();
-        float value = vsb.getValue();
+        float value = (vsb != null)?vsb.getValue():0.0f;
         return (int) (yDiff * value);
     }
 
@@ -706,12 +706,12 @@ public class RBinEditor extends RBinEdBase {
 
     @Override
     public boolean isMouseOver() {
-        return super.isMouseOver() || vsb.isMouseOver();
+        return super.isMouseOver() || (vsb != null && vsb.isMouseOver());
     }
 
     @Override
     public boolean isDragged() {
-        return super.isDragged() || vsb.isDragged();
+        return super.isDragged() || (vsb != null && vsb.isDragged());
     }
 
     @Override
@@ -722,11 +722,13 @@ public class RBinEditor extends RBinEdBase {
     public void drawToBuffer() {
         children.forEach(RComponent::drawToBuffer);
         RRect contentDims = dimensions.getContentDims();
-        vsb.drawToBuffer( contentDims.getX(),
-                contentDims.getY(),
-                contentDims.getWidth(),
-                dimensions.getContentDisplayHeight(),
-                contentDims.getHeight());
+        if (vsb != null && vsb.isVisible()) {
+            vsb.drawToBuffer(contentDims.getX(),
+                    contentDims.getY(),
+                    contentDims.getWidth(),
+                    dimensions.getContentDisplayHeight(),
+                    contentDims.getHeight());
+        }
         buffer.redraw();
     }
 
@@ -968,7 +970,9 @@ public class RBinEditor extends RBinEdBase {
 
     @Override
     public void redrawBuffers() {
-        vsb.invalidateBuffer();
+        if (vsb != null){
+            vsb.invalidateBuffer();
+        }
         super.redrawBuffers();
     }
 
@@ -981,7 +985,9 @@ public class RBinEditor extends RBinEdBase {
         float scrollX = pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth();
         float scrollY = pos.y + dimensions.getHeaderHeight();
         LOGGER.debug("Bin Editor {} updated scrollbar with Pos [{}, {}] Size [{},{}]", getName(), scrollX, scrollY, RLayoutStore.getCell(), dimensions.getContentHeight());
-        vsb.updateCoordinates(scrollX,scrollY,RLayoutStore.getCell(), dimensions.getContentDisplayHeight(), dimensions.getContentHeight());
+        if (vsb != null){
+            vsb.updateCoordinates(scrollX,scrollY,RLayoutStore.getCell(), dimensions.getContentDisplayHeight(), dimensions.getContentHeight());
+        }
         buffer.resetBuffer();
     }
 

@@ -3,6 +3,7 @@ package com.szadowsz.rotom4j.app;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.RotomGuiSettings;
 import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.rotom4j.component.nitro.ncer.NCERFolder;
 import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
 import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
@@ -22,7 +23,6 @@ import com.szadowsz.rotom4j.component.bin.learn.LearnFolderComponent;
 import com.szadowsz.rotom4j.component.bin.stats.StatsFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.nanr.NANRFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.narc.NarcFolderComponent;
-import com.szadowsz.rotom4j.component.nitro.ncer.NCERFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.nscr.NSCRFolderComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,15 +50,15 @@ public class RotomGuiImpl extends RotomGui {
         return component;
     }
 
-    public NCERFolderComponent cellBank(String path, NCER ncer) throws NitroException {
+    public NCERFolder cellBank(String path, NCER ncer) throws NitroException {
         String fullPath = getCurrentPath() + path;
-        if (tree.isPathTakenByUnexpectedType(fullPath, NCERFolderComponent.class)) {
+        if (tree.isPathTakenByUnexpectedType(fullPath, NCERFolder.class)) {
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
-        NCERFolderComponent component = (NCERFolderComponent) tree.getComponent(fullPath);
+        NCERFolder component = (NCERFolder) tree.getComponent(fullPath);
         if (component == null) {
             RFolder parentFolder = tree.getParentFolder(fullPath);
-            component = new NCERFolderComponent(this, fullPath, parentFolder, ncer);
+            component = new NCERFolder(this, fullPath, parentFolder, ncer);
             tree.insertAtPath(component);
         }
         return component;

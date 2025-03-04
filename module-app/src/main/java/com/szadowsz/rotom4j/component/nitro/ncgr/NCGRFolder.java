@@ -9,7 +9,7 @@ import com.szadowsz.rotom4j.app.ProcessingRotom4J;
 import com.szadowsz.rotom4j.app.utils.FileChooser;
 import com.szadowsz.rotom4j.component.R4JComponent;
 import com.szadowsz.rotom4j.component.R4JFolder;
-import com.szadowsz.rotom4j.component.nitro.NitroCmpFolderComponent;
+import com.szadowsz.rotom4j.component.R4JResourceFolder;
 import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,8 +20,7 @@ import java.io.IOException;
 public class NCGRFolder extends R4JFolder<NCGR> {
     protected static final Logger LOGGER = LoggerFactory.getLogger(NCGRFolder.class);
 
-//    private NitroCmpFolder<?> cmpFolder;
-    private NitroCmpFolderComponent<?> cmpFolder;
+    private R4JResourceFolder<?> cmpFolder;
 
     /**
      * Default Constructor
@@ -33,6 +32,9 @@ public class NCGRFolder extends R4JFolder<NCGR> {
      */
     public NCGRFolder(RotomGui gui, String path, RGroup parent, NCGR ncgr) {
         super(gui, path, parent,ncgr,SELECT_NCGR_FILE);
+        if (parent instanceof R4JResourceFolder<?>){
+            cmpFolder = (R4JResourceFolder<?>)parent;
+        }
     }
 
     @Override
@@ -66,7 +68,7 @@ public class NCGRFolder extends R4JFolder<NCGR> {
 //        return cmpFolder;
 //    }
 
-    NitroCmpFolderComponent<?> getCmpFolder() {
+    R4JResourceFolder<?> getCmpFolder() {
         return cmpFolder;
     }
 
