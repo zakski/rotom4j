@@ -6,6 +6,7 @@ import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.rotom4j.component.nitro.ncer.NCERFolder;
 import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
 import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolder;
+import com.szadowsz.rotom4j.component.nitro.nscr.NSCRFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.data.evo.EvolutionNFSFile;
 import com.szadowsz.rotom4j.file.data.learnset.LearnsetNFSFile;
@@ -23,7 +24,6 @@ import com.szadowsz.rotom4j.component.bin.learn.LearnFolderComponent;
 import com.szadowsz.rotom4j.component.bin.stats.StatsFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.nanr.NANRFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.narc.NarcFolderComponent;
-import com.szadowsz.rotom4j.component.nitro.nscr.NSCRFolderComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -64,15 +64,15 @@ public class RotomGuiImpl extends RotomGui {
         return component;
     }
 
-    public NSCRFolderComponent scrRes(String path, NSCR nscr) {
+    public NSCRFolder scrRes(String path, NSCR nscr) {
         String fullPath = getCurrentPath() + path;
-        if (tree.isPathTakenByUnexpectedType(fullPath, NSCRFolderComponent.class)) {
+        if (tree.isPathTakenByUnexpectedType(fullPath, NSCRFolder.class)) {
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
-        NSCRFolderComponent component = (NSCRFolderComponent) tree.getComponent(fullPath);
+        NSCRFolder component = (NSCRFolder) tree.getComponent(fullPath);
         if (component == null) {
             RFolder parentFolder = tree.getParentFolder(fullPath);
-            component = new NSCRFolderComponent(this, fullPath, parentFolder, nscr);
+            component = new NSCRFolder(this, fullPath, parentFolder, nscr);
             tree.insertAtPath(component);
         }
         return component;

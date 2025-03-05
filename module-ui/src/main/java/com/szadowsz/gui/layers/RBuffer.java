@@ -30,7 +30,7 @@ public abstract class RBuffer {
     }
 
     protected void createBuffer(int sizeX, int sizeY) {
-        LOGGER.debug("{} Creation for {} - Old Size: [{},{}], New Size: [{},{}]", className, getName(), this.sizeX, this.sizeY, sizeX, sizeY);
+        LOGGER.info("{} Creation for {} - Old Size: [{},{}], New Size: [{},{}]", className, getName(), this.sizeX, this.sizeY, sizeX, sizeY);
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         buffer = getSketch().createGraphics(sizeX, sizeY, PConstants.P2D);

@@ -55,7 +55,7 @@ public class NCLR extends BaseNFSFile implements Drawable {
 
     private static final Color IR_COLOR = new Color(72, 144, 160);
 
-    public static final NCLR DEFAULT = generate(256);
+    public static final NCLR DEFAULT = generate(16,16);
 
     // Palette Header Data
 
@@ -100,7 +100,7 @@ public class NCLR extends BaseNFSFile implements Drawable {
      * @return byte data
      */
     protected static byte[] generateData(int palettes, int numColors) {
-        LOGGER.info("\nGenerating default NCLR with " + palettes + " palettes and " + numColors + "colours");
+        LOGGER.info("\nGenerating NCLR with " + palettes + " palettes and " + numColors + " colours");
         MemBuf dataBuf = MemBuf.create();
         MemBuf.MemBufWriter writer = dataBuf.writer();
         Color[] colors;
@@ -169,12 +169,13 @@ public class NCLR extends BaseNFSFile implements Drawable {
     /**
      * Static Method to generate a new palette
      *
-     * @param numColors number of colors needed
+     * @param paletteCount number of palettes needed
+     * @param numColorsPerPalette number of colors needed
      * @return the Palette Object
      */
-    public static NCLR generate(int numColors) {
+    public static NCLR generate(int paletteCount, int numColorsPerPalette) {
         try {
-            return new NCLR(numColors);
+            return new NCLR(paletteCount, numColorsPerPalette);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -230,12 +231,15 @@ public class NCLR extends BaseNFSFile implements Drawable {
     }
 
     /**
-     * Creates a default grayscale palette with the given number of colors
+     * Creates a default grayscale palette with the given number of colors and palettes
      *
-     * @param numColors an <code>int</code>
      */
-    protected NCLR(int numColors) throws IOException {
-        super(RotomFormat.NCLR, null, new ByteArrayEditableData(generateData((numColors>16)?16:1,numColors)));
+    protected NCLR(int paletteCount, int numColorsPerPalette) throws IOException {
+        this(null,
+                new ByteArrayEditableData(
+                        generateData(
+                                paletteCount,
+                                numColorsPerPalette)));
     }
 
     @Override
