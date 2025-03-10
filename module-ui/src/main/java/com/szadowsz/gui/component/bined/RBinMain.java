@@ -123,7 +123,7 @@ public class RBinMain extends RBinComponent {
         int bytesPerRow = structure.getBytesPerRow();
         long dataSize = editor.getDataSize();
         int rowHeight = metrics.getRowHeight();
-        long totalRows = dimensions.getTotalRows();
+        long pageRowTotal = structure.getRowsForPage(editor.getCurrentPage());
         RRect contentDims = dimensions.getContentDims();
 
         pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
@@ -135,7 +135,7 @@ public class RBinMain extends RBinComponent {
             long dataPosition = bytesPerRow;
             float stripePositionY = rowHeight;
             pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_BACKGROUND));
-            for (int row = 0; row <= totalRows / 2; row++) {
+            for (int row = 0; row <= pageRowTotal / 2; row++) {
                 if (dataPosition > dataSize) {
                     break;
                 }
@@ -157,7 +157,7 @@ public class RBinMain extends RBinComponent {
      */
     protected void drawRowText(PGraphics pg, long rowDataPosition, float rowPositionX, float rowPositionY) {
         int previewCharPos = visibility.getPreviewCharPos();
-        int charactersPerRow = structure.getCharactersPerRow();
+        int charactersPerRow = structure.getRefinedCharactersPerRow();
         int rowHeight = metrics.getRowHeight();
         int characterWidth = metrics.getCharacterWidth();
         int subFontSpace = metrics.getSubFontSpace();
@@ -241,22 +241,24 @@ public class RBinMain extends RBinComponent {
         int bytesPerRow = structure.getBytesPerRow();
         int rowHeight = metrics.getRowHeight();
         float contentX = dimensions.getRowPositionWidth();
-        long totalRows = dimensions.getTotalRows();
+        long pageRowTotal = structure.getRowsForPage(editor.getCurrentPage());
+
 
         long dataSize = editor.getDataSize();
-        long dataPosition = 0;
+        int rowOffset = structure.getRowOffsetForPage(editor.getCurrentPage());
+        long dataPosition = (long) rowOffset * bytesPerRow;
 
         float rowPositionX = contentX;
         float rowPositionY = 0;
 
         pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); //  pg.setColor(colorsProfile.getTextColor());
-        for (int row = 0; row <= totalRows; row++) {
+        for (int row = 0; row <= pageRowTotal; row++) {
             if (dataPosition > dataSize) {
                 break;
             }
             pg.pushMatrix();
             pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); //  pg.setColor(colorsProfile.getTextColor());
-            LOGGER.debug("rendering row {} of {} @ [{},{}]", row, totalRows, rowPositionX, rowPositionY);
+            LOGGER.debug("rendering row {} of {} @ [{},{}]", row + rowOffset, pageRowTotal + rowOffset, rowPositionX, rowPositionY);
             prepareRowData(dataPosition);
             LOGGER.debug("row characters: {}", editor.getRowDataCache().rowCharacters);
             //paintRowBackground(pg, dataPosition, rowPositionX, rowPositionY);
@@ -423,7 +425,7 @@ public class RBinMain extends RBinComponent {
         int rowHeight = metrics.getRowHeight();
         int characterWidth = metrics.getCharacterWidth();
         int subFontSpace = metrics.getSubFontSpace();
-        long totalRows = dimensions.getTotalRows();
+        long pageRowTotal = structure.getRowsForPage(editor.getCurrentPage());
 
         RRect rowPositionDims = dimensions.getRowPositionDims();
         RRect contentDims = dimensions.getContentDims();
@@ -441,7 +443,7 @@ public class RBinMain extends RBinComponent {
             long dataPosition = bytesPerRow;
             float stripePositionY = rowHeight;
             pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_BACKGROUND)); //  g.setColor(colorsProfile.getAlternateBackground());
-            for (int row = 0; row <= totalRows / 2; row++) {
+            for (int row = 0; row <= pageRowTotal / 2; row++) {
                 if (dataPosition > dataSize) {
                     break;
                 }
@@ -452,10 +454,10 @@ public class RBinMain extends RBinComponent {
             }
         }
 
-        long dataPosition = 0;
+        long dataPosition = (long) bytesPerRow * structure.getRowOffsetForPage(editor.getCurrentPage());;
         float positionY = (float) (rowHeight - subFontSpace)/2;// - scrollPosition.getRowOffset();
         pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND)); //  g.setColor(colorsProfile.getTextColor());
-        for (int row = 0; row <= totalRows; row++) {
+        for (int row = 0; row <= pageRowTotal; row++) {
             if (dataPosition > dataSize) {
                 break;
             }
@@ -493,7 +495,6 @@ public class RBinMain extends RBinComponent {
         // the component knows its absolute position but here the current matrix is already translated to it
         int yDiff = editor.getVerticalScroll();
         pg.image(toDraw, 0, 0);
-//        pg.image(buffer.draw(),0,0);
     }
 
     @Override

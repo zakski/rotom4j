@@ -64,7 +64,7 @@ public class RBinVisibility {
         return 0;
     }
 
-    public void recomputeCharPositions(RBinEditor editor){//, RBinScrolling scrolling) {
+    public void recomputeCharPositions(RBinEditor editor){
         RBinStructure structure = editor.getStructure();
 
         int bytesPerRow = structure.getBytesPerRow();
@@ -107,8 +107,8 @@ public class RBinVisibility {
                 skipToChar = 0;
             }
             skipRestFromChar = (invisibleFromRightX + characterWidth - 1) / characterWidth;
-            if (skipRestFromChar > structure.getCharactersPerRow()) {
-                skipRestFromChar = structure.getCharactersPerRow();
+            if (skipRestFromChar > structure.getRefinedCharactersPerRow()) {
+                skipRestFromChar = structure.getRefinedCharactersPerRow();
             }
             skipToCode = structure.computePositionByte(skipToChar);
             skipRestFromCode = structure.computePositionByte(skipRestFromChar - 1) + 1;

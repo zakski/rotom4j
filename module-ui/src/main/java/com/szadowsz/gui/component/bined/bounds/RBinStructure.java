@@ -28,12 +28,16 @@ import com.szadowsz.gui.component.bined.utils.RBinUtils;
  */
 public class RBinStructure {
 
-    private RBinEditor editor;
+    private static final int MAX_ROWS_PER_PAGE = 512; // Safe Number that the Draw Buffers can easily cope with.
 
-    private int bytesPerRow;
-    private int charactersPerRow;
+    protected RBinEditor editor;
 
-    private long rowsPerDocument;
+    protected int bytesPerRow;
+    protected int refinedCharactersPerRow;
+
+
+    protected long totalRows;
+    protected long totalPages;
 
     protected int computeBytesPerRow(int charactersPerRow) {
         RBinViewMode viewMode = editor.getViewMode();
@@ -90,20 +94,47 @@ public class RBinStructure {
         return byteOffset * (editor.getCodeType().getMaxDigitsForByte() + 1) + editor.getCodeType().getMaxDigitsForByte() - 1;
     }
 
-    protected long computeRowsPerDocument() {
-         return editor.getDataSize() / bytesPerRow + (editor.getDataSize() % bytesPerRow > 0 ? 1 : 0);
+    /**
+     * Compute the number of expected rows
+     *
+     * @return the number of expected rows
+     */
+    protected long computeRowsCount(long dataSize, int maxBytesPerRow) {
+        return dataSize / maxBytesPerRow + ((dataSize % maxBytesPerRow > 0) ? 1 : 0);
     }
 
     public int getBytesPerRow() {
         return bytesPerRow;
     }
 
-    public int getCharactersPerRow() {
-        return charactersPerRow;
+    public int getRefinedCharactersPerRow() {
+        return refinedCharactersPerRow;
     }
 
-    public long getRowsPerDocument() {
-        return rowsPerDocument;
+    /**
+     * Get the number of rows for the specified page
+     *
+     * @param currentPage 1-based index of what page editor is on
+     * @return the expected number of rows
+     */
+    public long getRowsForPage(int currentPage) {
+        if (currentPage == totalPages) {
+            return totalRows % MAX_ROWS_PER_PAGE;
+        } else {
+            return MAX_ROWS_PER_PAGE;
+        }
+    }
+
+    public int getRowOffsetForPage(int currentPage) {
+        return MAX_ROWS_PER_PAGE * currentPage;
+    }
+
+    public long getTotalPages() {
+        return totalPages;
+    }
+
+    public long getTotalRows() {
+        return totalRows;
     }
 
     public void setEditor(RBinEditor editor) {
@@ -114,12 +145,10 @@ public class RBinStructure {
         return byteOffset * (editor.getCodeType().getMaxDigitsForByte() + 1);
     }
 
-    public int computePositionByte(int rowCharPosition) {
-        return rowCharPosition / (editor.getCodeType().getMaxDigitsForByte() + 1);
-    }
-
-    public RCaretPos computeMovePosition(RCaretPos position, RMovementDirection direction, long totalRows) {
+    public RCaretPos computeMovePosition(RCaretPos position, RMovementDirection direction, int currentPage) {
         long dataSize = editor.getDataSize();
+        long pageRows = getRowsForPage(currentPage);
+
         RCodeType codeType = editor.getCodeType();
         RCodeAreaSection section = position.getSection().orElse(RCodeAreaSection.CODE_MATRIX);
         RCaretPos target = new RCaretPos(position.getDataPosition(), position.getCodeOffset(), section);
@@ -190,7 +219,7 @@ public class RBinStructure {
             }
             case PAGE_UP: {
                 long dataPosition = position.getDataPosition();
-                long increment = (long) bytesPerRow * totalRows;
+                long increment = (long) bytesPerRow * pageRows;
                 if (dataPosition < increment) {
                     target.setDataPosition(dataPosition % bytesPerRow);
                 } else {
@@ -200,7 +229,7 @@ public class RBinStructure {
             }
             case PAGE_DOWN: {
                 long dataPosition = position.getDataPosition();
-                long increment = (long) bytesPerRow * totalRows;
+                long increment = (long) bytesPerRow * pageRows;
                 if (dataPosition > dataSize - increment) {
                     long positionOnRow = dataPosition % bytesPerRow;
                     long lastRowDataStart = dataSize - (dataSize % bytesPerRow);
@@ -245,9 +274,21 @@ public class RBinStructure {
         return target;
     }
 
-    public void updateCache(int charactersPerPage) {
-        bytesPerRow = computeBytesPerRow(charactersPerPage);
-        charactersPerRow = computeCharactersPerRow();
-        rowsPerDocument = computeRowsPerDocument();
+    public int computePositionByte(int rowCharPosition) {
+        return rowCharPosition / (editor.getCodeType().getMaxDigitsForByte() + 1);
+    }
+
+    public void computeRowsAndPages(long dataSize, int maxBytesPerRow) {
+        bytesPerRow = maxBytesPerRow;
+
+
+        totalRows = computeRowsCount(dataSize,maxBytesPerRow);
+
+        totalPages = (totalRows / MAX_ROWS_PER_PAGE) + ((totalRows % MAX_ROWS_PER_PAGE > 0)? 1 : 0); // get number of pages based on row count
+    }
+
+    public void updateCache(int dimCharactersPerRow) {
+        bytesPerRow = computeBytesPerRow(dimCharactersPerRow);
+        refinedCharactersPerRow = computeCharactersPerRow();
     }
 }

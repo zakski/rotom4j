@@ -59,7 +59,7 @@ public class RFontMetrics {
         return rowHeight != 0 && characterWidth != 0;
     }
 
-    public void recomputeMetrics(FontMetrics fontMetrics, Charset charset) {
+    public void computeMetrics(FontMetrics fontMetrics, Charset charset) {
         this.fontMetrics = fontMetrics;
         if (fontMetrics == null) {
             characterWidth = 0;
@@ -84,8 +84,8 @@ public class RFontMetrics {
         }
     }
 
-    public void recomputeMetrics(PGraphics pg, PFont font, Charset charset) {
+    public void computeMetrics(PGraphics pg, PFont font, Charset charset) {
         Object pgNative = pg.getNative();
-        recomputeMetrics(((Graphics2D)pgNative).getFontMetrics((Font) font.getNative()),charset);
+        computeMetrics(((Graphics2D)pgNative).getFontMetrics((Font) font.getNative()),charset);
     }
 }

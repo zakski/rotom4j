@@ -103,6 +103,16 @@ public class RRect {
         this.height = height;
     }
 
+
+    /**
+     * Sets the width of this Rectangle based on the specified dimension.
+     *
+     * @param width  the new Width of this Rectangle
+    */
+    public void setWidth(float width) {
+        this.width = width;
+    }
+
     /**
      * Computes the intersection of this Rectangle with another
      *

@@ -44,6 +44,7 @@ public class RBinEditor extends RBinEdBase {
     protected static final int LAST_CONTROL_CODE = 31;
     protected static final char DELETE_CHAR = (char) 0x7f;
 
+    protected static final String PAGES = "pages";
     protected static final String HEADER = "header";
     protected static final String MAIN = "main";
 
@@ -106,6 +107,11 @@ public class RBinEditor extends RBinEdBase {
         return colorAssessor;
     }
 
+    protected int getCurrentPage(){
+        RBinPageSlider pages = ((RBinPageSlider) findChildByName(PAGES));
+        return (pages != null)? pages.getValueAsInt():1;
+    }
+
     /**
      * Returns relative cursor position in code area or null if cursor is not
      * visible.
@@ -117,12 +123,12 @@ public class RBinEditor extends RBinEdBase {
      */
     protected PVector getPositionPoint(long dataPosition, int codeOffset, RCodeAreaSection section) {
         int bytesPerRow = structure.getBytesPerRow();
-        long totalRows = dimensions.getTotalRows();
+        long pageRowTotal = structure.getRowsForPage(getCurrentPage());
         int characterWidth = metrics.getCharacterWidth();
         int rowHeight = metrics.getRowHeight();
 
         long row = dataPosition / bytesPerRow;
-        if (row < -1 || row > totalRows) {
+        if (row < -1 || row > pageRowTotal) {
             return null;
         }
 
@@ -215,47 +221,14 @@ public class RBinEditor extends RBinEdBase {
         return false;
     }
 
-    @Override
-    protected void initBounds() {
-        LOGGER.info("Initialising \"{}\" Binary Editor", name);
-        caret.setSection(RCodeAreaSection.CODE_MATRIX);
-
-        initMetrics();
-        initDimensions();
-
-        structure.setEditor(this);
-        structure.updateCache(dimensions.getCharactersPerRow());
-
-        initVisibility(); // use the sizes to figure out the width
-        updateRowDataCache();
-
-        if (maxRowsForDisplay < dimensions.getTotalRows()) {
-            vsb = new RComponentScrollbar(
-                    this,
-                    new PVector(pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth(), pos.y + dimensions.getHeaderHeight()),
-                    new PVector(RLayoutStore.getCell(), dimensions.getContentDisplayHeight()),
-                    dimensions.getContentHeight(),
-                    16
-            );
-            vsb.setVisible(true);
-            LOGGER.info("Bin Editor {} created scrollbar with Pos [{}, {}] Size [{},{}]", getName(), vsb.getPosX(), vsb.getPosY(), vsb.getWidth(), vsb.getHeight());
-        }
-    }
-
-    protected void initComponents() {
-        children.add(new RBinHeader(gui, path + "/" + HEADER, this));
-        children.add(new RBinMain(gui, path + "/" + MAIN, this));
-    }
-
     /**
      * Calculate Dimensions
      */
     protected void initDimensions() {
-        long actualRowsCount = computeRowsCount();
-        rowPositionCharacters = computeRowPositionCharacters();
+        long rowCountForPage = structure.getRowsForPage(getCurrentPage());
 
-        dimensions.computeRowDimensions(metrics, rowPositionCharacters, actualRowsCount, maxRowsForDisplay);
-        dimensions.computeHeaderAndDataDimensions(metrics, codeType, maxBytesPerRow);
+        dimensions.computeRowPositionDimensions(metrics, rowPositionCharacters, maxRowsForDisplay, rowCountForPage);
+        dimensions.computeHeaderAndDataDimensions(metrics, maxBytesPerRow, shouldDisplayVerticalScrollbar());
 
         // Relay the size to the proper place // TODO Bodge job
         size.x = dimensions.getComponentDisplayDims().getWidth();
@@ -263,18 +236,65 @@ public class RBinEditor extends RBinEdBase {
     }
 
     /**
-     * Calculate Metrics
+     * Initialise Font Metrics
      */
-    protected void initMetrics() {
+    protected void initFontMetrics() {
         PGraphics fontGraphics = gui.getSketch().createGraphics(800, 600, PConstants.JAVA2D);
         fontGraphics.beginDraw();
         fontGraphics.endDraw();
-        metrics.recomputeMetrics(fontGraphics, RFontStore.getMainFont(), charset); // get Font Character sizes
+        metrics.computeMetrics(fontGraphics, RFontStore.getMainFont(), charset); // get Font Character sizes
         LOGGER.info("Font Metrics Loaded for \"{}\" Binary Editor", name);
     }
 
+    /**
+     * Initialise Row Info
+     */
+    protected void initRowSizing() {
+        structure.computeRowsAndPages(contentData.getDataSize(),maxBytesPerRow);
+        dimensions.computeRowWidth(metrics, codeType, maxBytesPerRow);
+        rowPositionCharacters = computeRowPositionCharacters();
+    }
+
+    @Override
+    protected void initBounds() {
+        LOGGER.info("Initialising \"{}\" Binary Editor", name);
+        caret.setSection(RCodeAreaSection.CODE_MATRIX); // TODO support the other kinds
+
+        initFontMetrics(); // Work out the font sizing first
+
+        initRowSizing(); // Use the Font Sizing to work out the ideal row width
+
+        initDimensions(); // Use the row info to work out the ideal display area
+
+        structure.setEditor(this);
+        structure.updateCache(dimensions.getCharactersPerRowByWidth());
+
+        initVisibility(); // use the sizes to figure out the width
+        updateRowDataCache();
+
+             vsb = new RComponentScrollbar(
+                    this,
+                    new PVector(pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth(), pos.y + dimensions.getHeaderHeight()),
+                    new PVector(RLayoutStore.getCell(), dimensions.getContentDisplayHeight()),
+                    dimensions.getContentHeight(),
+                    16
+            );
+        LOGGER.info("Bin Editor {} created scrollbar with Pos [{}, {}] Size [{},{}]", getName(), vsb.getPosX(), vsb.getPosY(), vsb.getWidth(), vsb.getHeight());
+        vsb.setVisible(shouldDisplayVerticalScrollbar());
+    }
+
+    private boolean shouldDisplayVerticalScrollbar() {
+        return maxRowsForDisplay < structure.getRowsForPage(getCurrentPage());
+    }
+
+    protected void initComponents() {
+        children.add(new RBinPageSlider(gui, path + "/" + PAGES, this));
+        children.add(new RBinHeader(gui, path + "/" + HEADER, this));
+        children.add(new RBinMain(gui, path + "/" + MAIN, this));
+    }
+
     protected void initVisibility() {
-        int charactersPerRow = dimensions.getCharactersPerRow();
+        int charactersPerRow = dimensions.getCharactersPerRowByWidth();
         structure.updateCache(charactersPerRow);
         visibility.recomputeCharPositions(this);
     }
@@ -320,7 +340,7 @@ public class RBinEditor extends RBinEdBase {
         rowDataCache.headerChars = new char[visibility.getCharactersPerCodeSection()];
         rowDataCache.rowData = new byte[structure.getBytesPerRow() + metrics.getMaxBytesPerChar() - 1];
         rowDataCache.rowPositionCode = new char[rowPositionCharacters];
-        rowDataCache.rowCharacters = new char[structure.getCharactersPerRow()];
+        rowDataCache.rowCharacters = new char[structure.getRefinedCharactersPerRow()];
     }
 
     protected void updateSelection(RSelectingMode selectingMode) {
@@ -356,7 +376,7 @@ public class RBinEditor extends RBinEdBase {
 
     protected void move(RSelectingMode selectingMode, RMovementDirection direction) {
         RCaretPos caretPosition = getActiveCaretPosition();
-        RCaretPos movePosition = structure.computeMovePosition(caretPosition, direction, dimensions.getTotalRows());
+        RCaretPos movePosition = structure.computeMovePosition(caretPosition, direction, getCurrentPage());
         if (!caretPosition.equals(movePosition)) {
             setActiveCaretPosition(movePosition);
             updateSelection(selectingMode);
@@ -603,6 +623,12 @@ public class RBinEditor extends RBinEdBase {
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         updateAssessors();
+
+        pg.pushMatrix();
+        RBinPageSlider pageSlider = (RBinPageSlider) findChildByName(PAGES);
+        pg.translate(pageSlider.getRelPosX(), pageSlider.getRelPosY());
+        pageSlider.draw(pg);
+        pg.popMatrix();
 
         pg.pushMatrix();
         RBinHeader header = (RBinHeader) findChildByName(HEADER);
@@ -899,19 +925,23 @@ public class RBinEditor extends RBinEdBase {
     }
 
     @Override
-    public void mousePressed(RMouseEvent mouseEvent, float mouseY) {
+    public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
         if (!gui.hasFocus(this)) {
             gui.takeFocus(this);
         }
         if (mouseEvent.isLeft()) {
-            if (isMouseInsideScrollbar(mouseEvent, mouseY)) {
-                LOGGER.debug("Bin Editor {} mouse [{},{}] pressed over scrollbar with Pos {{}, {}] Size [{},{}]", getName(), mouseEvent.getX(), mouseY, vsb.getPosX(), vsb.getPosY(), vsb.getWidth(),vsb.getHeight());
-                vsb.mousePressed(mouseEvent, mouseY);
+            if (isMouseInsideScrollbar(mouseEvent, adjustedMouseY)) {
+                LOGGER.debug("Bin Editor {} mouse [{},{}] pressed over scrollbar with Pos {{}, {}] Size [{},{}]", getName(), mouseEvent.getX(), adjustedMouseY, vsb.getPosX(), vsb.getPosY(), vsb.getWidth(),vsb.getHeight());
+                vsb.mousePressed(mouseEvent, adjustedMouseY);
                 mouseEvent.consume();
             } else {
-                moveCaret(mouseEvent,getVerticalScroll());
-                isDragged = true;
-                isMouseOver = true;
+                RComponent child = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
+                if (child != findChildByName(PAGES)) {
+                    child.mousePressed(mouseEvent, adjustedMouseY);
+                } else {
+                    child.mousePressed(mouseEvent, adjustedMouseY);
+                    moveCaret(mouseEvent, getVerticalScroll());
+                }
                 mouseEvent.consume();
             }
         }
@@ -925,8 +955,13 @@ public class RBinEditor extends RBinEdBase {
                 vsb.mouseDragged(mouseEvent);
                 redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user dragged the mouse
             } else {
-                isMouseOver = true;
-                moveCaret(mouseEvent.getX(), mouseEvent.getY(), RSelectingMode.SELECTING);
+                RComponent pages = findChildByName(PAGES);
+                if (pages.isDragged()) {
+                    pages.mouseDragged(mouseEvent);
+                } else {
+                    super.mouseDragged(mouseEvent);
+                    moveCaret(mouseEvent.getX(), mouseEvent.getY(), RSelectingMode.SELECTING);
+                }
                 mouseEvent.consume();
                 redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if the user is selecting multiple chars
             }
@@ -934,37 +969,37 @@ public class RBinEditor extends RBinEdBase {
     }
 
     public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (isDragged || (vsb != null && vsb.isDragged())) {
+        if (isDragged() || (vsb != null && vsb.isDragged())) {
             if (vsb.isDragged()) {
                 LOGGER.info("Bin Editor {} mouse released scrollbar anywhere", getName());
                 vsb.mouseReleased(mouseEvent, adjustedMouseY);
             } else {
+                super.mouseReleasedAnywhere(mouseEvent, adjustedMouseY);
                 setFocus(false);
             }
             mouseEvent.consume();
             redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
         }
-        isDragged = false;
     }
 
     /**
      * Method to handle the component's reaction to the mouse being released over it
      *
      * @param mouseEvent the change made by the mouse
-     * @param mouseY     adjust for scrollbar
+     * @param adjustedMouseY     adjust for scrollbar
      */
     public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (isDragged || (vsb != null && vsb.isDragged())) {
+        if (isDragged() || (vsb != null && vsb.isDragged())) {
             if (vsb.isDragged()) {
                 LOGGER.debug("Bin Editor {} mouse released over scrollbar", getName());
                 vsb.mouseReleased(mouseEvent, adjustedMouseY);
             } else {
                 setFocus(true);
             }
+            super.mouseReleasedOverComponent(mouseEvent, adjustedMouseY);
             mouseEvent.consume();
             redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
         }
-        isDragged = false;
         redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
     }
 
@@ -976,11 +1011,18 @@ public class RBinEditor extends RBinEdBase {
         super.redrawBuffers();
     }
 
+    public void turnPage() {
+        initDimensions();
+        vsb.setVisible(shouldDisplayVerticalScrollbar());
+        resetBuffer();
+    }
+
     @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
         RRect headerDims = dimensions.getHeaderDims();
         children.getFirst().updateCoordinates(bX, bY, rX, rY + headerDims.getY(), w, headerDims.getHeight()); // header
-        children.get(1).updateCoordinates(bX, bY, rX, rY + headerDims.getHeight(), w, dimensions.getContentDisplayHeight()); // main
+        children.get(1).updateCoordinates(bX, bY, rX, rY + headerDims.getY(), w, headerDims.getHeight()); // header
+        children.getLast().updateCoordinates(bX, bY, rX, rY + headerDims.getHeight(), w, dimensions.getContentDisplayHeight()); // main
         super.updateCoordinates(bX, bY, rX, rY, w, h);
         float scrollX = pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth();
         float scrollY = pos.y + dimensions.getHeaderHeight();
@@ -990,6 +1032,7 @@ public class RBinEditor extends RBinEdBase {
         }
         buffer.resetBuffer();
     }
+
 
     public static class RowDataCache {
 

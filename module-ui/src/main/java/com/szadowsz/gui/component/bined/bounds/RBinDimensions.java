@@ -15,6 +15,7 @@
  */
 package com.szadowsz.gui.component.bined.bounds;
 
+import com.szadowsz.gui.component.bined.RBinEditor;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.layout.RRect;
 import com.szadowsz.gui.component.bined.settings.RCodeType;
@@ -50,19 +51,15 @@ public class RBinDimensions {
     // Drawn By RBinEditor
     protected final RRect vScrollDims = new RRect(); // actual size of the vertical scrollbar
 
+    protected int charactersPerRowByWidth;
 
-    protected long displayRows;
-    protected long totalRows;
-
-    protected int charactersPerRow;
-
-    protected int computeCharactersPerRow(RFontMetrics metrics) {
+    protected int computeCharactersPerRowByWidth(RFontMetrics metrics) {
         int characterWidth = metrics.getCharacterWidth();
         return characterWidth == 0 ? 0 : Math.round(contentDims.getWidth() / characterWidth);
     }
 
-    public int getCharactersPerRow() {
-        return charactersPerRow;
+    public int getCharactersPerRowByWidth() {
+        return charactersPerRowByWidth;
     }
 
     public RRect getComponentDims() {
@@ -105,12 +102,34 @@ public class RBinDimensions {
         return rowPositionDims;
     }
 
-    public long getTotalRows() {
-        return totalRows;
-    }
-
     public RRect getVerticalScrollbarDims() {
         return vScrollDims;
+    }
+
+
+    /**
+     * Method to calculate the initial ideal row width
+     *
+     * @param metrics Font Metrics for the character width
+     * @param codeType the Base of the byte values displayed
+     * @param bytesPerRow the max number of bytes per row.
+     */
+    public void computeRowWidth(RFontMetrics metrics, RCodeType codeType, int bytesPerRow) {
+        // we have the maximum of bytes per row, so we can calculate the row width that we ideally want
+        // contentData.getDataSize()
+        // structure.getBytesPerRow() vs maxBytesPerRow
+        // long numRows = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow>0?1:0);
+
+        int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
+        int digitsForByte = codeType.getMaxDigitsForByte() + 1; // Get the number of characters for a byte + spacing
+
+        float rowWidth = digitsForByte * characterWidth * bytesPerRow; // Get the ideal width of a row based on the max byte width
+
+        contentDims.setWidth(rowWidth);
+        contentDisplayDims.setWidth(rowWidth);
+        headerDims.setWidth(rowWidth);
+
+        charactersPerRowByWidth = computeCharactersPerRowByWidth(metrics);
     }
 
     /**
@@ -118,16 +137,15 @@ public class RBinDimensions {
      *
      * @param metrics           Font Metrics
      * @param rowPositionChars  number of expected digits for the position info
-     * @param rowsCount         number of rows in the data
-     * @param maxRowsDisplayed  max number of rows to display at one time
+     * @param rowsForPage       number of rows for the current page
      */
-    public void computeRowDimensions(RFontMetrics metrics, int rowPositionChars, long rowsCount, long maxRowsDisplayed) {
+    public void computeRowPositionDimensions(RFontMetrics metrics, int rowPositionChars, long maxRowsDisplayed, long rowsForPage) {
         float rowPositionWidth = metrics.getCharacterWidth() * (rowPositionChars + 1); // get the width of the row position info
 
-        displayRows = Math.min(rowsCount, maxRowsDisplayed); // get the displayable row count for the height
-        totalRows = rowsCount;
+        float rowPositionHeight = metrics.getRowHeight() * (rowsForPage+1); // calculate the total height of the row position info
 
-        float rowPositionHeight = metrics.getRowHeight() * (rowsCount+1); // calculate the total height of the row position info
+        long displayRows = Math.min(maxRowsDisplayed, rowsForPage);
+
         float rowPositionDisplayHeight = metrics.getRowHeight() * (displayRows +1); // calculate the display height of the row position info
 
         float headerYOffset = metrics.getFontHeight() + (float) metrics.getFontHeight() / 4; // account for the header positioning // TODO Unify Offset calc
@@ -143,23 +161,15 @@ public class RBinDimensions {
         rowPositionDims.setSize(0, headerYOffset, rowPositionWidth, rowPositionHeight);
     }
 
+
     /**
      * Method to calculate the initial row position segment bounds
      *
      * @param metrics Font Metrics
-     * @param codeType the Base of the byte values displayed
      * @param bytesPerRow the max number of bytes per row.
     */
-    public void computeHeaderAndDataDimensions(RFontMetrics metrics, RCodeType codeType, int bytesPerRow) {
-        // we have the maximum of bytes per row, so at this stage we should work out the width we ideally should have to play with
-        // contentData.getDataSize()
-        // structure.getBytesPerRow() vs maxBytesPerRow
-        // long numRows = contentData.getDataSize() / maxBytesPerRow + (contentData.getDataSize() % maxBytesPerRow>0?1:0);
-
-        int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
-        int digitsForByte = codeType.getMaxDigitsForByte() + 1; // Get the number of characters for a byte + spacing
-
-        float contentWidth = digitsForByte * characterWidth * bytesPerRow; // Get the ideal width of a row based on the max byte width
+    public void computeHeaderAndDataDimensions(RFontMetrics metrics, int bytesPerRow, boolean isVScroll) {
+        float contentWidth = contentDims.getWidth();
         float headerYOffset = metrics.getFontHeight() + (float) metrics.getFontHeight() / 4; // account for the header positioning // TODO Unify OFfset calc
 
         // Set the Dimensions of the area we display the data.
@@ -182,7 +192,7 @@ public class RBinDimensions {
                 headerDims.getHeight());
 
         // Set the Dimensions of the area we display the vertical scrollbar.
-        if (displayRows < totalRows){
+        if (isVScroll){
             vScrollDims.setSize(rowPositionDims.getWidth()+contentWidth,headerYOffset, RLayoutStore.getCell(), contentDisplayDims.getHeight());
             LOGGER.info("Editor VScroll Data: Pos [{}, {}], Size [{}, {}]",
                     rowPositionDims.getWidth(),0,
@@ -203,8 +213,5 @@ public class RBinDimensions {
                 rowPositionDims.getWidth() + contentDisplayDims.getWidth() + vScrollDims.getWidth(),
                 headerDims.getHeight() + rowPositionDims.getHeight()
         );
-
-
-        charactersPerRow = computeCharactersPerRow(metrics);
     }
 }

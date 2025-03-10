@@ -1,5 +1,6 @@
 package com.szadowsz.gui.component.bined;
 
+import com.szadowsz.gui.component.input.slider.RSliderInt;
 import com.szadowsz.gui.layout.RRect;
 import com.szadowsz.gui.window.internal.RWindowImpl;
 import com.szadowsz.rotom4j.binary.BinaryData;
@@ -118,15 +119,6 @@ public abstract class RBinEdBase extends RGroupDrawable {
      * @param filePath path to the binary file
      */
     protected abstract void loadData(String filePath);
-
-    /**
-     * Compute the number of expected rows
-     *
-     * @return the number of expected rows
-     */
-    protected long computeRowsCount() {
-        return getDataSize() / maxBytesPerRow + ((getDataSize() % maxBytesPerRow > 0) ? 1 : 0);
-    }
 
     /**
      * Compute the row position length
@@ -294,7 +286,8 @@ public abstract class RBinEdBase extends RGroupDrawable {
 
 
     protected void redrawChildBuffers() {
-        ((RBinHeader) children.getFirst()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary header if we redraw the binary editor
+        ((RBinPageSlider) children.getFirst()).redrawBuffers();
+        ((RBinHeader) children.get(1)).redrawBuffers(); // REDRAW-VALID: we should redraw the binary header if we redraw the binary editor
         ((RBinMain) children.getLast()).redrawBuffers(); // REDRAW-VALID: we should redraw the binary main if we redraw the binary editor
     }
 

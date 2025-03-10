@@ -118,7 +118,7 @@ public class RBinHeader extends RBinComponent {
         int bytesPerRow = structure.getBytesPerRow();
         long dataSize = editor.getDataSize();
         int rowHeight = metrics.getRowHeight();
-        long totalRows = dimensions.getTotalRows();
+        long pageRowTotal = structure.getRowsForPage(editor.getCurrentPage());
         RRect contentDims = dimensions.getContentDims();
 
         pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
@@ -130,7 +130,7 @@ public class RBinHeader extends RBinComponent {
             long dataPosition = bytesPerRow;
             float stripePositionY = contentDims.getY() + rowHeight;
             pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_BACKGROUND));
-            for (int row = 0; row <= totalRows / 2; row++) {
+            for (int row = 0; row <= pageRowTotal / 2; row++) {
                 if (dataPosition > dataSize) {
                     break;
                 }
@@ -152,7 +152,7 @@ public class RBinHeader extends RBinComponent {
      */
     protected void drawRowText(PGraphics pg, long rowDataPosition, float rowPositionX, float rowPositionY) {
         int previewCharPos = visibility.getPreviewCharPos();
-        int charactersPerRow = structure.getCharactersPerRow();
+        int charactersPerRow = structure.getRefinedCharactersPerRow();
         int rowHeight = metrics.getRowHeight();
         int characterWidth = metrics.getCharacterWidth();
         int subFontSpace = metrics.getSubFontSpace();
