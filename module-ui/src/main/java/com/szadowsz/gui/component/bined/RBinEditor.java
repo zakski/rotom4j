@@ -1013,6 +1013,7 @@ public class RBinEditor extends RBinEdBase {
 
     public void turnPage() {
         initDimensions();
+        caret.setDataPosition(0);
         vsb.setVisible(shouldDisplayVerticalScrollbar());
         resetBuffer();
     }

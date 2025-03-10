@@ -66,7 +66,7 @@ public class NCLRComponent extends R4JComponent<NCLR> {
         children.add(new RSliderInt(gui,path + "/" + COLOR_NODE_NAME, this,0,0,getNumColors(),true));
         children.add(new RColorPicker(gui,path + "/" + PICKER_NODE_NAME,this,getColor(),false));
         if (parentFolder.getSpriteFolder() != null) {
-            RButton reset = new RButton(gui,path + "/" + RESET_COMP, this);
+            RButton reset = new RButton(gui,path + "/" + CLEAR_COMP, this);
             reset.registerAction(RActivateByType.RELEASE, this::resetPalette);
             children.add(reset);
         }

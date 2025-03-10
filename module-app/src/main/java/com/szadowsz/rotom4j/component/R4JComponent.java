@@ -5,7 +5,6 @@ import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RGroupDrawable;
 import com.szadowsz.gui.component.input.slider.RSlider;
 import com.szadowsz.rotom4j.app.utils.ImageUtils;
-import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRComponent;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.RotomFile;
 import org.slf4j.Logger;
@@ -19,7 +18,7 @@ public abstract class R4JComponent<R extends RotomFile> extends RGroupDrawable {
 
     protected static final String PREVIEW_COMP = "Preview";
     protected static final String ZOOM_COMP = "Zoom";
-    protected static final String RESET_COMP = "Reset";
+    protected static final String CLEAR_COMP = "Reset";
 
     protected R data;
 

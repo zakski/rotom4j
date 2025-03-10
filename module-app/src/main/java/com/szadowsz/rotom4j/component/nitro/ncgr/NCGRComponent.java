@@ -28,7 +28,7 @@ public class NCGRComponent extends R4JComponent<NCGR> {
 
     private final NCGRFolder parentFolder;
 
-    private R4JResourceFolder<?> cmpFolder;
+    private R4JResourceFolder<?> resourceFolder;
 
     /**
      * Default Constructor
@@ -42,7 +42,7 @@ public class NCGRComponent extends R4JComponent<NCGR> {
         parentFolder = (NCGRFolder) getParentFolder();
         parentFolder.setDisplay(this);
 
-        cmpFolder = parentFolder.getCmpFolder();
+        resourceFolder = parentFolder.getResourceFolder();
 
         this.data = data;
         initComponents();
@@ -51,12 +51,12 @@ public class NCGRComponent extends R4JComponent<NCGR> {
     protected void initComponents() {
         children.add(new NitroPreview(gui, path + "/" + PREVIEW_COMP, this, data));
         children.add(createZoom());
-        children.add(new NCLRFolder(gui, path + "/" + PALETTE_COMP, this, data.getNCLR()));
-        if (cmpFolder != null) {
-            RButton reset = new RButton(gui, path + "/" + RESET_COMP, this);
-            reset.registerAction(RActivateByType.RELEASE, this::resetImage);
-            children.add(reset);
+        if (resourceFolder != null) {
+            RButton clearance = new RButton(gui, path + "/" + CLEAR_COMP, this);
+            clearance.registerAction(RActivateByType.RELEASE, this::resetImage);
+            children.add(clearance);
         }
+        children.add(new NCLRFolder(gui, path + "/" + PALETTE_COMP, this, data.getNCLR()));
     }
 
     /**
@@ -97,16 +97,19 @@ public class NCGRComponent extends R4JComponent<NCGR> {
     protected void resetImage() {
         NCGR original = data;
         try {
-            LOGGER.debug("Resetting NCGR File: " + original.getFileName());
+
+            LOGGER.debug("Resetting {} NCGR File", original.getFileName());
             data = null;
-            LOGGER.info("Reset NCGR File to Default: " + original.getFileName());
-            //recolorImage();
-            if (cmpFolder != null) {
-                cmpFolder.recolorImage();
+            LOGGER.info("Reset {} NCGR File to Default", original.getFileName());
+
+            if (resourceFolder != null) {
+                resourceFolder.recolorImage();
             }
+
             getParentWindow().close();
+
         } catch (IOException e) {
-            LOGGER.error("NCLR Load Failed", e);
+            LOGGER.error("{} NCGR Clearance Failed", original.getFileName(), e);
             try {
                 data = original;
             } catch (Throwable t) {
@@ -129,8 +132,8 @@ public class NCGRComponent extends R4JComponent<NCGR> {
             getParentWindow().redrawBuffer();
         }
 
-        if (cmpFolder != null) {
-            cmpFolder.recolorImage();
+        if (resourceFolder != null) {
+            resourceFolder.recolorImage();
         }
     }
 
@@ -147,8 +150,8 @@ public class NCGRComponent extends R4JComponent<NCGR> {
             getParentWindow().reinitialiseBuffer();
         }
 
-        if (cmpFolder != null) {
-            cmpFolder.recolorImage();
+        if (resourceFolder != null) {
+            resourceFolder.recolorImage();
         }
     }
 

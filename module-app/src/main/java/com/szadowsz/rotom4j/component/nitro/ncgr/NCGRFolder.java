@@ -4,6 +4,7 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.drawable.tab.RTab;
 import com.szadowsz.gui.component.group.drawable.tab.RTabFunction;
+import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.rotom4j.app.ProcessingRotom4J;
 import com.szadowsz.rotom4j.app.utils.FileChooser;
@@ -20,7 +21,7 @@ import java.io.IOException;
 public class NCGRFolder extends R4JFolder<NCGR> {
     protected static final Logger LOGGER = LoggerFactory.getLogger(NCGRFolder.class);
 
-    private R4JResourceFolder<?> cmpFolder;
+    private R4JResourceFolder<?> resourceFolder;
 
     /**
      * Default Constructor
@@ -32,8 +33,9 @@ public class NCGRFolder extends R4JFolder<NCGR> {
      */
     public NCGRFolder(RotomGui gui, String path, RGroup parent, NCGR ncgr) {
         super(gui, path, parent,ncgr,SELECT_NCGR_FILE);
-        if (parent instanceof R4JResourceFolder<?>){
-            cmpFolder = (R4JResourceFolder<?>)parent;
+        RFolder parentFolder = parent.getParentFolder();
+        if (parentFolder instanceof R4JResourceFolder<?>){
+            resourceFolder = (R4JResourceFolder<?>)parentFolder;
         }
     }
 
@@ -55,8 +57,9 @@ public class NCGRFolder extends R4JFolder<NCGR> {
                 };
                 display.recolorImage();
                 LOGGER.info("Loaded NCGR File: " + ncgrPath);
-                if (cmpFolder != null){
-                    cmpFolder.recolorImage();
+
+                if (resourceFolder != null){
+                    resourceFolder.recolorImage();
                 }
             } catch (IOException e) {
                 LOGGER.error("NCGR Load Failed", e);
@@ -64,12 +67,14 @@ public class NCGRFolder extends R4JFolder<NCGR> {
         }
     }
 
-//    NitroCmpFolder<?> getCmpFolder() {
-//        return cmpFolder;
-//    }
-
-    R4JResourceFolder<?> getCmpFolder() {
-        return cmpFolder;
+    R4JResourceFolder<?> getResourceFolder() {
+        if (resourceFolder != null) {
+            return resourceFolder;
+        } else if (getParentFolder() instanceof R4JResourceFolder<?>){
+            return  (R4JResourceFolder<?>)getParentFolder();
+        } else {
+            return null;
+        }
     }
 
     public void setDisplay(NCGRComponent ncgrComponent) {

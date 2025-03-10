@@ -45,6 +45,15 @@ public class NCLRFolder extends R4JFolder<NCLR> {
         }
     }
 
+    /**
+     * Check to see if node should display regular name, or selection name
+     *
+     * @return true if regular, false otherwise
+     */
+    protected boolean shouldDisplayName() {
+        return data != NCLR.DEFAULT;
+    }
+
     @Override
     protected void drawForeground(PGraphics pg, String nRame) {
         drawTextLeft(pg, (shouldDisplayName())? data.getFileName() : selectName);
@@ -100,7 +109,13 @@ public class NCLRFolder extends R4JFolder<NCLR> {
     }
 
     public NCGRFolder getSpriteFolder() {
-        return spriteFolder;
+        if (spriteFolder != null) {
+            return spriteFolder;
+        } else if (getParentFolder() instanceof NCGRFolder){
+            return  (NCGRFolder)getParentFolder();
+        } else {
+            return null;
+        }
     }
 
     @Override
