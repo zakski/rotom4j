@@ -3,6 +3,7 @@ package com.szadowsz.rotom4j.component.nitro.narc;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.rotom4j.component.nitro.nanr.NANRFolder;
 import com.szadowsz.rotom4j.component.nitro.ncer.NCERFolder;
 import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
 import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolder;
@@ -16,7 +17,6 @@ import com.szadowsz.rotom4j.file.nitro.ncer.NCER;
 import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
 import com.szadowsz.rotom4j.file.nitro.nscr.NSCR;
-import com.szadowsz.rotom4j.component.nitro.nanr.NANRFolderComponent;
 
 import java.util.List;
 
@@ -47,7 +47,7 @@ public class NarcFilesFolderComponent extends RFolder {
         for (RotomFile file : files){
             children.add(
                     switch (file) {
-                        case NANR nanr -> new NANRFolderComponent(gui,path + "/" + nanr.getFileName(), this, nanr);
+                        case NANR nanr -> new NANRFolder(gui,path + "/" + nanr.getFileName(), this, nanr);
                         case NCER ncer -> new NCERFolder(gui,path + "/" + ncer.getFileName(), this, ncer);
                         case NSCR nscr -> new NSCRFolder(gui,path + "/" + nscr.getFileName(), this, nscr);
                         case NCGR ncgr -> new NCGRFolder(gui,path + "/" + ncgr.getFileName(), this, ncgr);
