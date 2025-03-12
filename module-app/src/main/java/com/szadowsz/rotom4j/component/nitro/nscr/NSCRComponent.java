@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PImage;
 
+import java.awt.image.BufferedImage;
+
 
 public class NSCRComponent extends R4JComponent<NSCR> {
     protected static final Logger LOGGER = LoggerFactory.getLogger(NSCRComponent.class);
@@ -87,7 +89,7 @@ public class NSCRComponent extends R4JComponent<NSCR> {
 
     @Override
     public void recolorImage() throws NitroException {
-
+        data.recolorImage();
         PImage pImage = resizeImage(data.getImage());
         ((NitroPreview) findChildByName(PREVIEW_COMP)).loadImage(pImage);
 
@@ -120,6 +122,42 @@ public class NSCRComponent extends R4JComponent<NSCR> {
 
     @Override
     public void setLayout(RLayoutBase layout) {
+    }
 
+    @Override
+    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
+        boolean init = size.x == 0.0f;
+
+
+        pos.x = bX + rX;
+        pos.y = bY + rY;
+        relPos.x = rX;
+        relPos.y = rY;
+
+        if (size.x != w) {
+            resetBuffer(); // RESET-VALID: we should resize the buffer if the size changes
+            size.x = w;
+        }
+
+
+        if (size.y != h) {
+            resetBuffer(); // RESET-VALID: we should resize the buffer if the size changes
+            size.y = h;
+        }
+
+        if (init) {
+            LOGGER.info("Initialising zoom level for {}", getName());
+            BufferedImage image = data.getImage();
+            float zoom = size.x / image.getWidth();
+            LOGGER.info("Setting zoom for {} to {}", getParent().getName(), zoom);
+            RSlider component = (RSlider) findChildByName(ZOOM_COMP);
+            component.setValueFromParent(zoom);
+        }
+        try {
+            resizeImage();
+        } catch (NitroException e) {
+            throw new RuntimeException(e);
+        }
+        layout.setCompLayout(pos, size, children);
     }
 }

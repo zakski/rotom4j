@@ -11,6 +11,7 @@ import com.szadowsz.rotom4j.app.utils.FileChooser;
 import com.szadowsz.rotom4j.component.R4JComponent;
 import com.szadowsz.rotom4j.component.R4JFolder;
 import com.szadowsz.rotom4j.component.R4JResourceFolder;
+import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +88,15 @@ public class NCGRFolder extends R4JFolder<NCGR> {
             super.mousePressed(mouseEvent, adjustedMouseY);
         } else {
             selectNcgr();
+        }
+    }
+
+    @Override
+    public void recolorImage() throws NitroException {
+        super.recolorImage();
+        R4JResourceFolder<?> res = getResourceFolder();
+        if (res != null) {
+            res.recolorImage();
         }
     }
 }
