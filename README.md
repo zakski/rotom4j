@@ -1,4 +1,4 @@
-# nds4j
+# rotom4j
 Java/Processing Library for viewing/editing/extracting Nintendo Nitro and Pokemon NDS files
 
 ## Supported Files

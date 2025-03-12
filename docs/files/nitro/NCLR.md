@@ -1,5 +1,5 @@
 # NCLR
-Nintendo Color Resource (NCLR/RLCN)
+Nintendo CoLor Resource (NCLR/RLCN)
 
 ## Header
 - [uses Generic Header](/docs/files/nitro/subsections/Generic%20Header%20Format.md)

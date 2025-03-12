@@ -1,0 +1,53 @@
+/*
+ * Copyright (C) ExBin Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.szadowsz.gui.component.oldbinary.swing;
+
+import java.nio.charset.Charset;
+import com.szadowsz.gui.component.oldbinary.CodeAreaSection;
+import com.szadowsz.gui.component.oldbinary.CodeAreaSelection;
+import com.szadowsz.rotom4j.binary.BinaryData;
+import com.szadowsz.gui.component.oldbinary.basic.color.CodeAreaColorsProfile;
+
+/**
+ * Code area paint state.
+ *
+ * @author ExBin Project (https://exbin.org)
+ */
+public interface CodeAreaPaintState {
+
+    CodeAreaSection getActiveSection();
+
+    CodeAreaColorsProfile getColorsProfile();
+
+    Charset getCharset();
+
+    byte[] getRowData();
+
+    int getMaxBytesPerChar();
+
+    int getCodeLastCharPos();
+
+    int getCharactersPerRow();
+
+    int getBytesPerRow();
+
+    long getDataSize();
+
+    // TODO: Replace with row data only?
+    BinaryData getContentData();
+
+    CodeAreaSelection getSelectionHandler();
+}

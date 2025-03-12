@@ -1,5 +1,5 @@
 # NANR
-Nintendo Animation Resource (NANR/RNAN)
+Nintendo ANimation Resource (NANR/RNAN)
 
 ## Header
 - [uses Generic Header](/docs/files/nitro/subsections/Generic%20Header%20Format.md)

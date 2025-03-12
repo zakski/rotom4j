@@ -1,0 +1,245 @@
+package com.szadowsz.gui.window.internal;
+
+import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.group.folder.RDropdownMenu;
+import com.szadowsz.gui.component.group.folder.RFolder;
+import com.szadowsz.gui.component.group.folder.RPanel;
+import com.szadowsz.gui.component.group.folder.RToolbar;
+import com.szadowsz.gui.config.RLayoutStore;
+import processing.core.PGraphics;
+import processing.core.PVector;
+
+import java.util.concurrent.CopyOnWriteArrayList;
+
+/**
+ * Internal Window Manager
+ */
+public class RWindowManager {
+
+    private final RotomGui gui;
+
+    private final CopyOnWriteArrayList<RWindowImpl> windowsToSetFocusOn = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<RWindowImpl> windows = new CopyOnWriteArrayList<>(); // TODO should be set?
+
+    /**
+     * Manager Constructor
+     *
+     * @param rotomGui the Gui to manage the internal windows for
+     */
+    public RWindowManager(RotomGui rotomGui) {
+            gui = rotomGui;
+    }
+
+
+    /**
+     * Check if the window is focused upon
+     *
+     * @param window the window to check
+     * @return true if the window is focused upon, false otherwise
+     */
+    public boolean isFocused(RWindowImpl window) {
+        return windows.getLast().equals(window);
+    }
+
+    /**
+     * Set the App's focus on a particular window
+     *
+     * @param window the window to focus on
+     */
+    public void setFocus(RWindowImpl window) {
+        windowsToSetFocusOn.add(window);
+    }
+
+    /**
+     * Create or make visible a temporary window for the passed in folder
+     *
+     * @param folder    the corresponding folder node
+     * @param setFocus      true if the window is in focus, false otherwise
+     * @param nullablePosX  nullable windows x-coordinate
+     * @param nullablePosY  nullable windows y-coordinate
+     * @param nullableSizeX nullable windows width
+     */
+    public void uncoverOrCreateTempWindow(RDropdownMenu folder, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
+        PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
+        if (folder.getParentFolder() != null) {
+            RWindowImpl parentWindow = folder.getParentWindow();
+            if (parentWindow != null) {
+                pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
+            }
+        }
+        if (nullablePosX != null) {
+            pos.x = nullablePosX;
+        }
+        if (nullablePosY != null) {
+            pos.y = nullablePosY;
+        }
+        RWindowImpl window = findWindow(folder, setFocus, pos);
+        if (window == null) {
+            window = new RWindowTemp(gui.getSketch(),gui, folder, pos.x, pos.y, folder.suggestWidth(),0);
+            windows.add(window);
+        }
+        if (folder.getParentFolder() == null) {
+            window.setCoordinates(pos.x,pos.y);
+            if (nullableSizeX != null) {
+                window.setWidth(nullableSizeX);
+            }
+        }
+        window.open(setFocus);
+    }
+
+    /**
+     * Create or make visible a temporary window for the passed in folder
+     *
+     * @param folder    the corresponding folder node
+     * @param setFocus      true if the window is in focus, false otherwise
+     * @param nullablePosY  nullable windows y-coordinate
+     */
+    public void uncoverOrCreateToolbar(RToolbar folder, boolean setFocus, Float nullablePosY) {
+        PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
+        if (folder.getParentFolder() != null) {
+            RWindowImpl parentWindow = folder.getParentWindow();
+            if (parentWindow != null) {
+                pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
+            }
+        }
+        if (nullablePosY != null) {
+            pos.y = nullablePosY;
+        }
+        RWindowImpl window = findWindow(folder, setFocus, pos);
+        if (window == null) {
+            window = new RWindowToolbar(gui.getSketch(),gui, folder, folder.getName(), pos.y);
+            windows.add(window);
+        }
+        if (folder.getParentFolder() == null) {
+            window.setCoordinates(pos.x,pos.y);
+        }
+        window.open(setFocus);
+    }
+
+    public void uncoverOrCreateToolbar(RToolbar folder) { // TODO LazyGui
+        uncoverOrCreateToolbar(folder, true, null);
+    }
+
+    /**
+     * Create or make visible a window for the passed in folder
+     *
+     * @param folder    the corresponding folder node
+     * @param setFocus      true if the window is in focus, false otherwise
+     * @param nullablePosX  nullable windows x-coordinate
+     * @param nullablePosY  nullable windows y-coordinate
+     * @param nullableSizeX nullable windows width
+     */
+    public void uncoverOrCreateWindow(RFolder folder, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
+        PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
+        if (folder.getParentFolder() != null) {
+            RWindowImpl parentWindow = folder.getParentWindow();
+            if (parentWindow != null) {
+                pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
+            }
+        }
+        if (nullablePosX != null) {
+            pos.x = nullablePosX;
+        }
+        if (nullablePosY != null) {
+            pos.y = nullablePosY;
+        }
+        RWindowImpl window = findWindow(folder, setFocus, pos);
+        if (window == null) {
+             window = new RWindowImpl(gui.getSketch(),gui,folder, pos.x, pos.y, 0,0);
+            windows.add(window);
+            window.open(setFocus);
+        }
+        if (folder.getParent() == null) {
+            window.setCoordinates(pos.x, pos.y);
+            if (nullableSizeX != null) {
+                window.setWidth(nullableSizeX);
+            }
+        }
+    }
+    
+    public void uncoverOrCreateWindow(RFolder folder) {
+        uncoverOrCreateWindow(folder, true, null, null, null);
+    }
+
+    /**
+     * Create or make visible a window for the passed in folder
+     *
+     * @param panel         the corresponding folder panel
+     * @param setFocus      true if the window is in focus, false otherwise
+     * @param nullablePosX  nullable windows x-coordinate
+     * @param nullablePosY  nullable windows y-coordinate
+     * @param nullableSizeX nullable windows width
+     */
+    public void uncoverOrCreatePanel(RPanel panel, boolean setFocus, Float nullablePosX, Float nullablePosY, Float nullableSizeX) {
+        PVector pos = new PVector(RLayoutStore.getCell(), RLayoutStore.getCell());
+        if (panel.getParentFolder() != null) {
+            RWindowImpl parentWindow = panel.getParentWindow();
+            if (parentWindow != null) {
+                pos = new PVector(parentWindow.getPosX() + parentWindow.getWidth() + RLayoutStore.getCell(), parentWindow.getPosY());
+            }
+        }
+        if (nullablePosX != null) {
+            pos.x = nullablePosX;
+        }
+        if (nullablePosY != null) {
+            pos.y = nullablePosY;
+        }
+        RWindowImpl window = findWindow(panel, setFocus, pos);
+        if (window == null) {
+            window = new RWindowPanel(gui.getSketch(),gui,panel, pos.x, pos.y);
+            windows.add(window);
+            window.open(setFocus);
+        }
+        if (panel.getParent() == null) {
+            window.setCoordinates(pos.x, pos.y);
+            if (nullableSizeX != null) {
+                window.setWidth(nullableSizeX);
+            }
+        }
+    }
+
+    public void uncoverOrCreatePanel(RPanel panel) {
+        uncoverOrCreatePanel(panel, true, null, null, null);
+    }
+
+    /**
+     * Update and draw all windows
+     *
+     * @param canvas graphics context
+     */
+    public void updateAndDrawWindows(PGraphics canvas) { // TODO LazyGui
+        if (!windowsToSetFocusOn.isEmpty()) {
+            for (RWindowImpl w : windowsToSetFocusOn) {
+                windows.remove(w);
+                windows.add(w);
+            }
+            windowsToSetFocusOn.clear();
+        }
+        for (RWindowImpl win : windows) {
+            win.drawWindow(canvas);
+        }
+    }
+
+    /**
+     * Found out if the window
+     *
+     * @param folder    the corresponding folder node
+     * @param setFocus      true if the window is in focus, false otherwise
+     * @param pos           expected position
+     * @return the window if found, null otherwise
+     */
+    protected RWindowImpl findWindow(RFolder folder, boolean setFocus, PVector pos) {
+        for (RWindowImpl w : windows) {
+            if (w.getFolder().getPath().equals(folder.getPath())) {
+                w.setCoordinates(pos.x, pos.y);
+                if (RLayoutStore.shouldFolderRowClickCloseWindowIfOpen() && w.isVisible()) {
+                    w.close();
+                } else {
+                    w.open(setFocus);
+                }
+                return w;
+            }
+        }
+        return null;
+    }
+}

@@ -1,0 +1,1056 @@
+package com.szadowsz.gui.component.bined;
+
+import com.szadowsz.gui.component.utils.RComponentScrollbar;
+import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.rotom4j.binary.BinaryData;
+import com.szadowsz.rotom4j.binary.EditableBinaryData;
+import com.szadowsz.rotom4j.binary.array.ByteArrayData;
+import com.szadowsz.rotom4j.binary.io.reader.Buffer;
+import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.RComponent;
+import com.szadowsz.gui.component.bined.cursor.RCaretPos;
+import com.szadowsz.gui.component.bined.cursor.RCursorShape;
+import com.szadowsz.gui.component.bined.settings.*;
+import com.szadowsz.gui.component.bined.utils.RBinUtils;
+import com.szadowsz.gui.component.group.RGroup;
+import com.szadowsz.gui.component.bined.cursor.RCaret;
+import com.szadowsz.gui.component.bined.settings.RClipHandlingMode;
+import com.szadowsz.gui.component.bined.settings.REnterKeyMode;
+import com.szadowsz.gui.component.bined.settings.RScrollDirection;
+import com.szadowsz.gui.component.bined.settings.RTabKeyMode;
+import com.szadowsz.gui.config.text.RFontStore;
+import com.szadowsz.gui.input.keys.RKeyEvent;
+import com.szadowsz.gui.input.mouse.RMouseEvent;
+import com.szadowsz.gui.layout.RLayoutBase;
+import com.szadowsz.gui.layout.RRect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import processing.core.PConstants;
+import processing.core.PGraphics;
+import processing.core.PVector;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.nio.ByteBuffer;
+
+import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
+
+/**
+ * Editor Level Logic
+ */
+public class RBinEditor extends RBinEdBase {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RBinEditor.class);
+
+    protected static final int LAST_CONTROL_CODE = 31;
+    protected static final char DELETE_CHAR = (char) 0x7f;
+
+    protected static final String PAGES = "pages";
+    protected static final String HEADER = "header";
+    protected static final String MAIN = "main";
+
+    protected RBinCharAssessor charAssessor = new RBinCharAssessor();
+    protected RBinColorAssessor colorAssessor = new RBinColorAssessor();
+
+    // How to Display
+    protected RBinViewMode viewMode = RBinViewMode.DUAL; // TODO implement dual display
+    protected RBackgroundPaintMode backgroundPaintMode = RBackgroundPaintMode.STRIPED;
+
+    // Cursor Caret
+    protected RCaret caret;
+    protected boolean showMirrorCursor = true;
+
+    // Vertical Scrollbar
+    protected RComponentScrollbar vsb = null;
+
+    protected REnterKeyMode enterKeyHandlingMode = REnterKeyMode.PLATFORM_SPECIFIC;
+    protected RTabKeyMode tabKeyHandlingMode = RTabKeyMode.PLATFORM_SPECIFIC;
+
+    protected RowDataCache rowDataCache = null;
+    protected CursorDataCache cursorDataCache = null;
+
+    protected RBinEditor(RotomGui gui, String path, RGroup parent) {
+        super(gui, path, parent);
+        caret = new RCaret(this);
+    }
+
+    public RBinEditor(RotomGui gui, String path, RGroup parent, String filePath) {
+        this(gui, path, parent);
+
+        loadData(filePath);
+        initBounds();
+        initComponents();
+    }
+
+    /**
+     * Returns current caret position.
+     *
+     * @return caret position
+     */
+    protected RCaretPos getActiveCaretPosition() {
+        return caret.getCaretPosition();
+    }
+
+    /**
+     * Returns currently active caret section.
+     *
+     * @return code area section
+     */
+    protected RCodeAreaSection getActiveSection() {
+        return caret.getSection();
+    }
+
+    protected RBinCharAssessor getCharAssessor() {
+        return charAssessor;
+    }
+
+    protected RBinColorAssessor getColorAssessor() {
+        return colorAssessor;
+    }
+
+    protected int getCurrentPage(){
+        RBinPageSlider pages = ((RBinPageSlider) findChildByName(PAGES));
+        return (pages != null)? pages.getValueAsInt():1;
+    }
+
+    /**
+     * Returns relative cursor position in code area or null if cursor is not
+     * visible.
+     *
+     * @param dataPosition data position
+     * @param codeOffset   code offset
+     * @param section      section
+     * @return cursor position or null
+     */
+    protected PVector getPositionPoint(long dataPosition, int codeOffset, RCodeAreaSection section) {
+        int bytesPerRow = structure.getBytesPerRow();
+        long pageRowTotal = structure.getRowsForPage(getCurrentPage());
+        int characterWidth = metrics.getCharacterWidth();
+        int rowHeight = metrics.getRowHeight();
+
+        long row = dataPosition / bytesPerRow;
+        if (row < -1 || row > pageRowTotal) {
+            return null;
+        }
+
+        int byteOffset = (int) (dataPosition % bytesPerRow);
+
+        RRect dataViewRect = dimensions.getContentDims();
+        float caretY = (dataViewRect.getY() + row * rowHeight);
+        float caretX;
+        if (section == RCodeAreaSection.TEXT_PREVIEW) {
+            caretX = dataViewRect.getX() + visibility.getPreviewRelativeX() + characterWidth * byteOffset;
+        } else {
+            caretX = dataViewRect.getX() + characterWidth * (structure.computeFirstCodeCharacterPos(byteOffset) + codeOffset);
+        }
+        return new PVector(caretX, caretY);
+    }
+
+    protected RSelectingMode isSelectingMode(RKeyEvent keyEvent) {
+        return keyEvent.isShiftDown() ? RSelectingMode.SELECTING : RSelectingMode.NONE;
+    }
+
+    protected boolean isValidChar(char value) {
+        return getCharset().canEncode();
+    }
+
+    /**
+     * Check if the point is inside the scroll bar of the Window
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return true if the point is inside the scroll bar, false otherwise
+     */
+    protected boolean isPointInsideScrollbar(float x, float y) {
+        if (vsb == null || !vsb.isVisible()) {
+            return false;
+        }
+        float cx = pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth();
+        float cy = pos.y + dimensions.getHeaderHeight();
+        return isPointInRect(x, y,
+                cx, cy, RLayoutStore.getCell(), dimensions.getContentDisplayHeight());
+    }
+
+    protected boolean isMouseInsideScrollbar(RMouseEvent e, float adjustedMouseY) {
+        return isVisible && isPointInsideScrollbar(e.getX(), adjustedMouseY);
+    }
+
+    protected void setActiveCaretPosition(RCaretPos caretPosition) {
+        caret.setCaretPosition(caretPosition);
+        redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if we move the caret
+    }
+
+    protected void setActiveCaretPosition(long dataPosition) {
+        caret.setCaretPosition(dataPosition);
+        redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if we move the caret
+    }
+
+    protected void setCodeValue(int value) {
+        RCaretPos caretPosition = getActiveCaretPosition();
+        long dataPosition = caretPosition.getDataPosition();
+        int codeOffset = caretPosition.getCodeOffset();
+        byte byteValue = contentData.getByte(dataPosition);
+        byte outputValue = RBinUtils.setCodeValue(byteValue, value, codeOffset, codeType);
+        ((EditableBinaryData) contentData).setByte(dataPosition, outputValue);
+    }
+
+    protected void setEditOperation(REditOperation editOperation) {
+        REditOperation previousOperation = this.editOperation;
+        this.editOperation = editOperation;
+        REditOperation currentOperation = this.editOperation;
+        boolean changed = previousOperation != currentOperation;
+        if (changed) {
+            caret.resetBlink();
+            redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if we change the edit operation
+        }
+    }
+
+    protected boolean changeEditOperation() {
+        if (editMode == REditMode.EXPANDING || editMode == REditMode.CAPPED) {
+            switch (editOperation) {
+                case INSERT: {
+                    setEditOperation(REditOperation.OVERWRITE);
+                    break;
+                }
+                case OVERWRITE: {
+                    setEditOperation(REditOperation.INSERT);
+                    break;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Calculate Dimensions
+     */
+    protected void initDimensions() {
+        long rowCountForPage = structure.getRowsForPage(getCurrentPage());
+
+        dimensions.computeRowPositionDimensions(metrics, rowPositionCharacters, maxRowsForDisplay, rowCountForPage);
+        dimensions.computeHeaderAndDataDimensions(metrics, maxBytesPerRow, shouldDisplayVerticalScrollbar());
+
+        // Relay the size to the proper place // TODO Bodge job
+        size.x = dimensions.getComponentDisplayDims().getWidth();
+        size.y = dimensions.getComponentDisplayDims().getHeight();
+    }
+
+    /**
+     * Initialise Font Metrics
+     */
+    protected void initFontMetrics() {
+        PGraphics fontGraphics = gui.getSketch().createGraphics(800, 600, PConstants.JAVA2D);
+        fontGraphics.beginDraw();
+        fontGraphics.endDraw();
+        metrics.computeMetrics(fontGraphics, RFontStore.getMainFont(), charset); // get Font Character sizes
+        LOGGER.info("Font Metrics Loaded for \"{}\" Binary Editor", name);
+    }
+
+    /**
+     * Initialise Row Info
+     */
+    protected void initRowSizing() {
+        structure.computeRowsAndPages(contentData.getDataSize(),maxBytesPerRow);
+        dimensions.computeRowWidth(metrics, codeType, maxBytesPerRow);
+        rowPositionCharacters = computeRowPositionCharacters();
+    }
+
+    @Override
+    protected void initBounds() {
+        LOGGER.info("Initialising \"{}\" Binary Editor", name);
+        caret.setSection(RCodeAreaSection.CODE_MATRIX); // TODO support the other kinds
+
+        initFontMetrics(); // Work out the font sizing first
+
+        initRowSizing(); // Use the Font Sizing to work out the ideal row width
+
+        initDimensions(); // Use the row info to work out the ideal display area
+
+        structure.setEditor(this);
+        structure.updateCache(dimensions.getCharactersPerRowByWidth());
+
+        initVisibility(); // use the sizes to figure out the width
+        updateRowDataCache();
+
+             vsb = new RComponentScrollbar(
+                    this,
+                    new PVector(pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth(), pos.y + dimensions.getHeaderHeight()),
+                    new PVector(RLayoutStore.getCell(), dimensions.getContentDisplayHeight()),
+                    dimensions.getContentHeight(),
+                    16
+            );
+        LOGGER.info("Bin Editor {} created scrollbar with Pos [{}, {}] Size [{},{}]", getName(), vsb.getPosX(), vsb.getPosY(), vsb.getWidth(), vsb.getHeight());
+        vsb.setVisible(shouldDisplayVerticalScrollbar());
+    }
+
+    private boolean shouldDisplayVerticalScrollbar() {
+        return maxRowsForDisplay < structure.getRowsForPage(getCurrentPage());
+    }
+
+    protected void initComponents() {
+        children.add(new RBinPageSlider(gui, path + "/" + PAGES, this));
+        children.add(new RBinHeader(gui, path + "/" + HEADER, this));
+        children.add(new RBinMain(gui, path + "/" + MAIN, this));
+    }
+
+    protected void initVisibility() {
+        int charactersPerRow = dimensions.getCharactersPerRowByWidth();
+        structure.updateCache(charactersPerRow);
+        visibility.recomputeCharPositions(this);
+    }
+
+    @Override
+    protected void loadData(String filePath) {
+        LOGGER.info("Loading File \"{}\" for \"{}\" Binary Editor", filePath, name);
+        byte[] data = Buffer.readFile(filePath);
+        contentData = new ByteArrayData(data);
+    }
+
+    protected void updateAssessors() {
+        charAssessor.update(this);
+    }
+
+    protected void updateMirrorCursorRect(long dataPosition, RCodeAreaSection section) {
+        PVector mirrorCursorPoint = getPositionPoint(dataPosition, 0, section == RCodeAreaSection.CODE_MATRIX ? RCodeAreaSection.TEXT_PREVIEW : RCodeAreaSection.CODE_MATRIX);
+        if (mirrorCursorPoint == null) {
+            cursorDataCache.mirrorCursorRect.setSize(0, 0);
+        } else {
+            cursorDataCache.mirrorCursorRect.setSize(mirrorCursorPoint.x, mirrorCursorPoint.y, metrics.getCharacterWidth() * (section == RCodeAreaSection.TEXT_PREVIEW ? codeType.getMaxDigitsForByte() : 1), metrics.getRowHeight());
+        }
+    }
+
+    protected void updateRectToCursorPosition(RRect rect, long dataPosition, int codeOffset, RCodeAreaSection section) {
+        int characterWidth = metrics.getCharacterWidth();
+        int rowHeight = metrics.getRowHeight();
+        PVector cursorPoint = getPositionPoint(dataPosition, codeOffset, section);
+        if (cursorPoint == null) {
+            rect.setSize(0, 0, 0, 0);
+        } else {
+            RCursorShape cursorShape = editOperation == REditOperation.INSERT ? RCursorShape.INSERT : RCursorShape.OVERWRITE;
+            int cursorThickness = RCaret.getCursorThickness(cursorShape, characterWidth, rowHeight);
+            rect.setSize(cursorPoint.x, cursorPoint.y, cursorThickness, rowHeight);
+        }
+    }
+
+    protected void updateRowDataCache() {
+        if (rowDataCache == null) {
+            rowDataCache = new RowDataCache();
+        }
+
+        rowDataCache.headerChars = new char[visibility.getCharactersPerCodeSection()];
+        rowDataCache.rowData = new byte[structure.getBytesPerRow() + metrics.getMaxBytesPerChar() - 1];
+        rowDataCache.rowPositionCode = new char[rowPositionCharacters];
+        rowDataCache.rowCharacters = new char[structure.getRefinedCharactersPerRow()];
+    }
+
+    protected void updateSelection(RSelectingMode selectingMode) {
+        long dataPosition = caret.getDataPosition();
+        if (selectingMode == RSelectingMode.SELECTING) {
+            selection.setSelection(selection.getStart(), dataPosition);
+        } else {
+            selection.setSelection(dataPosition, dataPosition);
+        }
+    }
+
+    protected void deleteSelection() {
+        if (!(contentData instanceof EditableBinaryData)) {
+            throw new IllegalStateException("Data is not editable");
+        }
+
+        if (selection.isEmpty()) {
+            return;
+        }
+
+        long first = selection.getFirst();
+        long last = selection.getLast();
+        long length = last - first + 1;
+        if (editMode == REditMode.INPLACE) {
+            ((EditableBinaryData) contentData).fillData(first, length);
+        } else {
+            ((EditableBinaryData) contentData).remove(first, length);
+        }
+        setActiveCaretPosition(first);
+        clearSelection();
+        getParentWindow().reinitialiseBuffer();
+    }
+
+    protected void move(RSelectingMode selectingMode, RMovementDirection direction) {
+        RCaretPos caretPosition = getActiveCaretPosition();
+        RCaretPos movePosition = structure.computeMovePosition(caretPosition, direction, getCurrentPage());
+        if (!caretPosition.equals(movePosition)) {
+            setActiveCaretPosition(movePosition);
+            updateSelection(selectingMode);
+        } else if (selectingMode == RSelectingMode.NONE) {
+            clearSelection();
+        }
+    }
+
+    protected void moveCaret(float positionX, float positionY, RSelectingMode selecting) {
+        RCaretPos caretPosition = computeClosestCaretPosition(positionX, positionY);
+        setActiveCaretPosition(caretPosition);
+        updateSelection(selecting);
+        redrawBuffers();
+    }
+
+    protected void moveCaret(RMouseEvent me, float yDiff) {
+        RSelectingMode selecting = me.isShiftDown() ? RSelectingMode.SELECTING : RSelectingMode.NONE;
+        moveCaret(me.getX(), me.getY() + yDiff, selecting);
+    }
+
+    private void pressedCharAsCode(char keyChar) {
+        RCaretPos caretPosition = getActiveCaretPosition();
+        long dataPosition = caretPosition.getDataPosition();
+        int codeOffset = caretPosition.getCodeOffset();
+        RCodeType codeType = getCodeType();
+        boolean validKey = RBinUtils.isValidCodeKeyValue(keyChar, codeOffset, codeType);
+        if (validKey) {
+            REditMode editMode = getEditMode();
+            if (hasSelection() && editMode != REditMode.INPLACE) {
+                deleteSelection();
+            }
+
+            int value;
+            if (keyChar >= '0' && keyChar <= '9') {
+                value = keyChar - '0';
+            } else {
+                value = Character.toLowerCase(keyChar) - 'a' + 10;
+            }
+
+            if (editMode == REditMode.EXPANDING && editOperation == REditOperation.INSERT) {
+                if (codeOffset > 0) {
+                    byte byteRest = contentData.getByte(dataPosition);
+                    switch (codeType) {
+                        case BINARY: {
+                            byteRest = (byte) (byteRest & (0xff >> codeOffset));
+                            break;
+                        }
+                        case DECIMAL: {
+                            byteRest = (byte) (byteRest % (codeOffset == 1 ? 100 : 10));
+                            break;
+                        }
+                        case OCTAL: {
+                            byteRest = (byte) (byteRest % (codeOffset == 1 ? 64 : 8));
+                            break;
+                        }
+                        case HEXADECIMAL: {
+                            byteRest = (byte) (byteRest & 0xf);
+                            break;
+                        }
+                        default:
+                            throw RBinUtils.getInvalidTypeException(codeType);
+                    }
+                    if (byteRest > 0) {
+                        ((EditableBinaryData) contentData).insert(dataPosition + 1, 1);
+                        ((EditableBinaryData) contentData).setByte(dataPosition, (byte) (contentData.getByte(dataPosition) - byteRest));
+                        ((EditableBinaryData) contentData).setByte(dataPosition + 1, byteRest);
+                    }
+                } else {
+                    ((EditableBinaryData) contentData).insert(dataPosition, 1);
+                }
+                setCodeValue(value);
+            } else {
+                if (editMode == REditMode.EXPANDING && editOperation == REditOperation.OVERWRITE && dataPosition == getDataSize()) {
+                    ((EditableBinaryData) contentData).insert(dataPosition, 1);
+                }
+                if (editMode != REditMode.INPLACE || dataPosition < getDataSize()) {
+                    setCodeValue(value);
+                }
+            }
+            notifyDataChanged();
+            move(RSelectingMode.NONE, RMovementDirection.RIGHT);
+        }
+    }
+
+    protected void pressedCharInPreview(char keyChar) {
+        if (isValidChar(keyChar)) {
+            RCaretPos caretPosition = getActiveCaretPosition();
+
+            long dataPosition = caretPosition.getDataPosition();
+            byte[] bytes = charToBytes(keyChar);
+            if (editMode == REditMode.INPLACE) {
+                int length = bytes.length;
+                if (dataPosition + length > getDataSize()) {
+                    return;
+                }
+            }
+            if (hasSelection() && editMode != REditMode.INPLACE) {
+                deleteSelection();
+            }
+
+            if ((editMode == REditMode.EXPANDING && editOperation == REditOperation.OVERWRITE) || editMode == REditMode.INPLACE) {
+                if (dataPosition < getDataSize()) {
+                    int length = bytes.length;
+                    if (dataPosition + length > getDataSize()) {
+                        length = (int) (getDataSize() - dataPosition);
+                    }
+                    ((EditableBinaryData) contentData).remove(dataPosition, length);
+                }
+            }
+            ((EditableBinaryData) contentData).insert(dataPosition, bytes);
+            notifyDataChanged();
+            caret.setCaretPosition(dataPosition + bytes.length - 1);
+            move(RSelectingMode.NONE, RMovementDirection.RIGHT);
+        }
+    }
+
+    protected void pasteBinaryData(BinaryData pastedData) {
+        if (hasSelection()) {
+            deleteSelection();
+            notifyDataChanged();
+        }
+
+        long dataPosition = caret.getDataPosition();
+
+        long clipDataSize = pastedData.getDataSize();
+        long toReplace = clipDataSize;
+        if (editMode == REditMode.INPLACE) {
+            if (dataPosition + toReplace > getDataSize()) {
+                toReplace = getDataSize() - dataPosition;
+            }
+            ((EditableBinaryData) contentData).replace(dataPosition, pastedData, 0, toReplace);
+        } else {
+            if (editMode == REditMode.EXPANDING && editOperation == REditOperation.OVERWRITE) {
+                if (dataPosition + toReplace > getDataSize()) {
+                    toReplace = getDataSize() - dataPosition;
+                }
+                ((EditableBinaryData) contentData).remove(dataPosition, toReplace);
+            }
+
+            ((EditableBinaryData) contentData).insert(dataPosition, pastedData);
+            caret.setCaretPosition(caret.getDataPosition() + clipDataSize);
+            updateSelection(RSelectingMode.NONE);
+        }
+
+        caret.setCodeOffset(0);
+        setActiveCaretPosition(caret.getCaretPosition());
+        notifyDataChanged();
+        clearSelection();
+    }
+
+    protected void scroll(RScrollDirection direction) {
+        // NOOP TODO
+    }
+
+    protected void enterPressed() {
+        if (!checkEditAllowed()) {
+            return;
+        }
+
+        if (getActiveSection() == RCodeAreaSection.TEXT_PREVIEW) {
+            String sequence = enterKeyHandlingMode.getSequence();
+            if (!sequence.isEmpty()) {
+                pressedCharInPreview(sequence.charAt(0));
+                if (sequence.length() == 2) {
+                    pressedCharInPreview(sequence.charAt(1));
+                }
+            }
+        }
+    }
+
+    protected void tabPressed(RSelectingMode selectingMode) {
+        if (!checkEditAllowed()) {
+            return;
+        }
+
+        if (tabKeyHandlingMode == RTabKeyMode.PLATFORM_SPECIFIC || tabKeyHandlingMode == RTabKeyMode.CYCLE_TO_NEXT_SECTION || tabKeyHandlingMode == RTabKeyMode.CYCLE_TO_PREVIOUS_SECTION) {
+            if (getViewMode() == RBinViewMode.DUAL) {
+                move(selectingMode, RMovementDirection.SWITCH_SECTION);
+            }
+        } else if (getActiveSection() == RCodeAreaSection.TEXT_PREVIEW) {
+            String sequence = tabKeyHandlingMode == RTabKeyMode.INSERT_TAB ? "\t" : "  ";
+            pressedCharInPreview(sequence.charAt(0));
+            if (sequence.length() == 2) {
+                pressedCharInPreview(sequence.charAt(1));
+            }
+        }
+    }
+
+    protected void backSpacePressed() {
+        if (!checkEditAllowed()) {
+            return;
+        }
+
+        if (hasSelection()) {
+            deleteSelection();
+            notifyDataChanged();
+        } else {
+            long dataPosition = caret.getDataPosition();
+            if (dataPosition == 0 || dataPosition > getDataSize()) {
+                return;
+            }
+
+            caret.setCodeOffset(0);
+            move(RSelectingMode.NONE, RMovementDirection.LEFT);
+            caret.setCodeOffset(0);
+            ((EditableBinaryData) contentData).remove(dataPosition - 1, 1);
+            notifyDataChanged();
+            setActiveCaretPosition(caret.getCaretPosition());
+            clearSelection();
+        }
+    }
+
+    protected void deletePressed() {
+        if (!checkEditAllowed()) {
+            return;
+        }
+
+        if (hasSelection()) {
+            deleteSelection();
+            notifyDataChanged();
+        } else {
+            long dataPosition = caret.getDataPosition();
+            if (dataPosition >= getDataSize()) {
+                return;
+            }
+            ((EditableBinaryData) contentData).remove(dataPosition, 1);
+            notifyDataChanged();
+            if (caret.getCodeOffset() > 0) {
+                caret.setCodeOffset(0);
+            }
+            setActiveCaretPosition(caret.getCaretPosition());
+            clearSelection();
+        }
+        redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if delete is pressed
+    }
+
+    public byte[] charToBytes(char value) {
+        ByteBuffer buffer = getCharset().encode(Character.toString(value));
+        byte[] bytes = new byte[buffer.remaining()];
+        buffer.get(bytes, 0, bytes.length);
+        return bytes;
+    }
+
+    @Override
+    protected void drawForeground(PGraphics pg, String name) {
+        updateAssessors();
+
+        pg.pushMatrix();
+        RBinPageSlider pageSlider = (RBinPageSlider) findChildByName(PAGES);
+        pg.translate(pageSlider.getRelPosX(), pageSlider.getRelPosY());
+        pageSlider.draw(pg);
+        pg.popMatrix();
+
+        pg.pushMatrix();
+        RBinHeader header = (RBinHeader) findChildByName(HEADER);
+        pg.translate(header.getRelPosX(), header.getRelPosY());
+        header.draw(pg);
+        pg.popMatrix();
+
+        pg.pushMatrix();
+        RBinMain main = (RBinMain) findChildByName(MAIN);
+        pg.translate(main.getRelPosX(), main.getRelPosY());
+        main.draw(pg);
+        pg.popMatrix();
+
+        pg.pushMatrix();
+        RRect contentDims = dimensions.getContentDims();
+        if (vsb != null && vsb.isVisible()){
+            vsb.draw(pg,
+                    contentDims.getX(),
+                    contentDims.getY(),
+                    contentDims.getWidth()
+            );
+        }
+        pg.popMatrix();
+    }
+
+    boolean isMirrorCursorShowing() {
+        return showMirrorCursor;
+    }
+
+    public RBackgroundPaintMode getBackgroundPaintMode() {
+        return backgroundPaintMode;
+    }
+
+    /**
+     * Returns handler for caret.
+     *
+     * @return caret handler
+     */
+    public RCaret getCaret() {
+        return caret;
+    }
+
+    /**
+     * Returns data or null.
+     *
+     * @return binary data
+     */
+    public BinaryData getContentData() {
+        return contentData;
+    }
+
+    public CursorDataCache getCursorDataCache() {
+        if (cursorDataCache == null) {
+            cursorDataCache = new CursorDataCache();
+        }
+        int cursorCharsLength = codeType.getMaxDigitsForByte();
+        if (cursorDataCache.cursorCharsLength != cursorCharsLength) {
+            cursorDataCache.cursorCharsLength = cursorCharsLength;
+            cursorDataCache.cursorChars = new char[cursorCharsLength];
+        }
+        int cursorDataLength = metrics.getMaxBytesPerChar();
+        if (cursorDataCache.cursorDataLength != cursorDataLength) {
+            cursorDataCache.cursorDataLength = cursorDataLength;
+            cursorDataCache.cursorData = new byte[cursorDataLength];
+        }
+        return cursorDataCache;
+    }
+
+    /**
+     * Returns cursor rectangle.
+     *
+     * @param dataPosition data position
+     * @param codeOffset   code offset
+     * @param section      section
+     * @return cursor rectangle or empty rectangle
+     */
+    public RRect getCursorPositionRect(long dataPosition, int codeOffset, RCodeAreaSection section) {
+        RRect rect = new RRect();
+        updateRectToCursorPosition(rect, dataPosition, codeOffset, section);
+        return rect;
+    }
+
+    public RowDataCache getRowDataCache() {
+        return rowDataCache;
+    }
+
+    public int getVerticalScroll() {
+        float yDiff = dimensions.getContentHeight() - dimensions.getContentDisplayHeight();
+        float value = (vsb != null)?vsb.getValue():0.0f;
+        return (int) (yDiff * value);
+    }
+
+    /**
+     * Returns current view mode.
+     *
+     * @return view mode
+     */
+    public RBinViewMode getViewMode() {
+        return viewMode;
+    }
+
+    @Override
+    public boolean isMouseOver() {
+        return super.isMouseOver() || (vsb != null && vsb.isMouseOver());
+    }
+
+    @Override
+    public boolean isDragged() {
+        return super.isDragged() || (vsb != null && vsb.isDragged());
+    }
+
+    @Override
+    public void setLayout(RLayoutBase layout) {
+    }
+
+    @Override
+    public void drawToBuffer() {
+        children.forEach(RComponent::drawToBuffer);
+        RRect contentDims = dimensions.getContentDims();
+        if (vsb != null && vsb.isVisible()) {
+            vsb.drawToBuffer(contentDims.getX(),
+                    contentDims.getY(),
+                    contentDims.getWidth(),
+                    dimensions.getContentDisplayHeight(),
+                    contentDims.getHeight());
+        }
+        buffer.redraw();
+    }
+
+    @Override
+    public float suggestWidth() {
+        int characterWidth = metrics.getCharacterWidth(); // Get the width of a single character
+        int digitsForByte = codeType.getMaxDigitsForByte(); // Get the number of characters for a byte
+        return characterWidth * (rowPositionCharacters + 1) + digitsForByte * characterWidth * maxBytesPerRow; // Get the ideal width of a row based on the max byte width
+    }
+
+    @Override
+    public void keyPressed(RKeyEvent keyEvent, float mouseX, float mouseY) {
+        if (!gui.hasFocus(this)) {
+            return;
+        }
+
+        switch (keyEvent.getKeyCode()) {
+            case KeyEvent.VK_LEFT: {
+                move(isSelectingMode(keyEvent), RMovementDirection.LEFT);
+                keyEvent.consume();
+                break;
+            }
+            case KeyEvent.VK_RIGHT: {
+                move(isSelectingMode(keyEvent), RMovementDirection.RIGHT);
+                keyEvent.consume();
+                break;
+            }
+            case KeyEvent.VK_UP: {
+                move(isSelectingMode(keyEvent), RMovementDirection.UP);
+                keyEvent.consume();
+                break;
+            }
+            case KeyEvent.VK_DOWN: {
+                move(isSelectingMode(keyEvent), RMovementDirection.DOWN);
+                keyEvent.consume();
+                break;
+            }
+            case KeyEvent.VK_HOME: {
+                if (keyEvent.isControlDown()) {
+                    move(isSelectingMode(keyEvent), RMovementDirection.DOC_START);
+                } else {
+                    move(isSelectingMode(keyEvent), RMovementDirection.ROW_START);
+                }
+                keyEvent.consume();
+                break;
+            }
+            case KeyEvent.VK_END: {
+                if (keyEvent.isControlDown()) {
+                    move(isSelectingMode(keyEvent), RMovementDirection.DOC_END);
+                } else {
+                    move(isSelectingMode(keyEvent), RMovementDirection.ROW_END);
+                }
+                keyEvent.consume();
+                break;
+            }
+            case KeyEvent.VK_PAGE_UP: {
+                scroll(RScrollDirection.PAGE_UP);
+                move(isSelectingMode(keyEvent), RMovementDirection.PAGE_UP);
+                keyEvent.consume();
+                break;
+            }
+            case KeyEvent.VK_PAGE_DOWN: {
+                scroll(RScrollDirection.PAGE_DOWN);
+                move(isSelectingMode(keyEvent), RMovementDirection.PAGE_DOWN);
+                keyEvent.consume();
+                break;
+            }
+            case KeyEvent.VK_INSERT: {
+                if (changeEditOperation()) {
+                    keyEvent.consume();
+                }
+                break;
+            }
+            case KeyEvent.VK_TAB: {
+                tabPressed(isSelectingMode(keyEvent));
+                if (tabKeyHandlingMode != RTabKeyMode.IGNORE) {
+                    keyEvent.consume();
+                }
+                break;
+            }
+            case KeyEvent.VK_ENTER: {
+                enterPressed();
+                if (enterKeyHandlingMode != REnterKeyMode.IGNORE) {
+                    keyEvent.consume();
+                }
+                break;
+            }
+            case KeyEvent.VK_DELETE: {
+                if (editMode == REditMode.EXPANDING) {
+                    deletePressed();
+                    keyEvent.consume();
+                }
+                break;
+            }
+            case KeyEvent.VK_BACK_SPACE: {
+                if (editMode == REditMode.EXPANDING) {
+                    backSpacePressed();
+                    keyEvent.consume();
+                }
+                break;
+            }
+            default: {
+                if (clipboardHandlingMode == RClipHandlingMode.PROCESS) {
+                    if (keyEvent.isControlDown() && keyEvent.getKeyCode() == KeyEvent.VK_C) {
+                        copy();
+                        keyEvent.consume();
+                        break;
+                    } else if (keyEvent.isControlDown() && keyEvent.getKeyCode() == KeyEvent.VK_X) {
+                        cut();
+                        keyEvent.consume();
+                        break;
+                    } else if (keyEvent.isControlDown() && keyEvent.getKeyCode() == KeyEvent.VK_V) {
+                        paste();
+                        keyEvent.consume();
+                        break;
+                    } else if (keyEvent.isControlDown() && keyEvent.getKeyCode() == KeyEvent.VK_A) {
+                        selectAll();
+                        keyEvent.consume();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void keyTyped(RKeyEvent keyEvent, float mouseX, float mouseY) {
+        char keyValue = keyEvent.getKey();
+        LOGGER.info("Bin Editor key {}", keyValue);
+        // TODO Add support for high unicode codes
+        if (keyValue == KeyEvent.CHAR_UNDEFINED) {
+            return;
+        }
+        if (!checkEditAllowed()) {
+            return;
+        }
+
+        RCodeAreaSection section = getActiveSection();
+        if (section != RCodeAreaSection.TEXT_PREVIEW) {
+            LOGGER.info("Process as Code {}", keyValue);
+            if (!keyEvent.hasModifiers() || keyEvent.isShiftDown()) {
+                pressedCharAsCode(keyValue);
+            }
+        } else {
+            if (keyValue > LAST_CONTROL_CODE && keyValue != DELETE_CHAR) {
+                pressedCharInPreview(keyValue);
+            }
+        }
+        redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if a key is typed
+    }
+
+    @Override
+    public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (isMouseInsideScrollbar(mouseEvent, adjustedMouseY)) {
+            LOGGER.debug("Bin Editor {} mouse over scrollbar", getName());
+            if (isChildMouseOver()) {
+                buffer.invalidateBuffer();
+            }
+            if (!vsb.isMouseOver()){
+                redrawBuffers();
+            }
+            vsb.mouseMoved(mouseEvent, adjustedMouseY);
+            setMouseOverThisOnly(gui.getComponentTree(), mouseEvent);
+            mouseEvent.consume();
+        } else {
+            super.mouseOver(mouseEvent, adjustedMouseY);
+        }
+    }
+
+    @Override
+    public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (!gui.hasFocus(this)) {
+            gui.takeFocus(this);
+        }
+        if (mouseEvent.isLeft()) {
+            if (isMouseInsideScrollbar(mouseEvent, adjustedMouseY)) {
+                LOGGER.debug("Bin Editor {} mouse [{},{}] pressed over scrollbar with Pos {{}, {}] Size [{},{}]", getName(), mouseEvent.getX(), adjustedMouseY, vsb.getPosX(), vsb.getPosY(), vsb.getWidth(),vsb.getHeight());
+                vsb.mousePressed(mouseEvent, adjustedMouseY);
+                mouseEvent.consume();
+            } else {
+                RComponent child = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
+                if (child != findChildByName(PAGES)) {
+                    child.mousePressed(mouseEvent, adjustedMouseY);
+                } else {
+                    child.mousePressed(mouseEvent, adjustedMouseY);
+                    moveCaret(mouseEvent, getVerticalScroll());
+                }
+                mouseEvent.consume();
+            }
+        }
+    }
+
+    @Override
+    public void mouseDragged(RMouseEvent mouseEvent) {
+        if (gui.hasFocus(this)) {
+            if (vsb != null && vsb.isDragged()) {
+                LOGGER.debug("Bin Editor {} mouse dragged with scrollbar Size [{},{}]", getName(), vsb.getWidth(),vsb.getHeight());
+                vsb.mouseDragged(mouseEvent);
+                redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user dragged the mouse
+            } else {
+                RComponent pages = findChildByName(PAGES);
+                if (pages.isDragged()) {
+                    pages.mouseDragged(mouseEvent);
+                } else {
+                    super.mouseDragged(mouseEvent);
+                    moveCaret(mouseEvent.getX(), mouseEvent.getY(), RSelectingMode.SELECTING);
+                }
+                mouseEvent.consume();
+                redrawBuffers(); // REDRAW-VALID: we should redraw the binary editor if the user is selecting multiple chars
+            }
+        }
+    }
+
+    public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (isDragged() || (vsb != null && vsb.isDragged())) {
+            if (vsb.isDragged()) {
+                LOGGER.info("Bin Editor {} mouse released scrollbar anywhere", getName());
+                vsb.mouseReleased(mouseEvent, adjustedMouseY);
+            } else {
+                super.mouseReleasedAnywhere(mouseEvent, adjustedMouseY);
+                setFocus(false);
+            }
+            mouseEvent.consume();
+            redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
+        }
+    }
+
+    /**
+     * Method to handle the component's reaction to the mouse being released over it
+     *
+     * @param mouseEvent the change made by the mouse
+     * @param adjustedMouseY     adjust for scrollbar
+     */
+    public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (isDragged() || (vsb != null && vsb.isDragged())) {
+            if (vsb.isDragged()) {
+                LOGGER.debug("Bin Editor {} mouse released over scrollbar", getName());
+                vsb.mouseReleased(mouseEvent, adjustedMouseY);
+            } else {
+                setFocus(true);
+            }
+            super.mouseReleasedOverComponent(mouseEvent, adjustedMouseY);
+            mouseEvent.consume();
+            redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
+        }
+        redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user released the mouse
+    }
+
+    @Override
+    public void redrawBuffers() {
+        if (vsb != null){
+            vsb.invalidateBuffer();
+        }
+        super.redrawBuffers();
+    }
+
+    public void turnPage() {
+        initDimensions();
+        caret.setDataPosition(0);
+        vsb.setVisible(shouldDisplayVerticalScrollbar());
+        resetBuffer();
+    }
+
+    @Override
+    public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
+        RRect headerDims = dimensions.getHeaderDims();
+        children.getFirst().updateCoordinates(bX, bY, rX, rY + headerDims.getY(), w, headerDims.getHeight()); // header
+        children.get(1).updateCoordinates(bX, bY, rX, rY + headerDims.getY(), w, headerDims.getHeight()); // header
+        children.getLast().updateCoordinates(bX, bY, rX, rY + headerDims.getHeight(), w, dimensions.getContentDisplayHeight()); // main
+        super.updateCoordinates(bX, bY, rX, rY, w, h);
+        float scrollX = pos.x + dimensions.getRowPositionWidth() + dimensions.getContentWidth();
+        float scrollY = pos.y + dimensions.getHeaderHeight();
+        LOGGER.debug("Bin Editor {} updated scrollbar with Pos [{}, {}] Size [{},{}]", getName(), scrollX, scrollY, RLayoutStore.getCell(), dimensions.getContentHeight());
+        if (vsb != null){
+            vsb.updateCoordinates(scrollX,scrollY,RLayoutStore.getCell(), dimensions.getContentDisplayHeight(), dimensions.getContentHeight());
+        }
+        buffer.resetBuffer();
+    }
+
+
+    public static class RowDataCache {
+
+        char[] headerChars;
+        byte[] rowData;
+        char[] rowPositionCode;
+        char[] rowCharacters;
+    }
+
+    public static class CursorDataCache {
+
+        RRect caretRect = new RRect();
+        RRect mirrorCursorRect = new RRect();
+        final BasicStroke dashedStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{2}, 0);
+        int cursorCharsLength;
+        char[] cursorChars;
+        int cursorDataLength;
+        byte[] cursorData;
+    }
+}
