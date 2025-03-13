@@ -42,6 +42,22 @@ public abstract class R4JFolder<R extends RotomFile> extends RFolder {
         }
     }
 
+    @Override
+    protected String getDisplayName(String name) {
+        String title;
+        if (this.data != null) {
+            String fileName = data.getFileName();
+            if (fileName != null) {
+                title = fileName;
+            } else {
+                title = "Paired " + data.getExt();
+            }
+        } else {
+            title = super.getDisplayName(name);
+        }
+        return title;
+    }
+
     /**
      * Check to see if node should display regular name, or selection name
      *

@@ -640,7 +640,7 @@ public class RWindowImpl implements RWindow, RInputListener {
     protected void drawTitleBar(PGraphics canvas, boolean shouldDraw) {
         if (shouldDraw) {
             float availableWidthForText = size.x - RFontStore.getMarginX() + (!canBeClosed() ? 0 : -RLayoutStore.getCell());
-            String leftText = RFontStore.substringToFit(canvas, folder.getName(), availableWidthForText);
+            String leftText = RFontStore.substringToFit(canvas, folder.getDisplayName(), availableWidthForText);
             canvas.pushMatrix();
             canvas.pushStyle();
             canvas.translate(pos.x, pos.y);
