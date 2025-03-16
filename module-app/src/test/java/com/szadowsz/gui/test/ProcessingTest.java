@@ -5,6 +5,9 @@ import com.szadowsz.gui.RotomGuiManager;
 import com.szadowsz.gui.RotomGuiSettings;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.folder.RDropdownMenu;
+import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.config.theme.RColorType;
+import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.mouse.RActivateByType;
 import com.szadowsz.gui.input.mouse.RMouseAction;
 import com.szadowsz.gui.layout.RBorderLayout;
@@ -33,6 +36,7 @@ public class ProcessingTest extends PApplet {
     protected RotomGuiImpl gui;
     protected RotomGuiSettings settings;
 
+    int c, h, a;
 
     private final String path = "C:\\Code\\pokemon\\srcs\\changes\\Gen 4\\prologmon-masters\\pokemon_dp\\src\\contest\\graphic\\contest_obj\\bigman.NANR";
 
@@ -70,11 +74,12 @@ public class ProcessingTest extends PApplet {
         gui.setLayout(layout);
 
         gui.pushFolder("Window", RBorderLayout.RLocation.CENTER);
-        try {
-            gui.animeRes("nanr",new NANR(path));
-        } catch (NitroException e) {
-            throw new RuntimeException(e);
-        }
+        gui.media("nanr");
+//        try {
+//            gui.animeRes("nanr",new NANR(path));
+//        } catch (NitroException e) {
+//            throw new RuntimeException(e);
+//        }
         gui.popWindow();
 
 

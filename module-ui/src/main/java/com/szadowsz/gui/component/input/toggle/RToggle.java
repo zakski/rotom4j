@@ -1,6 +1,7 @@
 package com.szadowsz.gui.component.input.toggle;
 
 import com.szadowsz.gui.RotomGui;
+import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.theme.RColorType;
@@ -21,11 +22,11 @@ public class RToggle extends RToggleBase {
      *
      * @param gui           the gui for the window that the component is drawn under
      * @param path          the path in the component tree
-     * @param parentFolder  the parent component folder reference // TODO consider if needed
+     * @param parent        the parent component reference
      * @param startingValue
      */
-    public RToggle(RotomGui gui, String path, RFolder parentFolder, boolean startingValue) {
-        super(gui, path, parentFolder, startingValue);
+    public RToggle(RotomGui gui, String path, RGroup parent, boolean startingValue) {
+        super(gui, path, parent, startingValue);
     }
 
     @Override
