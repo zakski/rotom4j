@@ -13,9 +13,8 @@ public class RSkip extends RButton {
 
     protected final boolean forwards;
 
-    float c;
+    float cx, cy;
     float h;
-    float a;
 
     /**
      * Default Constructor
@@ -28,9 +27,9 @@ public class RSkip extends RButton {
         super(gui, path, group);
         this.forwards = forwards;
 
-        c = RLayoutStore.getCell()/2;
+        cx = RLayoutStore.getCell();
+        cy = RLayoutStore.getCell()/2;
         h = RLayoutStore.getCell() * 0.75f;
-        a = 2*h/ PApplet.sqrt(3.0f);
     }
 
     protected float tri(float t) {
@@ -56,29 +55,15 @@ public class RSkip extends RButton {
             pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND));
         }
 
-        float t = value?1:0;
-        float t2 = ((tri(t)+1)/2);
-        float s = (h/10)*t2;
-        float w1 = a*(((h/2)-s)/h)+(a*t2*(1-(((h/2)-s)/h)));
-        float w2 = a*(((h/2)+s)/h)+(a*t2*(1-(((h/2)+s)/h)));
-
+        pg.pushMatrix();
+        pg.translate(cx, cy);
         if (!forwards){
             pg.rotate(PApplet.PI);
         }
 
-        // TIP
-        pg.beginShape();
-        pg.vertex(c-h/2, c-a/2);
-        pg.vertex(c-h/2, c+a/2);
-        pg.vertex(c-s, c+w1/2);
-        pg.vertex(c-s, c-w1/2);
-        pg.endShape();
-        // BASE
-        pg.beginShape();
-        pg.vertex(c+s, c-w2/2);
-        pg.vertex(c+s, c+w2/2);
-        pg.vertex(c+h/2, c+(a/2)*t2);
-        pg.vertex(c+h/2, c-(a/2)*t2);
-        pg.endShape();
+        pg.triangle(-cx/2, -(h/2), -cx/2, (h/2), 0, 0);
+        pg.triangle(-cx/16, -(h/2), -cx/16, (h/2), cx/2, 0);
+        pg.rect((cx/16)*6,-h/2,(cx/16)*2,h);
+        pg.popMatrix();
     }
 }

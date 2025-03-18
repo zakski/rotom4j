@@ -11,7 +11,7 @@ import processing.core.PGraphics;
 
 public class RLoop extends RToggle {
 
-    float c;
+    float cx, cy;
     float h;
     float a;
 
@@ -28,10 +28,10 @@ public class RLoop extends RToggle {
     public RLoop(RotomGui gui, String path, RGroup parent, boolean startingValue) {
         super(gui, path, parent, startingValue);
 
-        c = RLayoutStore.getCell()/2;
+        cx = RLayoutStore.getCell();
+        cy = RLayoutStore.getCell()/2;
         h = RLayoutStore.getCell() * 0.75f;
-        a = 2*h/ PApplet.sqrt(3.0f);
-    }
+     }
 
     protected float tri(float t) {
         return PApplet.min(PApplet.max(5*PApplet.abs(2*(t-PApplet.floor(t+((float) 1 /2))))-2.5f, -1), 1);
@@ -57,24 +57,16 @@ public class RLoop extends RToggle {
             pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_FOREGROUND));
         }
 
-        float t = value?1:0;
-        float t2 = ((tri(t)+1)/2);
-        float s = (h/10)*t2;
-        float w1 = a*(((h/2)-s)/h)+(a*t2*(1-(((h/2)-s)/h)));
-        float w2 = a*(((h/2)+s)/h)+(a*t2*(1-(((h/2)+s)/h)));
-        // TIP
-        pg.beginShape();
-        pg.vertex(c-h/2, c-a/2);
-        pg.vertex(c-h/2, c+a/2);
-        pg.vertex(c-s, c+w1/2);
-        pg.vertex(c-s, c-w1/2);
-        pg.endShape();
-        // BASE
-        pg.beginShape();
-        pg.vertex(c+s, c-w2/2);
-        pg.vertex(c+s, c+w2/2);
-        pg.vertex(c+h/2, c+(a/2)*t2);
-        pg.vertex(c+h/2, c-(a/2)*t2);
-        pg.endShape();
+        if (value) {
+            pg.circle(cx, cy, h);
+            if (isMouseOver) {
+                pg.fill(RThemeStore.getRGBA(RColorType.FOCUS_BACKGROUND));
+            } else {
+                pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
+            }
+            pg.circle(cx, cy, (h / 4) * 3);
+        } else {
+            pg.rect(cx-h/2, cy-h/4, h, h/2);
+        }
     }
 }

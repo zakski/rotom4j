@@ -11,7 +11,7 @@ import processing.core.PGraphics;
 
 public class RPlayPause extends RToggle {
 
-    float c;
+    float cx,cy;
     float h;
     float a;
 
@@ -28,7 +28,8 @@ public class RPlayPause extends RToggle {
     public RPlayPause(RotomGui gui, String path, RGroup parent, boolean startingValue) {
         super(gui, path, parent, startingValue);
 
-        c = RLayoutStore.getCell()/2;
+        cx = RLayoutStore.getCell();
+        cy = RLayoutStore.getCell()/2;
         h = RLayoutStore.getCell() * 0.75f;
         a = 2*h/ PApplet.sqrt(3.0f);
     }
@@ -64,17 +65,17 @@ public class RPlayPause extends RToggle {
         float w2 = a*(((h/2)+s)/h)+(a*t2*(1-(((h/2)+s)/h)));
         // TIP
         pg.beginShape();
-        pg.vertex(c-h/2, c-a/2);
-        pg.vertex(c-h/2, c+a/2);
-        pg.vertex(c-s, c+w1/2);
-        pg.vertex(c-s, c-w1/2);
+        pg.vertex(cx -h/2, cy -a/2);
+        pg.vertex(cx -h/2, cy +a/2);
+        pg.vertex(cx -s, cy +w1/2);
+        pg.vertex(cx -s, cy -w1/2);
         pg.endShape();
         // BASE
         pg.beginShape();
-        pg.vertex(c+s, c-w2/2);
-        pg.vertex(c+s, c+w2/2);
-        pg.vertex(c+h/2, c+(a/2)*t2);
-        pg.vertex(c+h/2, c-(a/2)*t2);
+        pg.vertex(cx +s, cy -w2/2);
+        pg.vertex(cx +s, cy +w2/2);
+        pg.vertex(cx +h/2, cy +(a/2)*t2);
+        pg.vertex(cx +h/2, cy -(a/2)*t2);
         pg.endShape();
     }
 }
