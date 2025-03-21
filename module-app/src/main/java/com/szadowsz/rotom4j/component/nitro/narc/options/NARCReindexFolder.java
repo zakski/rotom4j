@@ -1,23 +1,24 @@
-package com.szadowsz.rotom4j.component.nitro.narc;
+package com.szadowsz.rotom4j.component.nitro.narc.options;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.text.RTextField;
 import com.szadowsz.gui.input.mouse.RActivateByType;
+import com.szadowsz.rotom4j.component.nitro.narc.NARCOptions;
 import com.szadowsz.rotom4j.file.nitro.narc.NARC;
 
-public class NarcReindexFolderComponent extends RFolder {
+public class NARCReindexFolder extends RFolder {
     private static final String NAME = "Name";
     private static final String REINDEX = "Reindex";
 
-    private final NarcFolderComponent narcFolder;
+    private final NARCOptions narcOptions;
     private final NARC narc;
 
-    NarcReindexFolderComponent(RotomGui gui, String path, NarcFolderComponent parent) {
+    public NARCReindexFolder(RotomGui gui, String path, NARCOptions parent) {
         super(gui,path, parent);
-        narcFolder = parent;
-        narc = narcFolder.narc;
+        narcOptions = parent;
+        narc = narcOptions.getData();
         initNodes();
     }
 

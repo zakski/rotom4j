@@ -101,7 +101,7 @@ public class NCLRFolder extends R4JFolder<NCLR> {
 
     @Override
     protected final RTabFunction<R4JComponent<NCLR>> createDisplay() {
-        return (RTab tab) -> new NCLRComponent(gui, tab.getPath() + "/Image" ,tab, data);
+        return (RTab tab) -> new NCLRComponent(gui, tab.getPath() + "/Structured" ,tab, data);
     }
 
     void setDisplay(NCLRComponent nclrComponent) {

@@ -4,10 +4,10 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.input.toggle.RToggle;
 import com.szadowsz.gui.input.mouse.RActivateByType;
+import com.szadowsz.rotom4j.component.R4JFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.utils.Configuration;
 import com.szadowsz.rotom4j.app.RotomGuiImpl;
-import com.szadowsz.rotom4j.component.nitro.NitroImgFolderComponent;
 
 public class RegisterGeneralUI extends ControlConstants {
 
@@ -15,7 +15,7 @@ public class RegisterGeneralUI extends ControlConstants {
     private RegisterGeneralUI(){}
 
     private static void recolorImages(RotomGui gui) {
-        var nodes = gui.getComponentTree().getComponents(NitroImgFolderComponent.class);
+        var nodes = gui.getComponentTree().getComponents(R4JFolder.class);
         nodes.forEach(n -> {
             try {
                 n.recolorImage();

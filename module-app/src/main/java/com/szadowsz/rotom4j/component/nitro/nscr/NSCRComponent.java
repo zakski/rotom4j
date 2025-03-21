@@ -1,22 +1,13 @@
 package com.szadowsz.rotom4j.component.nitro.nscr;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.RGroup;
-import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.input.slider.RSlider;
-import com.szadowsz.gui.component.input.slider.RSliderInt;
-import com.szadowsz.gui.input.mouse.RActivateByType;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.rotom4j.component.R4JComponent;
-import com.szadowsz.rotom4j.component.R4JResourceFolder;
-import com.szadowsz.rotom4j.component.nitro.NitroCmpFolderComponent;
 import com.szadowsz.rotom4j.component.nitro.NitroPreview;
-import com.szadowsz.rotom4j.component.nitro.ncer.NCERComponent;
 import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
-import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
-import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
 import com.szadowsz.rotom4j.file.nitro.nscr.NSCR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

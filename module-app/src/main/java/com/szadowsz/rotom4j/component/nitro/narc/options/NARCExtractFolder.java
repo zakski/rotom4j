@@ -1,9 +1,11 @@
-package com.szadowsz.rotom4j.component.nitro.narc;
+package com.szadowsz.rotom4j.component.nitro.narc.options;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.input.mouse.RActivateByType;
+import com.szadowsz.rotom4j.component.nitro.narc.NARCFolder;
+import com.szadowsz.rotom4j.component.nitro.narc.NARCOptions;
 import com.szadowsz.rotom4j.file.nitro.narc.NARC;
 import com.szadowsz.rotom4j.app.ProcessingRotom4J;
 import com.szadowsz.rotom4j.app.utils.FileChooser;
@@ -12,8 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class NarcExtractFolderComponent extends RFolder {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NarcExtractFolderComponent.class);
+public class NARCExtractFolder extends RFolder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NARCExtractFolder.class);
 
     private static final String EXTRACT = "Extract";
     private static final String COMPRESSION = "Extract with compression";
@@ -22,13 +24,13 @@ public class NarcExtractFolderComponent extends RFolder {
     private final static String selectNarcFile = "Select NARC File";
     private final static String selectLstFile = "Select lst File";
 
-    private final NarcFolderComponent narcFolder;
+    private final NARCOptions narcOptions;
     private final NARC narc;
 
-    NarcExtractFolderComponent(RotomGui gui, String path, NarcFolderComponent parent) {
+    public NARCExtractFolder(RotomGui gui, String path, NARCOptions parent) {
         super(gui, path, parent);
-        narcFolder = parent;
-        narc = narcFolder.narc;
+        narcOptions = parent;
+        narc = narcOptions.getData();
         initNodes();
     }
 

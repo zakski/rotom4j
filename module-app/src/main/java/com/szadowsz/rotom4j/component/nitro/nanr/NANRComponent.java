@@ -2,7 +2,9 @@ package com.szadowsz.rotom4j.component.nitro.nanr;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.RGroup;
+import com.szadowsz.gui.component.group.drawable.media.RMediaControl;
 import com.szadowsz.gui.component.input.slider.RSlider;
+import com.szadowsz.gui.component.input.slider.RSliderInt;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.rotom4j.component.R4JComponent;
 import com.szadowsz.rotom4j.component.nitro.NitroPreview;
@@ -21,7 +23,12 @@ public class NANRComponent extends R4JComponent<NANR> {
 
     private final NANRFolder parentFolder;
 
+    private final String MEDIA_COMP = "media";
     private final String IMAGE_COMP = "image";
+
+    private final String ANI_SLIDER = "animations";
+
+    private int currentFrame;
 
     /**
      * Default Constructor
@@ -41,6 +48,38 @@ public class NANRComponent extends R4JComponent<NANR> {
         initComponents();
     }
 
+    protected int getCurrentAnimation() {
+        RSliderInt ani = (RSliderInt) findChildByName(ANI_SLIDER);
+        return ani.getValueAsInt();
+    }
+
+    /**
+     * Utility Method to create pre-packaged Zoom Node
+     *
+     * @return Slider representing the current zoom
+     */
+    protected RSlider createAnimationsSlider() {
+        return new RSliderInt(
+                gui,
+                NANRComponent.this.path + "/" + ANI_SLIDER,
+                NANRComponent.this,
+                0,
+                0,
+                data.getAnimationsCount() - 1,
+                true
+        ) {
+            @Override
+            protected void onValueChange() {
+                super.onValueChange();
+                try {
+                    changeAnimation();
+                } catch (NitroException e) {
+
+                }
+            }
+
+        };
+    }
 
     /**
      * Utility Method to create pre-packaged Zoom Node
@@ -74,13 +113,24 @@ public class NANRComponent extends R4JComponent<NANR> {
 
     protected void initComponents() {
         children.add(new NitroPreview(gui, path + "/" + PREVIEW_COMP, this, data));
+        children.add(new RMediaControl(gui,path + "/" + MEDIA_COMP,this));
+        children.add(createAnimationsSlider());
         children.add(createZoom());
         children.add(new NCERFolder(gui, path + "/" + IMAGE_COMP, this, data.getNCER()));
     }
 
+    protected void changeAnimation() throws NitroException {
+        currentFrame = 0;
+        PImage pImage = resizeImage(data.getImage(getCurrentAnimation(),0));
+        ((NitroPreview) findChildByName(PREVIEW_COMP)).loadImage(pImage);
+
+        resetBuffer();
+    }
+
+
     @Override
     public void recolorImage() throws NitroException {
-        PImage pImage = resizeImage(data.getImage());
+        PImage pImage = resizeImage(data.getImage(getCurrentAnimation(),currentFrame));
         ((NitroPreview) findChildByName(PREVIEW_COMP)).loadImage(pImage);
 
         resetBuffer();

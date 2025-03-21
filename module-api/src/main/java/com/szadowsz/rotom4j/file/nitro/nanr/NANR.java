@@ -397,6 +397,10 @@ public class NANR extends BaseNFSFile implements DrawableWithGraphic {
     }
 
 
+    public int getAnimationsCount() {
+        return nAnimations;
+    }
+
     @Override
     public BufferedImage getImage() {
         return getImage(0,0);

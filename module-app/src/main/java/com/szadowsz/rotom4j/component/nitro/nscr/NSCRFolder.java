@@ -4,18 +4,11 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.drawable.tab.RTab;
 import com.szadowsz.gui.component.group.drawable.tab.RTabFunction;
-import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.rotom4j.component.R4JComponent;
 import com.szadowsz.rotom4j.component.R4JResourceFolder;
-import com.szadowsz.rotom4j.component.nitro.NitroCmpFolderComponent;
-import com.szadowsz.rotom4j.component.nitro.NitroPreview;
-import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRComponent;
-import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
-import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.nitro.nscr.NSCR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PImage;
 
 
 public class NSCRFolder extends R4JResourceFolder<NSCR> {

@@ -1,9 +1,10 @@
-package com.szadowsz.rotom4j.component.nitro.narc;
+package com.szadowsz.rotom4j.component.nitro.narc.options;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.input.mouse.RActivateByType;
+import com.szadowsz.rotom4j.component.nitro.narc.NARCOptions;
 import com.szadowsz.rotom4j.file.nitro.narc.NARC;
 import com.szadowsz.rotom4j.app.ProcessingRotom4J;
 import com.szadowsz.rotom4j.app.utils.FileChooser;
@@ -12,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class NarcApplyFolderComponent extends RFolder {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NarcApplyFolderComponent.class);
+public class NARCApplyFolder extends RFolder {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NARCApplyFolder.class);
 
     private static final String APPLY_H = "Apply H";
     private static final String APPLY_LST = "Apply LST";
@@ -24,13 +25,13 @@ public class NarcApplyFolderComponent extends RFolder {
     private final static String selectLstFile = "Select lst File";
     private final static String selectHeaderFile = "Select .h File";
 
-    private final NarcFolderComponent narcFolder;
+    private final NARCOptions narcOptions;
     private final NARC narc;
 
-    NarcApplyFolderComponent(RotomGui gui, String path, NarcFolderComponent parent) {
+    public NARCApplyFolder(RotomGui gui, String path, NARCOptions parent) {
         super(gui, path, parent);
-        narcFolder = parent;
-        narc = narcFolder.narc;
+        narcOptions = parent;
+        narc = narcOptions.getData();
         initNodes();
     }
 

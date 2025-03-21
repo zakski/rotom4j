@@ -23,7 +23,7 @@ import com.szadowsz.rotom4j.component.bin.evo.EvoFolderComponent;
 import com.szadowsz.rotom4j.component.bin.growth.GrowthFolderComponent;
 import com.szadowsz.rotom4j.component.bin.learn.LearnFolderComponent;
 import com.szadowsz.rotom4j.component.bin.stats.StatsFolderComponent;
-import com.szadowsz.rotom4j.component.nitro.narc.NarcFolderComponent;
+import com.szadowsz.rotom4j.component.nitro.narc.NARCFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -170,15 +170,15 @@ public class RotomGuiImpl extends RotomGui {
         LOGGER.info("Created GUI for Narc File: {}", narc.getFileName());
     }
 
-    private NarcFolderComponent narc(String path, NARC narc) {
+    private NARCFolder narc(String path, NARC narc) {
         String fullPath = getCurrentPath() + path;
-        if (tree.isPathTakenByUnexpectedType(fullPath, NarcFolderComponent.class)) {
+        if (tree.isPathTakenByUnexpectedType(fullPath, NARCFolder.class)) {
             return null;//defaultOption == null ? options[0] : defaultOption;
         }
-        NarcFolderComponent component = (NarcFolderComponent) tree.getComponent(fullPath);
+        NARCFolder component = (NARCFolder) tree.getComponent(fullPath);
         if (component == null) {
             RFolder parentFolder = tree.getParentFolder(fullPath);
-            component = new NarcFolderComponent(this,fullPath, parentFolder, narc);
+            component = new NARCFolder(this,fullPath, parentFolder, narc);
             tree.insertAtPath(component);
         }
         return component;

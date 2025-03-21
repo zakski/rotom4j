@@ -44,9 +44,9 @@ public class NCERComponent extends R4JComponent<NCER> {
     }
 
     /**
-     * Utility Method to create pre-packaged Zoom Node
+     * Utility Method to create pre-packaged Cell Slider
      *
-     * @return Slider representing the current zoom
+     * @return Slider representing the current cell
      */
     protected RSlider createCell() {
         return new RSliderInt(
@@ -72,7 +72,7 @@ public class NCERComponent extends R4JComponent<NCER> {
     }
 
     /**
-     * Utility Method to create pre-packaged Zoom Node
+     * Utility Method to create pre-packaged Zoom Slider
      *
      * @return Slider representing the current zoom
      */

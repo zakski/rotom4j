@@ -77,7 +77,7 @@ public abstract class R4JFolder<R extends RotomFile> extends RFolder {
         if (data.isCompressed()) {
             tabs.addTab(createEditor("Compressed", true));
         }
-        tabs.addTab(createEditor( "Raw", false));
+        tabs.addTab(createEditor( "Binary", false));
         tabs.addTab(createDisplay());
     }
 
