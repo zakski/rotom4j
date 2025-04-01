@@ -119,8 +119,8 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
         pg.pushMatrix();
         if (vsb != null && vsb.isVisible()) {
             vsb.draw(pg,
-                    pos.x,
-                    pos.y,
+                    0,
+                    0,
                     files.getWidth()
             );
         }
@@ -132,8 +132,8 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
         NARCFilesMain files = (NARCFilesMain) findChildByName(MAIN);
         files.drawToBuffer();
         if (vsb != null && vsb.isVisible()) {
-            vsb.drawToBuffer( pos.x,
-                    pos.y,
+            vsb.drawToBuffer( 0,
+                    0,
                     files.getWidth(),
                     getHeight(),
                     actualHeight);
