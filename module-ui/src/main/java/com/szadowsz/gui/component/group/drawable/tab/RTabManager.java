@@ -142,7 +142,7 @@ public class RTabManager extends RGroupDrawable {
 
     @Override
     public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY){
-        if (!isVisible() || !this.isVisibleParentAware()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
         if (isPointOverHeader(mouseEvent, adjustedMouseY)) {
@@ -164,7 +164,7 @@ public class RTabManager extends RGroupDrawable {
 
     @Override
     public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY){
-        if (!isVisible() || !this.isVisibleParentAware()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
         RTab tab = getActiveTab();

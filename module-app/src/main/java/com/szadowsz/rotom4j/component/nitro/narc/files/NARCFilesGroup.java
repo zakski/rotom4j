@@ -5,6 +5,7 @@ import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.component.bined.RBinHeader;
 import com.szadowsz.gui.component.bined.RBinMain;
 import com.szadowsz.gui.component.bined.RBinPageSlider;
+import com.szadowsz.gui.component.bined.settings.RCodeAreaSection;
 import com.szadowsz.gui.component.bined.settings.RSelectingMode;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.utils.RComponentScrollbar;
@@ -25,8 +26,12 @@ import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 public class NARCFilesGroup extends R4JComponent<NARC> {
     private final static Logger LOGGER = LoggerFactory.getLogger(NARCFilesGroup.class);
 
-    public static final String MAIN = "Main";
+    protected static final int MAX_CHILD_DISPLAY = 32;
+    protected static final String MAIN = "Main";
+
     protected final NARC narc;
+
+    protected float actualHeight;
 
     // Vertical Scrollbar
     protected RComponentScrollbar vsb;
@@ -34,17 +39,32 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
     public NARCFilesGroup(RotomGui gui, String path, RGroup parent, NARC data) {
         super(gui, path, parent);
         narc = data;
+
+        initDimensions();
+
         children.add(new NARCFilesMain(gui, path + "/" + MAIN, this, narc));
         vsb = new RComponentScrollbar(
                 this,
                 new PVector(pos.x + children.getFirst().getWidth(), pos.y),
                 new PVector(RLayoutStore.getCell(), getHeight()),
-                getHeight(),
+                actualHeight,
                 16
         );
         LOGGER.info("Bin Editor {} created scrollbar with Pos [{}, {}] Size [{},{}]", getName(), vsb.getPosX(), vsb.getPosY(), vsb.getWidth(), vsb.getHeight());
         vsb.setVisible(true);
 
+    }
+
+    protected void initDimensions() {
+        int childCount = narc.getFiles().size();
+
+        actualHeight = childCount * RLayoutStore.getCell();
+
+        int childDisplayCount = Math.min(MAX_CHILD_DISPLAY, childCount);
+
+        // Relay the size to the proper place
+        size.x = suggestWidth();
+        size.y = childDisplayCount * RLayoutStore.getCell();
     }
 
     /**
@@ -68,8 +88,7 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
     }
 
     public int getVerticalScroll() {
-        RRect contentDims = children.getFirst().getBounds();
-        float yDiff = contentDims.getHeight() - RLayoutStore.getCell()*8;
+        float yDiff = actualHeight - getHeight();
         float value = (vsb != null) ? vsb.getValue() : 0.0f;
         return (int) (yDiff * value);
     }
@@ -89,7 +108,6 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
 
     }
 
-
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         pg.pushMatrix();
@@ -99,12 +117,11 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
         pg.popMatrix();
 
         pg.pushMatrix();
-        RRect contentDims = children.getFirst().getBounds();
         if (vsb != null && vsb.isVisible()) {
             vsb.draw(pg,
-                    contentDims.getX(),
-                    contentDims.getY(),
-                    contentDims.getWidth()
+                    pos.x,
+                    pos.y,
+                    files.getWidth()
             );
         }
         pg.popMatrix();
@@ -112,14 +129,14 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
 
     @Override
     public void drawToBuffer() {
-        children.forEach(RComponent::drawToBuffer);
-        RRect contentDims = children.getFirst().getBounds();
+        NARCFilesMain files = (NARCFilesMain) findChildByName(MAIN);
+        files.drawToBuffer();
         if (vsb != null && vsb.isVisible()) {
-            vsb.drawToBuffer(contentDims.getX(),
-                    contentDims.getY(),
-                    contentDims.getWidth(),
-                    RLayoutStore.getCell()*8,
-                    contentDims.getHeight());
+            vsb.drawToBuffer( pos.x,
+                    pos.y,
+                    files.getWidth(),
+                    getHeight(),
+                    actualHeight);
         }
         buffer.redraw();
     }
@@ -175,6 +192,7 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
         }
     }
 
+    @Override
     public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float adjustedMouseY) {
         if (isDragged() || (vsb != null && vsb.isDragged())) {
             if (vsb.isDragged()) {
@@ -195,6 +213,7 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
      * @param mouseEvent     the change made by the mouse
      * @param adjustedMouseY adjust for scrollbar
      */
+    @Override
     public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float adjustedMouseY) {
         if (isDragged() || (vsb != null && vsb.isDragged())) {
             if (vsb.isDragged()) {
@@ -224,11 +243,10 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
 
     @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
-        children.getFirst().updateCoordinates(bX, bY, rX, rY, w - RLayoutStore.getCell(), RLayoutStore.getCell()*8); // main
-        super.updateCoordinates(bX, bY, rX, rY, w, h);
-        RRect contentDims = children.getFirst().getBounds();
+        children.getFirst().updateCoordinates(bX, bY, rX, rY, w - RLayoutStore.getCell(), h); // main
+        updateComponentCoordinates(bX, bY, rX, rY, w, h);
         if (vsb != null) {
-            vsb.updateCoordinates(pos.x + children.getFirst().getWidth(), pos.y, RLayoutStore.getCell(), h, contentDims.getHeight() );
+            vsb.updateCoordinates(pos.x + children.getFirst().getWidth(), pos.y, RLayoutStore.getCell(), h, actualHeight);
         }
         buffer.resetBuffer();
     }

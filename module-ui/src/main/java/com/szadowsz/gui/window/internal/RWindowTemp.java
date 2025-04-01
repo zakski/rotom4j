@@ -131,7 +131,7 @@ public class RWindowTemp extends RWindowImpl {
     public void drawWindow(PGraphics canvas) {
         canvas.textFont(RFontStore.getMainFont());
         setScrollbarHighlighted(isVisible && (isPointInsideScrollbar(sketch.mouseX, sketch.mouseY) && !isBeingDragged) || folder.isMouseOver());
-        if (!isVisible || !folder.isVisibleParentAware()) {
+        if (!isVisible || !folder.isVisible()) {
             return;
         }
         constrainBounds(canvas);

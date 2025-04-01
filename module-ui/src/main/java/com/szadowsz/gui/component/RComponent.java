@@ -272,25 +272,29 @@ public abstract class RComponent {
      * seeing the mouse/key event consumed.
      */
     protected void redrawBuffers() {
-        buffer.invalidateBuffer();
-        if (parent != null && !(parent instanceof RFolder)) {
-            parent.redrawBuffers();
-        }
-        RWindowImpl win = getParentWindow(); // TODO check if needed
-        if (win != null) {
-            win.redrawBuffer();
+        if (isVisibleParentAware(null)) {
+            buffer.invalidateBuffer();
+            if (parent != null && !(parent instanceof RFolder)) {
+                parent.redrawBuffers();
+            }
+            RWindowImpl win = getParentWindow(); // TODO check if needed
+            if (win != null) {
+                win.redrawBuffer();
+            }
         }
     }
 
     public void resetBuffer() {
-        buffer.resetBuffer();
-        RGroup parent = getParent();
-        if (parent != null && !(parent instanceof RFolder)) {
-            parent.resetBuffer();
-        }
-        RWindowImpl win = getParentWindow(); // TODO check if needed
-        if (win != null) {
-            win.redrawBuffer();
+        if (isVisibleParentAware(null)) {
+            buffer.resetBuffer();
+            RGroup parent = getParent();
+            if (parent != null && !(parent instanceof RFolder)) {
+                parent.resetBuffer();
+            }
+            RWindowImpl win = getParentWindow(); // TODO check if needed
+            if (win != null) {
+                win.redrawBuffer();
+            }
         }
     }
 
@@ -477,10 +481,14 @@ public abstract class RComponent {
      *
      * @return true if visible, false otherwise
      */
-    public boolean isVisibleParentAware() { // TODO LazyGui
+    public boolean isVisibleParentAware(RComponent child) {
         boolean visible = isVisible();
         if (parent != null) {
-            return visible && parent.isVisibleParentAware();
+            if (parent instanceof RFolder) {
+                return visible && parent.isVisible();
+            } else {
+                return visible && parent.isVisibleParentAware(this);
+            }
         }
         return visible;
     }

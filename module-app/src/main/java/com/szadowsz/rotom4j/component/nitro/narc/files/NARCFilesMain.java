@@ -2,12 +2,10 @@ package com.szadowsz.rotom4j.component.nitro.narc.files;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
-import com.szadowsz.gui.component.action.RButton;
-import com.szadowsz.gui.config.RLayoutStore;
+import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.layout.RDirection;
 import com.szadowsz.gui.layout.RLayoutBase;
 import com.szadowsz.gui.layout.RLinearLayout;
-import com.szadowsz.gui.layout.RRect;
 import com.szadowsz.rotom4j.component.R4JComponent;
 import com.szadowsz.rotom4j.component.bin.BinFolder;
 import com.szadowsz.rotom4j.component.nitro.nanr.NANRFolder;
@@ -31,9 +29,10 @@ import processing.core.PVector;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
+import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
+
 public class NARCFilesMain extends R4JComponent<NARC> {
 
-    private static final int MAX_CHILD_DISPLAY = 32;
 
     protected final NARCFilesGroup filesGroup;
 
@@ -53,7 +52,7 @@ public class NARCFilesMain extends R4JComponent<NARC> {
         }
     }
 
-    private void initFiles() throws NitroException {
+    protected void initFiles() throws NitroException {
         if (!children.isEmpty()) {
             return;
         }
@@ -79,12 +78,17 @@ public class NARCFilesMain extends R4JComponent<NARC> {
         return null;
     }
 
+    protected boolean isChildDrawable(RComponent child) {
+        int yDiff = filesGroup.getVerticalScroll();
+        return !(child.getRelPosY() + child.getHeight() < yDiff) && !(child.getRelPosY() > yDiff + getHeight());
+    }
+
     protected void drawChildren(PGraphics pg) {
 
         int index = 0;
 
         for (RComponent component : children) {
-            if (!component.isVisible()) {
+            if (!component.isVisibleParentAware(null)) {
                 index++;
                 continue;
             }
@@ -108,15 +112,31 @@ public class NARCFilesMain extends R4JComponent<NARC> {
         }
     }
 
-
-
     @Override
     public PVector getBufferSize(){
         return new PVector(getWidth(), getHeight());
     }
+
     @Override
     public PVector getPreferredSize() {
-        return new PVector(getWidth(), Math.min(getHeight(), RLayoutStore.getCell()*MAX_CHILD_DISPLAY));
+        return new PVector(getWidth(), parent.getHeight());
+    }
+
+    /**
+     * Method to check if this window of this component is visible, and if all parent nodes are visible
+     *
+     * @return true if visible, false otherwise
+     */
+    public boolean isVisibleParentAware(RComponent child) {
+        boolean visible = isVisible() && (child == null || isChildDrawable(child));
+        if (parent != null) {
+            if (parent instanceof RFolder) {
+                return visible && parent.isVisible();
+            } else {
+                return visible && parent.isVisibleParentAware(this);
+            }
+        }
+        return visible;
     }
 
     @Override
@@ -136,10 +156,32 @@ public class NARCFilesMain extends R4JComponent<NARC> {
 
     @Override
     public void drawToBuffer() {
-        super.drawToBuffer();
-        int yDiff = filesGroup.getVerticalScroll();
-        toDraw = buffer.draw().get(0, yDiff, (int) size.x, (int) Math.min(size.y, RLayoutStore.getCell()*MAX_CHILD_DISPLAY));
+      children.stream()
+                .filter(this::isChildDrawable)
+                .forEach(RComponent::drawToBuffer);
+        buffer.redraw();
+        toDraw = buffer.draw().get(0, filesGroup.getVerticalScroll(), (int) size.x, (int) parent.getHeight());
     }
+
+    /**
+     * Find A Component At The Given Coordinates
+     *
+     * @param x X-Coordinate
+     * @param y Y-Coordinate
+     * @return The Component at these Coordinates, if one exists, null otherwise
+     */
+    public RComponent findVisibleComponentAt(float x, float y) {
+        for (RComponent component : children) {
+            if (!component.isVisibleParentAware(null)) {
+                continue;
+            }
+            if (isPointInRect(x, y, component.getPosX(), component.getPosY(), component.getWidth(), component.getHeight())) {
+                return component;
+            }
+        }
+        return null;
+    }
+
 
     @Override
     public void recolorImage() throws NitroException {

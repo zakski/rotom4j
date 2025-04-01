@@ -1016,7 +1016,7 @@ public class RWindowImpl implements RWindow, RInputListener {
         setTitleHighlighted(shouldHighlightTitle());
         setScrollbarHighlighted(shouldHighlightScrollbar());
 
-        if (!isVisible || !folder.isVisibleParentAware()) {
+        if (!isVisible() || !folder.isVisible()) {
             return;
         }
 

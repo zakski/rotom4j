@@ -167,7 +167,7 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void keyPressed(RKeyEvent keyEvent, float mouseX, float mouseY) {
-        if (!isVisible()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
         RComponent focused = findFocusedComponent();
@@ -191,6 +191,9 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (!this.isVisibleParentAware(null)) {
+            return;
+        }
         RComponent underMouse = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
         if (underMouse != null) {
             if (!underMouse.isMouseOver()) {
@@ -204,7 +207,7 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (!isVisible()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
 
@@ -224,7 +227,7 @@ public abstract class RGroupDrawable extends RGroup {
      */
     @Override
     public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (!isVisible()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
 
@@ -245,7 +248,7 @@ public abstract class RGroupDrawable extends RGroup {
      */
     @Override
     public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (!isVisible() || !this.isVisibleParentAware()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
         RComponent child = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
@@ -258,7 +261,7 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void mouseDragged(RMouseEvent mouseEvent) {
-        if (!isVisible()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
         for (RComponent child : children) {
@@ -289,5 +292,10 @@ public abstract class RGroupDrawable extends RGroup {
     public void updateChildrenCoordinates() {
         LOGGER.debug("{} Layout [{},{}]",getName(),getWidth(),getHeight());
         layout.setCompLayout(pos, size, children);
+    }
+
+    public void updateComponentCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
+        LOGGER.debug("Update Coordinates for Just Drawable Group [{}, {}, {}, {}, {}, {}]", bX, bY, rX, rY, w, h);
+        super.updateCoordinates(bX, bY, rX, rY, w, h);
     }
 }
