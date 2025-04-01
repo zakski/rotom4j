@@ -4,8 +4,6 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.input.mouse.RActivateByType;
-import com.szadowsz.rotom4j.component.nitro.narc.NARCFolder;
-import com.szadowsz.rotom4j.component.nitro.narc.NARCOptions;
 import com.szadowsz.rotom4j.file.nitro.narc.NARC;
 import com.szadowsz.rotom4j.app.ProcessingRotom4J;
 import com.szadowsz.rotom4j.app.utils.FileChooser;

@@ -5,8 +5,9 @@ import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.drawable.tab.RTab;
 import com.szadowsz.gui.component.group.drawable.tab.RTabFunction;
 import com.szadowsz.rotom4j.component.R4JComponent;
-import com.szadowsz.rotom4j.component.R4JEditor;
 import com.szadowsz.rotom4j.component.R4JFolder;
+import com.szadowsz.rotom4j.component.nitro.narc.files.NARCFilesGroup;
+import com.szadowsz.rotom4j.component.nitro.narc.options.NARCOptions;
 import com.szadowsz.rotom4j.file.nitro.narc.NARC;
 
 public class NARCFolder extends R4JFolder<NARC> {
@@ -35,7 +36,7 @@ public class NARCFolder extends R4JFolder<NARC> {
 
     @Override
     protected RTabFunction<R4JComponent<NARC>> createDisplay() {
-        return (RTab tab) -> new NARCFilesGroup(gui, tab.getPath() + "/Options" ,tab, data);
+        return (RTab tab) -> new NARCFilesGroup(gui, tab.getPath() + "/Files" ,tab, data);
     }
 
     protected void createTabs() {

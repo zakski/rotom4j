@@ -36,6 +36,21 @@ public class RotomGuiImpl extends RotomGui {
         super(sketch, settings);
     }
 
+
+    public NARCFolder narc(String path, NARC narc) {
+        String fullPath = getCurrentPath() + path;
+        if (tree.isPathTakenByUnexpectedType(fullPath, NARCFolder.class)) {
+            return null;//defaultOption == null ? options[0] : defaultOption;
+        }
+        NARCFolder component = (NARCFolder) tree.getComponent(fullPath);
+        if (component == null) {
+            RFolder parentFolder = tree.getParentFolder(fullPath);
+            component = new NARCFolder(this,fullPath, parentFolder, narc);
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
     public NANRFolder animeRes(String path, NANR nanr) throws NitroException {
         String fullPath = getCurrentPath() + path;
         if (tree.isPathTakenByUnexpectedType(fullPath, NANRFolder.class)) {
@@ -92,8 +107,8 @@ public class RotomGuiImpl extends RotomGui {
         return component;
     }
 
-    public NCLRFolder palette(NCLR nclr) {
-        String fullPath = getCurrentPath() + nclr.getFileName();
+    public NCLRFolder palette(String path, NCLR nclr) {
+        String fullPath = getCurrentPath() + path;
         if (tree.isPathTakenByUnexpectedType(fullPath, NCLRFolder.class)) {
             return null;
         }
@@ -170,20 +185,6 @@ public class RotomGuiImpl extends RotomGui {
         LOGGER.info("Created GUI for Narc File: {}", narc.getFileName());
     }
 
-    private NARCFolder narc(String path, NARC narc) {
-        String fullPath = getCurrentPath() + path;
-        if (tree.isPathTakenByUnexpectedType(fullPath, NARCFolder.class)) {
-            return null;//defaultOption == null ? options[0] : defaultOption;
-        }
-        NARCFolder component = (NARCFolder) tree.getComponent(fullPath);
-        if (component == null) {
-            RFolder parentFolder = tree.getParentFolder(fullPath);
-            component = new NARCFolder(this,fullPath, parentFolder, narc);
-            tree.insertAtPath(component);
-        }
-        return component;
-    }
-
     public void registerNanrGUI(NANR nanr) throws NitroException {
         LOGGER.info("Creating GUI for NANR File: {}", nanr.getFileName());
         setFolder("Loaded Files");
@@ -219,7 +220,7 @@ public class RotomGuiImpl extends RotomGui {
     public void registerNclrGUI(NCLR nclr) {
         LOGGER.info("Creating GUI for NCLR File: {}", nclr.getFileName());
         setFolder("Loaded Files");
-        palette(nclr);
+        palette(nclr.getFileName(),nclr);
         setFolder(null);
         LOGGER.info("Created GUI for NCLR File: {}", nclr.getFileName());
     }

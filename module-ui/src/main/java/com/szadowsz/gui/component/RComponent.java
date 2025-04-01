@@ -12,6 +12,7 @@ import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutConfig;
+import com.szadowsz.gui.layout.RRect;
 import com.szadowsz.gui.window.internal.RWindowImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -311,6 +312,10 @@ public abstract class RComponent {
 
     public String getClassName() {
         return className;
+    }
+
+    public RRect getBounds(){
+        return new RRect(pos.x, pos.y, size.x, size.y);
     }
 
     /**

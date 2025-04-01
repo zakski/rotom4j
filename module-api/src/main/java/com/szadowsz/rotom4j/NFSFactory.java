@@ -120,7 +120,7 @@ public class NFSFactory {
             }
             case BINARY -> { // Some Sort Of Data File
                 if (data != null && data.getDataSize() > 4) {
-                    return new DataFile(DataFormat.UNSPECIFIED,name, compData);
+                    return new DataFile(DataFormat.UNSPECIFIED,name, comp, compData);
                 } else {
                     return new PlaceholderNFSFile(name);
                 }
@@ -196,10 +196,11 @@ public class NFSFactory {
             }
         } catch (ArrayIndexOutOfBoundsException | IOException e) {
             LOGGER.warn("Failed to decompress " + fileNameNoExt, e);
+            compFormat = CompFormat.UNKNOWN;
+            data = compressedData;
         }
         RotomFormat magic = parseFileFormat(data);
-        String fileName = fileNameNoExt + "." + magic.getExt()[0];
-        return convert(magic, null, fileName, compFormat, compressedData, data);
+        return convert(magic, null, fileNameNoExt, compFormat, compressedData, data);
 
     }
 

@@ -61,9 +61,9 @@ public class NARC extends BaseNFSFile {
      * Read NARC data, and create a filename table and a list of files.
      *
      * @param path file path
-     * @throws IOException if there are issues reading the data/file
+     * @throws NitroException if there are issues reading the data/file
      */
-    public NARC(String path) throws IOException {
+    public NARC(String path) throws NitroException {
         super(RotomFormat.NARC, path);
         MemBuf buf = MemBuf.create(data);
         MemBuf.MemBufReader reader = buf.reader();

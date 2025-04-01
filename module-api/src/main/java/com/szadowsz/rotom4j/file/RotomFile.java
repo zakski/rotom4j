@@ -36,6 +36,16 @@ public abstract class RotomFile extends ByteArrayCompressibleData {
         }
     }
 
+    public RotomFile(String name, CompFormat detectedCompression, ByteArrayEditableData compData) {
+        super(detectedCompression,compData);
+        this.objName = name;
+        String ext = new String (Arrays.copyOf(data,4));
+        this.magic = RotomFormat.valueOfLabel(ext);
+        if (this.magic == null) {
+            this.magic = RotomFormat.BINARY;
+        }
+    }
+
     public RotomFile(File file) throws InvalidFileException {
         super(file);
         if (fileFullName != null) {

@@ -5,7 +5,6 @@ import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.text.RTextField;
 import com.szadowsz.gui.input.mouse.RActivateByType;
-import com.szadowsz.rotom4j.component.nitro.narc.NARCOptions;
 import com.szadowsz.rotom4j.file.nitro.narc.NARC;
 
 public class NARCReindexFolder extends RFolder {
