@@ -251,6 +251,14 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
         buffer.resetBuffer();
     }
 
+    public void updateChildrenCoordinates() {
+        // This gets called from inside the buffer without using updateCoordinates first
+        children.getFirst().updateCoordinates(pos.x, pos.y, relPos.x, relPos.y, getWidth() - RLayoutStore.getCell(), getHeight()); // main
+        if (vsb != null) {
+            vsb.updateCoordinates(pos.x + children.getFirst().getWidth(), pos.y, RLayoutStore.getCell(), getHeight(), actualHeight);
+        }
+    }
+
     @Override
     public float suggestWidth() {
         return super.suggestWidth() + RLayoutStore.getCell();
