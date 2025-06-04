@@ -284,6 +284,13 @@ public abstract class RComponent {
         }
     }
 
+    public void refreshBuffer() {
+        if (isVisibleParentAware(null)) {
+            buffer.resetBuffer();
+
+        }
+    }
+
     public void resetBuffer() {
         if (isVisibleParentAware(null)) {
             buffer.resetBuffer();

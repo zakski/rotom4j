@@ -4,6 +4,7 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.text.RFontStore;
+import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
@@ -35,6 +36,16 @@ public abstract class RGroupDrawable extends RGroup {
     protected RGroupDrawable(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
         buffer = new RGroupBuffer(this);
+    }
+
+    /**
+     * Sets the background fill color of the component, as part of the draw method
+     *
+     * @param pg graphics reference to use
+     */
+    @Override
+    protected void fillBackground(PGraphics pg) {
+        pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
     }
 
     /**
@@ -277,6 +288,13 @@ public abstract class RGroupDrawable extends RGroup {
         }
     }
 
+    @Override
+    public void refreshBuffer() {
+        if (isVisibleParentAware(null)) {
+            buffer.resetBuffer();
+            children.forEach(RComponent::refreshBuffer);
+        }
+    }
     @Override
     public float suggestWidth() {
         return getPreferredSize().x;

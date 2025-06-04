@@ -1,24 +1,12 @@
 package com.szadowsz.rotom4j.component.bin;
 
 import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.RGroup;
-import com.szadowsz.gui.component.group.drawable.RColorPicker;
-import com.szadowsz.gui.component.input.slider.RSlider;
-import com.szadowsz.gui.component.input.slider.RSliderInt;
-import com.szadowsz.gui.input.mouse.RActivateByType;
 import com.szadowsz.gui.layout.RLayoutBase;
-import com.szadowsz.rotom4j.app.utils.ImageUtils;
 import com.szadowsz.rotom4j.component.R4JComponent;
-import com.szadowsz.rotom4j.component.nitro.NitroPreview;
 import com.szadowsz.rotom4j.file.data.DataFile;
-import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PImage;
-
-import java.awt.*;
-import java.io.IOException;
 
 public class BinComponent extends R4JComponent<DataFile> {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinComponent.class);

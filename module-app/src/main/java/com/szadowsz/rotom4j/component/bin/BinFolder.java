@@ -4,24 +4,11 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.drawable.tab.RTab;
 import com.szadowsz.gui.component.group.drawable.tab.RTabFunction;
-import com.szadowsz.gui.config.RLayoutStore;
-import com.szadowsz.gui.input.mouse.RMouseEvent;
-import com.szadowsz.rotom4j.app.ProcessingRotom4J;
-import com.szadowsz.rotom4j.app.utils.FileChooser;
 import com.szadowsz.rotom4j.component.R4JComponent;
 import com.szadowsz.rotom4j.component.R4JFolder;
-import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
 import com.szadowsz.rotom4j.file.data.DataFile;
-import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PGraphics;
-
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-
-import static processing.core.PConstants.CENTER;
 
 public class BinFolder extends R4JFolder<DataFile> {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinFolder.class);

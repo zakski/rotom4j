@@ -1,17 +1,16 @@
 package com.szadowsz.rotom4j.component.control;
 
 import com.szadowsz.rotom4j.file.RotomFile;
-import com.szadowsz.rotom4j.file.nitro.BaseNFSFile;
 import com.szadowsz.rotom4j.file.data.evo.EvolutionNFSFile;
 import com.szadowsz.rotom4j.file.data.learnset.LearnsetNFSFile;
 import com.szadowsz.rotom4j.file.data.stats.GrowNFSFile;
 import com.szadowsz.rotom4j.file.data.stats.StatsNFSFile;
-import com.szadowsz.rotom4j.file.nitro.nanr.NANR;
-import com.szadowsz.rotom4j.file.nitro.narc.NARC;
-import com.szadowsz.rotom4j.file.nitro.ncer.NCER;
-import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
-import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
-import com.szadowsz.rotom4j.file.nitro.nscr.NSCR;
+import com.szadowsz.rotom4j.file.nitro.n2d.nanr.NANR;
+import com.szadowsz.rotom4j.file.nitro.n2d.narc.NARC;
+import com.szadowsz.rotom4j.file.nitro.n2d.ncer.NCER;
+import com.szadowsz.rotom4j.file.nitro.n2d.ncgr.NCGR;
+import com.szadowsz.rotom4j.file.nitro.n2d.nclr.NCLR;
+import com.szadowsz.rotom4j.file.nitro.n2d.nscr.NSCR;
 import com.szadowsz.rotom4j.app.RotomGuiImpl;
 import com.szadowsz.rotom4j.app.managers.*;
 import com.szadowsz.rotom4j.app.utils.FileChooser;
