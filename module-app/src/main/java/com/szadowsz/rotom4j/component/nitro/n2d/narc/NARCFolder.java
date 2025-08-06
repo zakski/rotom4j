@@ -6,7 +6,7 @@ import com.szadowsz.gui.component.group.drawable.tab.RTab;
 import com.szadowsz.gui.component.group.drawable.tab.RTabFunction;
 import com.szadowsz.rotom4j.component.R4JComponent;
 import com.szadowsz.rotom4j.component.R4JFolder;
-import com.szadowsz.rotom4j.component.nitro.n2d.narc.files.NARCFilesGroup;
+import com.szadowsz.rotom4j.component.nitro.n2d.narc.files.NARCFilesPages;
 import com.szadowsz.rotom4j.component.nitro.n2d.narc.options.NARCOptions;
 import com.szadowsz.rotom4j.file.nitro.n2d.narc.NARC;
 
@@ -36,7 +36,7 @@ public class NARCFolder extends R4JFolder<NARC> {
 
     @Override
     protected RTabFunction<R4JComponent<NARC>> createDisplay() {
-        return (RTab tab) -> new NARCFilesGroup(gui, tab.getPath() + "/Files" ,tab, data);
+        return (RTab tab) -> new NARCFilesPages(gui, tab.getPath() + "/Files" ,tab, data);
     }
 
     protected void createTabs() {
@@ -47,22 +47,4 @@ public class NARCFolder extends R4JFolder<NARC> {
         tabs.addTab(createOptions());
         tabs.addTab(createDisplay());
     }
-//
-//    final NARC narc;
-//
-//    public NarcFolder(RotomGuiImpl gui, String path, RFolder parent, NARC narc) {
-//        super(gui, path, parent);
-//        this.narc = narc;
-//        initNodes();
-//    }
-//
-//    private void initNodes() {
-//        if (!children.isEmpty()) {
-//            return;
-//        }
-//        children.add(new NarcApplyFolder(gui,path + "/" + APPLY_FOLDER, this));
-//        children.add(new NarcReindexFolder(gui,path + "/" + REINDEX_FOLDER, this));
-//        children.add(new NarcExtractFolder(gui,path + "/" + EXTRACT_FOLDER, this));
-//        children.add(new NarcFilesFolder(gui,path + "/" + FILES_FOLDER, this));
-//    }
 }

@@ -17,26 +17,35 @@ import processing.core.PVector;
 
 import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 
-public class NARCFilesGroup extends R4JComponent<NARC> {
-    private final static Logger LOGGER = LoggerFactory.getLogger(NARCFilesGroup.class);
+public class NARCFilesPages extends R4JComponent<NARC> {
+    private final static Logger LOGGER = LoggerFactory.getLogger(NARCFilesPages.class);
 
     protected static final int MAX_CHILD_DISPLAY = 32;
-    protected static final String MAIN = "Main";
+    protected static final int MAX_CHILD_PAGE = MAX_CHILD_DISPLAY*4;
+
+    protected static final String SLIDER = "page";
+    protected static final String PAGE = "page_";
 
     protected final NARC narc;
+
+    protected int totalPages;
 
     protected float actualHeight;
 
     // Vertical Scrollbar
     protected RComponentScrollbar vsb;
 
-    public NARCFilesGroup(RotomGui gui, String path, RGroup parent, NARC data) {
+    public NARCFilesPages(RotomGui gui, String path, RGroup parent, NARC data) {
         super(gui, path, parent);
         narc = data;
 
         initDimensions();
 
-        children.add(new NARCFilesMain(gui, path + "/" + MAIN, this, narc));
+        children.add(new NARCFilesPageSlider(gui, path + "/" + SLIDER, this));
+        for (int i = 0; i < totalPages;i++) {
+            children.add(new NarcFilesPage(gui, path + "/" + PAGE + i, this, narc, i));
+        }
+
         vsb = new RComponentScrollbar(
                 this,
                 new PVector(pos.x + children.getFirst().getWidth(), pos.y),
@@ -44,21 +53,22 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
                 actualHeight,
                 16
         );
+
         LOGGER.info("Bin Editor {} created scrollbar with Pos [{}, {}] Size [{},{}]", getName(), vsb.getPosX(), vsb.getPosY(), vsb.getWidth(), vsb.getHeight());
-        vsb.setVisible(true);
+        vsb.setVisible(getFilesOnPage(0) > MAX_CHILD_DISPLAY);
 
     }
 
     protected void initDimensions() {
         int childCount = narc.getFiles().size();
+        totalPages = childCount / MAX_CHILD_PAGE + (((childCount % MAX_CHILD_PAGE) > 0)?1:0);
 
-        actualHeight = childCount * RLayoutStore.getCell();
-
+        actualHeight = RLayoutStore.getCell() + Math.min(MAX_CHILD_PAGE, childCount) * RLayoutStore.getCell();
         int childDisplayCount = Math.min(MAX_CHILD_DISPLAY, childCount);
 
         // Relay the size to the proper place
         size.x = suggestWidth();
-        size.y = childDisplayCount * RLayoutStore.getCell();
+        size.y = RLayoutStore.getCell() + childDisplayCount * RLayoutStore.getCell();
     }
 
     /**
@@ -81,11 +91,55 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
         return isVisible && isPointInsideScrollbar(e.getX(), adjustedMouseY);
     }
 
+    protected boolean shouldDisplayVerticalScrollbar() {
+       if (getCurrentPageNumber() == getTotalPages()-1) {
+                return narc.getFiles().size() % (MAX_CHILD_DISPLAY*4) > MAX_CHILD_DISPLAY;
+            } else {
+                return true;
+            }
+    }
+
+    protected int getCurrentPageNumber(){
+        NARCFilesPageSlider pages = ((NARCFilesPageSlider) findChildByName(SLIDER));
+        return (pages != null)? pages.getValueAsInt():1;
+    }
+
+    protected NarcFilesPage getCurrentPage(){
+       return (NarcFilesPage) children.get(getCurrentPageNumber()+1);
+    }
+
+    protected int getTotalPages(){
+        return totalPages;
+    }
+
+    protected int getMaxFilesPerPage(){
+        if (totalPages > 1){
+            return MAX_CHILD_PAGE;
+        } else {
+            return narc.getFiles().size();
+        }
+     }
+
+    protected int getFilesOnPage(int pageNumber){
+        if (pageNumber < getTotalPages()-1){
+            return getMaxFilesPerPage();
+        } else {
+            int last = narc.getFiles().size() % MAX_CHILD_PAGE;
+            return (last > 0)?last: MAX_CHILD_PAGE;
+        }
+    }
+
 
     @Override
     protected void drawForeground(PGraphics pg, String name) {
         pg.pushMatrix();
-        NARCFilesMain files = (NARCFilesMain) findChildByName(MAIN);
+        NARCFilesPageSlider slider = (NARCFilesPageSlider) findChildByName(SLIDER);
+        pg.translate(slider.getRelPosX(), slider.getRelPosY());
+        slider.draw(pg);
+        pg.popMatrix();
+
+        pg.pushMatrix();
+        NarcFilesPage files = (NarcFilesPage) findChildByName(PAGE + getCurrentPageNumber());
         pg.translate(files.getRelPosX(), files.getRelPosY());
         files.draw(pg);
         pg.popMatrix();
@@ -105,10 +159,10 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
         return actualHeight;
     }
 
-    public int getVerticalScroll() {
-        float yDiff = actualHeight - getHeight();
-        float value = (vsb != null) ? vsb.getValue() : 0.0f;
-        return (int) (yDiff * value);
+    void turnPage() {
+        initDimensions();
+        vsb.setVisible(shouldDisplayVerticalScrollbar());
+        resetBuffer();
     }
 
     @Override
@@ -121,6 +175,20 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
         return super.isDragged() || (vsb != null && vsb.isDragged());
     }
 
+    public int getVerticalScroll() {
+        float yDiff = actualHeight - getHeight();
+        float value = (vsb != null) ? vsb.getValue() : 0.0f;
+        return (int) (yDiff * value);
+    }
+
+    @Override
+    public PVector getPreferredSize() {
+        PVector full = layout.calcPreferredSize(getParentFolder().getName(), children);
+        NARCFilesPageSlider pages = (NARCFilesPageSlider) findChildByName(SLIDER);
+
+        return new PVector(full.x, pages.getPreferredSize().y + Math.min(MAX_CHILD_DISPLAY,getFilesOnPage(getCurrentPageNumber())) * RLayoutStore.getCell());
+    }
+
     @Override
     public void setLayout(RLayoutBase layout) {
 
@@ -128,7 +196,9 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
 
     @Override
     public void drawToBuffer() {
-        NARCFilesMain files = (NARCFilesMain) findChildByName(MAIN);
+        NARCFilesPageSlider pages = (NARCFilesPageSlider) findChildByName(SLIDER);
+        pages.drawToBuffer();
+        NarcFilesPage files = (NarcFilesPage) findChildByName(PAGE + getCurrentPageNumber());
         files.drawToBuffer();
         if (vsb != null && vsb.isVisible()) {
             vsb.drawToBuffer( 0,
@@ -235,7 +305,10 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
                 vsb.invalidateBuffer();
             }
             super.redrawBuffers();
-            ((NARCFilesMain) children.getFirst()).redrawBuffers();
+            NARCFilesPageSlider pages = (NARCFilesPageSlider) findChildByName(SLIDER);
+            pages.redrawBuffers();
+            NarcFilesPage files = (NarcFilesPage) findChildByName(PAGE + getCurrentPageNumber());
+            files.redrawBuffers();
          }
     }
 
@@ -245,17 +318,23 @@ public class NARCFilesGroup extends R4JComponent<NARC> {
 
     @Override
     public void updateCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
-        children.getFirst().updateCoordinates(bX, bY, rX, rY, w - RLayoutStore.getCell(), h); // main
+        NARCFilesPageSlider pages = (NARCFilesPageSlider) findChildByName(SLIDER);
+        pages.updateCoordinates(bX, bY, rX, rY, w - RLayoutStore.getCell(), RLayoutStore.getCell()); // page
+        NarcFilesPage files = (NarcFilesPage) findChildByName(PAGE + getCurrentPageNumber());
+        files.updateCoordinates(bX, bY, rX, rY + RLayoutStore.getCell(), w - RLayoutStore.getCell(), h - RLayoutStore.getCell()); // main
         updateComponentCoordinates(bX, bY, rX, rY, w, h);
         if (vsb != null) {
-            vsb.updateCoordinates(pos.x + children.getFirst().getWidth(), pos.y, RLayoutStore.getCell(), h, actualHeight);
+            vsb.updateCoordinates(pos.x + children.getFirst().getWidth(), pos.y + RLayoutStore.getCell(), RLayoutStore.getCell(), h - RLayoutStore.getCell(), actualHeight);
         }
         buffer.resetBuffer();
     }
 
     public void updateChildrenCoordinates() {
         // This gets called from inside the buffer without using updateCoordinates first
-        children.getFirst().updateCoordinates(pos.x, pos.y, relPos.x, relPos.y, getWidth() - RLayoutStore.getCell(), getHeight()); // main
+        NARCFilesPageSlider pages = (NARCFilesPageSlider) findChildByName(SLIDER);
+        pages.updateCoordinates(pos.x, pos.y, relPos.x, relPos.y, getWidth() - RLayoutStore.getCell(), RLayoutStore.getCell()); // page
+        NarcFilesPage files = (NarcFilesPage) findChildByName(PAGE + getCurrentPageNumber());
+        files.updateCoordinates(pos.x, pos.y + RLayoutStore.getCell(), relPos.x, relPos.y + RLayoutStore.getCell(), getWidth() - RLayoutStore.getCell(), getHeight() - RLayoutStore.getCell()); // main
         if (vsb != null) {
             vsb.updateCoordinates(pos.x + children.getFirst().getWidth(), pos.y, RLayoutStore.getCell(), getHeight(), actualHeight);
         }

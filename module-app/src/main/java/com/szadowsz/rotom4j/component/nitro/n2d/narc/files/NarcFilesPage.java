@@ -37,34 +37,40 @@ import java.util.List;
 
 import static com.szadowsz.gui.utils.RCoordinates.isPointInRect;
 
-public class NARCFilesMain extends R4JComponent<NARC> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NARCFilesMain.class);
+public class NarcFilesPage extends R4JComponent<NARC> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NarcFilesPage.class);
 
-    protected final NARCFilesGroup filesGroup;
+    protected final NARCFilesPages filesGroup;
 
     protected final NARC narc;
 
     private PImage toDraw;
 
-    public NARCFilesMain(RotomGui gui, String path, NARCFilesGroup filesGroup, NARC data) {
+    public NarcFilesPage(RotomGui gui, String path, NARCFilesPages filesGroup, NARC data, int pageNumber) {
         super(gui, path, filesGroup);
         ((RLinearLayout) layout).setReduce(false);
         this.filesGroup = filesGroup;
         narc = data;
         try {
-            initFiles();
+            initFiles(pageNumber);
         } catch (NitroException ignored) {
 
         }
     }
 
-    protected void initFiles() throws NitroException {
+    protected void initFiles(int pageNumber) throws NitroException {
         if (!children.isEmpty()) {
             return;
         }
         List<RotomFile> files = narc.getFiles();
+        int filesOnCurrentPage = filesGroup.getFilesOnPage(pageNumber);
+        int maxFilesOnAPage = filesGroup.getMaxFilesPerPage();
 
-        for (RotomFile file : files) {
+        int start = maxFilesOnAPage *pageNumber;
+        int end = start + filesOnCurrentPage;
+
+        for (int i = start; i < end; i++) {
+            RotomFile file = files.get(i);
             children.add(
                     switch (file) {
                         // 3D
@@ -167,7 +173,7 @@ public class NARCFilesMain extends R4JComponent<NARC> {
 
     @Override
     public void drawToBuffer() {
-      children.forEach(RComponent::drawToBuffer);
+        children.forEach(RComponent::drawToBuffer);
         buffer.redraw();
         toDraw = buffer.draw().get(0, filesGroup.getVerticalScroll(), (int) size.x, (int) filesGroup.getHeight());
     }

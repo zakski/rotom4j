@@ -1067,6 +1067,7 @@ public class RWindowImpl implements RWindow, RInputListener {
             float yShift = getVerticallyScrolledDifference();
             float mouseY = sketch.mouseY + yShift;
             folder.keyPressed(e, sketch.mouseX, mouseY);
+            contentBuffer.invalidateBuffer();
         }
     }
 
@@ -1077,11 +1078,12 @@ public class RWindowImpl implements RWindow, RInputListener {
             return;
         }
 
-//        if (hasFocus() && isPointInsideContent(sketch.mouseX, sketch.mouseY)) {
+        if (hasFocus()) {
 //            float yShift = getVerticallyScrolledDifference();
 //            float mouseY = sketch.mouseY + yShift;
 //            folder.keyReleased(e, sketch.mouseX, mouseY);
-//        }
+            contentBuffer.invalidateBuffer();
+        }
         RInputListener.super.keyReleased(e);
     }
 
@@ -1096,6 +1098,7 @@ public class RWindowImpl implements RWindow, RInputListener {
             float yShift = getVerticallyScrolledDifference();
             float mouseY = sketch.mouseY + yShift;
             folder.keyTyped(e, sketch.mouseX, mouseY);
+            contentBuffer.invalidateBuffer();
         }
     }
 
