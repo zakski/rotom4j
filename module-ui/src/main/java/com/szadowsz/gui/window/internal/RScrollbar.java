@@ -154,9 +154,20 @@ public class RScrollbar {
         bufferInvalid = true;
     }
 
-    /**
-     * All GUI components are registered for mouseEvents
-     */
+    public void mouseClicked(RMouseEvent mouseEvent) {
+        if (!visible)
+            return;
+        if (!dragging &&
+                isPointInRect(mouseEvent.getX(), mouseEvent.getY(), posX, posY, width, height) &&
+                !isPointInRect(mouseEvent.getX(), mouseEvent.getY(), posX, posY + variance * value, width, handleSize)) {
+            updateHandle(mouseEvent.getY());
+            over = isPointInRect(mouseEvent.getX(), mouseEvent.getY(), posX, posY + variance * value, width, handleSize);
+            dragging = false;
+            isValueChanging = false;
+            bufferInvalid = true;
+        }
+    }
+
     public void mouseMoved(RMouseEvent mouseEvent) {
         if (!visible)
             return;

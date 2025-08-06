@@ -214,7 +214,7 @@ public class NFSFactory {
             for (int i = 0; i < dataInt.length; i++) {
                 data[i] = (byte) dataInt[i];
             }
-        } catch (ArrayIndexOutOfBoundsException | IOException e) {
+        } catch (NegativeArraySizeException | ArrayIndexOutOfBoundsException | IOException e) {
             LOGGER.warn("Failed to decompress " + fileNameNoExt, e);
             compFormat = CompFormat.UNKNOWN;
             data = compressedData;

@@ -624,6 +624,20 @@ public abstract class RComponent {
         mouseEvent.consume();
      }
 
+     /**
+     * Method to handle the component's reaction to the mouse being clicked.
+     *
+     * @param mouseEvent the change made by the mouse
+     * @param mouseY     adjust for scrollbar
+     */
+    public void mouseClicked(RMouseEvent mouseEvent, float mouseY) {
+        setFocus(true);
+        isDragged = false;
+
+        redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user pressed the mouse
+        mouseEvent.consume();
+    }
+
     /**
      * Method to handle the component's reaction to the mouse being released outside of itself
      *

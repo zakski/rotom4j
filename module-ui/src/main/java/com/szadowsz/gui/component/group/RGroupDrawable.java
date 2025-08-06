@@ -230,6 +230,20 @@ public abstract class RGroupDrawable extends RGroup {
         }
     }
 
+    @Override
+    public void mouseClicked(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (!this.isVisibleParentAware(null)) {
+            return;
+        }
+
+        RComponent child = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
+        if (child != null) {
+            LOGGER.debug("Mouse Clicked for Child Component {} [{}, {}, {}, {}, {}, {}]", child.getName(), mouseEvent.getX(), adjustedMouseY, child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
+            child.mouseClicked(mouseEvent, adjustedMouseY);
+            redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the user pressed the mouse over a child
+        }
+    }
+
     /**
      * Method to handle the component's reaction to the mouse being released outside of itself
      *
