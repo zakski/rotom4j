@@ -283,20 +283,26 @@ public class NCLR extends BaseNFSFile implements Drawable {
         if (paletteLength == 0 || paletteLength > paletteSectionSize) {
             paletteLength = paletteSectionSize - 0x18;
         }
-        LOGGER.info("Palette Length: " + paletteLength);
+        LOGGER.info("Palette Byte Length: " + paletteLength);
 
         // 0x14 - Colors Per Palette
         long colorStartOffset = reader.readUInt32();
         LOGGER.info("Color Offset: " + colorStartOffset);
 
-        // Set number of colours based on bit depth.
+        // Initially set the number of colors based on bit depth.
         this.numColorsPerPalette = (bitDepth == ColorFormat.colors16)? 16 : 256;
         this.numColors = numColorsPerPalette;
-        LOGGER.info("Colors Per Palette: " + numColorsPerPalette);
-        // Then adjust it based on the palette length
-        if (paletteLength / 2 > numColorsPerPalette) {
-            this.numColors = (int) (paletteLength / 2);
+
+        // Get the actual amount of colors
+        long colorCount = paletteLength / 2;
+
+        if (colorCount != numColorsPerPalette){
+            this.numColors = (int) colorCount;
+            if (colorCount < numColorsPerPalette){
+                this.numColorsPerPalette = this.numColors;
+            }
         }
+        LOGGER.info("Colors Per Palette: " + numColorsPerPalette);
         LOGGER.info("Total Number Of Colors: " + numColors);
 
         // Initialise Colours
@@ -311,6 +317,7 @@ public class NCLR extends BaseNFSFile implements Drawable {
             this.paletteColours = new Color[1][];
             this.paletteColours[0] = new Color[numColors];
         }
+        LOGGER.info("Palette Count: " + paletteColours.length);
         this.compNum = compNum;
 
         reader.setPosition(0x18 + colorStartOffset);
