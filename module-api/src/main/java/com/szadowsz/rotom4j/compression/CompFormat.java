@@ -8,5 +8,5 @@ public enum CompFormat {
     NONE,
     LZ77_10,
     HUFFMAN,
-    RLE;
+    RLE, UNKNOWN;
 }

@@ -640,7 +640,7 @@ public class RWindowImpl implements RWindow, RInputListener {
     protected void drawTitleBar(PGraphics canvas, boolean shouldDraw) {
         if (shouldDraw) {
             float availableWidthForText = size.x - RFontStore.getMarginX() + (!canBeClosed() ? 0 : -RLayoutStore.getCell());
-            String leftText = RFontStore.substringToFit(canvas, folder.getName(), availableWidthForText);
+            String leftText = RFontStore.substringToFit(canvas, folder.getDisplayName(), availableWidthForText);
             canvas.pushMatrix();
             canvas.pushStyle();
             canvas.translate(pos.x, pos.y);
@@ -839,6 +839,16 @@ public class RWindowImpl implements RWindow, RInputListener {
         }
     }
 
+    protected void mouseClickedInsideContent(RMouseEvent mouseEvent) {
+        RComponent child = findVisibleComponentAt(mouseEvent.getX(), mouseEvent.getY());
+        if (child != null) {
+            float yShift = getVerticallyScrolledDifference();
+            float mouseY = mouseEvent.getY() + yShift;
+            child.mouseClicked(mouseEvent, mouseY);
+            contentBuffer.invalidateBuffer();
+        }
+    }
+
     protected void mouseReleasedComponentCheck(RMouseEvent mouseEvent) {
         RComponent released = findVisibleComponentAt(mouseEvent.getX(), mouseEvent.getY());
         float yShift = getVerticallyScrolledDifference();
@@ -1016,7 +1026,7 @@ public class RWindowImpl implements RWindow, RInputListener {
         setTitleHighlighted(shouldHighlightTitle());
         setScrollbarHighlighted(shouldHighlightScrollbar());
 
-        if (!isVisible || !folder.isVisibleParentAware()) {
+        if (!isVisible() || !folder.isVisible()) {
             return;
         }
 
@@ -1039,8 +1049,11 @@ public class RWindowImpl implements RWindow, RInputListener {
             LOGGER.debug("Window {} is not visible to process key chord pressed event", getTitle());
             return;
         }
-
-        RInputListener.super.keyChordPressed(e);
+        if (hasFocus() && isPointInsideContent(sketch.mouseX, sketch.mouseY)) {
+            float yShift = getVerticallyScrolledDifference();
+            float mouseY = sketch.mouseY + yShift;
+            folder.keyChordPressed(e, sketch.mouseX, mouseY);
+        }
     }
 
     @Override
@@ -1050,7 +1063,12 @@ public class RWindowImpl implements RWindow, RInputListener {
             return;
         }
 
-        RInputListener.super.keyPressed(e);
+        if (hasFocus() && isPointInsideContent(sketch.mouseX, sketch.mouseY)) {
+            float yShift = getVerticallyScrolledDifference();
+            float mouseY = sketch.mouseY + yShift;
+            folder.keyPressed(e, sketch.mouseX, mouseY);
+            contentBuffer.invalidateBuffer();
+        }
     }
 
     @Override
@@ -1060,6 +1078,12 @@ public class RWindowImpl implements RWindow, RInputListener {
             return;
         }
 
+        if (hasFocus()) {
+//            float yShift = getVerticallyScrolledDifference();
+//            float mouseY = sketch.mouseY + yShift;
+//            folder.keyReleased(e, sketch.mouseX, mouseY);
+            contentBuffer.invalidateBuffer();
+        }
         RInputListener.super.keyReleased(e);
     }
 
@@ -1070,7 +1094,12 @@ public class RWindowImpl implements RWindow, RInputListener {
             return;
         }
 
-        RInputListener.super.keyTyped(e);
+        if (hasFocus() && isPointInsideContent(sketch.mouseX, sketch.mouseY)) {
+            float yShift = getVerticallyScrolledDifference();
+            float mouseY = sketch.mouseY + yShift;
+            folder.keyTyped(e, sketch.mouseX, mouseY);
+            contentBuffer.invalidateBuffer();
+        }
     }
 
     @Override
@@ -1080,7 +1109,28 @@ public class RWindowImpl implements RWindow, RInputListener {
             return;
         }
 
-        RInputListener.super.mouseClicked(mouseEvent);
+        // Make sure Window Grabs focus
+        if (isMouseInsideWindow(mouseEvent)) {
+            if (!hasFocus()) {
+                setFocusOnThis();
+            }
+
+            // Reset Values
+            isCloseInProgress = false;
+            isBeingDragged = false;
+            isBeingResized = false;
+
+            // Then Check Window Parts
+            if (isStartingToClose(mouseEvent)) {
+                isCloseInProgress = true;
+                mouseEvent.consume();
+            } else if (isMouseInsideScrollbar(mouseEvent) && mouseEvent.isLeft()) {
+                vsb.ifPresent(s -> s.mouseClicked(mouseEvent));
+                mouseEvent.consume();
+            } else if (isPointInsideContent(mouseEvent.getX(), mouseEvent.getY())) {
+                mouseClickedInsideContent(mouseEvent);
+            }
+        }
     }
 
     @Override

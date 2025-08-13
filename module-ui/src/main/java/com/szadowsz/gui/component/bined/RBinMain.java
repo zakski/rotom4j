@@ -491,9 +491,9 @@ public class RBinMain extends RBinComponent {
         drawCursor(pg);
     }
 
+    @Override
     public void draw(PGraphics pg) {
         // the component knows its absolute position but here the current matrix is already translated to it
-        int yDiff = editor.getVerticalScroll();
         pg.image(toDraw, 0, 0);
     }
 
@@ -502,6 +502,7 @@ public class RBinMain extends RBinComponent {
         return dimensions.getComponentDims().getWidth();
     }
 
+    @Override
     public PVector getBufferSize(){
         return new PVector(dimensions.getComponentDims().getWidth(), dimensions.getComponentDims().getHeight());
     }

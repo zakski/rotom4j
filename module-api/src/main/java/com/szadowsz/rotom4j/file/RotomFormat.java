@@ -32,13 +32,16 @@ public enum RotomFormat {
     // Archive-related
     NARC(new String[]{"NARC"},new String[]{"NARC"}),
     // Data-related
-    BINARY(new String[]{"BIN"},new String[]{"bin","dat"}),
+    BINARY(new String[]{"BIN"},new String[]{"bin","dat", "spa", "resdat"}),
     // 2D-related
     NCER(new String[]{"RECN"},new String[]{"NCER"}),
     NCLR(new String[]{"RLCN"}, new String[]{"NCLR"}),
     NSCR(new String[]{"RCSN"},new String[]{"NSCR"}),
     NCGR(new String[]{"RGCN"}, new String[]{"NCGR","NCBR"}),
-    NANR(new String[]{"RNAN"}, new String[]{"NANR"});
+    NANR(new String[]{"RNAN"}, new String[]{"NANR"}),
+    NSBCA(new String[]{"BCA0"}, new String[]{"NSBCA"}),
+    NSBMD(new String[]{"BMD0"}, new String[]{"NSBMD"});
+
 
     // Mapping of Format by label encoded into the Nitro File Header (Binary Files do not have a header)
     private static final Map<String, RotomFormat> BY_LABEL = new HashMap<>();

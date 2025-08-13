@@ -121,6 +121,10 @@ public class RFolder extends RGroup {
         return true;
     }
 
+    public String getDisplayName() {
+        return getDisplayName(getName());
+    }
+
     @Override
     public void setLayout(RLayoutBase layout) {
         this.layout = layout;

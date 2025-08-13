@@ -10,13 +10,16 @@ import com.szadowsz.rotom4j.file.data.DataFile;
 import com.szadowsz.rotom4j.file.data.DataFormat;
 import com.szadowsz.rotom4j.file.data.PlaceholderNFSFile;
 import com.szadowsz.rotom4j.file.nitro.UnspecifiedNFSFile;
-import com.szadowsz.rotom4j.file.nitro.nanr.NANR;
-import com.szadowsz.rotom4j.file.nitro.ncer.NCER;
-import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
-import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
-import com.szadowsz.rotom4j.file.nitro.nscr.NSCR;
+import com.szadowsz.rotom4j.file.nitro.n2d.nanr.NANR;
+import com.szadowsz.rotom4j.file.nitro.n2d.narc.NARC;
+import com.szadowsz.rotom4j.file.nitro.n2d.ncer.NCER;
+import com.szadowsz.rotom4j.file.nitro.n2d.ncgr.NCGR;
+import com.szadowsz.rotom4j.file.nitro.n2d.nclr.NCLR;
+import com.szadowsz.rotom4j.file.nitro.n2d.nscr.NSCR;
+import com.szadowsz.rotom4j.file.nitro.n3d.nsbca.NSBCA;
 import com.szadowsz.rotom4j.binary.io.reader.Buffer;
 import com.szadowsz.rotom4j.binary.io.reader.HexInputStream;
+import com.szadowsz.rotom4j.file.nitro.n3d.nsbmd.NSBMD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+
+import static com.szadowsz.rotom4j.file.RotomFormat.NSBCA;
 
 /**
  * Factory Class to read/build Nitro File Object Representations
@@ -62,6 +67,12 @@ public class NFSFactory {
      */
     private static RotomFile convertFromFile(RotomFormat magic, String path, long datalength) throws NitroException {
         switch (magic) {
+            case NSBCA -> {
+                return new NSBCA(path);
+            }
+            case NSBMD -> {
+                return new NSBMD(path);
+            }
             case NCGR -> { // Nintendo Character Graphic Resource
                 return new NCGR(path);
             }
@@ -81,7 +92,7 @@ public class NFSFactory {
                 if (datalength > 4) {
                     return new DataFile(DataFormat.UNSPECIFIED,path);
                 } else {
-                    return new PlaceholderNFSFile(path);
+                    return new PlaceholderNFSFile(path, datalength);
                 }
             }
             default -> {
@@ -103,6 +114,12 @@ public class NFSFactory {
      */
     private static RotomFile convertFromBinary(RotomFormat magic, String name, CompFormat comp, ByteArrayEditableData compData, ByteArrayEditableData data) throws NitroException {
         switch (magic) {
+            case NSBCA -> {
+                return new NSBCA(name, compData);
+            }
+            case NSBMD -> {
+                return new NSBMD(name, compData);
+            }
             case NCGR -> { // Nintendo Character Graphic Resource
                 return new NCGR(name, compData);
             }
@@ -118,9 +135,12 @@ public class NFSFactory {
             case NANR -> { // Nintendo ANimation Resource
                 return new NANR(name, compData);
             }
+            case NARC -> { // Nintendo ARChive
+                return new NARC(name, compData);
+            }
             case BINARY -> { // Some Sort Of Data File
                 if (data != null && data.getDataSize() > 4) {
-                    return new DataFile(DataFormat.UNSPECIFIED,name, compData);
+                    return new DataFile(DataFormat.UNSPECIFIED,name, comp, compData);
                 } else {
                     return new PlaceholderNFSFile(name);
                 }
@@ -194,12 +214,13 @@ public class NFSFactory {
             for (int i = 0; i < dataInt.length; i++) {
                 data[i] = (byte) dataInt[i];
             }
-        } catch (ArrayIndexOutOfBoundsException | IOException e) {
+        } catch (NegativeArraySizeException | ArrayIndexOutOfBoundsException | IOException e) {
             LOGGER.warn("Failed to decompress " + fileNameNoExt, e);
+            compFormat = CompFormat.UNKNOWN;
+            data = compressedData;
         }
         RotomFormat magic = parseFileFormat(data);
-        String fileName = fileNameNoExt + "." + magic.getExt()[0];
-        return convert(magic, null, fileName, compFormat, compressedData, data);
+        return convert(magic, null, fileNameNoExt, compFormat, compressedData, data);
 
     }
 

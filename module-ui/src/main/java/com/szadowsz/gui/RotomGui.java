@@ -8,10 +8,12 @@ import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.bined.RBinEditor;
 import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.RRoot;
+import com.szadowsz.gui.component.group.drawable.media.RMediaControl;
 import com.szadowsz.gui.component.group.folder.*;
 import com.szadowsz.gui.component.input.slider.RSlider;
 import com.szadowsz.gui.component.input.slider.RSliderInt;
 import com.szadowsz.gui.component.input.toggle.RCheckbox;
+import com.szadowsz.gui.component.group.drawable.media.RPlayPause;
 import com.szadowsz.gui.component.input.toggle.RToggle;
 import com.szadowsz.gui.component.text.RTextArea;
 import com.szadowsz.gui.component.text.RTextField;
@@ -688,6 +690,21 @@ public class RotomGui {
         if (component == null) {
             RFolder folder = tree.getParentFolder(fullPath);
             component = new RToggle(this, fullPath, folder, startingValue);
+            tree.insertAtPath(component);
+        }
+        return component;
+    }
+
+
+    public RMediaControl media(String path) {
+        String fullPath = getCurrentPath() + path;
+        if (tree.isPathTakenByUnexpectedType(fullPath, RMediaControl.class)) {
+            return null;
+        }
+        RMediaControl component = (RMediaControl) tree.getComponent(fullPath);
+        if (component == null) {
+            RFolder folder = tree.getParentFolder(fullPath);
+            component = new RMediaControl(this, fullPath, folder);
             tree.insertAtPath(component);
         }
         return component;

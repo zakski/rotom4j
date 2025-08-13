@@ -42,6 +42,25 @@ public class ByteArrayCompressibleData extends ByteArrayEditableData {
         }
     }
 
+    protected static byte[] uncompress(CompFormat compFormat, ByteArrayEditableData data) {
+        int[] dataInt;
+        try (HexInputStream input = new HexInputStream(new ByteArrayInputStream(data.getData()))) {
+           if (compFormat != CompFormat.NONE && compFormat != CompFormat.UNKNOWN) {
+                dataInt = JavaDSDecmp.decompress(input);
+            } else {
+                dataInt = input.readAllBytes();
+            }
+            byte[] uncompressedData = new byte[dataInt.length];
+            for (int i = 0; i < dataInt.length; i++) {
+                uncompressedData[i] = (byte) dataInt[i];
+            }
+            return uncompressedData;
+        } catch (IOException e) {
+            LOGGER.warn("Error decompressing data", e);
+            return new byte[0];
+        }
+    }
+
     protected static CompFormat detectCompressionUsed(ByteArrayEditableData data) {
         CompFormat compFormat = CompFormat.NONE;
         try (HexInputStream input = new HexInputStream(new ByteArrayInputStream(data.getData()))) {
@@ -63,6 +82,13 @@ public class ByteArrayCompressibleData extends ByteArrayEditableData {
 
     public ByteArrayCompressibleData(ByteArrayEditableData data) {
         super(uncompress(data));
+        compressedData = data;
+        compression = detectCompressionUsed(compressedData);
+
+    }
+
+    public ByteArrayCompressibleData(CompFormat detectedCompression, ByteArrayEditableData data) {
+        super(uncompress(detectedCompression,data));
         compressedData = data;
         compression = detectCompressionUsed(compressedData);
 

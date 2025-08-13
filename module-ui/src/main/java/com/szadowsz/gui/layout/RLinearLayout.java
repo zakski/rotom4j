@@ -106,6 +106,7 @@ public class RLinearLayout extends RLayoutBase {
     private final RDirection direction;
     private int spacing;
     private boolean changed;
+    private boolean reduce;
 
     /**
      * Constructor, creates a {@code RLinearLayout} with a specified direction to position the components on
@@ -116,6 +117,7 @@ public class RLinearLayout extends RLayoutBase {
         this.direction = direction;
         this.spacing = direction == RDirection.HORIZONTAL ? 1 : 0;
         this.changed = true;
+        this.reduce = true;
     }
 
     /**
@@ -123,17 +125,29 @@ public class RLinearLayout extends RLayoutBase {
      * <p>
      * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
      */
-    public RLinearLayout(RGroup group, RDirection direction) {
+    public RLinearLayout(RGroup group, RDirection direction, boolean shouldReduce) {
         this(direction);
         this.group = group;
+        this.reduce = shouldReduce;
     }
+
+
+    /**
+     * Default Constructor, creates a vertical {@code RLinearLayout}
+     * <p>
+     * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
+     */
+    public RLinearLayout(RGroup group, RDirection direction) {
+        this(group,direction,true);
+      }
+
     /**
      * Default Constructor, creates a vertical {@code RLinearLayout}
      * <p>
      * We generally assume that width and height are determined elsewhere: the length of text, the size of an image, etc.
      */
     public RLinearLayout(RGroup group) {
-        this(group, RDirection.VERTICAL);
+        this(group, RDirection.VERTICAL,true);
     }
 
 
@@ -184,7 +198,7 @@ public class RLinearLayout extends RLayoutBase {
         }
 
         // If we can't fit everything, trim the down the size of the largest components until it fits
-        if (availableVerticalSpace < totalRequiredVerticalSpace) {
+        if (reduce && availableVerticalSpace < totalRequiredVerticalSpace) {
             List<RComponent> copyOfComponents = new ArrayList<>(visibleComponents);
             Collections.reverse(copyOfComponents);
             copyOfComponents.sort((o1, o2) -> {
@@ -296,7 +310,7 @@ public class RLinearLayout extends RLayoutBase {
         }
 
         // If we can't fit everything, trim the down the size of the largest windows until it fits
-        if (availableVerticalSpace < totalRequiredVerticalSpace) {
+        if (reduce && availableVerticalSpace < totalRequiredVerticalSpace) {
             List<RWindowImpl> copyOfWindows = new ArrayList<>(windows);
             Collections.reverse(copyOfWindows);
             copyOfWindows.sort((o1, o2) -> {
@@ -403,7 +417,7 @@ public class RLinearLayout extends RLayoutBase {
         }
 
         // If we can't fit everything, trim the down the size of the largest components until it fits
-        if (availableHorizontalSpace < totalRequiredHorizontalSpace) {
+        if (reduce && availableHorizontalSpace < totalRequiredHorizontalSpace) {
             List<RComponent> copyOfComponents = new ArrayList<>(visibleComponents);
             Collections.reverse(copyOfComponents);
             copyOfComponents.sort((o1, o2) -> {
@@ -514,7 +528,7 @@ public class RLinearLayout extends RLayoutBase {
         }
 
         // If we can't fit everything, trim the down the size of the largest windows until it fits
-        if (availableHorizontalSpace < totalRequiredHorizontalSpace) {
+        if (reduce && availableHorizontalSpace < totalRequiredHorizontalSpace) {
             List<RWindowImpl> copyOfWindows = new ArrayList<>(windows);
             Collections.reverse(copyOfWindows);
             copyOfWindows.sort((o1, o2) -> {
@@ -622,19 +636,6 @@ public class RLinearLayout extends RLayoutBase {
     }
 
     @Override
-    public PVector calcPreferredSize(String title, List<RComponent> components) { // TODO Lanterna
-        // Filter out invisible components
-        components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
-
-        if(direction == RDirection.VERTICAL) {
-            return calcPreferredSizeVertically(title,components);
-        }
-        else {
-            return calcPreferredSizeHorizontally(components);
-        }
-    }
-
-    @Override
     public RGroup getGroup() {
         return group;
     }
@@ -642,18 +643,6 @@ public class RLinearLayout extends RLayoutBase {
     @Override
     public RLayoutConfig getLayoutConfig() {
         return createLayoutData(Alignment.FILL,GrowPolicy.NONE);
-    }
-
-    /**
-     * Sets the amount of empty space to put in between components. For horizontal layouts, this is number of columns
-     * (by default 1) and for vertical layouts this is number of rows (by default 0).
-     * @param spacing Spacing between components, either in number of columns or rows depending on the direction
-     * @return Itself
-     */
-    public RLinearLayout setSpacing(int spacing) { // TODO Lanterna
-        this.spacing = spacing;
-        this.changed = true;
-        return this;
     }
 
     /**
@@ -668,6 +657,24 @@ public class RLinearLayout extends RLayoutBase {
     public RDirection getDirection() {
         return direction;
     }
+
+    /**
+     * Sets the amount of empty space to put in between components. For horizontal layouts, this is number of columns
+     * (by default 1) and for vertical layouts this is number of rows (by default 0).
+     * @param spacing Spacing between components, either in number of columns or rows depending on the direction
+     * @return Itself
+     */
+    public RLinearLayout setSpacing(int spacing) { // TODO Lanterna
+        this.spacing = spacing;
+        this.changed = true;
+        return this;
+    }
+
+    public void setReduce(boolean b) {
+        reduce = b;
+    }
+
+
 
 //    @Override
 //    public boolean hasChanged() {
@@ -703,6 +710,19 @@ public class RLinearLayout extends RLayoutBase {
             doFlexibleWinHorizontalLayout(area, windows);
         }
         this.changed = false;
+    }
+
+    @Override
+    public PVector calcPreferredSize(String title, List<RComponent> components) { // TODO Lanterna
+        // Filter out invisible components
+        components = components.stream().filter(RComponent::isVisible).collect(Collectors.toList());
+
+        if(direction == RDirection.VERTICAL) {
+            return calcPreferredSizeVertically(title,components);
+        }
+        else {
+            return calcPreferredSizeHorizontally(components);
+        }
     }
 
     @Override

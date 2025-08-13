@@ -1,5 +1,6 @@
 package com.szadowsz.rotom4j.file.data;
 
+import com.szadowsz.rotom4j.binary.array.ByteArrayEditableData;
 import com.szadowsz.rotom4j.exception.InvalidDataException;
 import com.szadowsz.rotom4j.exception.InvalidFileException;
 import com.szadowsz.rotom4j.file.RotomFormat;
@@ -12,12 +13,20 @@ public class PlaceholderNFSFile extends DataFile {
     /**
      * Placeholder File Constructor
      *
-     * @param path path of the file
+     * @param name name of the file
      */
-    public PlaceholderNFSFile(String path) throws InvalidFileException, InvalidDataException {
-        super(DataFormat.PLACEHOLDER, path);
+    public PlaceholderNFSFile(String name) throws InvalidDataException {
+        super(DataFormat.PLACEHOLDER, name, new ByteArrayEditableData());
     }
 
+    /**
+     * Placeholder File Constructor
+     *
+     * @param path path of the file
+     */
+    public PlaceholderNFSFile(String path, long datalength) throws InvalidDataException, InvalidFileException {
+        super(DataFormat.PLACEHOLDER, path);
+    }
     /**
      * Set the name of file based on some external parsing method
      * <p>

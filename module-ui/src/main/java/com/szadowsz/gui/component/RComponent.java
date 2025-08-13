@@ -12,6 +12,7 @@ import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
 import com.szadowsz.gui.layout.RLayoutConfig;
+import com.szadowsz.gui.layout.RRect;
 import com.szadowsz.gui.window.internal.RWindowImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -271,25 +272,36 @@ public abstract class RComponent {
      * seeing the mouse/key event consumed.
      */
     protected void redrawBuffers() {
-        buffer.invalidateBuffer();
-        if (parent != null && !(parent instanceof RFolder)) {
-            parent.redrawBuffers();
+        if (isVisibleParentAware(null)) {
+            buffer.invalidateBuffer();
+            if (parent != null && !(parent instanceof RFolder)) {
+                parent.redrawBuffers();
+            }
+            RWindowImpl win = getParentWindow(); // TODO check if needed
+            if (win != null) {
+                win.redrawBuffer();
+            }
         }
-        RWindowImpl win = getParentWindow(); // TODO check if needed
-        if (win != null) {
-            win.redrawBuffer();
+    }
+
+    public void refreshBuffer() {
+        if (isVisibleParentAware(null)) {
+            buffer.resetBuffer();
+
         }
     }
 
     public void resetBuffer() {
-        buffer.resetBuffer();
-        RGroup parent = getParent();
-        if (parent != null && !(parent instanceof RFolder)) {
-            parent.resetBuffer();
-        }
-        RWindowImpl win = getParentWindow(); // TODO check if needed
-        if (win != null) {
-            win.redrawBuffer();
+        if (isVisibleParentAware(null)) {
+            buffer.resetBuffer();
+            RGroup parent = getParent();
+            if (parent != null && !(parent instanceof RFolder)) {
+                parent.resetBuffer();
+            }
+            RWindowImpl win = getParentWindow(); // TODO check if needed
+            if (win != null) {
+                win.redrawBuffer();
+            }
         }
     }
 
@@ -311,6 +323,10 @@ public abstract class RComponent {
 
     public String getClassName() {
         return className;
+    }
+
+    public RRect getBounds(){
+        return new RRect(pos.x, pos.y, size.x, size.y);
     }
 
     /**
@@ -472,10 +488,14 @@ public abstract class RComponent {
      *
      * @return true if visible, false otherwise
      */
-    public boolean isVisibleParentAware() { // TODO LazyGui
+    public boolean isVisibleParentAware(RComponent child) {
         boolean visible = isVisible();
         if (parent != null) {
-            return visible && parent.isVisibleParentAware();
+            if (parent instanceof RFolder) {
+                return visible && parent.isVisible();
+            } else {
+                return visible && parent.isVisibleParentAware(this);
+            }
         }
         return visible;
     }
@@ -603,6 +623,20 @@ public abstract class RComponent {
         redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user pressed the mouse
         mouseEvent.consume();
      }
+
+     /**
+     * Method to handle the component's reaction to the mouse being clicked.
+     *
+     * @param mouseEvent the change made by the mouse
+     * @param mouseY     adjust for scrollbar
+     */
+    public void mouseClicked(RMouseEvent mouseEvent, float mouseY) {
+        setFocus(true);
+        isDragged = false;
+
+        redrawBuffers(); // REDRAW-VALID: we should redraw the buffer solely on the basis that the user pressed the mouse
+        mouseEvent.consume();
+    }
 
     /**
      * Method to handle the component's reaction to the mouse being released outside of itself

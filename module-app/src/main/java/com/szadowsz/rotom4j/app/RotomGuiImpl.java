@@ -3,27 +3,27 @@ package com.szadowsz.rotom4j.app;
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.RotomGuiSettings;
 import com.szadowsz.gui.component.group.folder.RFolder;
-import com.szadowsz.rotom4j.component.nitro.nanr.NANRFolder;
-import com.szadowsz.rotom4j.component.nitro.ncer.NCERFolder;
-import com.szadowsz.rotom4j.component.nitro.ncgr.NCGRFolder;
-import com.szadowsz.rotom4j.component.nitro.nclr.NCLRFolder;
-import com.szadowsz.rotom4j.component.nitro.nscr.NSCRFolder;
+import com.szadowsz.rotom4j.component.nitro.n2d.nanr.NANRFolder;
+import com.szadowsz.rotom4j.component.nitro.n2d.ncer.NCERFolder;
+import com.szadowsz.rotom4j.component.nitro.n2d.ncgr.NCGRFolder;
+import com.szadowsz.rotom4j.component.nitro.n2d.nclr.NCLRFolder;
+import com.szadowsz.rotom4j.component.nitro.n2d.nscr.NSCRFolder;
 import com.szadowsz.rotom4j.exception.NitroException;
 import com.szadowsz.rotom4j.file.data.evo.EvolutionNFSFile;
 import com.szadowsz.rotom4j.file.data.learnset.LearnsetNFSFile;
 import com.szadowsz.rotom4j.file.data.stats.GrowNFSFile;
 import com.szadowsz.rotom4j.file.data.stats.StatsNFSFile;
-import com.szadowsz.rotom4j.file.nitro.nanr.NANR;
-import com.szadowsz.rotom4j.file.nitro.narc.NARC;
-import com.szadowsz.rotom4j.file.nitro.ncer.NCER;
-import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
-import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
-import com.szadowsz.rotom4j.file.nitro.nscr.NSCR;
+import com.szadowsz.rotom4j.file.nitro.n2d.nanr.NANR;
+import com.szadowsz.rotom4j.file.nitro.n2d.narc.NARC;
+import com.szadowsz.rotom4j.file.nitro.n2d.ncer.NCER;
+import com.szadowsz.rotom4j.file.nitro.n2d.ncgr.NCGR;
+import com.szadowsz.rotom4j.file.nitro.n2d.nclr.NCLR;
+import com.szadowsz.rotom4j.file.nitro.n2d.nscr.NSCR;
 import com.szadowsz.rotom4j.component.bin.evo.EvoFolderComponent;
 import com.szadowsz.rotom4j.component.bin.growth.GrowthFolderComponent;
 import com.szadowsz.rotom4j.component.bin.learn.LearnFolderComponent;
 import com.szadowsz.rotom4j.component.bin.stats.StatsFolderComponent;
-import com.szadowsz.rotom4j.component.nitro.narc.NarcFolderComponent;
+import com.szadowsz.rotom4j.component.nitro.n2d.narc.NARCFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -34,6 +34,21 @@ public class RotomGuiImpl extends RotomGui {
 
     public RotomGuiImpl(PApplet sketch, RotomGuiSettings settings) {
         super(sketch, settings);
+    }
+
+
+    public NARCFolder narc(String path, NARC narc) {
+        String fullPath = getCurrentPath() + path;
+        if (tree.isPathTakenByUnexpectedType(fullPath, NARCFolder.class)) {
+            return null;//defaultOption == null ? options[0] : defaultOption;
+        }
+        NARCFolder component = (NARCFolder) tree.getComponent(fullPath);
+        if (component == null) {
+            RFolder parentFolder = tree.getParentFolder(fullPath);
+            component = new NARCFolder(this,fullPath, parentFolder, narc);
+            tree.insertAtPath(component);
+        }
+        return component;
     }
 
     public NANRFolder animeRes(String path, NANR nanr) throws NitroException {
@@ -92,8 +107,8 @@ public class RotomGuiImpl extends RotomGui {
         return component;
     }
 
-    public NCLRFolder palette(NCLR nclr) {
-        String fullPath = getCurrentPath() + nclr.getFileName();
+    public NCLRFolder palette(String path, NCLR nclr) {
+        String fullPath = getCurrentPath() + path;
         if (tree.isPathTakenByUnexpectedType(fullPath, NCLRFolder.class)) {
             return null;
         }
@@ -170,20 +185,6 @@ public class RotomGuiImpl extends RotomGui {
         LOGGER.info("Created GUI for Narc File: {}", narc.getFileName());
     }
 
-    private NarcFolderComponent narc(String path, NARC narc) {
-        String fullPath = getCurrentPath() + path;
-        if (tree.isPathTakenByUnexpectedType(fullPath, NarcFolderComponent.class)) {
-            return null;//defaultOption == null ? options[0] : defaultOption;
-        }
-        NarcFolderComponent component = (NarcFolderComponent) tree.getComponent(fullPath);
-        if (component == null) {
-            RFolder parentFolder = tree.getParentFolder(fullPath);
-            component = new NarcFolderComponent(this,fullPath, parentFolder, narc);
-            tree.insertAtPath(component);
-        }
-        return component;
-    }
-
     public void registerNanrGUI(NANR nanr) throws NitroException {
         LOGGER.info("Creating GUI for NANR File: {}", nanr.getFileName());
         setFolder("Loaded Files");
@@ -219,7 +220,7 @@ public class RotomGuiImpl extends RotomGui {
     public void registerNclrGUI(NCLR nclr) {
         LOGGER.info("Creating GUI for NCLR File: {}", nclr.getFileName());
         setFolder("Loaded Files");
-        palette(nclr);
+        palette(nclr.getFileName(),nclr);
         setFolder(null);
         LOGGER.info("Created GUI for NCLR File: {}", nclr.getFileName());
     }

@@ -4,6 +4,7 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RComponent;
 import com.szadowsz.gui.config.RLayoutStore;
 import com.szadowsz.gui.config.text.RFontStore;
+import com.szadowsz.gui.config.theme.RColorType;
 import com.szadowsz.gui.config.theme.RThemeStore;
 import com.szadowsz.gui.input.keys.RKeyEvent;
 import com.szadowsz.gui.input.mouse.RMouseEvent;
@@ -35,6 +36,16 @@ public abstract class RGroupDrawable extends RGroup {
     protected RGroupDrawable(RotomGui gui, String path, RGroup parent) {
         super(gui, path, parent);
         buffer = new RGroupBuffer(this);
+    }
+
+    /**
+     * Sets the background fill color of the component, as part of the draw method
+     *
+     * @param pg graphics reference to use
+     */
+    @Override
+    protected void fillBackground(PGraphics pg) {
+        pg.fill(RThemeStore.getRGBA(RColorType.NORMAL_BACKGROUND));
     }
 
     /**
@@ -167,7 +178,7 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void keyPressed(RKeyEvent keyEvent, float mouseX, float mouseY) {
-        if (!isVisible()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
         RComponent focused = findFocusedComponent();
@@ -191,6 +202,9 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void mouseOver(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (!this.isVisibleParentAware(null)) {
+            return;
+        }
         RComponent underMouse = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
         if (underMouse != null) {
             if (!underMouse.isMouseOver()) {
@@ -204,7 +218,7 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void mousePressed(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (!isVisible()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
 
@@ -212,6 +226,20 @@ public abstract class RGroupDrawable extends RGroup {
         if (child != null) {
             LOGGER.debug("Mouse Pressed for Child Component {} [{}, {}, {}, {}, {}, {}]", child.getName(), mouseEvent.getX(), adjustedMouseY, child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
             child.mousePressed(mouseEvent, adjustedMouseY);
+            redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the user pressed the mouse over a child
+        }
+    }
+
+    @Override
+    public void mouseClicked(RMouseEvent mouseEvent, float adjustedMouseY) {
+        if (!this.isVisibleParentAware(null)) {
+            return;
+        }
+
+        RComponent child = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
+        if (child != null) {
+            LOGGER.debug("Mouse Clicked for Child Component {} [{}, {}, {}, {}, {}, {}]", child.getName(), mouseEvent.getX(), adjustedMouseY, child.getPosX(), child.getPosY(), child.getWidth(), child.getHeight());
+            child.mouseClicked(mouseEvent, adjustedMouseY);
             redrawBuffers(); // REDRAW-VALID: we should redraw the group buffer if the user pressed the mouse over a child
         }
     }
@@ -224,7 +252,7 @@ public abstract class RGroupDrawable extends RGroup {
      */
     @Override
     public void mouseReleasedAnywhere(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (!isVisible()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
 
@@ -245,7 +273,7 @@ public abstract class RGroupDrawable extends RGroup {
      */
     @Override
     public void mouseReleasedOverComponent(RMouseEvent mouseEvent, float adjustedMouseY) {
-        if (!isVisible() || !this.isVisibleParentAware()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
         RComponent child = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
@@ -258,7 +286,7 @@ public abstract class RGroupDrawable extends RGroup {
 
     @Override
     public void mouseDragged(RMouseEvent mouseEvent) {
-        if (!isVisible()) {
+        if (!this.isVisibleParentAware(null)) {
             return;
         }
         for (RComponent child : children) {
@@ -275,6 +303,13 @@ public abstract class RGroupDrawable extends RGroup {
     }
 
     @Override
+    public void refreshBuffer() {
+        if (isVisibleParentAware(null)) {
+            buffer.resetBuffer();
+            children.forEach(RComponent::refreshBuffer);
+        }
+    }
+    @Override
     public float suggestWidth() {
         return getPreferredSize().x;
     }
@@ -289,5 +324,10 @@ public abstract class RGroupDrawable extends RGroup {
     public void updateChildrenCoordinates() {
         LOGGER.debug("{} Layout [{},{}]",getName(),getWidth(),getHeight());
         layout.setCompLayout(pos, size, children);
+    }
+
+    public void updateComponentCoordinates(float bX, float bY, float rX, float rY, float w, float h) {
+        LOGGER.debug("Update Coordinates for Just Drawable Group [{}, {}, {}, {}, {}, {}]", bX, bY, rX, rY, w, h);
+        super.updateCoordinates(bX, bY, rX, rY, w, h);
     }
 }

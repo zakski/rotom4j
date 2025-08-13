@@ -1,20 +1,11 @@
 package com.szadowsz.gui.test;
 
-import com.szadowsz.gui.RotomGui;
-import com.szadowsz.gui.RotomGuiManager;
 import com.szadowsz.gui.RotomGuiSettings;
-import com.szadowsz.gui.component.action.RButton;
-import com.szadowsz.gui.component.group.folder.RDropdownMenu;
-import com.szadowsz.gui.input.mouse.RActivateByType;
-import com.szadowsz.gui.input.mouse.RMouseAction;
 import com.szadowsz.gui.layout.RBorderLayout;
 import com.szadowsz.rotom4j.app.RotomGuiImpl;
 import com.szadowsz.rotom4j.app.RotomGuiManagerImpl;
 import com.szadowsz.rotom4j.exception.NitroException;
-import com.szadowsz.rotom4j.file.nitro.nanr.NANR;
-import com.szadowsz.rotom4j.file.nitro.ncer.NCER;
-import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
-import com.szadowsz.rotom4j.file.nitro.nscr.NSCR;
+import com.szadowsz.rotom4j.file.nitro.n2d.narc.NARC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -34,7 +25,7 @@ public class ProcessingTest extends PApplet {
     protected RotomGuiSettings settings;
 
 
-    private final String path = "C:\\Code\\pokemon\\srcs\\changes\\Gen 4\\prologmon-masters\\pokemon_dp\\src\\contest\\graphic\\contest_obj\\bigman.NANR";
+    private final String path = "C:\\Code\\pokemon\\srcs\\changes\\Gen 4\\prologmon-masters\\pm_dp_ose\\src\\graphic\\font.narc";
 
     private void setLookAndFeel() {
         try {
@@ -71,7 +62,7 @@ public class ProcessingTest extends PApplet {
 
         gui.pushFolder("Window", RBorderLayout.RLocation.CENTER);
         try {
-            gui.animeRes("nanr",new NANR(path));
+            gui.narc("narc",new NARC(path));
         } catch (NitroException e) {
             throw new RuntimeException(e);
         }

@@ -2,6 +2,7 @@ package com.szadowsz.gui.component.input.toggle;
 
 import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.RSingle;
+import com.szadowsz.gui.component.group.RGroup;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.config.text.RFontStore;
 import com.szadowsz.gui.config.RLayoutStore;
@@ -31,11 +32,11 @@ public abstract class RToggleBase extends RSingle {
      *
      * @param gui           the gui for the window that the component is drawn under
      * @param path          the path in the component tree
-     * @param parentFolder  the parent component folder reference // TODO consider if needed
+     * @param parent        the parent component reference
      * @param startingValue
      */
-    protected RToggleBase(RotomGui gui, String path, RFolder parentFolder, boolean startingValue) {
-        super(gui, path, parentFolder);
+    protected RToggleBase(RotomGui gui, String path, RGroup parent, boolean startingValue) {
+        super(gui, path, parent);
         size.x = suggestWidth();
         value = startingValue;
     }
@@ -58,7 +59,6 @@ public abstract class RToggleBase extends RSingle {
         drawTextLeft(pg, name);
         drawBackdropRight(pg, RLayoutStore.getCell());
         drawToggleHandleRight(pg, value);
-
     }
 
     @Override

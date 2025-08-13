@@ -3,8 +3,8 @@ package com.szadowsz.rotom4j.app.data;
 import com.szadowsz.rotom4j.file.data.evo.EvolutionNFSFile;
 import com.szadowsz.rotom4j.file.data.learnset.LearnsetNFSFile;
 import com.szadowsz.rotom4j.file.data.stats.StatsNFSFile;
-import com.szadowsz.rotom4j.file.nitro.ncgr.NCGR;
-import com.szadowsz.rotom4j.file.nitro.nclr.NCLR;
+import com.szadowsz.rotom4j.file.nitro.n2d.ncgr.NCGR;
+import com.szadowsz.rotom4j.file.nitro.n2d.nclr.NCLR;
 
 public class Pokemon {
     private StatsNFSFile stats;
