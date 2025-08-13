@@ -47,4 +47,9 @@ public class NARCFolder extends R4JFolder<NARC> {
         tabs.addTab(createOptions());
         tabs.addTab(createDisplay());
     }
+
+    public void reindex() {
+        ((NARCFilesPages)tabs.findTabByName("Files")).reindex();
+        redrawBuffers();
+    }
 }

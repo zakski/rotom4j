@@ -45,7 +45,7 @@ public class NARCFilesPages extends R4JComponent<NARC> {
         for (int i = 0; i < totalPages;i++) {
             children.add(new NarcFilesPage(gui, path + "/" + PAGE + i, this, narc, i));
         }
-
+        ((NarcFilesPage)children.get(1)).turnTo();
         vsb = new RComponentScrollbar(
                 this,
                 new PVector(pos.x + children.getFirst().getWidth(), pos.y),
@@ -56,7 +56,6 @@ public class NARCFilesPages extends R4JComponent<NARC> {
 
         LOGGER.info("Bin Editor {} created scrollbar with Pos [{}, {}] Size [{},{}]", getName(), vsb.getPosX(), vsb.getPosY(), vsb.getWidth(), vsb.getHeight());
         vsb.setVisible(getFilesOnPage(0) > MAX_CHILD_DISPLAY);
-
     }
 
     protected void initDimensions() {
@@ -160,7 +159,11 @@ public class NARCFilesPages extends R4JComponent<NARC> {
     }
 
     void turnPage() {
+        LOGGER.info("Turning to " + narc.getFileName() + " page " + getCurrentPageNumber());
+        NarcFilesPage files = (NarcFilesPage) findChildByName(PAGE + getCurrentPageNumber());
+        files.turnTo();
         initDimensions();
+        updateChildrenCoordinates();
         vsb.setVisible(shouldDisplayVerticalScrollbar());
         resetBuffer();
     }
@@ -240,8 +243,10 @@ public class NARCFilesPages extends R4JComponent<NARC> {
                 mouseEvent.consume();
             } else {
                 RComponent child = findVisibleComponentAt(mouseEvent.getX(), adjustedMouseY);
-                child.mousePressed(mouseEvent, adjustedMouseY);
-                mouseEvent.consume();
+                if (child != null) {
+                    child.mousePressed(mouseEvent, adjustedMouseY);
+                    mouseEvent.consume();
+                }
             }
         }
     }
@@ -345,6 +350,10 @@ public class NARCFilesPages extends R4JComponent<NARC> {
         return super.suggestWidth() + RLayoutStore.getCell();
     }
 
-
-
+    public void reindex() {
+        for (int i = 1; i < children.size(); i++) {
+            ((NarcFilesPage)children.get(i)).reindex();
+        }
+        redrawBuffers();
+    }
 }

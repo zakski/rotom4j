@@ -41,8 +41,8 @@ public class NarcFilesPage extends R4JComponent<NARC> {
     private static final Logger LOGGER = LoggerFactory.getLogger(NarcFilesPage.class);
 
     protected final NARCFilesPages filesGroup;
-
     protected final NARC narc;
+    protected final int page;
 
     private PImage toDraw;
 
@@ -50,12 +50,8 @@ public class NarcFilesPage extends R4JComponent<NARC> {
         super(gui, path, filesGroup);
         ((RLinearLayout) layout).setReduce(false);
         this.filesGroup = filesGroup;
+        this.page = pageNumber;
         narc = data;
-        try {
-            initFiles(pageNumber);
-        } catch (NitroException ignored) {
-
-        }
     }
 
     protected void initFiles(int pageNumber) throws NitroException {
@@ -205,5 +201,18 @@ public class NarcFilesPage extends R4JComponent<NARC> {
     @Override
     public void updateChildrenCoordinates() {
         layout.setCompLayout(pos, size, children);
+    }
+
+    public void turnTo() {
+        try {
+            initFiles(page);
+        } catch (NitroException ignored) {
+        }
+        resetBuffer();
+    }
+
+    public void reindex() {
+        children.forEach(c -> c.refreshBuffer());
+        redrawBuffers();
     }
 }

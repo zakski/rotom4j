@@ -250,4 +250,11 @@ public class RTabManager extends RGroupDrawable {
     public void draw(PGraphics pg) {
         drawContent(pg);
     }
+
+    public RComponent findTabByName(String name) {
+       return getTabs().stream()
+                .map(tab -> tab.getChildren().getFirst())
+                .filter(child -> child.getName().equals(name))
+                .findFirst().orElse(null);
+    }
 }

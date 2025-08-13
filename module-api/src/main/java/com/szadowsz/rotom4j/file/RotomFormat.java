@@ -32,7 +32,7 @@ public enum RotomFormat {
     // Archive-related
     NARC(new String[]{"NARC"},new String[]{"NARC"}),
     // Data-related
-    BINARY(new String[]{"BIN"},new String[]{"bin","dat"}),
+    BINARY(new String[]{"BIN"},new String[]{"bin","dat", "spa", "resdat"}),
     // 2D-related
     NCER(new String[]{"RECN"},new String[]{"NCER"}),
     NCLR(new String[]{"RLCN"}, new String[]{"NCLR"}),

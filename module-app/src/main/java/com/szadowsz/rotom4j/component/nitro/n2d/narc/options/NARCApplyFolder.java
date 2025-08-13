@@ -4,6 +4,7 @@ import com.szadowsz.gui.RotomGui;
 import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.folder.RDropdownMenu;
 import com.szadowsz.gui.input.mouse.RActivateByType;
+import com.szadowsz.rotom4j.component.nitro.n2d.narc.NARCFolder;
 import com.szadowsz.rotom4j.file.nitro.n2d.narc.NARC;
 import com.szadowsz.rotom4j.app.ProcessingRotom4J;
 import com.szadowsz.rotom4j.app.utils.FileChooser;
@@ -19,7 +20,6 @@ public class NARCApplyFolder extends RDropdownMenu {
     private static final String APPLY_LST = "Apply LST";
     private static final String APPLY_NAIX = "Apply NAIX";
     private static final String APPLY_SCR = "Apply SCR";
-    private static final String REINDEX = "Reindex";
 
     private final static String selectLstFile = "Select lst File";
     private final static String selectHeaderFile = "Select .h File";
@@ -44,7 +44,7 @@ public class NARCApplyFolder extends RDropdownMenu {
             String defPath = FileChooser.selectDefFile(gui.getSketch(), lastPath, selectHeaderFile);
             try {
                 narc.applyDef(defPath);
-                narcOptions.getParentFolder().refreshBuffer();
+                ((NARCFolder) narcOptions.getParentFolder()).reindex();
             } catch (IOException e) {
                 LOGGER.error("Failed to Apply .h file {}", defPath, e);
             }
@@ -53,12 +53,12 @@ public class NARCApplyFolder extends RDropdownMenu {
         children.add(applyH);
 
         RButton applyLST = new RButton(gui,path + "/" + APPLY_LST, this);
-        narcOptions.getParentFolder().refreshBuffer();
         applyLST.registerAction(RActivateByType.RELEASE, () -> {
             String lastPath = ProcessingRotom4J.prefs.get("openNarcPath", System.getProperty("user.dir"));
             String lstPath = FileChooser.selectLstFile(gui.getSketch(), lastPath, selectLstFile);
             try {
                 narc.applyLst(lstPath);
+                ((NARCFolder) narcOptions.getParentFolder()).reindex();
             } catch (IOException e) {
                 LOGGER.error("Failed to Apply .lst file {}", lstPath, e);
             }
@@ -72,7 +72,7 @@ public class NARCApplyFolder extends RDropdownMenu {
             String naixPath = FileChooser.selectNaixFile(gui.getSketch(), lastPath, selectHeaderFile);
             try {
                 narc.applyNaix(naixPath);
-                narcOptions.getParentFolder().refreshBuffer();
+                ((NARCFolder) narcOptions.getParentFolder()).reindex();
              } catch (IOException e) {
                 LOGGER.error("Failed to Apply .naix file {}", naixPath, e);
             }
@@ -86,7 +86,7 @@ public class NARCApplyFolder extends RDropdownMenu {
             String scrPath = FileChooser.selectScrFile(gui.getSketch(), lastPath, selectHeaderFile);
             try {
                 narc.applyScr(scrPath);
-                narcOptions.getParentFolder().refreshBuffer();
+                ((NARCFolder) narcOptions.getParentFolder()).reindex();
             } catch (IOException e) {
                 LOGGER.error("Failed to Apply .scr file {}", scrPath, e);
             }

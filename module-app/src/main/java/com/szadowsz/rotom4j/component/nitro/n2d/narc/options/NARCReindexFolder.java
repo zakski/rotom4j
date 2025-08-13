@@ -5,6 +5,7 @@ import com.szadowsz.gui.component.action.RButton;
 import com.szadowsz.gui.component.group.folder.RFolder;
 import com.szadowsz.gui.component.text.RTextField;
 import com.szadowsz.gui.input.mouse.RActivateByType;
+import com.szadowsz.rotom4j.component.nitro.n2d.narc.NARCFolder;
 import com.szadowsz.rotom4j.file.nitro.n2d.narc.NARC;
 
 public class NARCReindexFolder extends RFolder {
@@ -33,6 +34,7 @@ public class NARCReindexFolder extends RFolder {
             String reindexValue = text.getValueAsString();
             text.setText("");
             narc.reindex(reindexValue);
+            ((NARCFolder) narcOptions.getParentFolder()).reindex();
             gui.getWinManager().uncoverOrCreateWindow(text.getParentFolder());
 //            filesRadio.setOptions(narc.getFilenames().toArray(new String[0]), narc.getFilenames().getFirst());
         });
